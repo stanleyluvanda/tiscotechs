@@ -119,6 +119,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         /* optional: keep old path working by redirecting it */
         <Route path="/forgot/reset" element={<Navigate to="/reset-password" replace />} />
+        <Route path="*" element={<Navigate to="/forgot" replace />} />
 
 
     
