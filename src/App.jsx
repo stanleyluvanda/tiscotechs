@@ -8,7 +8,8 @@ import LecturerSignUp from "./pages/LecturerSignUp.jsx";
 import Login from "./pages/Login.jsx";
 import ForgotStart from "./pages/ForgotStart.jsx";
 import ForgotVerify from "./pages/ForgotVerify.jsx";
-import ForgotReset from "./pages/ForgotReset.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+
 import StudentDashboard from "./pages/StudentDashboard.jsx";
 import LecturerDashboard from "./pages/LecturerDashboard.jsx";
 /* === NEW PAGES (import them) === */
@@ -115,6 +116,14 @@ export default function App() {
         <Route path="/forgot" element={<ForgotStart />} />
         <Route path="/forgot/verify" element={<ForgotVerify />} />
         <Route path="/forgot/reset" element={<ForgotReset />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        /* optional: keep old path working by redirecting it */
+        <Route path="/forgot/reset" element={<Navigate to="/reset-password" replace />} />
+
+
+    
+
+        
 
         {/* dashboards */}
         <Route path="/student/dashboard" element={<StudentDashboard />} />
