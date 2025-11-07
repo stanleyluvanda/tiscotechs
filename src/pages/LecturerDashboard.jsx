@@ -4,13 +4,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { YEARS as YEARS_DATA, getPrograms as rawGetPrograms } from "../data/eduData.js";
 import { computeUnreadForLecturer } from "../lib/contactStore";
 import AccountSecurityCard from "../components/account/AccountSecurityCard.jsx";
+import VerifyGate from "../components/VerifyGate";
 
 /* ---------------- Small utils ------------------ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
+
+// read only the admin-created video posts (raw read helper)
+function readVideoPosts() {
+  const arr = safeParse(localStorage.getItem("videoPosts")) || [];
+  return Array.isArray(arr) ? arr : [];
+}
+
+
+
 function initials(name = "") {
   const [a = "", b = ""] = name.trim().split(/\s+/);
   return (a[0] || "L").toUpperCase() + (b[0] || "K").toUpperCase();
 }
+
 const YEARS_SAFE = Array.isArray(YEARS_DATA) && YEARS_DATA.length
   ? YEARS_DATA
   : ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
@@ -458,6 +469,21 @@ function saveAndBroadcastUser(next) {
 export default function LecturerDashboard() {
   const navigate = useNavigate();
 
+  const current =
+    JSON.parse(
+      sessionStorage.getItem("currentUser") ||
+      localStorage.getItem("currentUser") ||
+      "{}"
+    );
+
+
+
+
+
+
+
+
+
   /* Seed canonical lecturer profile URL so other pages (Academic Platform, etc.) route back here */
   useEffect(() => { setLecturerProfileHref("/lecturer-dashboard"); }, []);
 
@@ -575,6 +601,46 @@ export default function LecturerDashboard() {
    localStorage.setItem("lecturerPosts", JSON.stringify(posts));
     window.dispatchEvent(new Event("lecturerPosts:updated"));
   }, [posts]);
+
+
+
+
+
+
+
+
+  // RIGHT-CARD: Admin videos for lecturers only (not lecturers' own posts)
+const [adminLecturerVideos, setAdminLecturerVideos] = useState([]);
+
+useEffect(() => {
+  const sync = () => {
+    const all = readVideoPosts();
+    const filtered = all
+      .filter(
+        (p) =>
+          p &&
+          p.type === "video" &&
+          p.createdByRole === "admin" &&
+          (p.audience === "lecturers" || p.audience === "both")
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setAdminLecturerVideos(filtered);
+  };
+
+  sync();
+  const onStorage = (e) => { if (!e || e.key === "videoPosts") sync(); };
+  const onUpdated = () => sync();
+  window.addEventListener("storage", onStorage);
+  window.addEventListener("videoPosts:updated", onUpdated);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener("videoPosts:updated", onUpdated);
+  };
+}, []);
+
+const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT HERE
+
+
 
 
 
@@ -994,12 +1060,7 @@ function updatePostById(postId, updater) {
 
   const filtered = mergeForLecturerView(filteredRaw);
 
-  /* Latest lecturer video (from normal posts, not a separate store) */
-  const latestLecturerVideo = useMemo(() => {
-    const vids = posts.filter(p => isMyPost(p) && p.type === "Video" && p.videoUrlOrId);
-    vids.sort((a,b) => (Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0)));
-    return vids[0] || null;
-  }, [posts]); // eslint-disable-line
+
 
   /* UI helpers */
   const toggleProgram = (prog) =>
@@ -1010,6 +1071,15 @@ function updatePostById(postId, updater) {
   /* ---- Layout ---- */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
+    
+
+    {/* 🔒 Email verification gate — shown on first sign-in or after email change */}
+    <VerifyGate email={current?.email} />
+
+
+
+
+
       {/* Keep total width tight and ensure equal margins on both sides */}
       <main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">
         {/* LEFT: Profile + filters */}
@@ -1419,31 +1489,41 @@ function updatePostById(postId, updater) {
           ))}
         </section>
 
+
+
+
+
         {/* RIGHT: Updates*/}
         <aside className="space-y-4 min-w-0 w-full max-w-full">
           <Card className="overflow-hidden">
-            <div className="font-semibold text-slate-900 text-center">Updates for Lecturers</div>
-            <p className="text-sm text-slate-600 mt-1 text-center">
-              Weekly video: teaching resources and key deadlines.
-            </p>
-            <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
-              {latestLecturerVideo?.videoUrlOrId ? (
-                <YouTubeEmbed
-                  idOrUrl={latestLecturerVideo.videoUrlOrId}
-                  title={latestLecturerVideo.title || "Lecturer Updates"}
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center text-slate-500 text-sm">
-                  No video posted yet for lecturers.
-                </div>
-              )}
-            </div>
-            {latestLecturerVideo?.createdAt && (
-              <div className="mt-2 text-xs text-slate-500 text-center">
-                Posted {new Date(latestLecturerVideo.createdAt).toLocaleString()}
-              </div>
-            )}
-          </Card>
+  <div className="font-semibold text-slate-900 text-center">Updates for Lecturers</div>
+
+  {/* Dynamic title from the latest Admin video post; falls back to the old sentence */}
+  <p className="text-sm text-slate-600 mt-1 text-center">
+    {(latestAdminLecturerVideo?.title?.trim?.() || "Weekly video: teaching resources and key deadlines.")}
+  </p>
+
+  <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
+    {latestAdminLecturerVideo?.videoUrlOrId ? (
+      <YouTubeEmbed
+        idOrUrl={latestAdminLecturerVideo.videoUrlOrId}
+        title={latestAdminLecturerVideo.title || "Lecturer Updates"}
+      />
+    ) : (
+      <div className="h-full w-full flex items-center justify-center text-slate-500 text-sm">
+        No video posted yet for lecturers.
+      </div>
+    )}
+  </div>
+
+  {latestAdminLecturerVideo?.createdAt && (
+    <div className="mt-2 text-xs text-slate-500 text-center">
+      Posted {new Date(latestAdminLecturerVideo.createdAt).toLocaleString()}
+    </div>
+  )}
+</Card>
+
+
 
           <Card className="overflow-hidden">
             <div className="font-semibold text-slate-900 text-center">Students’ Messages</div>

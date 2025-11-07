@@ -6,6 +6,7 @@ import YouTubeEmbed from "../components/YouTubeEmbed";
 import StudentAlertsCTA from "../components/StudentAlertsCTA";
 import { computeUnreadForStudent } from "../lib/contactStore";
 import AccountSecurityCard from "../components/account/AccountSecurityCard.jsx";
+import VerifyGate from "../components/VerifyGate";
 
 
 /* ================= Utils ================ */
@@ -977,6 +978,13 @@ function getProgramsSafe(continent, country, university, faculty, fallbackProgra
 export default function StudentDashboard() {
   const navigate = useNavigate();
 
+  const current = JSON.parse(
+    sessionStorage.getItem("currentUser") ||
+    localStorage.getItem("currentUser") ||
+    "{}"
+  );
+
+
   const [user,setUser] = useState(()=>{
     const raw = loadActiveUser();
     const merged = { ...initialUser, ...(raw||{}) };
@@ -1898,6 +1906,10 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
   /* ===== Layout ===== */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
+
+      {/* ⬇️ Add VerifyGate at the very top-level of the page */}
+    <VerifyGate email={current?.email} />
+    
       <main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
         {/* LEFT */}
         <aside className="space-y-4">

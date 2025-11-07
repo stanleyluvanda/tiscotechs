@@ -1,0 +1,32 @@
+// src/data/fieldsOfStudy.js
+// Consolidated from your sheet/screenshot (add/remove as you like)
+export const FIELDS_OF_STUDY = [
+  "Accounting","Actuarial Science","Advertising & Public Relations","Aerospace Technologies & Engineering",
+  "Agriculture/Agribusiness","Agronomy & Soils","Aircraft Maintenance","Airline Flight Attendant","Animal Science",
+  "Anthropology","Applied Science & Technology","Archaeology","Architecture","Art","Art History","Asian Studies",
+  "Astrophysics","Atmospheric & Oceanic Science","Audiology","Automotive","Aviation","Biblical Studies","Biochemistry",
+  "Biology","Botany","Broadcasting, Visual & Interactive Media","Business","Business Administration","Business Management",
+  "Carpentry","Cartography & Geographic Information","Chemical Engineering","Chemistry","Child & Adolescent Development",
+  "Chiropractic","Civil Engineering","Communication Networks & Security","Comparative Literature",
+  "Computer Aided Drafting & Design","Computer Engineering","Computer Science","Construction Management","Cosmetology",
+  "Creative Writing","Criminal Justice","Culinary Science","Cybersecurity","Dance","Dental Hygiene","Dentistry","Design",
+  "Earth Science","Ecology & Environmental Science","Economics","Education","Electrical Engineering","Electronics",
+  "Emergency Medical Services","Engineering (General)","English","Entomology","Entrepreneurship",
+  "Environmental Engineering","Environmental Science","Equine Studies","Family & Consumer Sciences","Fashion & Textiles",
+  "Film, Television & Media","Finance","Fine Arts","Fire Protection","Firefighting","Forensic Science","Forestry",
+  "Funeral Services","Game Design","Genetics","Geography","Geology & Marine Science","Government/Political Administration",
+  "Graphic Design","Health Care Management","Health Education","Health Informatics","History","Horticulture",
+  "Hotel & Restaurant Management","Human Resource Management","Human Services","Humanities","HVAC","Information Systems",
+  "International Relations","International Studies","Jewish Studies","Journalism","Kinesiology","Landscape Architecture",
+  "Law","Liberal Arts","Library Science","Lighting Design","Linguistics","Logistics/Supply Chain","Marketing",
+  "Materials Science","Mathematics/Statistics","Mechanical Engineering","Medical Technology","Microbiology",
+  "Molecular Biology","Museum Studies","Music","Native American Studies","Neuroscience (General)","Neuroscience (Health)",
+  "Nonprofit Management","Nuclear Science","Nursing","Nursing (RN)","Nutrition/Dietetics","Occupational Therapy",
+  "Oncology","Optometry/Ophthalmology","Orthotics/Prosthetics","Paralegal","Paramedic","Performing Arts",
+  "Pharmacology/Pharmacy","Philosophy","Photography","Physical Education","Physical Therapy","Physician Assistant",
+  "Physics","Physiology & Neurobiology","Plumbing","Political Science","Project Management","Psychiatry",
+  "Psychology/Counseling","Public Health","Public Policy","Radiography/Radiologic Sciences","Real Estate",
+  "Religious Studies","Social Work","Sociology","Spanish","Special Education","Speech, Language & Hearing Sciences",
+  "Sport Management","Statistics","Theater & Performance","Theology","Veterinary Medicine","Vocational Careers",
+  "Web Design","Welding","Zoology"
+];
