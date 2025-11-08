@@ -12,22 +12,29 @@ function safeParse(json) { try { return JSON.parse(json || ""); } catch { return
 function trySetItem(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
 function now() { return Date.now(); }
 
-/* Dev-aware Turnstile verification (bypass in dev; server in prod) */
-const VERIFY_PATH = "/api/verify-turnstile";
+/* Dev-aware Turnstile verification (bypass in dev; call Lambda in prod) */
+const VERIFY_URL = (import.meta.env.VITE_TURNSTILE_VERIFY_URL || "").trim();
 async function verifyTurnstileDevAware(token) {
-  // Skip remote call in development (or when explicitly allowed)
+  // Bypass in local dev or when explicitly allowed
   if (import.meta.env.MODE !== "production" || import.meta.env.VITE_SKIP_TURNSTILE === "true") {
     return { ok: true };
   }
+  if (!VERIFY_URL) {
+    console.warn("[turnstile] Missing VITE_TURNSTILE_VERIFY_URL at build time");
+    return { ok: false };
+  }
   try {
-    const res = await fetch(VERIFY_PATH, {
+    const res = await fetch(VERIFY_URL, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ token, action: "login" }),
+      // Lambda expects { turnstileToken: "<token>" }
+      body: JSON.stringify({ turnstileToken: token }),
     });
     const data = await res.json().catch(() => ({}));
-    return { ok: !!data?.ok };
-  } catch {
+    // accept either { ok: true } or { success: true }
+    return { ok: !!(data?.ok ?? data?.success) };
+  } catch (err) {
+    console.error("[turnstile] verify error", err);
     return { ok: false, offline: true };
   }
 }
