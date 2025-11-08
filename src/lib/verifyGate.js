@@ -59,12 +59,14 @@ export async function startVerify(email) {
     localStorage.setItem(`verify:code:${mail}`, "111111");
     return { ok: true, mock: true, code: "111111" };
   }
-  const r = await fetch(`${API_BASE}/api/verify/start`, {
+
+  const r = await fetch(`${API_BASE}/start-email-code`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ email: mail })
+    body: JSON.stringify({ email: mail, reason: "verify" })
   });
+    
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
   return data;
@@ -84,12 +86,13 @@ export async function confirmVerify(email, code) {
     }
     throw new Error("Invalid code.");
   }
-  const r = await fetch(`${API_BASE}/api/verify/confirm`, {
+  const r = await fetch(`${API_BASE}/confirm-email-code`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ email: mail, code: c })
+    body: JSON.stringify({ email: mail, reason: "verify", code: c })
   });
+  
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
   // Backend success ⇒ mark verified client-side as well (UX optimization)

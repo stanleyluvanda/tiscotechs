@@ -2,13 +2,21 @@
 // src/pages/ForgotVerify.jsx
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { postJSON } from "../lib/api";
 import { normalizeEmail, verifyResetPin } from "../lib/authState";
+
+/* --- env --- */
+const API_BASE =
+  (import.meta.env.VITE_API_BASE && String(import.meta.env.VITE_API_BASE).trim()) ||
+  "http://localhost:5001";
+
+const SERVERLESS =
+  String(import.meta.env.VITE_SERVERLESS_MODE ?? "true").toLowerCase() === "true";
 
 export default function ForgotVerify() {
   const [sp] = useSearchParams();
   const navigate = useNavigate();
   const email = normalizeEmail(sp.get("email") || "");
+
   const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,26 +24,40 @@ export default function ForgotVerify() {
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
+
     const code = String(pin || "").trim();
     if (!code) {
       setErr("Enter the 6-digit code.");
       return;
     }
+
     setLoading(true);
 
-    // 1) Try server if available (optional)
-    try {
-      const res = await postJSON?.("/auth/password/verify", { email, code });
-      if (res?.ok) {
+    // 1) Try backend (Amplify/Lambda) unless we're in serverless-dev mode
+    if (!SERVERLESS) {
+      try {
+        const r = await fetch(`${API_BASE.replace(/\/+$/, "")}/confirm-email-code`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            reason: "reset",
+            code,
+          }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j?.error || "Invalid or expired code");
+
         setLoading(false);
         navigate(`/forgot/reset?email=${encodeURIComponent(email)}&pin=${encodeURIComponent(code)}`);
         return;
+      } catch (ex) {
+        // fall through to local dev flow
+        // console.warn("[ForgotVerify] Backend verify failed; using local flow:", ex?.message);
       }
-    } catch {
-      // fall through to local dev flow
     }
 
-    // 2) Local dev: verify from local store
+    // 2) Local dev: check against locally stored PIN
     if (!verifyResetPin(email, code)) {
       setLoading(false);
       setErr("Invalid or expired code.");
