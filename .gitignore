@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 -e ".env\n.env.*\nbuild.zip" 
+build.zip
+*.zip
+node_modules/
+dist/
+build/
+.env*
