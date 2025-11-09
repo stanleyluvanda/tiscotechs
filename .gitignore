@@ -7,10 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies / builds
+node_modules/
+dist/
+dist-ssr/
+build/
 *.local
+*.zip
+build.zip
 
 # Editor directories and files
 .vscode/*
@@ -22,10 +26,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
--e ".env\n.env.*\nbuild.zip" 
-build.zip
-*.zip
-node_modules/
-dist/
-build/
+
+# Env files
+.env
+.env.*
 .env*
+# allow production env to be tracked
+!.env.production
