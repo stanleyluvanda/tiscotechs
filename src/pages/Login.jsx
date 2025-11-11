@@ -5,41 +5,18 @@ import {
   normalizeEmail,
   sha256Hex,
   markActiveUser
-  } from "../lib/authState"; // single source of truth for auth rules
+} from "../lib/authState"; // single source of truth for auth rules
+import { verifyTurnstileToken } from "../lib/turnstileVerify"; // NEW
+import { login as apiLogin } from "../lib/api"; // ✅ use helper ONLY for /api/auth/login
 
 /* ---------- Local helpers kept from your file ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 function trySetItem(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
 function now() { return Date.now(); }
 
-/* Dev-aware Turnstile verification (bypass in dev; call Lambda in prod) */
-const VERIFY_URL = (import.meta.env.VITE_TURNSTILE_VERIFY_URL || "").trim();
-async function verifyTurnstileDevAware(token) {
-  // Bypass in local dev or when explicitly allowed
-  if (import.meta.env.MODE !== "production" || import.meta.env.VITE_SKIP_TURNSTILE === "true") {
-    return { ok: true };
-  }
-  if (!VERIFY_URL) {
-    console.warn("[turnstile] Missing VITE_TURNSTILE_VERIFY_URL at build time");
-    return { ok: false };
-  }
-  try {
-    const res = await fetch(VERIFY_URL, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      // Lambda expects { turnstileToken: "<token>" }
-      body: JSON.stringify({ turnstileToken: token }),
-    });
-    const data = await res.json().catch(() => ({}));
-    // accept either { ok: true } or { success: true }
-    return { ok: !!(data?.ok ?? data?.success) };
-  } catch (err) {
-    console.error("[turnstile] verify error", err);
-    return { ok: false, offline: true };
-  }
-}
-
-export default function Login() {
+//export default function Login() {
+export default Login;
+function Login() {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
 
@@ -182,7 +159,7 @@ export default function Login() {
     }
 
     // 2) Verify token (dev-bypass; server in prod)
-    const v = await verifyTurnstileDevAware(tsToken);
+    const v = await verifyTurnstileToken(tsToken);
     if (!v.ok) {
       setError(
         v.offline
@@ -207,60 +184,48 @@ export default function Login() {
     }
 
     /* ------------------------------------------------------------------ *
-     * 4) SERVER-BASED LOGIN (preferred)
+     * 4) SERVER-BASED LOGIN (preferred) — via helper
      * ------------------------------------------------------------------ */
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email: em, password }),
-      });
-      const data = await res.json().catch(() => ({}));
+    const data = await apiLogin({ email: em, password });
 
-      if (res.ok && data?.ok) {
-        // success — persist minimal identity (NO password)
-        const { uid, email: serverEmail, role: serverRole } = data;
+    if (data?.ok) {
+      // success — persist minimal identity (NO password)
+      const { uid, email: serverEmail, role: serverRole } = data;
 
-        // Store UID-first identity (your app looks for these keys)
-        sessionStorage.setItem("authUserId", uid);
-        sessionStorage.setItem("activeUserId", uid);
-        sessionStorage.setItem("currentUserId", uid);
-        sessionStorage.setItem("loggedInUserId", uid);
+      // Store UID-first identity (your app looks for these keys)
+      sessionStorage.setItem("authUserId", uid);
+      sessionStorage.setItem("activeUserId", uid);
+      sessionStorage.setItem("currentUserId", uid);
+      sessionStorage.setItem("loggedInUserId", uid);
 
-        // keep a minimal currentUser stub if you don't already have a full profile
-        const stubUser = {
-          uid,
-          id: uid,
-          email: serverEmail,
-          role: (serverRole || role),
-        };
-        sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
-        localStorage.setItem("currentUser", JSON.stringify(stubUser));
+      // keep a minimal currentUser stub if you don't already have a full profile
+      const stubUser = {
+        uid,
+        id: uid,
+        email: serverEmail,
+        role: (serverRole || role),
+      };
+      sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
+      localStorage.setItem("currentUser", JSON.stringify(stubUser));
 
-        // Inform navbar in this tab
-        window.dispatchEvent(new Event("auth:changed"));
+      // Inform navbar in this tab
+      window.dispatchEvent(new Event("auth:changed"));
 
-        // scrub password from memory
-        setPassword("");
+      // scrub password from memory
+      setPassword("");
 
-        // ✅ route by role (matches your router paths)
-        const finalRole = (serverRole || role || "student").toLowerCase();
-        navigate(finalRole === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard");
-        return;
-      }
+      // ✅ route by role (matches your router paths)
+      const finalRole = (serverRole || role || "student").toLowerCase();
+      navigate(finalRole === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard");
+      return;
+    }
 
-      // If server rejected, show friendly error and attempt legacy fallback below
-      if (data?.error === "invalid_credentials") {
-        // we'll fall through to legacy local auth check (for older local users)
-      } else {
-        // Other server errors
-        setError(data?.error || "Login failed.");
-        return;
-      }
-    } catch (err) {
-      console.error("[login] network error:", err);
-      // fall through to the legacy local auth flow
+    // If server rejected, keep your same error handling and legacy fallback
+    if (data?.error === "invalid_credentials") {
+      // will fall through to legacy local auth below
+    } else if (data && !data.ok) {
+      setError(data?.error || "Login failed.");
+      return;
     }
 
     /* ------------------------------------------------------------------ *
@@ -382,7 +347,7 @@ export default function Login() {
         return;
       }
 
-      // 2) OPTIONAL (since your users live in localStorage): update local user password hash
+      // 2) OPTIONAL: update local user password hash
       const users = safeParse(localStorage.getItem("users")) || [];
       let idx = -1;
 

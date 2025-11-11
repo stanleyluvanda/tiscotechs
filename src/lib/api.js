@@ -1,5 +1,14 @@
 // src/lib/api.js
+
+// ---- Bases ----
 const API_BASE = String(import.meta?.env?.VITE_API_BASE || "http://localhost:5001").replace(/\/+$/, "");
+const EMAIL_API_BASE = String(import.meta?.env?.VITE_EMAIL_API_BASE || "").replace(/\/+$/, "");
+
+// ---- DEBUG: expose the endpoints the bundle is actually using ----
+if (typeof window !== "undefined") {
+  window.__SK_ENDPOINTS__ = { API_BASE, EMAIL_API_BASE };
+  console.log("[endpoints]", window.__SK_ENDPOINTS__);
+}
 
 /** Build an absolute URL from a path or accept full URLs */
 function toUrl(path) {
@@ -44,4 +53,42 @@ export async function getJSON(path, init = {}) {
   }
 }
 
-export default { postJSON, getJSON };
+/* =========================================================
+   Email-code helpers (AWS API Gateway / Lambda)
+   NOTE: We pass FULL URLs to postJSON; toUrl() detects them
+   and DOES NOT prepend API_BASE.
+   ========================================================= */
+
+/** Start email code (verify | reset) via Lambda */
+export function sendEmailCode(email, reason = "verify") {
+  const url = `${EMAIL_API_BASE}/start-email-code`;
+  return postJSON(url, { email, reason });
+}
+
+/** Confirm email code (verify | reset) via Lambda */
+export function confirmEmailCode(email, code, reason = "verify") {
+  const url = `${EMAIL_API_BASE}/confirm-email-code`;
+  return postJSON(url, { email, code, reason });
+}
+
+/* ==========================
+   Auth helpers (Express API)
+   ========================== */
+
+/** Login against your Express backend */
+export function login(payload) {
+  // Uses relative path; toUrl() will prefix API_BASE
+  return postJSON("/api/auth/login", payload);
+}
+
+// (Optional) export bases for quick debugging
+export const __endpoints__ = { API_BASE, EMAIL_API_BASE };
+
+export default {
+  postJSON,
+  getJSON,
+  sendEmailCode,
+  confirmEmailCode,
+  login,
+  __endpoints__,
+};
