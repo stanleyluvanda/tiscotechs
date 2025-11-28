@@ -9,7 +9,8 @@ import {
   getPrograms,
   YEARS,
 } from "../data/eduData.js";
-import { postJSON } from "../lib/api";
+import { apiRegisterStudent } from "../lib/api";
+import { Link } from "react-router-dom";
 
 /* ---------- Helpers ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
@@ -20,6 +21,17 @@ async function sha256Hex(str) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 function trySet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+
+/** Check if an email is already registered for a given role (uses localStorage "users"). */
+function emailExistsForRoleLocal(email, role) {
+  const em = normalizeEmail(email);
+  const r  = String(role || "student").toLowerCase();
+  const users = safeParse(localStorage.getItem("users")) || [];
+  return users.some(u =>
+    normalizeEmail(u?.email) === em &&
+    String(u?.role || "student").toLowerCase() === r
+  );
+}
 
 /* --- Optional flag as emoji helper (kept in case you want emoji elsewhere) --- */
 const FLAG = (iso2) => {
@@ -212,25 +224,35 @@ export default function StudentSignUp() {
       "agree",
     ];
     const missing = required.filter((k) => !form[k]);
-    if (missing.includes("agree")) return setError("You must agree to the Privacy Policy and Terms of Use.");
+    if (missing.includes("agree"))
+      return setError("You must agree to the Privacy Policy and Terms of Use.");
     if (missing.length) return setError("Please complete all fields.");
-    if (form.password !== form.confirmPassword) return setError("Passwords do not match.");
+    if (form.password !== form.confirmPassword)
+      return setError("Passwords do not match.");
     if (!turnstileToken) return setError("Please complete the verification.");
 
     try {
       let photoDataUrl = "";
       if (photo) photoDataUrl = await downscaleImageToDataURL(photo);
 
-      // Normalize first email & keep as canonical for all future flows
+      // Normalize email
       const emailNorm = normalizeEmail(form.email);
 
-      // Build payload to backend (include password + turnstile token; backend must hash & verify)
-      const payload = {
-        role: "student",
+      // Local duplicate check (dev-only)
+      if (emailExistsForRoleLocal(emailNorm, "student")) {
+        setError("An account with this email already exists for a student. Please log in instead.");
+        return;
+      }
+
+      // Hash password ONCE and reuse for backend + local
+      const passwordHash = await sha256Hex(form.password);
+
+      // Profile object (for local + backend convenience)
+      const profile = {
         name: form.name,
+        fullName: form.name,
+        studentName: form.name,
         gender: form.gender,
-        email: emailNorm,              // normalized
-        password: form.password,       // hash on server
         continent: form.continent,
         country: form.country,
         countryCode: form.countryCode,
@@ -238,22 +260,50 @@ export default function StudentSignUp() {
         faculty: form.faculty,
         program: form.program,
         year: form.year,
-        photo: photoDataUrl,
-        agree: !!form.agree,
-        turnstileToken,                // verify server-side with your secret key
+        photoUrl: photoDataUrl,
       };
 
-      // Server path (best effort; allow local if backend not ready)
+      // ---- Call real backend via apiRegisterStudent ----
+      let backendResp;
       try {
-        await postJSON("/auth/register/student", payload);
-      } catch {
-        /* allow local fallback */
+        backendResp = await apiRegisterStudent({
+          email: emailNorm,
+          passwordHash,
+          role: "student",
+          profile,
+          // also send top-level fields for Lambda convenience
+          name: form.name,
+          gender: form.gender,
+          continent: form.continent,
+          country: form.country,
+          countryCode: form.countryCode,
+          university: form.university,
+          faculty: form.faculty,
+          program: form.program,
+          year: form.year,
+          photo: photoDataUrl,
+          turnstileToken,
+        });
+      } catch (err) {
+        console.error("[student-signup] backend network error:", err);
+        backendResp = { ok: false, error: "network" };
       }
 
-      // Store current password locally for dashboard/account flows (dev-only)
+      if (!backendResp || !backendResp.ok) {
+        const code = String(backendResp?.error || "").toUpperCase();
+        if (code === "ALREADY_EXISTS" || code === "EMAIL_EXISTS" || code === "EMAIL_EXISTS_STUDENT") {
+          setError("An account with this email already exists for a student. Please log in instead.");
+        } else if (code === "MISSING_FIELDS") {
+          setError("Some required fields are missing. Please review the form.");
+        } else {
+          setError("Could not create your account. Please try again.");
+        }
+        return;
+      }
+
+      // ---- Local mirrors (for dashboards) ----
       sessionStorage.setItem("currentPassword", form.password);
 
-      // Create local profile (canonical lowercase role/email)
       const id = `u_${Date.now()}`;
       const newUser = {
         id,
@@ -273,31 +323,27 @@ export default function StudentSignUp() {
         createdAt: new Date().toISOString(),
       };
 
-      // Persist to users/usersById so Login.jsx legacy fallback can find it (with passwordHash)
       const users = safeParse(localStorage.getItem("users")) || [];
       const byId = safeParse(localStorage.getItem("usersById")) || {};
-      const passwordHash = await sha256Hex(form.password);
 
       users.push({ ...newUser, passwordHash });
       byId[id] = { ...newUser, passwordHash };
+
       localStorage.setItem("users", JSON.stringify(users));
       localStorage.setItem("usersById", JSON.stringify(byId));
 
-      // Mark ACTIVE (mirror to both session & local like Login.jsx)
       const stubUser = { ...newUser }; // no password in memory
       sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
       trySet("currentUser", JSON.stringify(stubUser));
-      for (const k of ["authUserId","activeUserId","currentUserId","loggedInUserId"]) {
+      for (const k of ["authUserId", "activeUserId", "currentUserId", "loggedInUserId"]) {
         sessionStorage.setItem(k, id);
         trySet(k, id);
       }
 
-      // optional: reset widget after submit
       if (window.turnstile && turnstileWidgetIdRef.current) {
         try { window.turnstile.reset(turnstileWidgetIdRef.current); } catch {}
       }
 
-      // Redirect to the same route family used by Login.jsx
       navigate("/student-dashboard");
     } catch (err) {
       console.error(err);
@@ -475,8 +521,21 @@ export default function StudentSignUp() {
                   className="mt-1"
                 />
                 <span className="text-sm text-slate-700">
-                  I agree to the <a href="/privacy" className="underline">Privacy Policy</a> and{" "}
-                  <a href="/terms" className="underline">Terms of Use</a>.
+                  I agree to the{" "}
+                  <Link
+                    to="/privacy-policy"
+                    className="text-[#1a73e8] underline"
+                  >
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/terms-of-use"
+                    className="text-[#1a73e8] underline"
+                  >
+                    Terms of Use
+                  </Link>
+                  .
                 </span>
               </label>
 

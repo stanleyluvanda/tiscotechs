@@ -1,4 +1,4 @@
-// src/components/Navbar.jsx
+// src/components/Navbar.jsx 
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
@@ -74,7 +74,11 @@ function SpinningGlobe({ size = 36 }) {
   if (hidden) return null;
 
   return (
-    <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }} title="ScholarsKnowledge">
+    <div
+      className="rounded-full overflow-hidden shrink-0"
+      style={{ width: size, height: size }}
+      title="ScholarsKnowledge"
+    >
       <img
         src={src}
         onError={onErr}
@@ -127,14 +131,14 @@ export default function Navbar() {
     };
   }, [open]);
 
-  const dashboardPath =
-    (user?.role || "").toLowerCase() === "lecturer"
-      ? "/lecturer/dashboard"
-      : "/student/dashboard";
+  const role = (user?.role || "").toLowerCase();
+  const dashboardPath = role === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard";
+
+  // When user clicks "Edit My Profile", we send them to dashboard with a flag
+  const profileEditPath = `${dashboardPath}?editProfile=1`;
 
   const handleLogout = () => {
-    const roleParam =
-      (user?.role || "student").toLowerCase() === "lecturer" ? "lecturer" : "student";
+    const roleParam = role === "lecturer" ? "lecturer" : "student";
     clearAuthStateKeepData();
     setUser(null);
     setOpen(false);
@@ -225,6 +229,8 @@ export default function Navbar() {
                     </div>
                   </div>
                   <hr className="border-slate-100" />
+
+                  {/* View profile (normal dashboard) */}
                   <button
                     onClick={() => { setOpen(false); navigate(dashboardPath); }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"
@@ -232,6 +238,16 @@ export default function Navbar() {
                   >
                     <span>👤</span> <span>View My Profile</span>
                   </button>
+
+                  {/* NEW: Edit profile (dashboard with editProfile flag) */}
+                  <button
+                    onClick={() => { setOpen(false); navigate(profileEditPath); }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"
+                    role="menuitem"
+                  >
+                    <span>✏️</span> <span>Edit My Profile</span>
+                  </button>
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 flex items-center gap-2"

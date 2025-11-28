@@ -476,13 +476,7 @@ export default function LecturerDashboard() {
       "{}"
     );
 
-
-
-
-
-
-
-
+    
 
   /* Seed canonical lecturer profile URL so other pages (Academic Platform, etc.) route back here */
   useEffect(() => { setLecturerProfileHref("/lecturer-dashboard"); }, []);
@@ -509,10 +503,12 @@ export default function LecturerDashboard() {
     return merged;
   });
 
-  useEffect(() => { 
-    persistUserFull(user);
-    saveAndBroadcastUser(user);
-  }, [user]);
+  //useEffect(() => { 
+    //persistUserFull(user);
+    //saveAndBroadcastUser(user);
+  //}, [user]);//
+
+  useEffect(() => { persistUserFull(user); }, [user]);
 
   // ===== Unread messages coming from Students (badge for "Students’ Messages")
   const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);

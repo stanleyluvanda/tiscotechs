@@ -1,17 +1,17 @@
 // src/components/VerifyGate.jsx
-
 import { useEffect, useState } from "react";
 import {
   startVerify,
   confirmVerify,
   isVerified,
-  markVerified,            // (not used directly here, confirmVerify already calls it)
-  clearVerified,           // used when email changes
-  getLocalVerifyToken,
-  setLocalVerifyToken
+  clearVerified,
+  getLocalVerifyToken, // kept in case you use later
+  setLocalVerifyToken, // kept in case you use later
 } from "../lib/verifyGate";
 
-function toLower(x){ return String(x||"").trim().toLowerCase(); }
+function toLower(x) {
+  return String(x || "").trim().toLowerCase();
+}
 
 export default function VerifyGate({ email }) {
   const mail = toLower(email || "");
@@ -20,34 +20,74 @@ export default function VerifyGate({ email }) {
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
   const [ok, setOk] = useState(false);
+  const [initialSent, setInitialSent] = useState(false); // 🔹 NEW
 
-  // Rule: show only if NOT verified for this email.
+  // Only show if NOT verified for this email.
   useEffect(() => {
     if (!mail) return;
     const need = !isVerified(mail);
     setOpen(need);
+    if (!need) {
+      setInitialSent(false);
+      setCode("");
+      setErr("");
+      setOk(false);
+    }
   }, [mail]);
 
-  // If the app emits an "auth:emailChanged" event (your AccountSecurityCard already does),
-  // we clear verification for the NEW email and re-open the gate.
+  // If AccountSecurityCard emits auth:emailChanged, clear verification for the NEW email.
   useEffect(() => {
-    function onEmailChanged(e){
+    const onEmailChanged = (e) => {
       const nextEmail = e?.detail?.email || e?.detail?.newEmail || "";
       if (!nextEmail) return;
-      // Require re-verification for the new email
       clearVerified(nextEmail);
       setLocalVerifyToken(nextEmail, "");
       if (toLower(nextEmail) === mail) {
         setOpen(true);
+        setInitialSent(false);
+        setCode("");
+        setErr("");
+        setOk(false);
       }
-    }
+    };
     window.addEventListener("auth:emailChanged", onEmailChanged);
     return () => window.removeEventListener("auth:emailChanged", onEmailChanged);
   }, [mail]);
 
+  // 🔹 Auto-send a code once when the gate opens
+  useEffect(() => {
+    if (!open || !mail || initialSent) return;
+
+    let cancelled = false;
+    const run = async () => {
+      setSending(true);
+      setErr("");
+      try {
+        await startVerify(mail);
+        if (!cancelled) {
+          setInitialSent(true);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setErr(e?.message || "Could not send code.");
+        }
+      } finally {
+        if (!cancelled) {
+          setSending(false);
+        }
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, mail, initialSent]);
+
   async function sendCode() {
     if (!mail) return;
-    setErr(""); setSending(true);
+    setErr("");
+    setSending(true);
     try {
       await startVerify(mail);
     } catch (e) {
@@ -62,7 +102,6 @@ export default function VerifyGate({ email }) {
     setErr("");
     try {
       const res = await confirmVerify(mail, code.trim());
-      // confirmVerify already marks verified and stores token
       setOk(true);
       setTimeout(() => setOpen(false), 600);
     } catch (e) {
@@ -77,13 +116,16 @@ export default function VerifyGate({ email }) {
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <h3 className="text-lg font-semibold text-slate-900">Verify your email</h3>
         <p className="mt-1 text-sm text-slate-600">
-          Enter the 6-digit code we sent to <b>{email}</b>. You need to verify once for this email.
+          Enter the 6-digit code we sent to <b>{email}</b>. You only need to verify once for
+          this email.
         </p>
 
         <div className="mt-4 flex gap-2">
           <input
             value={code}
-            onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0,6))}
+            onChange={(e) =>
+              setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
             className="w-full rounded-xl border px-3 py-2 tracking-[0.4em] text-center text-lg"
             placeholder="••••••"
             inputMode="numeric"

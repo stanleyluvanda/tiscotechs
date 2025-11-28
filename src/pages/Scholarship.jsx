@@ -1,4 +1,4 @@
-// src/pages/Scholarship.jsx
+// src/pages/Scholarship.jsx 
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { REGIONS } from "../data/regions";
@@ -6,6 +6,17 @@ import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { listScholarships } from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback)
 
 const CONTINENT_NAMES = Object.keys(REGIONS);
+
+/* Build a quick lookup: country (lowercase) -> continent */
+const COUNTRY_TO_CONTINENT = (() => {
+  const map = {};
+  for (const [cont, countries] of Object.entries(REGIONS)) {
+    countries.forEach((c) => {
+      map[String(c).toLowerCase()] = cont;
+    });
+  }
+  return map;
+})();
 
 // Compact dropdown options (shown as checkboxes inside the popover)
 const LEVEL_OPTIONS = [
@@ -62,25 +73,44 @@ function filterSortPaginate({
     });
   }
 
-  // Continent -> if present on item
+  // Continent filter
   if (continent && continent !== "All") {
-    out = out.filter((s) => (s.continent || "All") === continent);
+    out = out.filter((s) => {
+      // 1) If item already has an explicit continent, use it
+      const direct = String(s.continent || "").trim();
+      if (direct && direct !== "All") {
+        return direct === continent;
+      }
+
+      // 2) Otherwise infer from country via REGIONS
+      const cName = String(s.country || "").toLowerCase();
+      if (!cName) return false;
+      const inferred = COUNTRY_TO_CONTINENT[cName];
+      return inferred === continent;
+    });
   }
 
   // Country
   if (country && country !== "All") {
-    out = out.filter((s) => String(s.country || "").toLowerCase() === country.toLowerCase());
+    out = out.filter(
+      (s) =>
+        String(s.country || "").toLowerCase() === country.toLowerCase()
+    );
   }
 
   // Field
   if (field && field !== "All") {
-    out = out.filter((s) => String(s.field || "").toLowerCase() === field.toLowerCase());
+    out = out.filter(
+      (s) => String(s.field || "").toLowerCase() === field.toLowerCase()
+    );
   }
 
   // Level (multi)
   if (levels && levels.length > 0) {
     const setLv = new Set(levels.map((x) => x.toLowerCase()));
-    out = out.filter((s) => setLv.has(String(s.level || "").toLowerCase()));
+    out = out.filter((s) =>
+      setLv.has(String(s.level || "").toLowerCase())
+    );
   }
 
   // Funding
@@ -89,7 +119,8 @@ function filterSortPaginate({
     out = out.filter((s) => {
       const val = s.fundingType || s.funding;
       if (!val) return false;
-      if (Array.isArray(val)) return val.some((v) => String(v).toLowerCase() === fNeedle);
+      if (Array.isArray(val))
+        return val.some((v) => String(v).toLowerCase() === fNeedle);
       return String(val).toLowerCase() === fNeedle;
     });
   }
@@ -103,11 +134,21 @@ function filterSortPaginate({
       return (Number(b.id) || 0) - (Number(a.id) || 0);
     });
   } else if (sort === "deadlineAsc") {
-    out.sort((a, b) => new Date(a.deadline || "2100-01-01") - new Date(b.deadline || "2100-01-01"));
+    out.sort(
+      (a, b) =>
+        new Date(a.deadline || "2100-01-01") -
+        new Date(b.deadline || "2100-01-01")
+    );
   } else if (sort === "deadlineDesc") {
-    out.sort((a, b) => new Date(b.deadline || "1900-01-01") - new Date(a.deadline || "1900-01-01"));
+    out.sort(
+      (a, b) =>
+        new Date(b.deadline || "1900-01-01") -
+        new Date(a.deadline || "1900-01-01")
+    );
   } else if (sort === "title") {
-    out.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    out.sort((a, b) =>
+      String(a.title || "").localeCompare(String(b.title || ""))
+    );
   }
 
   const total = out.length;
@@ -331,9 +372,7 @@ export default function Scholarship() {
             aria-haspopup="menu"
             aria-expanded={levelOpen ? "true" : "false"}
           >
-            <span>
-              Level{levels.length ? ` (${levels.length})` : ""}
-            </span>
+            <span>Level{levels.length ? ` (${levels.length})` : ""}</span>
             <span className="text-slate-500">▾</span>
           </button>
 
@@ -428,7 +467,9 @@ export default function Scholarship() {
       </div>
 
       {/* States */}
-      {loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}
+      {loading && (
+        <div className="mt-6 text-slate-600">Loading scholarships…</div>
+      )}
       {err && <div className="mt-6 text-red-600">{err}</div>}
       {!loading && !err && items.length === 0 && (
         <div className="mt-6 text-slate-600">No scholarships found.</div>
@@ -440,9 +481,12 @@ export default function Scholarship() {
           const snippet = truncate(stripHtml(s.description || ""), 200);
           const fundingStr = Array.isArray(s.fundingType)
             ? s.fundingType.join(", ")
-            : (s.fundingType || "");
+            : s.fundingType || "";
           return (
-            <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
+            <li
+              key={s.id}
+              className="border border-slate-200 rounded-lg p-4 bg-white"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-lg font-semibold">{s.title}</div>
@@ -462,16 +506,16 @@ export default function Scholarship() {
                     </div>
                   ) : null}
                   {s.deadline && (
-                    <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
+                    <div className="text-xs text-slate-500">
+                      Deadline: {s.deadline}
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Description snippet */}
               {snippet && (
-                <p className="mt-3 text-sm text-slate-700">
-                  {snippet}
-                </p>
+                <p className="mt-3 text-sm text-slate-700">{snippet}</p>
               )}
 
               <div className="mt-3 flex flex-wrap gap-2">

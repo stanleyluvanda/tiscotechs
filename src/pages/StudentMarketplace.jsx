@@ -779,7 +779,7 @@ export default function StudentMarketplace() {
                 <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
                   <button onClick={()=>toggleLike(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">👍 Like {item.likes>0 && <span className="text-slate-500">({item.likes})</span>}</button>
                   <button onClick={()=>toggleSave(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">{item.saved ? "★ Saved" : "☆ Save"}</button>
-                  <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">View profile</Link>
+                  <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">Back to Dashboard</Link>
                 </div>
 
                 {/* Private, threaded comments (seller + root commenter) */}

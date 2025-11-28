@@ -1,7 +1,7 @@
-// src/pages/ForgotReset.jsx
+// src/pages/ForgotReset.jsx 
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { postJSON } from "../lib/api";
+import { apiCompletePasswordReset } from "../lib/api";
 import {
   normalizeEmail,
   verifyResetPin,
@@ -105,7 +105,8 @@ export default function ForgotReset() {
 
     setLoading(true);
 
-    // 1) Try server path (Amplify/Lambda) unless in SERVERLESS dev mode
+    // 1) Production path (non-serverless): verify code via EmailCodeHandler
+    //    AND send the new password to PasswordReset-API (DynamoDB).
     if (!SERVERLESS) {
       try {
         const r = await fetch(`${API_BASE.replace(/\/+$/, "")}/confirm-email-code`, {
@@ -119,6 +120,26 @@ export default function ForgotReset() {
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j?.error || "Invalid code");
+
+        // 🔐 NEW: also update password in DynamoDB via PasswordReset-API
+        try {
+          const resp = await apiCompletePasswordReset({
+            email,
+            code: String(pin || "").trim(),   // backend can ignore code if it doesn't need it
+            newPassword: p1,
+          });
+          if (!resp?.ok) {
+            // Non-fatal: log but still keep local flow as today
+            // eslint-disable-next-line no-console
+            console.warn("[ForgotReset] PasswordReset-API responded with error:", resp);
+          }
+        } catch (apiErr) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            "[ForgotReset] PasswordReset-API call failed:",
+            apiErr?.message || apiErr
+          );
+        }
 
         // Keep local stores consistent with AccountSecurityCard flows
         await setPasswordEverywhereByEmail(email, p1);
@@ -134,7 +155,7 @@ export default function ForgotReset() {
         setLoading(false);
         return;
       } catch (ex) {
-        // fall through to local/dev flow
+        // fall through to local/dev flow (same behaviour as before)
         // eslint-disable-next-line no-console
         console.warn("[ForgotReset] Backend confirm failed; using local flow:", ex?.message);
       }

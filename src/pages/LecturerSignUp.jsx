@@ -1,4 +1,4 @@
-// src/pages/LecturerSignUp.jsx
+// src/pages/LecturerSignUp.jsx 
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -7,10 +7,35 @@ import {
   getUniversities,
   getFaculties,
 } from "../data/eduData.js";
-import { postJSON } from "../lib/api";
+import { apiRegisterLecturer } from "../lib/api";
+import { Link } from "react-router-dom";
 
 // --- Small rectangular PNG flags (24x18) ---
-const flagPng = (code) => `https://flagcdn.com/24x18/${String(code || "").toLowerCase()}.png`;
+const flagPng = (code) =>
+  `https://flagcdn.com/24x18/${String(code || "").toLowerCase()}.png`;
+
+/* ---------- Helpers (same style as StudentSignUp) ---------- */
+function safeParse(json) {
+  try {
+    return JSON.parse(json || "");
+  } catch {
+    return null;
+  }
+}
+const normalizeEmail = (e) => String(e || "").trim().toLowerCase();
+
+async function sha256Hex(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+function trySet(k, v) {
+  try {
+    localStorage.setItem(k, v);
+  } catch {}
+}
 
 // ---------- Turnstile helpers (same as Student) ----------
 const TURNSTILE_KEY = (import.meta.env?.VITE_TURNSTILE_SITE_KEY ?? "").trim();
@@ -25,7 +50,8 @@ function loadTurnstileScript() {
       return;
     }
     const s = document.createElement("script");
-    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    s.src =
+      "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
     s.async = true;
     s.defer = true;
     s.setAttribute("data-turnstile", "1");
@@ -52,7 +78,8 @@ async function downscaleImageToDataURL(file, maxDim = 320, quality = 0.82) {
     const w = Math.max(1, Math.round(img.width * scale));
     const h = Math.max(1, Math.round(img.height * scale));
     const canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, w, h);
     let q = quality;
@@ -103,14 +130,16 @@ export default function LecturerSignUp() {
         if (destroyed || !turnstileRef.current || !t || !TURNSTILE_KEY) return;
 
         if (turnstileWidgetIdRef.current) {
-          try { t.remove(turnstileWidgetIdRef.current); } catch {}
+          try {
+            t.remove(turnstileWidgetIdRef.current);
+          } catch {}
           turnstileWidgetIdRef.current = null;
         }
 
         turnstileWidgetIdRef.current = t.render(turnstileRef.current, {
           sitekey: TURNSTILE_KEY,
           theme: "light",
-          size: "normal",       // show "Verify you are human" + logo clearly
+          size: "normal", // show "Verify you are human" + logo clearly
           appearance: "always",
           callback: (token) => setTurnstileToken(token),
           "error-callback": () => setTurnstileToken(""),
@@ -124,22 +153,29 @@ export default function LecturerSignUp() {
     return () => {
       destroyed = true;
       if (window.turnstile && turnstileWidgetIdRef.current) {
-        try { window.turnstile.remove(turnstileWidgetIdRef.current); } catch {}
+        try {
+          window.turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {}
         turnstileWidgetIdRef.current = null;
       }
     };
   }, []);
 
   // photo cleanup
-  useEffect(() => () => { if (photoUrl) URL.revokeObjectURL(photoUrl); }, [photoUrl]);
+  useEffect(
+    () => () => {
+      if (photoUrl) URL.revokeObjectURL(photoUrl);
+    },
+    [photoUrl]
+  );
 
   const onBasic = (e) => {
     const { name, type, value, checked } = e.target;
-    setForm(f => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+    setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   };
 
   const onContinent = (e) =>
-    setForm(f => ({
+    setForm((f) => ({
       ...f,
       continent: e.target.value,
       country: "",
@@ -151,7 +187,10 @@ export default function LecturerSignUp() {
   const onPhoto = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) { setError("Please select an image file."); return; }
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
     setError("");
     if (photoUrl) URL.revokeObjectURL(photoUrl);
     setPhoto(file);
@@ -163,62 +202,125 @@ export default function LecturerSignUp() {
     setPhotoUrl("");
   };
 
-  const onUniversity = (e) => setForm(f => ({ ...f, university: e.target.value, faculty: "" }));
-  const onFaculty    = (e) => setForm(f => ({ ...f, faculty: e.target.value }));
+  const onUniversity = (e) =>
+    setForm((f) => ({ ...f, university: e.target.value, faculty: "" }));
+  const onFaculty = (e) =>
+    setForm((f) => ({ ...f, faculty: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const required = [
-      "name","gender","email","password","confirmPassword",
-      "continent","country","university","faculty","agree"
+      "name",
+      "gender",
+      "email",
+      "password",
+      "confirmPassword",
+      "continent",
+      "country",
+      "university",
+      "faculty",
+      "agree",
     ];
-    const missing = required.filter(k => !form[k]);
-    if (missing.includes("agree")) { setError("You must agree to the Privacy Policy and Terms of Use."); return; }
-    if (missing.length) { setError("Please complete all fields."); return; }
-    if (form.password !== form.confirmPassword) { setError("Passwords do not match."); return; }
-    if (!turnstileToken) { setError("Please complete the verification."); return; }
+    const missing = required.filter((k) => !form[k]);
+    if (missing.includes("agree")) {
+      setError(
+        "You must agree to the Privacy Policy and Terms of Use."
+      );
+      return;
+    }
+    if (missing.length) {
+      setError("Please complete all fields.");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    if (!turnstileToken) {
+      setError("Please complete the verification.");
+      return;
+    }
 
     try {
+      // ---- Duplicate check (lecturer) ----
+      const emailNorm = normalizeEmail(form.email);
+      const existingUsers =
+        safeParse(localStorage.getItem("users")) || [];
+      const dup = existingUsers.find(
+        (u) =>
+          normalizeEmail(u.email) === emailNorm &&
+          String(u.role || "lecturer").toLowerCase() === "lecturer"
+      );
+      if (dup) {
+        setError(
+          "An account with this email already exists for a lecturer. Please log in instead."
+        );
+        return;
+      }
+
       let photoDataUrl = "";
       if (photo) photoDataUrl = await downscaleImageToDataURL(photo);
 
-      // Payload for backend — ensure backend stores this password as "current"
-      const payload = {
-        role: "lecturer",
+      // Hash password for backend
+      const passwordHash = await sha256Hex(form.password);
+
+      // Profile object for DynamoDB
+      const profile = {
         title: form.title,
         name: form.name,
         gender: form.gender,
-        email: form.email,
-        password: form.password,     // server must hash and save as current
         continent: form.continent,
         country: form.country,
         countryCode: form.countryCode,
         university: form.university,
         faculty: form.faculty,
         photo: photoDataUrl,
-        agree: !!form.agree,
-        turnstileToken,
       };
 
+      // ---- Call real backend via API Gateway / AuthHandler ----
+      let backendResp;
       try {
-        await postJSON("/auth/register/lecturer", payload);
-      } catch {
-        // allow local flow if backend not ready
+        backendResp = await apiRegisterLecturer({
+          email: emailNorm,
+          passwordHash,
+          role: "lecturer",
+          profile,
+        });
+      } catch (err) {
+        console.error("[lecturer-signup] backend network error:", err);
+        backendResp = { ok: false, error: "network" };
+      }
+
+      if (!backendResp || !backendResp.ok) {
+        const code = backendResp?.error;
+        if (code === "ALREADY_EXISTS" || code === "EMAIL_EXISTS") {
+          setError(
+            "An account with this email already exists for a lecturer. Please log in instead."
+          );
+        } else if (code === "MISSING_FIELDS") {
+          setError("Some required fields are missing. Please review the form.");
+        } else {
+          setError("Could not create your account. Please try again.");
+        }
+        return;
       }
 
       // Store "current" credentials for later change/reset flows
-      sessionStorage.setItem("currentEmail", form.email);
+      sessionStorage.setItem("currentEmail", emailNorm);
       sessionStorage.setItem("currentPassword", form.password);
 
+      // ---- Create local lecturer profile ----
+      const id = `l_${Date.now()}`;
       const newUser = {
-        id: `l_${Date.now()}`,
+        id,
+        uid: id,
         role: "lecturer",
         title: form.title,
         name: form.name,
         gender: form.gender,
-        email: form.email,
+        email: emailNorm,
         continent: form.continent,
         country: form.country,
         countryCode: form.countryCode,
@@ -227,16 +329,41 @@ export default function LecturerSignUp() {
         photoUrl: photoDataUrl,
         createdAt: new Date().toISOString(),
       };
-      sessionStorage.setItem("currentUser", JSON.stringify(newUser));
-      ["authUserId","activeUserId","currentUserId","loggedInUserId"].forEach(k =>
-        sessionStorage.setItem(k, newUser.id)
+
+      // Persist to users / usersById with passwordHash (for Login.jsx localLoginStrict)
+      const users = existingUsers;
+      const byId = safeParse(localStorage.getItem("usersById")) || {};
+
+      const storedLecturer = {
+        ...newUser,
+        passwordHash,
+      };
+
+      users.push(storedLecturer);
+      byId[id] = { ...(byId[id] || {}), ...storedLecturer };
+
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem("usersById", JSON.stringify(byId));
+
+      // Mirror currentUser + ids into session & local (like StudentSignUp)
+      const stubUser = { ...newUser }; // no password in memory
+      sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
+      trySet("currentUser", JSON.stringify(stubUser));
+      ["authUserId", "activeUserId", "currentUserId", "loggedInUserId"].forEach(
+        (k) => {
+          sessionStorage.setItem(k, id);
+          trySet(k, id);
+        }
       );
 
       // Optional: reset widget after submit
       if (window.turnstile && turnstileWidgetIdRef.current) {
-        try { window.turnstile.reset(turnstileWidgetIdRef.current); } catch {}
+        try {
+          window.turnstile.reset(turnstileWidgetIdRef.current);
+        } catch {}
       }
 
+      // Keep your existing navigation route
       navigate("/lecturer-dashboard");
     } catch (err) {
       console.error(err);
@@ -245,32 +372,54 @@ export default function LecturerSignUp() {
   };
 
   // ----- options -----
-  const continents   = getContinents();
-  const rawCountries = form.continent ? getCountriesWithFlags(form.continent) : [];
-  const countries    = (rawCountries || []).map(c => ({
+  const continents = getContinents();
+  const rawCountries = form.continent
+    ? getCountriesWithFlags(form.continent)
+    : [];
+  const countries = (rawCountries || []).map((c) => ({
     name: c.name || c.value,
     code: String(c.code || c.iso || "").toUpperCase(),
   }));
-  const universities = getUniversities(form.continent, form.country) || [];
-  const faculties    = getFaculties(form.continent, form.country, form.university) || [];
+  const universities =
+    getUniversities(form.continent, form.country) || [];
+  const faculties =
+    getFaculties(form.continent, form.country, form.university) ||
+    [];
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#f0f6ff] via-white to-[#eef2ff]">
       <main className="flex-1">
         <section className="max-w-2xl mx-auto px-4 py-12">
           <div className="text-center">
-            <img src="/images/1754280544595.jpeg"  alt="ScholarsKnowledge Logo" className="mx-auto h-14 w-14 object-contain" />
-            <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">Lecturer Sign Up</h1>
+            <img
+              src="/images/1754280544595.jpeg"
+              alt="ScholarsKnowledge Logo"
+              className="mx-auto h-14 w-14 object-contain"
+            />
+            <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">
+              Lecturer Sign Up
+            </h1>
           </div>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4 bg-white/70 rounded-2xl p-6 border">
-            {error && <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+          <form
+            onSubmit={onSubmit}
+            className="mt-8 space-y-4 bg-white/70 rounded-2xl p-6 border"
+          >
+            {error && (
+              <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+                {error}
+              </p>
+            )}
 
             {/* Photo */}
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center border">
                 {photoUrl ? (
-                  <img src={photoUrl} alt="Profile preview" className="h-full w-full object-cover" />
+                  <img
+                    src={photoUrl}
+                    alt="Profile preview"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <span className="text-slate-500">👤</span>
                 )}
@@ -288,48 +437,68 @@ export default function LecturerSignUp() {
                              hover:file:bg-blue-700"
                 />
                 {photo && (
-                  <button type="button" onClick={clearPhoto} className="text-sm text-slate-600 underline self-start">
+                  <button
+                    type="button"
+                    onClick={clearPhoto}
+                    className="text-sm text-slate-600 underline self-start"
+                  >
                     Remove photo
                   </button>
                 )}
-                <p className="text-xs text-slate-500">Large images will be resized.</p>
+                <p className="text-xs text-slate-500">
+                  Large images will be resized.
+                </p>
               </div>
             </div>
 
-{/* Name + Title (extra-wide name, very narrow title) */}
-<div className="grid gap-4 md:grid-cols-[1fr_auto]">
-  {/* Full name */}
-  <label className="block min-w-0">
-    <span className="block text-sm text-slate-600 mb-1">Full name</span>
-    <input
-      name="name"
-      className="w-full border rounded px-3 py-2"
-      placeholder="Full name"
-      value={form.name}
-      onChange={onBasic}
-    />
-  </label>
+            {/* Name + Title (extra-wide name, very narrow title) */}
+            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+              {/* Full name */}
+              <label className="block min-w-0">
+                <span className="block text-sm text-slate-600 mb-1">
+                  Full name
+                </span>
+                <input
+                  name="name"
+                  className="w-full border rounded px-3 py-2"
+                  placeholder="Full name"
+                  value={form.name}
+                  onChange={onBasic}
+                />
+              </label>
 
-  {/* Title */}
-  <label className="block">
-    <span className="block text-sm text-slate-600 mb-1">Title</span>
-    <select
-      name="title"
-      className="w-full border rounded px-3 py-2 md:max-w-[100px]"
-      value={form.title}
-      onChange={onBasic}
-    >
-      <option value="">Title</option>
-      {TITLE_OPTIONS.map((t) => (
-        <option key={t} value={t}>{t}</option>
-      ))}
-    </select>
-  </label>
-</div>
+              {/* Title */}
+              <label className="block">
+                <span className="block text-sm text-slate-600 mb-1">
+                  Title
+                </span>
+                <select
+                  name="title"
+                  className="w-full border rounded px-3 py-2 md:max-w-[100px]"
+                  value={form.title}
+                  onChange={onBasic}
+                >
+                  <option value="">Title</option>
+                  {TITLE_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
             {/* Gender */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">Gender</span>
-              <select name="gender" className="w-full border rounded px-3 py-2" value={form.gender} onChange={onBasic}>
+              <span className="block text-sm text-slate-600 mb-1">
+                Gender
+              </span>
+              <select
+                name="gender"
+                className="w-full border rounded px-3 py-2"
+                value={form.gender}
+                onChange={onBasic}
+              >
                 <option value="">Select Gender</option>
                 <option value="Female">Female</option>
                 <option value="Male">Male</option>
@@ -368,10 +537,20 @@ export default function LecturerSignUp() {
 
             {/* Continent */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">Continent</span>
-              <select className="w-full border rounded px-3 py-2" value={form.continent} onChange={onContinent}>
+              <span className="block text-sm text-slate-600 mb-1">
+                Continent
+              </span>
+              <select
+                className="w-full border rounded px-3 py-2"
+                value={form.continent}
+                onChange={onContinent}
+              >
                 <option value="">Select Continent</option>
-                {getContinents().map(c => <option key={c} value={c}>{c}</option>)}
+                {getContinents().map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -382,20 +561,53 @@ export default function LecturerSignUp() {
               countries={countries}
               value={{ name: form.country, code: form.countryCode }}
               onSelect={({ name, code }) =>
-                setForm(f => ({ ...f, country: name, countryCode: code }))
+                setForm((f) => ({ ...f, country: name, countryCode: code }))
               }
             />
 
-            <Select label="University" value={form.university} onChange={e => onUniversity(e)} options={universities} placeholder="Select University" disabled={!form.country} />
-            <Select label="College/School/Faculty/Department" value={form.faculty} onChange={e => onFaculty(e)} options={faculties} placeholder="Select Faculty/School" disabled={!form.university} />
+            <Select
+              label="University"
+              value={form.university}
+              onChange={(e) => onUniversity(e)}
+              options={universities}
+              placeholder="Select University"
+              disabled={!form.country}
+            />
+            <Select
+              label="College/School/Faculty/Department"
+              value={form.faculty}
+              onChange={(e) => onFaculty(e)}
+              options={faculties}
+              placeholder="Select Faculty/School"
+              disabled={!form.university}
+            />
 
             {/* Terms + Turnstile (same narrow rectangular layout you liked) */}
             <div className="grid md:grid-cols-[1fr_auto] items-start md:items-center gap-3">
               <label className="flex items-start gap-2">
-                <input type="checkbox" name="agree" checked={form.agree} onChange={onBasic} className="mt-1" />
+                <input
+                  type="checkbox"
+                  name="agree"
+                  checked={form.agree}
+                  onChange={onBasic}
+                  className="mt-1"
+                />
                 <span className="text-sm text-slate-700">
-                  I agree to the <a href="/privacy" className="underline">Privacy Policy</a> and{" "}
-                  <a href="/terms" className="underline">Terms of Use</a>.
+                  I agree to the{" "}
+                  <Link
+                    to="/privacy-policy"
+                    className="text-[#1a73e8] underline"
+                  >
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/terms-of-use"
+                    className="text-[#1a73e8] underline"
+                  >
+                    Terms of Use
+                  </Link>
+                  .
                 </span>
               </label>
 
@@ -403,24 +615,38 @@ export default function LecturerSignUp() {
                 <div className="turnstile-slot" ref={turnstileRef} />
               ) : (
                 <div className="text-xs text-red-600 self-start md:self-auto">
-                  Missing <code>VITE_TURNSTILE_SITE_KEY</code> in <code>.env</code>
+                  Missing <code>VITE_TURNSTILE_SITE_KEY</code> in{" "}
+                  <code>.env</code>
                 </div>
               )}
             </div>
 
-            <button type="submit" className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90 disabled:opacity-60" disabled={!form.agree}>
+            <button
+              type="submit"
+              className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90 disabled:opacity-60"
+              disabled={!form.agree}
+            >
               Submit
             </button>
 
             <p className="text-sm text-slate-600 text-center">
-              Already have an account? <a href="/login?role=lecturer" className="text-[#1a73e8] underline">Log in</a>
+              Already have an account?{" "}
+              <a
+                href="/login?role=lecturer"
+                className="text-[#1a73e8] underline"
+              >
+                Log in
+              </a>
             </p>
           </form>
         </section>
       </main>
 
       <footer className="bg-blue-900 text-white py-6 text-center text-sm">
-        © {new Date().getFullYear()} ScholarsKnowledge · <a href="/login" className="underline">Contact Sales</a>
+        © {new Date().getFullYear()} ScholarsKnowledge ·{" "}
+        <a href="/login" className="underline">
+          Contact Sales
+        </a>
       </footer>
     </div>
   );
@@ -431,9 +657,18 @@ function Select({ label, value, onChange, options, placeholder, disabled }) {
   return (
     <label className="block">
       <span className="block text-sm text-slate-600 mb-1">{label}</span>
-      <select className="w-full border rounded px-3 py-2 disabled:bg-slate-50" value={value} onChange={onChange} disabled={disabled}>
+      <select
+        className="w-full border rounded px-3 py-2 disabled:bg-slate-50"
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+      >
         <option value="">{placeholder}</option>
-        {(options || []).map((o) => <option key={o} value={o}>{o}</option>)}
+        {(options || []).map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
       </select>
     </label>
   );
@@ -445,8 +680,12 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const onEsc = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onEsc = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", onClick);
     document.addEventListener("keydown", onEsc);
     return () => {
@@ -455,9 +694,10 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
     };
   }, []);
 
-  const selected = value?.name && value?.code
-    ? { name: value.name, code: String(value.code).toUpperCase() }
-    : null;
+  const selected =
+    value?.name && value?.code
+      ? { name: value.name, code: String(value.code).toUpperCase() }
+      : null;
 
   return (
     <div className="relative" ref={ref}>
@@ -466,14 +706,22 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
       <button
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setOpen(v => !v)}
-        className={`w-full border rounded px-3 py-2 text-left bg-white ${disabled ? "bg-slate-50 cursor-not-allowed" : "hover:bg-slate-50"}`}
+        onClick={() => !disabled && setOpen((v) => !v)}
+        className={`w-full border rounded px-3 py-2 text-left bg-white ${
+          disabled
+            ? "bg-slate-50 cursor-not-allowed"
+            : "hover:bg-slate-50"
+        }`}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         {selected ? (
           <span className="inline-flex items-center gap-2">
-            <img src={flagPng(selected.code)} alt="" className="w-[24px] h-[18px] border object-contain" />
+            <img
+              src={flagPng(selected.code)}
+              alt=""
+              className="w-[24px] h-[18px] border object-contain"
+            />
             <span>{selected.name}</span>
           </span>
         ) : (
@@ -482,7 +730,10 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
       </button>
 
       {open && !disabled && (
-        <ul role="listbox" className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+        <ul
+          role="listbox"
+          className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg"
+        >
           {countries.map(({ name, code }) => {
             const c = String(code || "").toUpperCase();
             return (
@@ -490,11 +741,23 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
                 key={`${name}-${c}`}
                 role="option"
                 tabIndex={0}
-                onClick={() => { onSelect({ name, code: c }); setOpen(false); }}
-                onKeyDown={(e) => { if (e.key === "Enter") { onSelect({ name, code: c }); setOpen(false); } }}
+                onClick={() => {
+                  onSelect({ name, code: c });
+                  setOpen(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    onSelect({ name, code: c });
+                    setOpen(false);
+                  }
+                }}
                 className="px-3 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-2"
               >
-                <img src={flagPng(c)} alt="" className="w-[24px] h-[18px] border object-contain" />
+                <img
+                  src={flagPng(c)}
+                  alt=""
+                  className="w-[24px] h-[18px] border object-contain"
+                />
                 <span>{name}</span>
               </li>
             );

@@ -3,57 +3,122 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 
 /* ---------- Helpers (mirrors Login.jsx patterns) ---------- */
-function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
+function safeParse(json) {
+  try {
+    return JSON.parse(json || "");
+  } catch {
+    return null;
+  }
+}
 async function sha256Hex(str) {
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest("SHA-256", enc);
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
-function now() { return Date.now(); }
+function now() {
+  return Date.now();
+}
 
-/* Partner-specific reset tokens (avoid collision with student/lecturer) */
-function createPartnerResetToken(partnerId, ttlMinutes = 30) {
-  const token = `p-${partnerId}-${Math.random().toString(36).slice(2)}-${Date.now()}`;
-  const data = { partnerId, expiresAt: now() + ttlMinutes * 60_000 };
-  localStorage.setItem(`pwresetp:${token}`, JSON.stringify(data));
+/* ---------- Local reset-token helpers (partner only) ---------- */
+// Store: localStorage["pwresetp:<token>"] = { partnerId, email, expiresAt }
+function createPartnerResetToken(partnerId, email, ttlMinutes = 30) {
+  const token =
+    "p-" + partnerId + "-" + Math.random().toString(36).slice(2) + "-" + Date.now();
+  const data = {
+    partnerId,
+    email: (email || "").trim().toLowerCase(),
+    expiresAt: now() + ttlMinutes * 60_000,
+  };
+  try {
+    localStorage.setItem(`pwresetp:${token}`, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
   return token;
 }
+
 function consumePartnerResetToken(token) {
-  const raw = localStorage.getItem(`pwresetp:${token}`);
+  if (!token) return null;
+  let raw = null;
+  try {
+    raw = localStorage.getItem(`pwresetp:${token}`);
+  } catch {
+    raw = null;
+  }
   if (!raw) return null;
   const obj = safeParse(raw);
-  if (!obj || obj.expiresAt < now()) {
+  try {
     localStorage.removeItem(`pwresetp:${token}`);
-    return null;
+  } catch {
+    // ignore
   }
-  localStorage.removeItem(`pwresetp:${token}`); // one-time use
-  return obj.partnerId;
+  if (!obj || obj.expiresAt < now()) return null;
+  return obj; // { partnerId, email, expiresAt }
 }
 
-/* Update partner password across both "partners" array and optional "partnersById" */
+// Update partner password in localStorage (partners + partnersById)
 async function setPartnerPassword(partnerId, newPlainPassword) {
   const newHash = await sha256Hex(newPlainPassword);
+  const key = String(partnerId || "").toLowerCase();
 
+  // Update "partners" array – match by id OR by email
   const arr = safeParse(localStorage.getItem("partners")) || [];
-  const i = arr.findIndex(p => p.id === partnerId);
+  const i = arr.findIndex(
+    (p) =>
+      String(p.id || "") === String(partnerId || "") ||
+      (p.email && String(p.email).trim().toLowerCase() === key)
+  );
   if (i >= 0) {
     arr[i] = { ...arr[i], passwordHash: newHash, password: undefined };
-    localStorage.setItem("partners", JSON.stringify(arr));
+    try {
+      localStorage.setItem("partners", JSON.stringify(arr));
+    } catch {
+      // ignore
+    }
   }
 
+  // Update optional "partnersById" map (only if key exists)
   const map = safeParse(localStorage.getItem("partnersById")) || {};
   if (map[partnerId]) {
     map[partnerId] = { ...map[partnerId], passwordHash: newHash, password: undefined };
-    localStorage.setItem("partnersById", JSON.stringify(map));
+    try {
+      localStorage.setItem("partnersById", JSON.stringify(map));
+    } catch {
+      // ignore
+    }
   }
 }
+
+/* ---------- API bases ---------- */
+// For sending reset *emails* (PasswordReset-API: eovdrymvq3)
+const RESET_API_BASE =
+  (import.meta.env.VITE_PASSWORD_RESET_API_BASE &&
+    String(import.meta.env.VITE_PASSWORD_RESET_API_BASE).trim()) ||
+  (import.meta.env.VITE_API_BASE &&
+    String(import.meta.env.VITE_API_BASE).trim()) ||
+  (import.meta.env.VITE_API_URL &&
+    String(import.meta.env.VITE_API_URL).trim()) ||
+  "http://localhost:5001";
+
+// For general auth (kept for future; not critical right now)
+const AUTH_API_BASE =
+  (import.meta.env.VITE_API_BASE &&
+    String(import.meta.env.VITE_API_BASE).trim()) ||
+  (import.meta.env.VITE_API_URL &&
+    String(import.meta.env.VITE_API_URL).trim()) ||
+  "http://localhost:5001";
 
 /* ---------- Page ---------- */
 export default function PartnerLogin() {
   const nav = useNavigate();
   const [sp] = useSearchParams();
 
-  const mode = (sp.get("mode") || "login").toLowerCase(); // 'login' | 'forgot' | 'reset'
+  const modeParam = (sp.get("mode") || "login").toLowerCase();
+  const mode = ["forgot", "reset"].includes(modeParam) ? modeParam : "login";
+
+  const resetToken = sp.get("token") || "";
 
   /* ====== LOGIN STATE ====== */
   const [email, setEmail] = useState("");
@@ -62,7 +127,7 @@ export default function PartnerLogin() {
 
   /* ====== Turnstile (same pattern as Login.jsx) ====== */
   const turnstileRef = useRef(null);
-  const widgetIdRef   = useRef(null);
+  const widgetIdRef = useRef(null);
   const [turnToken, setTurnToken] = useState("");
   const [turnReady, setTurnReady] = useState(false);
   const SITE_KEY = "0x4AAAAAAB2QBaumf-KRvBPY";
@@ -89,7 +154,9 @@ export default function PartnerLogin() {
       }
       // Remove prior widget (hot reloads)
       if (widgetIdRef.current && window.turnstile.remove) {
-        try { window.turnstile.remove(widgetIdRef.current); } catch {}
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch {}
         widgetIdRef.current = null;
       }
       widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
@@ -102,7 +169,9 @@ export default function PartnerLogin() {
           setTurnToken(token || "");
           setTurnReady(!!token);
           setErr(""); // clear any prior error
-          try { window.onPartnerTurnstileSuccess?.(token); } catch {}
+          try {
+            window.onPartnerTurnstileSuccess?.(token);
+          } catch {}
         },
         "expired-callback": () => {
           setTurnToken("");
@@ -111,7 +180,7 @@ export default function PartnerLogin() {
         "error-callback": () => {
           setTurnToken("");
           setTurnReady(false);
-        }
+        },
       });
     }
 
@@ -120,16 +189,19 @@ export default function PartnerLogin() {
     return () => {
       cancelled = true;
       if (widgetIdRef.current && window.turnstile?.remove) {
-        try { window.turnstile.remove(widgetIdRef.current); } catch {}
+        try {
+          window.turnstile.remove(widgetIdRef.current);
+        } catch {}
       }
     };
   }, [SITE_KEY, mode]);
 
-  /* ====== FORGOT/RESET STATE ====== */
+  /* ====== FORGOT STATE (real email link) ====== */
   const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotSentToken, setForgotSentToken] = useState("");
   const [forgotError, setForgotError] = useState("");
-  const resetToken = sp.get("token") || "";
+  const [forgotSent, setForgotSent] = useState(false);
+
+  /* ====== RESET STATE (uses local reset token map) ====== */
   const [newPass, setNewPass] = useState("");
   const [newPass2, setNewPass2] = useState("");
   const [resetMsg, setResetMsg] = useState("");
@@ -140,7 +212,8 @@ export default function PartnerLogin() {
     setErr("");
 
     // Require a Turnstile token (state or session)
-    const tokenFromSession = sessionStorage.getItem("partnerTurnstileToken") || "";
+    const tokenFromSession =
+      sessionStorage.getItem("partnerTurnstileToken") || "";
     if (!turnToken && !tokenFromSession) {
       setErr("Please complete the human verification.");
       return;
@@ -153,9 +226,7 @@ export default function PartnerLogin() {
     }
 
     const partners = safeParse(localStorage.getItem("partners")) || [];
-    const user = partners.find(
-      (p) => (p?.email || "").toLowerCase() === em
-    );
+    const user = partners.find((p) => (p?.email || "").toLowerCase() === em);
 
     if (!user) {
       setErr("Invalid email or password.");
@@ -179,24 +250,45 @@ export default function PartnerLogin() {
     nav("/partner/welcome", { replace: true });
   };
 
-  const onSubmitForgot = (e) => {
+  const onSubmitForgot = async (e) => {
     e.preventDefault();
     setForgotError("");
-    setForgotSentToken("");
+    setForgotSent(false);
 
     const em = (forgotEmail || "").trim().toLowerCase();
-    if (!em) { setForgotError("Please enter your registered email."); return; }
-
-    const partners = safeParse(localStorage.getItem("partners")) || [];
-    const found = partners.find(p => (p?.email || "").toLowerCase() === em);
-
-    // Do not reveal existence — behave as if sent either way
-    if (!found) {
-      setForgotSentToken("dummy");
+    if (!em) {
+      setForgotError("Please enter your registered email.");
       return;
     }
-    const tok = createPartnerResetToken(found.id, 30);
-    setForgotSentToken(tok);
+
+    // Try to find the partner in localStorage (if present)
+    const partners = safeParse(localStorage.getItem("partners")) || [];
+    const found = partners.find((p) => (p?.email || "").toLowerCase() === em);
+
+    // Decide what to use as "partnerId" for the reset map:
+    // - prefer existing id
+    // - then partnerId field (if any)
+    // - then the email itself
+    const partnerIdForReset =
+      (found && (found.id || found.partnerId || found.email)) || em;
+
+    // Always create a local reset token so the email link matches localStorage
+    const token = createPartnerResetToken(partnerIdForReset, em, 30);
+
+    // Call backend to send the email (ForgotPasswordFn),
+    // passing the SAME token so the reset URL matches our local map.
+    try {
+      await fetch(`${RESET_API_BASE}/api/auth/forgot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: em, role: "partner", token }),
+      });
+      // Do not reveal whether the email exists.
+    } catch (err) {
+      console.warn("[Partner forgot] network error:", err);
+    }
+
+    setForgotSent(true);
   };
 
   const onSubmitReset = async (e) => {
@@ -211,15 +303,49 @@ export default function PartnerLogin() {
       setResetMsg("Passwords do not match.");
       return;
     }
-
-    const partnerId = consumePartnerResetToken(resetToken);
-    if (!partnerId) {
-      setResetMsg("This reset link is invalid or expired. Please request a new one.");
+    if (!resetToken) {
+      setResetMsg(
+        "This reset link is invalid or expired. Please request a new one."
+      );
       return;
     }
 
-    await setPartnerPassword(partnerId, newPass);
-    setResetMsg("Your password has been reset. You can now log in with your new password.");
+    const info = consumePartnerResetToken(resetToken);
+    if (!info || !info.partnerId) {
+      setResetMsg(
+        "This reset link is invalid or expired. Please request a new one."
+      );
+      return;
+    }
+
+    // 1) Update localStorage (partners + partnersById) so current session works
+    await setPartnerPassword(info.partnerId, newPass);
+
+    // 2) Also update DynamoDB via /api/auth/reset on the password-reset API,
+    //    using the email we stored in the token (or partnerId as fallback).
+    const emailForReset = (info.email || info.partnerId || "")
+      .trim()
+      .toLowerCase();
+    if (emailForReset) {
+      try {
+        await fetch(`${RESET_API_BASE}/api/auth/reset`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: emailForReset,
+            newPassword: newPass,
+            role: "partner",
+          }),
+        });
+      } catch (err) {
+        console.warn("[Partner reset] backend reset failed:", err);
+        // We don't block the UI on this; local reset already succeeded.
+      }
+    }
+
+    setResetMsg(
+      "Your password has been reset. You can now log in with your new password."
+    );
     setTimeout(() => nav("/partner/login"), 1200);
   };
 
@@ -235,7 +361,11 @@ export default function PartnerLogin() {
               className="mx-auto h-14 w-14 rounded-full object-cover"
             />
             <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">
-              {mode === "forgot" ? "Forgot Password" : mode === "reset" ? "Reset Password" : "Partner Login"}
+              {mode === "forgot"
+                ? "Forgot Password"
+                : mode === "reset"
+                ? "Reset Password"
+                : "Partner Login"}
             </h1>
             {mode === "login" && (
               <p className="mt-1 text-slate-600">Access your partner portal.</p>
@@ -244,7 +374,10 @@ export default function PartnerLogin() {
 
           {/* ====== LOGIN ====== */}
           {mode === "login" && (
-            <form onSubmit={submit} className="mt-6 space-y-4 bg-white/70 rounded-2xl p-6 border">
+            <form
+              onSubmit={submit}
+              className="mt-6 space-y-4 bg-white/70 rounded-2xl p-6 border"
+            >
               {err && (
                 <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700">
                   {err}
@@ -263,7 +396,9 @@ export default function PartnerLogin() {
               </label>
 
               <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">Password</span>
+                <span className="block text-sm text-slate-600 mb-1">
+                  Password
+                </span>
                 <input
                   type="password"
                   value={password}
@@ -278,7 +413,8 @@ export default function PartnerLogin() {
                 <div ref={turnstileRef} />
                 {!turnReady && (
                   <p className="mt-2 text-xs text-slate-500">
-                    Human verification will appear here. If it doesn’t, refresh the page.
+                    Human verification will appear here. If it doesn’t, refresh
+                    the page.
                   </p>
                 )}
               </div>
@@ -292,48 +428,66 @@ export default function PartnerLogin() {
 
               <div className="text-sm text-slate-600 text-center">
                 New partner?{" "}
-                <Link to="/partner/signup" className="text-[#1a73e8] underline">
+                <Link
+                  to="/partner/signup"
+                  className="text-[#1a73e8] underline"
+                >
                   Create an account
                 </Link>
               </div>
 
               <div className="text-center">
-                <Link className="inline-block mt-2 text-[#1a73e8] underline text-sm" to="/partner/login?mode=forgot">
+                <Link
+                  className="inline-block mt-2 text-[#1a73e8] underline text-sm"
+                  to="/partner/login?mode=forgot"
+                >
                   Forgot password?
                 </Link>
               </div>
             </form>
           )}
 
-          {/* ====== FORGOT PASSWORD ====== */}
+          {/* ====== FORGOT PASSWORD (email reset link) ====== */}
           {mode === "forgot" && (
-            <form onSubmit={onSubmitForgot} className="mt-6 space-y-4 bg-white/70 rounded-2xl p-6 border">
+            <form
+              onSubmit={onSubmitForgot}
+              className="mt-6 space-y-4 bg:white/70 bg-white/70 rounded-2xl p-6 border"
+            >
               {forgotError && (
-                <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2" role="alert">
+                <p
+                  className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2"
+                  role="alert"
+                >
                   {forgotError}
                 </p>
               )}
 
-              {!forgotSentToken ? (
+              {!forgotSent ? (
                 <>
                   <p className="text-sm text-slate-700">
-                    Enter your registered partner email. We’ll send a password reset link.
+                    Enter your registered partner email. We’ll send a password
+                    reset link.
                   </p>
                   <label className="block">
-                    <span className="block text-sm text-slate-600 mb-1">Email</span>
+                    <span className="block text-sm text-slate-600 mb-1">
+                      Email
+                    </span>
                     <input
                       type="email"
                       className="w-full border rounded px-3 py-2"
                       placeholder="you@company.com"
                       value={forgotEmail}
-                      onChange={e=>setForgotEmail(e.target.value)}
+                      onChange={(e) => setForgotEmail(e.target.value)}
                     />
                   </label>
                   <button className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90">
                     Send reset link
                   </button>
                   <div className="text-center">
-                    <Link className="inline-block mt-2 text-[#1a73e8] underline text-sm" to="/partner/login">
+                    <Link
+                      className="inline-block mt-2 text-[#1a73e8] underline text-sm"
+                      to="/partner/login"
+                    >
                       Back to login
                     </Link>
                   </div>
@@ -341,20 +495,14 @@ export default function PartnerLogin() {
               ) : (
                 <>
                   <p className="text-sm text-slate-700">
-                    If that email exists, we’ve sent a password reset link. (Dev mode: open it directly below.)
+                    If that email exists, we’ve sent a password reset link.{" "}
+                    Check your inbox and follow the link to set a new password.
                   </p>
-                  {forgotSentToken !== "dummy" && (
-                    <div className="mt-3">
-                      <Link
-                        to={`/partner/login?mode=reset&token=${encodeURIComponent(forgotSentToken)}`}
-                        className="inline-block text-[#1a73e8] underline text-sm"
-                      >
-                        Open reset link
-                      </Link>
-                    </div>
-                  )}
                   <div className="text-center">
-                    <Link className="inline-block mt-4 text-[#1a73e8] underline text-sm" to="/partner/login">
+                    <Link
+                      className="inline-block mt-4 text-[#1a73e8] underline text-sm"
+                      to="/partner/login"
+                    >
                       Back to login
                     </Link>
                   </div>
@@ -363,11 +511,20 @@ export default function PartnerLogin() {
             </form>
           )}
 
-          {/* ====== RESET PASSWORD ====== */}
+          {/* ====== RESET PASSWORD (from email link) ====== */}
           {mode === "reset" && (
-            <form onSubmit={onSubmitReset} className="mt-6 space-y-4 bg-white/70 rounded-2xl p-6 border">
+            <form
+              onSubmit={onSubmitReset}
+              className="mt-6 space-y-4 bg-white/70 rounded-2xl p-6 border"
+            >
               {resetMsg && (
-                <p className={`rounded px-3 py-2 ${resetMsg.includes("invalid or expired") ? "text-red-600 bg-red-50 border border-red-200" : "text-green-700 bg-green-50 border border-green-200"}`}>
+                <p
+                  className={`rounded px-3 py-2 ${
+                    resetMsg.includes("invalid or expired")
+                      ? "text-red-600 bg-red-50 border border-red-200"
+                      : "text-green-700 bg-green-50 border border-green-200"
+                  }`}
+                >
                   {resetMsg}
                 </p>
               )}
@@ -377,23 +534,27 @@ export default function PartnerLogin() {
               </p>
 
               <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">New password</span>
+                <span className="block text-sm text-slate-600 mb-1">
+                  New password
+                </span>
                 <input
                   type="password"
                   className="w-full border rounded px-3 py-2"
                   value={newPass}
-                  onChange={e=>setNewPass(e.target.value)}
+                  onChange={(e) => setNewPass(e.target.value)}
                   placeholder="At least 6 characters"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">Confirm new password</span>
+                <span className="block text-sm text-slate-600 mb-1">
+                  Confirm new password
+                </span>
                 <input
                   type="password"
                   className="w-full border rounded px-3 py-2"
                   value={newPass2}
-                  onChange={e=>setNewPass2(e.target.value)}
+                  onChange={(e) => setNewPass2(e.target.value)}
                   placeholder="Re-enter password"
                 />
               </label>
@@ -403,7 +564,10 @@ export default function PartnerLogin() {
               </button>
 
               <div className="text-center">
-                <Link className="inline-block mt-2 text-[#1a73e8] underline text-sm" to="/partner/login">
+                <Link
+                  className="inline-block mt-2 text-[#1a73e8] underline text-sm"
+                  to="/partner/login"
+                >
                   Back to login
                 </Link>
               </div>
@@ -413,7 +577,10 @@ export default function PartnerLogin() {
       </main>
 
       <footer className="bg-blue-900 text-white py-6 text-center text-sm">
-        © {new Date().getFullYear()} ScholarsKnowledge · <a href="/login" className="underline">Contact Sales</a>
+        © {new Date().getFullYear()} ScholarsKnowledge ·{" "}
+        <a href="/login" className="underline">
+          Contact Sales
+        </a>
       </footer>
     </div>
   );

@@ -1,5 +1,7 @@
 // src/pages/About.jsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 
 export default function About() {
   useEffect(() => {
@@ -99,24 +101,31 @@ export default function About() {
             and achieve together.
           </p>
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
-            <a
-              href="/student-sign-up"
-              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
-            >
-              Student Sign Up
-            </a>
-            <a
-              href="/lecturer-sign-up"
-              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
-            >
-              Lecturer Sign Up
-            </a>
-            <a
-              href="/partners"
-              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
-            >
-              Partner with Us
-            </a>
+            {/* Force the same working hash URLs as the navbar */}
+
+<div className="mt-6 flex flex-wrap gap-3 justify-center">
+  <Link
+    to="/student-sign-up"
+    className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+  >
+    Student Sign Up
+  </Link>
+
+  <Link
+    to="/lecturer-sign-up"
+    className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+  >
+    Lecturer Sign Up
+  </Link>
+
+  <Link
+    to="/partner"
+    className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+  >
+    Partner with Us
+  </Link>
+</div>
+
           </div>
         </section>
       </div>

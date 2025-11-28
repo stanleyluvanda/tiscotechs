@@ -1,12 +1,14 @@
 // src/pages/StudentDashboard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+//import { Link, useNavigate } from "react-router-dom";
 import { getPrograms, YEARS } from "../data/eduData.js";
 import YouTubeEmbed from "../components/YouTubeEmbed";
 import StudentAlertsCTA from "../components/StudentAlertsCTA";
 import { computeUnreadForStudent } from "../lib/contactStore";
 import AccountSecurityCard from "../components/account/AccountSecurityCard.jsx";
 import VerifyGate from "../components/VerifyGate";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+ 
 
 
 /* ================= Utils ================ */
@@ -978,6 +980,18 @@ function getProgramsSafe(continent, country, university, faculty, fallbackProgra
 export default function StudentDashboard() {
   const navigate = useNavigate();
 
+  // ✅ Read ?editProfile=1 from the URL on every render (no extra state)
+  const [searchParams] = useSearchParams();
+  const editProfile = searchParams.get("editProfile") === "1";
+
+
+
+
+
+
+
+
+
   const current = JSON.parse(
     sessionStorage.getItem("currentUser") ||
     localStorage.getItem("currentUser") ||
@@ -1295,30 +1309,6 @@ function persistLecturerPostsNow(arr) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Persist lecturer posts only if they actually changed.
 // Also avoid broadcasting an event unless we wrote new data.
 useEffect(() => {
@@ -1363,29 +1353,6 @@ useEffect(() => {
     }
   }
 }, [lecturerPosts]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1837,8 +1804,10 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
   else filtered = filtered.slice().sort((a,b)=> ts(b.createdAt||0) - ts(a.createdAt||0));
 
   /* ===== Manage profile ===== */
-  const [meOpen,setMeOpen]=useState(false);
-  const [securityOpen, setSecurityOpen] = useState(false);
+  //const [meOpen,setMeOpen]=useState(false);
+  const [meOpen, setMeOpen] = useState(() => editProfile);
+  //const [securityOpen, setSecurityOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(() => editProfile);
   const [editName,setEditName]=useState(user.name);
   const availablePrograms = getProgramsSafe(user.continent, user.country, user.university, user.faculty, user.program);
   const [editProgram,setEditProgram]=useState(user.program);
@@ -1850,6 +1819,23 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
     setUser(next);
     saveAndBroadcastUser(next);
   };
+
+
+
+
+  useEffect(() => {
+  if (editProfile) {
+    setMeOpen(true);
+    // (optional) you could also scroll into view here if you want
+  }
+}, [editProfile]);
+
+
+
+
+
+
+
 
   /* ===== Notifications (bell + lecturer toast) ===== */
   const [lecturerToast, setLecturerToast] = useState(null); // { id, author, title, createdAt }
@@ -1950,6 +1936,7 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
                 {meOpen && (
                   <div className="mt-2 border border-slate-100 rounded-lg p-3 bg-white space-y-3">
                     <div className="text-sm font-medium text-center">Manage profile</div>
+
                     <label className="block text-sm">
                       Name
                       <input className="mt-1 w-full border border-slate-100 rounded px-2 py-1" value={editName} onChange={(e)=>setEditName(e.target.value)} />
@@ -1959,8 +1946,8 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
                       <select className="mt-1 w-full border border-slate-100 rounded px-2 py-1" value={editProgram} onChange={(e)=>setEditProgram(e.target.value)}>
                         {availablePrograms.map((p) => (<option key={p} value={p}>{p}</option>))}
                       </select>
-                    </label>
-                    <label className="block text-sm">
+                      </label>
+                                 <label className="block text-sm">
                       Year of Study
                       <select className="mt-1 w-full border border-slate-100 rounded px-2 py-1" value={editYear} onChange={(e)=>setEditYear(e.target.value)}>
                         {YEARS.map((y) => (<option key={y} value={y}>{y}</option>))}

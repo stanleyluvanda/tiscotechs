@@ -38,6 +38,9 @@ import AdminVideoPostsList from "./pages/admin/AdminVideoPostsList.jsx";
 import AdminStudentConsents from "./pages/AdminStudentConsents";
 import StudyInUS from "./pages/StudyInUS.jsx";
 import Contact from "./pages/Contact.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import TermsOfUse from "./pages/TermsOfUse.jsx"
+
 
 
 // ❌ Remove this import to avoid clash with inline stub
@@ -123,12 +126,16 @@ export default function App() {
         <Route path="/student-sign-up" element={<StudentSignUp />} />
         <Route path="/lecturer-sign-up" element={<LecturerSignUp />} />
 
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
+
         {/* auth & forgot */}
         <Route path="/login" element={<Login />} />
         <Route path="/auth/login" element={<Navigate to="/login" replace />} />
         <Route path="/auth/register/student" element={<Navigate to="/student-sign-up" replace />} />
         <Route path="/auth/register/lecturer" element={<Navigate to="/lecturer-sign-up" replace />} />
         <Route path="/forgot" element={<ForgotStart />} />
+        
         <Route path="/forgot/verify" element={<ForgotVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 

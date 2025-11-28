@@ -1,5 +1,6 @@
-// src/components/account/AccountSecurityCard.jsx 
+// src/components/account/AccountSecurityCard.jsx
 import { useState } from "react";
+import { apiChangeEmail, apiChangePassword } from "../../lib/api";
 
 /* ---------- Env ---------- */
 const API_BASE =
@@ -33,6 +34,95 @@ const BUCKETS = [
   { listKey: "users",     byIdKey: "usersById",     name: "users" },
   { listKey: "lecturers", byIdKey: "lecturersById", name: "lecturers" },
 ];
+
+/* ---------- NEW: migrate old email → new email across localStorage ---------- */
+function migrateEmailEverywhere(oldEmail, newEmail) {
+  const norm = (x) => String(x || "").trim().toLowerCase();
+  const oldEm = norm(oldEmail);
+  const newEm = norm(newEmail);
+  if (!oldEm || !newEm || oldEm === newEm) return;
+
+  // 1) lists: users, lecturers
+  for (const listKey of ["users", "lecturers"]) {
+    const list = readJson(listKey) || [];
+    let changed = false;
+    const nextList = list.map((u) => {
+      if (norm(u?.email) === oldEm) {
+        changed = true;
+        return { ...u, email: newEm };
+      }
+      return u;
+    });
+    if (changed) writeJson(listKey, nextList);
+  }
+
+  // 2) maps: usersById, lecturersById, authUsersById
+  for (const mapKey of ["usersById", "lecturersById", "authUsersById"]) {
+    const map = readJson(mapKey) || {};
+    let changed = false;
+    for (const [id, rec] of Object.entries(map)) {
+      if (norm(rec?.email) === oldEm) {
+        map[id] = { ...rec, email: newEm };
+        changed = true;
+      }
+    }
+    if (changed) writeJson(mapKey, map);
+  }
+
+  // 3) authUsersByEmail: move key oldEm → newEm
+  const authByEmail = readJson("authUsersByEmail") || {};
+  let moved = false;
+  for (const [em, id] of Object.entries(authByEmail)) {
+    if (norm(em) === oldEm) {
+      delete authByEmail[em];
+      authByEmail[newEm] = id;
+      moved = true;
+      break;
+    }
+  }
+  if (moved) writeJson("authUsersByEmail", authByEmail);
+
+  // 4) currentUser in both localStorage & sessionStorage
+  for (const store of [localStorage, sessionStorage]) {
+    try {
+      const raw = store.getItem("currentUser");
+      if (!raw) continue;
+      const u = JSON.parse(raw);
+      if (norm(u?.email) === oldEm) {
+        store.setItem("currentUser", JSON.stringify({ ...u, email: newEm }));
+      }
+    } catch {}
+  }
+
+  // 5) resetTokens: if any record points to oldEm, update to newEm
+  try {
+    const raw = localStorage.getItem("resetTokens") || "{}";
+    const map = safeParse(raw) || {};
+    let touched = false;
+    for (const [tok, rec] of Object.entries(map)) {
+      if (norm(rec?.email) === oldEm) {
+        map[tok] = { ...(rec || {}), email: newEm };
+        touched = true;
+      }
+    }
+    if (touched) localStorage.setItem("resetTokens", JSON.stringify(map));
+  } catch {}
+
+  // 6) verify:map – remove old email so reused A must verify again
+  try {
+    const raw = localStorage.getItem("verify:map") || "{}";
+    const vm = safeParse(raw) || {};
+    let changed = false;
+    for (const key of Object.keys(vm)) {
+      const kNorm = norm(key);
+      if (kNorm === oldEm || kNorm.startsWith(oldEm + "|")) {
+        delete vm[key];
+        changed = true;
+      }
+    }
+    if (changed) localStorage.setItem("verify:map", JSON.stringify(vm));
+  } catch {}
+}
 
 /* ---------- Credential collection ---------- */
 function collectCredentialCandidates(obj = {}) {
@@ -205,7 +295,7 @@ async function updateLocalPasswordHash(userKey, newPlainPassword) {
   }
 }
 
-/* ---- Build absolute URL ---- */
+/* ---- Build absolute URL (kept, in case you still use it elsewhere) ---- */
 function buildApiUrl(defaultPath, override) {
   const base = API_BASE.replace(/\/+$/, "");
   const o = String(override || "").trim();
@@ -424,29 +514,52 @@ function EmailModal({ userId, currentEmail, onClose }) {
     if (!email || !password) return;
     setErr(""); setOk(false); setLoading(true);
 
-    const url = buildApiUrl("/api/auth/change-email", ENV_CHANGE_EMAIL_PATH);
+    const prevEmailTrim = String(currentEmail || "").trim();
+    const nextEmailTrim = email.trim();
 
     try {
-      if (SERVERLESS) {
-        await changeEmailLocal({ userKey: userId, newEmail: email.trim(), currentPassword: password.trim() });
-      } else {
-        let remoteOk = false;
-        try {
-          const r = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ userId, newEmail: email.trim(), currentPassword: password.trim() }),
-          });
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
-          remoteOk = true;
-        } catch {}
-        if (!remoteOk) await changeEmailLocal({ userKey: userId, newEmail: email.trim(), currentPassword: password.trim() });
+      let remoteOk = false;
+
+      // 🔗 FIRST: try DynamoDB backend via Lambda
+      try {
+        const resp = await apiChangeEmail({
+          email: prevEmailTrim,
+          newEmail: nextEmailTrim,
+          currentPassword: password.trim(),
+        });
+        if (!resp.ok) {
+          throw new Error(resp.error || `HTTP ${resp.status}`);
+        }
+        remoteOk = true;
+      } catch (e) {
+        console.warn("[AccountSecurity] apiChangeEmail failed, falling back to local:", e);
       }
 
-      updateLocalEmailEverywhere(email.trim());
-      try { window.dispatchEvent(new CustomEvent("auth:emailChanged", { detail: { userId, email: email.trim() } })); } catch {}
+      // 🧩 Fallback: local-only change (keeps existing offline/serverless behaviour)
+      if (!remoteOk) {
+        await changeEmailLocal({
+          userKey: userId,
+          newEmail: nextEmailTrim,
+          currentPassword: password.trim(),
+        });
+      }
+
+      // 🔁 keep all indices in sync: old email → new email
+      migrateEmailEverywhere(prevEmailTrim, nextEmailTrim);
+      updateLocalEmailEverywhere(nextEmailTrim);
+
+      try {
+        window.dispatchEvent(
+          new CustomEvent("auth:emailChanged", {
+            detail: {
+              userId,
+              email: nextEmailTrim,
+              oldEmail: prevEmailTrim,
+              newEmail: nextEmailTrim,
+            },
+          })
+        );
+      } catch {}
 
       setOk(true);
       setPwd("");
@@ -533,25 +646,37 @@ function PasswordModal({ userId, onClose, onLocalPasswordUpdate }) {
     }
     setErr(""); setOk(false); setLoading(true);
 
-    const url = buildApiUrl("/api/auth/change-password", ENV_CHANGE_PASSWORD_PATH);
+    // Figure out which email to send to the backend
+    const stored =
+      safeParse(sessionStorage.getItem("currentUser")) ||
+      safeParse(localStorage.getItem("currentUser")) || {};
+    const emailForApi = String(stored.email || "").trim();
 
     try {
-      if (SERVERLESS) {
-        await changePasswordLocal({ userKey: userId, currentPassword: currentPassword.trim(), newPassword: newPassword.trim() });
-      } else {
-        let remoteOk = false;
+      let remoteOk = false;
+
+      // 🔗 FIRST: try DynamoDB backend via Lambda
+      if (emailForApi) {
         try {
-          const r = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ userId, currentPassword: currentPassword.trim(), newPassword: newPassword.trim() }),
+          const resp = await apiChangePassword({
+            email: emailForApi,
+            currentPassword: currentPassword.trim(),
+            newPassword: newPassword.trim(),
           });
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
+          if (!resp.ok) throw new Error(resp.error || `HTTP ${resp.status}`);
           remoteOk = true;
-        } catch {}
-        if (!remoteOk) await changePasswordLocal({ userKey: userId, currentPassword: currentPassword.trim(), newPassword: newPassword.trim() });
+        } catch (e) {
+          console.warn("[AccountSecurity] apiChangePassword failed, falling back to local:", e);
+        }
+      }
+
+      // 🧩 Fallback: local-only change
+      if (!remoteOk) {
+        await changePasswordLocal({
+          userKey: userId,
+          currentPassword: currentPassword.trim(),
+          newPassword: newPassword.trim(),
+        });
       }
 
       try { await onLocalPasswordUpdate(userId, newPassword.trim()); } catch {}

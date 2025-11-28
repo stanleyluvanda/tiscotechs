@@ -1,5 +1,11 @@
 // src/utils/scholarshipsLocal.js
-const KEYS = ["partnerScholarships", "scholarships", "postedScholarships"];
+// 🧩 Unify all local scholarship sources, including "scholarships_local"
+const KEYS = [
+  "scholarships_local",   // ← NEW: where PartnerSubmit + Admin local store live
+  "partnerScholarships",
+  "scholarships",
+  "postedScholarships",
+];
 
 export function loadLocalScholarships() {
   const out = [];
@@ -45,7 +51,7 @@ export function loadLocalScholarships() {
 
 export function saveLocalScholarship(s, preferredKey = "partnerScholarships") {
   const item = {
-    id: s.id || `sch_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+    id: s.id || `sch_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     title: s.title || "Untitled Scholarship",
     deadline: s.deadline || "",
     createdAt: s.createdAt || Date.now(),
