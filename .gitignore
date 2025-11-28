@@ -28,8 +28,14 @@ build.zip
 *.sw?
 
 # Env files
+#.env
+#.env.*
+#.env*
+# allow production env to be tracked
+#!.env.production
+
+# Env files
 .env
 .env.*
 .env*
-# allow production env to be tracked
-!.env.production
+# (no exceptions – all env files ignored)
