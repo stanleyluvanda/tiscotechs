@@ -571,6 +571,10 @@ export default function ContactLecturer() {
             />
           </div>
 
+          <Link to="/student-dashboard" className="block text-sm text-blue-600 underline">
+            ← Back to Student Dashboard
+          </Link>
+
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="font-semibold text-slate-900">Lecturers</div>
             <div className="mt-2 max-h-[55vh] overflow-auto divide-y divide-slate-100">
@@ -597,17 +601,16 @@ export default function ContactLecturer() {
             </div>
           </div>
 
-          <Link to="/student-dashboard" className="block text-sm text-blue-600 underline">
-            ← Back to Student Dashboard
-          </Link>
+          
 
           {/* New small ad area under the back link */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-2">
+          {/*<div className="rounded-2xl border border-slate-200 bg-white p-2">
             <div id="ad-slot-under-back" className="w-full min-h-[120px] flex items-center justify-center text-xs text-slate-500">
               {/* Google Ad (e.g., 300x100 / responsive) */}
-              Ad space
-            </div>
-          </div>
+              {/*</aside>*/}
+              {/*Ad space*/}
+            {/*</div>*/}
+          {/*</aside>*/}
         </aside>
 
         {/* CENTER: Tabs + Content */}

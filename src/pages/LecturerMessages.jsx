@@ -1,4 +1,4 @@
-/// src/pages/LecturerMessages.jsx  
+/// src/pages/LecturerMessages.jsx   
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -676,10 +676,6 @@ export default function LecturerMessages() {
                 })}
               </div>
             </div>
-
-            <Link to="/lecturer-dashboard" className="block text-sm text-blue-600 underline">
-              ← Back to Lecturer Dashboard
-            </Link>
           </aside>
 
           {/* CENTER feed: shifted left & width reduced by 2 inches */}
@@ -687,12 +683,19 @@ export default function LecturerMessages() {
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               {activeConv ? (
                 <>
-                  <div>
-                    <div className="font-semibold text-slate-900 text-lg">
+                  {/* Header row: title on left, back link on right */}
+                  <div className="flex items-center gap-3">
+                    <div className="font-semibold text-slate-900 text-lg flex-1">
                       {activeConv.title || activeConv.subject || "(no subject)"}
                     </div>
-                    <hr className="mt-2 mb-3 border-slate-200" />
+                    <Link
+                      to="/lecturer-dashboard"
+                      className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                    >
+                      ← Back to Lecturer Dashboard
+                    </Link>
                   </div>
+                  <hr className="mt-2 mb-3 border-slate-200" />
 
                   <div className="flex items-center gap-3">
                     <Avatar
@@ -781,7 +784,15 @@ export default function LecturerMessages() {
                   </div>
                 </>
               ) : (
-                <div className="text-sm text-slate-500">No conversation selected.</div>
+                <div className="flex items-center justify-between text-sm text-slate-500">
+                  <span>No conversation selected.</span>
+                  <Link
+                    to="/lecturer-dashboard"
+                    className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                  >
+                    ← Back to Lecturer Dashboard
+                  </Link>
+                </div>
               )}
             </div>
           </section>
