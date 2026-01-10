@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loadLocalScholarships } from "../utils/scholarshipsLocal"; // ← fallback
 
-// ← Normalize API base (empty if not set) and strip trailing slashes
+// Prefer a dedicated scholarships base if you have it, otherwise use your existing vars.
 const API_BASE = (
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
@@ -76,7 +77,7 @@ export default function PartnerDashboard() {
       setErr("");
 
       // Try API if configured; otherwise fall back to localStorage
-      if (API_BASE) {
+      /*if (API_BASE) {
         try {
           const res = await fetch(`${API_BASE}/api/scholarships/mine?email=${encodeURIComponent(email)}`);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -88,7 +89,48 @@ export default function PartnerDashboard() {
         } finally {
           if (alive) setLoading(false);
         }
-      }
+      }*/
+
+
+      // Try API if configured; otherwise fall back to localStorage
+if (API_BASE) {
+  try {
+    const params = new URLSearchParams();
+    // ScholarshipsHandler supports GET /api/scholarships (not /mine)
+    // We'll fetch and filter client-side by partner email.
+    params.set("partnerEmail", String(email || "").toLowerCase());
+
+    const url = `${API_BASE}/api/scholarships?` + params.toString();
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    const list = Array.isArray(data.items)
+      ? data.items
+      : Array.isArray(data)
+      ? data
+      : [];
+
+    // extra safety: keep only mine (in case backend doesn't filter)
+    const mine = list.filter((s) => {
+      const pe = String(s.partnerEmail || s.postedByEmail || s.email || "").toLowerCase();
+      return pe && pe === String(email).toLowerCase();
+    });
+
+    if (alive) setItems(mine);
+    return;
+  } catch (e) {
+    console.warn("[PartnerDashboard] API fetch failed, falling back to local:", e);
+    // fall through to local storage
+  } finally {
+    if (alive) setLoading(false);
+  }
+}
+
+
+
+
 
       // Serverless fallback (localStorage)
       try {
@@ -112,7 +154,8 @@ export default function PartnerDashboard() {
   const filtered = useMemo(() => {
     let list = items.slice();
     if (statusFilter !== "all") {
-      list = list.filter(s => (s.status || "pending") === statusFilter);
+      /*list = list.filter(s => (s.status || "pending") === statusFilter);*/
+      list = list.filter(s => String(s.status || "pending").toLowerCase() === statusFilter);
     }
     const needle = q.trim().toLowerCase();
     if (needle) {

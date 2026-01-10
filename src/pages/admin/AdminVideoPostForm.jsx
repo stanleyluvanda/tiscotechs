@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import YouTubeEmbed from "../../components/YouTubeEmbed";
+import { createPost } from "../../lib/postsApi.js";
 
 /* ------------------ YouTube helper ------------------ */
 function extractYouTubeId(input = "") {
@@ -82,29 +83,27 @@ export default function AdminVideoPostForm() {
 
     setSaving(true);
     try {
-      const raw = localStorage.getItem("videoPosts") || "[]";
-      const posts = JSON.parse(raw) || [];
-
       const videoAudience = !includesStudents
-        ? { scope: "all" } // irrelevant when only lecturers
-        : scope === "all"
-        ? { scope: "all" }
-        : { scope: "continent", continents: continents.slice() };
+  ? { scope: "all" }
+  : scope === "all"
+  ? { scope: "all" }
+  : { scope: "continent", continents: continents.slice() };
 
-      const newPost = {
-        id: Date.now().toString(),
-        type: "video",
-        title: title.trim() || null,
-        videoUrlOrId: id,
-        createdByRole: "admin",
-        audience,          // "students" | "lecturers" | "both"
-        videoAudience,     // {scope:"all"} OR {scope:"continent", continents:[...]}
-        createdAt: new Date().toISOString(),
-      };
+// Save to backend posts store under the admin video scope
+await createPost({
+  scope: "admin-video-posts",
+  type: "Video",
+  title: title.trim() || "",
+  text: (title.trim() || "").trim() || `YouTube: ${id}`, // searchable fallback
 
-      posts.push(newPost);
-      localStorage.setItem("videoPosts", JSON.stringify(posts));
-      window.dispatchEvent(new Event("videoPosts:updated"));
+  // ✅ store video in all common fields so any feed can render it
+  videoUrl: `https://www.youtube.com/watch?v=${id}`,
+  videoId: id,
+  videoUrlOrId: id,
+
+  audience,      // "students" | "lecturers" | "both"
+  videoAudience, // {scope:"all"} or {scope:"continent", continents:[...]}
+});
 
       // reset
       setTitle("");

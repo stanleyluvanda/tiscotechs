@@ -1,8 +1,8 @@
 // src/lib/verifyGate.js
 
-const API_BASE =
-  (import.meta.env.VITE_API_BASE && String(import.meta.env.VITE_API_BASE).trim()) ||
-  "http://localhost:5001";
+// ✅ Hard-wire the email verification API to the Auth / EmailCode HTTP API.
+// We intentionally do NOT use VITE_API_BASE or VITE_POSTS_API_BASE here.
+const API_BASE = "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com";
 
 const SERVERLESS =
   String(import.meta.env.VITE_SERVERLESS_MODE ?? "true").toLowerCase() === "true";

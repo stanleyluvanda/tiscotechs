@@ -40,6 +40,9 @@ import StudyInUS from "./pages/StudyInUS.jsx";
 import Contact from "./pages/Contact.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfUse from "./pages/TermsOfUse.jsx"
+// ✅ NEW: Video Tips page import
+import VideoTips from "./pages/VideoTips.jsx";
+import UploadTest from "./pages/UploadTest.jsx";
 
 
 
@@ -142,6 +145,10 @@ export default function App() {
         {/* dashboards */}
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/lecturer/dashboard" element={<LecturerDashboard />} />
+        {/* ✅ NEW: Student Video Tips page */}
+        <Route path="/student/video-tips" element={<VideoTips />} />
+         
+
 
         {/* contact & features */}
       
@@ -151,6 +158,7 @@ export default function App() {
         <Route path="/platform/university" element={<UniversityAcademicPlatform />} />
         <Route path="/platform/global" element={<GlobalAcademicPlatform />} />
         <Route path="/marketplace" element={<StudentMarketplace />} />
+        <Route path="/upload-test" element={<UploadTest />} />
 
         {/* catch-all */}
         <Route path="*" element={<NotFound />} />

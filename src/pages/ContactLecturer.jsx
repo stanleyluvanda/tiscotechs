@@ -1,6 +1,7 @@
 // src/pages/ContactLecturer.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import {
   loadStudentThreads,
   loadConversation,
@@ -10,6 +11,60 @@ import {
   getUserById,
   listLecturersFor,
 } from "../lib/contactStore";
+
+const RAW_CONTACTS_BASE =
+  (import.meta.env.VITE_CONTACTS_API_BASE && String(import.meta.env.VITE_CONTACTS_API_BASE).trim()) ||
+  (import.meta.env.VITE_POSTS_API_BASE && String(import.meta.env.VITE_POSTS_API_BASE).trim()) ||
+  "http://localhost:5003";
+
+const CONTACTS_BASE = RAW_CONTACTS_BASE.replace(/\/+$/, "");
+
+function buildContactsUrl(path, params) {
+  const rel = String(path || "");
+  const prefixed = rel.startsWith("/") ? rel : `/${rel}`;
+  const url = new URL(CONTACTS_BASE + prefixed);
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v === undefined || v === null || v === "") return;
+      url.searchParams.set(k, String(v));
+    });
+  }
+  return url.toString();
+}
+
+async function apiFetchJson(url, options) {
+  const res = await fetch(url, {
+    method: "GET",
+    ...options,
+    headers: { "content-type": "application/json", ...(options?.headers || {}) },
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; }
+  catch { data = { ok: false, error: text || "Non-JSON response" }; }
+
+  if (!res.ok) throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+  return data;
+}
+
+async function fetchStudentThreadsOne(studentId) {
+  const url = buildContactsUrl("/api/contacts/threads", { studentId });
+  return apiFetchJson(url);
+}
+
+async function fetchConversation(studentId, lecturerId, threadId) {
+  const url = buildContactsUrl("/api/contacts/conversation", { studentId, lecturerId, threadId });
+  return apiFetchJson(url);
+}
+
+async function postContactMessage(payload) {
+  const url = buildContactsUrl("/api/contacts/message");
+  return apiFetchJson(url, { method: "POST", body: JSON.stringify(payload) });
+}
+
+
+
+
 
 /* ---------------- Utilities ---------------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
@@ -22,15 +77,91 @@ function fmtDate(ts) {
   return isNaN(d.getTime()) ? "" : d.toLocaleString();
 }
 
+/* ---- Stable identity helpers (fix missing id + duplicate keys) ---- */
+function stableUserId(u) {
+  if (!u) return "";
+  const id = String(u.id || u.uid || "").trim();
+  if (id) return id;
+  const email = String(u.email || "").trim().toLowerCase();
+  return email ? `email:${email}` : "";
+}
+function userUnit(u) {
+  // support faculty/school/college/department variants
+  return (
+    u?.faculty ||
+    u?.school ||
+    u?.college ||
+    u?.department ||
+    u?.profile?.faculty ||
+    u?.profile?.school ||
+    u?.profile?.college ||
+    u?.profile?.department ||
+    ""
+  );
+}
+function userPhoto(u) {
+  return (
+    u?.photoUrl ||
+    u?.photoURL ||
+    u?.photo ||
+    u?.profile?.photoUrl ||
+    u?.profile?.photoURL ||
+    u?.profile?.photo ||
+    ""
+  );
+}
+
+
+function pickStudentName(me) {
+  return (
+    me?.name ||
+    me?.fullName ||
+    me?.displayName ||
+    me?.profile?.name ||
+    ""
+  );
+}
+
+function buildStudentSnapshot(me, myId) {
+  const name = String(pickStudentName(me) || "").trim();
+  const program = String(me?.program || me?.profile?.program || "").trim();
+  const photoUrl = String(userPhoto(me) || "").trim();
+
+  return {
+    studentName: name,
+    studentProgram: program,
+    studentPhotoUrl: photoUrl,
+    studentProfile: {
+      id: myId,
+      uid: myId,
+      name,
+      program,
+      photoUrl,
+      email: me?.email || me?.profile?.email || "",
+      university: me?.university || me?.profile?.university || "",
+      faculty: me?.faculty || me?.profile?.faculty || "",
+      year: me?.year || me?.profile?.year || "",
+      role: "student",
+    },
+  };
+}
+
+
+
+
+
 /* ====== Avatar (fix distortion with shrink-0) ====== */
 function Avatar({ size="md", url, name }) {
   const sizeClass = size === "lg" ? "h-12 w-12" : size === "sm" ? "h-8 w-8" : "h-10 w-10";
   return (
     <div className={`${sizeClass} shrink-0 rounded-full overflow-hidden bg-slate-300 flex items-center justify-center`}>
-      {url ? <img src={url} alt={name} className="h-full w-full object-cover" /> :
+      {url ? (
+        <img src={url} alt={name} className="h-full w-full object-cover" />
+      ) : (
         <div className="h-full w-full flex items-center justify-center text-white text-sm bg-gradient-to-tr from-indigo-500 to-purple-500">
           {initials(name)}
-        </div>}
+        </div>
+      )}
     </div>
   );
 }
@@ -74,7 +205,7 @@ async function idbGet(key) {
     const tx = db.transaction(STORE, "readonly");
     const r = tx.objectStore(STORE).get(key);
     r.onsuccess = () => res(r.result || null);
-    r.onerror = () => rej(r.error);
+    r.onerror = () => rej(tx.error);
   });
 }
 
@@ -94,7 +225,7 @@ async function idbGetFrom(dbName, storeName, key) {
       const tx = db.transaction(storeName, "readonly");
       const g = tx.objectStore(storeName).get(key);
       g.onsuccess = () => res(g.result || null);
-      g.onerror = () => rej(g.error);
+      g.onerror = () => rej(tx.error);
     });
   } catch {
     return null;
@@ -140,7 +271,6 @@ function typeLabelFrom(mime = "", name = "") {
   if (mime) {
     const majorMinor = mime.toLowerCase();
     if (majorMinor.startsWith("application/")) {
-      // map some common types to short label
       if (majorMinor.includes("pdf")) return "PDF";
       if (majorMinor.includes("msword") || majorMinor.includes("wordprocessingml")) return "DOCX";
       if (majorMinor.includes("excel") || majorMinor.includes("spreadsheetml")) return "XLSX";
@@ -157,24 +287,17 @@ function typeLabelFrom(mime = "", name = "") {
   return ext ? ext.toUpperCase() : "FILE";
 }
 
-/* Resolve blob + objectURL + size/type for a message file */
 async function fetchBlobForFile(file) {
   if (!file) return null;
-  // Try student's store (this page)
   if (file.id) {
     let blob = await idbGet(file.id);
-    if (!blob) {
-      // Try lecturer's shared store
-      blob = await idbGetFrom("sk_attachments", "files", file.id);
-    }
+    if (!blob) blob = await idbGetFrom("sk_attachments", "files", file.id);
     if (blob) return blob;
   }
-  // fallback from dataUrl (if present)
   if (file.dataUrl) return dataURLtoBlob(file.dataUrl);
   return null;
 }
 
-/* Hook: resolve URL + meta */
 function useAttachmentUrlAndMeta(file) {
   const [state, setState] = useState({ url: null, size: 0, mime: file?.mime || "", name: file?.name || "" });
 
@@ -183,7 +306,6 @@ function useAttachmentUrlAndMeta(file) {
     (async () => {
       const name = file?.name || "";
       const mimeHint = file?.mime || "";
-      // 1) Try IDB blob(s)
       const blob = await fetchBlobForFile(file);
       if (!cancelled && blob) {
         const url = URL.createObjectURL(blob);
@@ -191,7 +313,6 @@ function useAttachmentUrlAndMeta(file) {
         setState({ url, size: blob.size || 0, mime: blob.type || mimeHint, name });
         return;
       }
-      // 2) dataUrl fallback
       if (!cancelled && file?.dataUrl) {
         const bytes = bytesFromDataUrl(file.dataUrl);
         setState({ url: file.dataUrl, size: bytes, mime: mimeHint, name });
@@ -205,7 +326,6 @@ function useAttachmentUrlAndMeta(file) {
   return { ...state, sizeLabel, typeLabel };
 }
 
-/* Programmatic download helpers */
 async function downloadOneAttachment(file) {
   const blob = await fetchBlobForFile(file);
   if (!blob && !file?.dataUrl) {
@@ -213,11 +333,9 @@ async function downloadOneAttachment(file) {
     return;
   }
   let url;
-  if (blob) {
-    url = URL.createObjectURL(blob);
-  } else {
-    url = file.dataUrl;
-  }
+  if (blob) url = URL.createObjectURL(blob);
+  else url = file.dataUrl;
+
   const a = document.createElement("a");
   a.href = url;
   a.download = file?.name || "attachment";
@@ -230,39 +348,9 @@ async function downloadOneAttachment(file) {
 }
 async function downloadAllAttachments(files = []) {
   for (const f of files) {
-    // small gap to avoid pop-up blockers stacking too fast
     await downloadOneAttachment(f);
     await new Promise(res => setTimeout(res, 120));
   }
-}
-
-/* Resolve a file object to a download URL (tries student store, then lecturer store, then dataUrl) */
-function useFileUrl(file) {
-  const [url, setUrl] = useState(null);
-  useEffect(() => {
-    let revoke = null; let cancelled = false;
-    (async () => {
-      // 1) Try this student's store first
-      if (file?.id) {
-        let blob = await idbGet(file.id);
-        // 2) If not found, try the lecturer's standard store name used on their side
-        if (!blob) {
-          blob = await idbGetFrom("sk_attachments", "files", file.id);
-        }
-        if (!cancelled && blob) {
-          const obj = URL.createObjectURL(blob);
-          revoke = obj; setUrl(obj);
-          return;
-        }
-      }
-      // 3) Fall back to inlined dataUrl
-      if (!cancelled && file?.dataUrl) {
-        setUrl(file.dataUrl);
-      }
-    })();
-    return () => { cancelled = true; if (revoke) URL.revokeObjectURL(revoke); };
-  }, [file?.id, file?.dataUrl]);
-  return url;
 }
 
 /* --------- Main Page --------- */
@@ -273,34 +361,75 @@ export default function ContactLecturer() {
     const l = safeParse(localStorage.getItem("currentUser")) || {};
     return Object.keys(s).length ? s : l;
   }, []);
-  const myId = me?.id || me?.uid || me?.email || "student";
+  /*const myId = me?.id || me?.uid || me?.email || "student";*/
+  const myId = stableUserId(me) || "student";
   const myProgram = me?.program || "";
   const myFaculty = me?.faculty || "";
   const myUniversity = me?.university || "";
-  const myPhoto = me?.photoUrl || me?.photoURL || "";
 
-  /* ---- lecturers at my university/faculty ---- */
-  const lecturers = useMemo(() => {
-    const list = listLecturersFor(myUniversity, myFaculty) || [];
-    // sort by title then name
-    return list.sort(
-      (a,b) =>
-        (a.title || "").localeCompare(b.title || "") ||
-        (a.name || "").localeCompare(b.name || "")
-    );
-  }, [myUniversity, myFaculty]);
+  
+ /* ---- lecturers at my university/faculty ---- */
+/*const lecturers = useMemo(() => {
+  const list = listLecturersFor(myUniversity, myFaculty) || [];
+  return (Array.isArray(list) ? list : []).slice().sort(
+    (a,b) =>
+      (String(a.title||"")).localeCompare(String(b.title||"")) ||
+      (String(a.name||"")).localeCompare(String(b.name||""))
+  );
+}, [myUniversity, myFaculty]);*/
 
-  /* ---- threads (shared with lecturer UI via contactStore) ---- */
-  const [threadIds, setThreadIds] = useState(() => loadStudentThreads(myId));
+
+
+
+/* ---- lecturers at my university/faculty ---- */
+const [lecturers, setLecturers] = useState([]);
+
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    const list = await listLecturersFor(myUniversity, myFaculty);
+    if (!cancelled) {
+      const sorted = (Array.isArray(list) ? list : []).slice().sort(
+        (a,b) =>
+          (String(a.title||"")).localeCompare(String(b.title||"")) ||
+          (String(a.name||"")).localeCompare(String(b.name||""))
+      );
+      setLecturers(sorted);
+    }
+  })();
+  return () => { cancelled = true; };
+}, [myUniversity, myFaculty]);
+
+// Fast lookup for lecturer details by id/email
+const lecturerIndex = useMemo(() => {
+  const map = new Map();
+  for (const l of lecturers || []) {
+    const lid = stableUserId(l);
+    if (lid) map.set(lid, l);
+    const em = String(l?.email || "").trim().toLowerCase();
+    if (em) map.set(`email:${em}`, l);
+  }
+  return map;
+}, [lecturers]);
+
+
+
+
+
+
+
+
+
+  /* ---- threads ---- */
+  /*const [threadIds, setThreadIds] = useState(() => loadStudentThreads(myId));
   const [threads, setThreads] = useState(() => {
     return loadStudentThreads(myId)
       .map(id => safeParse(localStorage.getItem(id)))
       .filter(Boolean)
       .sort((a,b) => (b.lastUpdated||0) - (a.lastUpdated||0));
   });
-
-  // live sync on any store change
-  useEffect(() => {
+  
+   useEffect(() => {
     const sync = () => {
       const ids = loadStudentThreads(myId);
       setThreadIds(ids);
@@ -320,10 +449,51 @@ export default function ContactLecturer() {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("contact:updated", sync);
     };
-  }, [myId]);
+  }, [myId]);*/
+
+const [threads, setThreads] = useState([]);
+const [threadsErr, setThreadsErr] = useState("");
+const [loadingThreads, setLoadingThreads] = useState(false);
+
+useEffect(() => {
+  let cancelled = false;
+
+  (async () => {
+    if (!myId) return;
+    setLoadingThreads(true);
+    setThreadsErr("");
+    try {
+      const data = await fetchStudentThreadsOne(myId);
+      const list = Array.isArray(data?.threads) ? data.threads : [];
+      if (!cancelled) setThreads(list);
+    } catch (e) {
+      if (!cancelled) setThreadsErr(String(e?.message || e));
+    } finally {
+      if (!cancelled) setLoadingThreads(false);
+    }
+  })();
+
+  return () => { cancelled = true; };
+}, [myId]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
   /* ---- UI state ---- */
-  const [tab, setTab] = useState("threads"); // "threads" | "start"
+  const [tab, setTab] = useState("threads");
   const [activeConvId, setActiveConvId] = useState(threads[0]?.id || "");
   useEffect(() => {
     if (tab === "threads" && (!activeConvId || !threads.find(t => t.id === activeConvId))) {
@@ -332,9 +502,22 @@ export default function ContactLecturer() {
   }, [tab, threads, activeConvId]);
 
   const activeConv = useMemo(() => threads.find(t => t.id === activeConvId) || null, [threads, activeConvId]);
-  const activeLecturer = useMemo(() => activeConv ? getUserById(activeConv.lecturerId) : null, [activeConv]);
+  /*const activeLecturer = useMemo(() => activeConv ? getUserById(activeConv.lecturerId) : null, [activeConv]);*/
+  /*const activeLecturer = useMemo(() => {
+  if (!activeConv) return null;
+  return getUserById(activeConv.lecturerId) || activeConv.lecturerProfile || null;
+}, [activeConv]);*/
 
-  // Mark student read when opening/view changes
+const activeLecturer = useMemo(() => {
+  if (!activeConv) return null;
+  return (
+    lecturerIndex.get(activeConv.lecturerId) ||
+    getUserById(activeConv.lecturerId) ||
+    activeConv.lecturerProfile ||
+    null
+  );
+}, [activeConv, lecturerIndex]);
+
   useEffect(() => {
     if (activeConv?.studentId && myId) {
       try { markStudentRead(activeConv.studentId, activeConv.lecturerId); } catch {}
@@ -343,6 +526,7 @@ export default function ContactLecturer() {
 
   /* ---- Start New state ---- */
   const [selectedLect, setSelectedLect] = useState(null);
+  const selectedLectId = stableUserId(selectedLect);
   const [subject, setSubject] = useState("");
   const [newText, setNewText] = useState("");
   const [newImages, setNewImages] = useState([]);
@@ -376,7 +560,6 @@ export default function ContactLecturer() {
     }
   };
 
-  /* Persist chosen files to IDB and return lightweight descriptors {id,name,mime} */
   async function persistMessageFiles(files = []) {
     const out = [];
     for (const f of files) {
@@ -388,36 +571,108 @@ export default function ContactLecturer() {
     return out;
   }
 
-  const createThread = async () => {
-    if (!selectedLect?.id) { alert("Select a lecturer from the left list."); return; }
+  /*const createThread = async () => {
+    /*const lecturerId = selectedLectId;*/
+    /*const lecturerId = stableUserId(selectedLect);
+    if (!lecturerId) { alert("Select a lecturer from the left list."); return; }
     if (!newText.trim() && newImages.length === 0 && newFiles.length === 0) {
       alert("Please write a message or attach a file/image."); return;
-    }
-    // seed conv and set subject/title so lecturer sees it too
-    const conv = loadConversation(myId, selectedLect.id);
+    }*/
+
+    /*const conv = loadConversation(myId, lecturerId);
     if (subject?.trim()) {
       conv.title = subject.trim();
       saveConversation(conv);
-    }
+    }*/
 
-    // persist files for transport
+    // Snapshot lecturer details into the conversation so UI can display even if getUserById fails
+/*conv.lecturerProfile = {
+  id: lecturerId,
+  uid: lecturerId,
+  name: selectedLect?.name || "",
+  title: selectedLect?.title || "",
+  email: selectedLect?.email || "",
+  photoUrl: userPhoto(selectedLect) || "",
+  faculty: selectedLect?.faculty || selectedLect?.profile?.faculty || "",
+  school: selectedLect?.school || selectedLect?.profile?.school || "",
+  college: selectedLect?.college || selectedLect?.profile?.college || "",
+  department: selectedLect?.department || selectedLect?.profile?.department || "",
+};*/
+/*saveConversation(conv);
+
     const fileDescs = await persistMessageFiles(newFiles);
 
-    // post initial message
     postMessage({
       studentId: myId,
-      lecturerId: selectedLect.id,
+      lecturerId,
       authorRole: "student",
       text: newText,
-      images: newImages.slice(),     // images keep dataUrl for inline preview
-      files: fileDescs,              // files are IDB-backed descriptors
+      images: newImages.slice(),
+      files: fileDescs,
     });
 
-    // reset + switch
     setTab("threads");
     setActiveConvId(conv.id);
     setNewText(""); setNewImages([]); setNewFiles([]); setSubject("");
-  };
+  };*/
+
+
+  const createThread = async () => {
+  const lecturerId = stableUserId(selectedLect);
+  if (!lecturerId) { alert("Select a lecturer first."); return; }
+
+  try {
+    const BASE =
+      (import.meta.env.VITE_CONTACTS_API_BASE ||
+       import.meta.env.VITE_POSTS_API_BASE ||
+       "http://localhost:5003").replace(/\/+$/, "");
+
+    const newThreadId = `thr_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+    const res = await fetch(`${BASE}/api/contacts/message`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+  studentId: myId,
+  lecturerId,
+  threadId: newThreadId,
+  authorRole: "student",
+  title: subject || "",
+  text: newText,
+  images: newImages,
+  files: newFiles,
+  ...buildStudentSnapshot(me, myId),
+      }),
+    });
+
+    const data = await res.json();
+    if (!data?.ok) throw new Error(data?.error || "Failed to create thread");
+
+    // ✅ refresh thread list and select newest
+const refreshed = await fetchStudentThreadsOne(myId);
+const list = Array.isArray(refreshed?.threads) ? refreshed.threads : [];
+setThreads(list);
+setTab("threads");
+setActiveConvId(newThreadId);
+
+    setTab("threads");
+    setNewText(""); setNewImages([]); setNewFiles([]); setSubject("");
+  } catch (e) {
+    alert("Failed to send message");
+    console.error(e);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
 
   /* ---- Reply composer ---- */
   const [replyText, setReplyText] = useState("");
@@ -453,25 +708,49 @@ export default function ContactLecturer() {
   };
 
   const sendReply = async () => {
-    if (!activeConv) return;
-    if (!replyText.trim() && replyImages.length === 0 && replyFiles.length === 0) return;
+  if (!activeConv) return;
+  if (!replyText.trim() && replyImages.length === 0 && replyFiles.length === 0) return;
 
-    const fileDescs = await persistMessageFiles(replyFiles);
+  try {
+    const snap = buildStudentSnapshot(me, myId);
 
-    postMessage({
+    const res = await postContactMessage({
       studentId: activeConv.studentId,
       lecturerId: activeConv.lecturerId,
+      threadId: activeConv.threadId || extractThreadId(activeConv.id, activeConv.studentId, activeConv.lecturerId) || "",
       authorRole: "student",
       text: replyText,
-      images: replyImages.slice(),
-      files: fileDescs,
-    });
-    setReplyText(""); setReplyImages([]); setReplyFiles([]);
-    // mark myself read
-    try { markStudentRead(activeConv.studentId, activeConv.lecturerId); } catch {}
-  };
+      images: replyImages,
+      files: replyFiles,
 
-  /* ---- Search: lecturers (left) & threads (top) ---- */
+      // ✅ snapshot every time (safe; Lambda only backfills blanks)
+      ...snap,
+    });
+
+    if (!res?.ok) throw new Error(res?.error || "Failed to send reply");
+
+    // refresh threads list so UI updates immediately
+    const refreshed = await fetchStudentThreadsOne(myId);
+    const list = Array.isArray(refreshed?.threads) ? refreshed.threads : [];
+    setThreads(list);
+
+    setReplyText(""); setReplyImages([]); setReplyFiles([]);
+    try { markStudentRead(activeConv.studentId, activeConv.lecturerId); } catch {}
+  } catch (e) {
+    console.error(e);
+    alert("Failed to send reply");
+  }
+};
+
+// helper: derive threadId from legacy conv.id if needed
+function extractThreadId(convIdStr, studentId, lecturerId) {
+  const pref = `contact:${studentId}__${lecturerId}`;
+  const s = String(convIdStr || "");
+  if (!s.startsWith(pref)) return "";
+  if (s.startsWith(pref + "__")) return s.slice((pref + "__").length);
+  return "";
+}
+  /* ---- Search ---- */
   const [searchLect, setSearchLect] = useState("");
   const [threadSearch, setThreadSearch] = useState("");
 
@@ -484,41 +763,44 @@ export default function ContactLecturer() {
     });
   }, [lecturers, searchLect]);
 
-  const myThreads = threads; // already sorted by lastUpdated desc
+  const myThreads = threads;
   const filteredThreads = useMemo(() => {
     const q = threadSearch.trim().toLowerCase();
     if (!q) return myThreads;
     return myThreads.filter(t => {
-      const lect = getUserById(t.lecturerId) || {};
+      /*const lect = getUserById(t.lecturerId) || {};*/
+      /*const lect = getUserById(t.lecturerId) || t.lecturerProfile || {};*/
+      const lect = lecturerIndex.get(t.lecturerId) || getUserById(t.lecturerId) || t.lecturerProfile || {};
+
       const last = t.messages?.[t.messages.length - 1];
       const hay = [
         lect.title || "",
         lect.name || "",
-        t.title || "",         // subject
+        t.title || "",
         last?.text || "",
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });
   }, [myThreads, threadSearch]);
 
-  /* ====== Auto-scroll to the newest message when opening / on updates ====== */
-  const messagesBoxRef = useRef(null);
-  const scrollToBottom = () => {
-    const el = messagesBoxRef.current;
-    if (!el) return;
-    // Scroll after paint
-    requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight + 64;
-    });
-  };
-  // When the active conversation changes, scroll to bottom
+
+  /* ====== Auto-scroll ====== */ 
+const messagesBoxRef = useRef(null);
+const scrollToBottom = () => {
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  });
+};
+
+
+
+
   useEffect(() => {
     if (activeConv?.id) {
       scrollToBottom();
       try { markStudentRead(activeConv.studentId, activeConv.lecturerId); } catch {}
     }
   }, [activeConv?.id]);
-  // When any contact store changes, scroll if this thread is active
   useEffect(() => {
     const onContactUpdated = () => {
       if (activeConv?.id) {
@@ -528,7 +810,6 @@ export default function ContactLecturer() {
     };
     window.addEventListener("contact:updated", onContactUpdated);
     return () => window.removeEventListener("contact:updated", onContactUpdated);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeConv?.id]);
 
   /* ====== Image lightbox ====== */
@@ -556,10 +837,8 @@ export default function ContactLecturer() {
   /* ============ Layout ============ */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
-      {/* 3-column layout: left list, center threads, right ads 
-          Reduced right rail by ~2cm (~76px) and added that to center min width */}
-      <main className="max-w-[1400px] mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[220px_minmax(836px,1fr)_244px] gap-5">
-        {/* LEFT: Search Lecturers + List */}
+        <main className="max-w-[1560px] mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)_208px] gap-5">
+        {/* LEFT */}
         <aside className="space-y-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
             <div className="font-semibold text-slate-900">Search Lecturers</div>
@@ -581,39 +860,32 @@ export default function ContactLecturer() {
               {filteredLecturers.length === 0 && (
                 <div className="text-xs text-slate-500 py-3">No lecturers found.</div>
               )}
-              {filteredLecturers.map((l) => (
-                <button
-                  key={l.id}
-                  className={`w-full text-left py-2 flex items-center gap-2 hover:bg-slate-50 px-2 rounded ${
-                    selectedLect?.id === l.id ? "bg-blue-50" : ""
-                  }`}
-                  onClick={()=>{ setSelectedLect(l); setTab("start"); }}
-                >
-                  <Avatar size="sm" url={l.photoUrl || l.photoURL} name={l.name} />
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-slate-900 truncate">
-                      {(l.title ? l.title + " " : "") + (l.name || "Lecturer")}
+              {filteredLecturers.map((l, i) => {
+                const lid = stableUserId(l) || `lect_${i}`;
+                const isSelected = selectedLectId && lid === selectedLectId;
+                return (
+                  <button
+                    key={lid}
+                    className={`w-full text-left py-2 flex items-center gap-2 hover:bg-slate-50 px-2 rounded ${
+                      isSelected ? "bg-blue-50" : ""
+                    }`}
+                    onClick={()=>{ setSelectedLect(l); setTab("start"); }}
+                  >
+                    <Avatar size="sm" url={userPhoto(l)} name={l.name} />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-slate-900 truncate">
+                        {(l.title ? l.title + " " : "") + (l.name || "Lecturer")}
+                      </div>
+                      <div className="text-xs text-slate-600 truncate">{userUnit(l)}</div>
                     </div>
-                    <div className="text-xs text-slate-600 truncate">{l.faculty || ""}</div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
-
-          
-
-          {/* New small ad area under the back link */}
-          {/*<div className="rounded-2xl border border-slate-200 bg-white p-2">
-            <div id="ad-slot-under-back" className="w-full min-h-[120px] flex items-center justify-center text-xs text-slate-500">
-              {/* Google Ad (e.g., 300x100 / responsive) */}
-              {/*</aside>*/}
-              {/*Ad space*/}
-            {/*</div>*/}
-          {/*</aside>*/}
         </aside>
 
-        {/* CENTER: Tabs + Content */}
+        {/* CENTER */}
         <section className="space-y-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -630,7 +902,6 @@ export default function ContactLecturer() {
                 Start New
               </button>
 
-              {/* Search box next to Start New */}
               {tab === "threads" && (
                 <input
                   value={threadSearch}
@@ -642,7 +913,7 @@ export default function ContactLecturer() {
             </div>
           </div>
 
-          {/* ---- My Threads ---- */}
+          {/* THREADS */}
           {tab === "threads" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               {filteredThreads.length === 0 ? (
@@ -651,12 +922,13 @@ export default function ContactLecturer() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
-                  {/* Threads list (scrollable) */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     <div className="bg-slate-50 px-3 py-2 text-sm font-semibold">My Threads</div>
                     <div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">
                       {filteredThreads.map(t => {
-                        const lect = getUserById(t.lecturerId) || {};
+                        /*const lect = getUserById(t.lecturerId) || {};*/
+                        /*const lect = getUserById(t.lecturerId) || t.lecturerProfile || {};*/
+                        const lect = lecturerIndex.get(t.lecturerId) || getUserById(t.lecturerId) || t.lecturerProfile || {};
                         const last = t.messages?.[t.messages.length - 1];
                         const unreadCount = (() => {
                           const lr = t.lastRead?.studentId || 0;
@@ -670,9 +942,8 @@ export default function ContactLecturer() {
                             }`}
                             onClick={()=>setActiveConvId(t.id)}
                           >
-                            <Avatar size="sm" url={lect.photoUrl || lect.photoURL} name={lect.name || "Lecturer"} />
+                            <Avatar size="sm" url={userPhoto(lect)} name={lect.name || "Lecturer"} />
                             <div className="min-w-0 flex-1">
-                              {/* Lecturer name + unread */}
                               <div className="flex items-center gap-2">
                                 <div className="font-medium text-slate-900 truncate">
                                   {(lect.title ? lect.title+" " : "") + (lect.name || "Lecturer")}
@@ -683,11 +954,9 @@ export default function ContactLecturer() {
                                   </span>
                                 )}
                               </div>
-                              {/* Subject Title */}
                               <div className="text-xs text-slate-800 truncate font-semibold">
                                 {t.title || "(no subject)"}
                               </div>
-                              {/* Last snippet */}
                               {last?.text && (
                                 <div className="text-xs text-slate-500 truncate">
                                   {last.authorRole === "lecturer" ? "Lecturer: " : "You: "}{last.text}
@@ -701,26 +970,24 @@ export default function ContactLecturer() {
                     </div>
                   </div>
 
-                  {/* Active thread */}
                   <div className="border border-slate-200 rounded-lg overflow-hidden">
                     {!activeConv ? (
                       <div className="p-6 text-sm text-slate-600">Select a thread on the left to view messages.</div>
                     ) : (
                       <>
-                        {/* Title at top + divider, then avatar/name row */}
                         <div className="px-4 pt-3 pb-2 bg-slate-50">
                           <div className="text-base md:text-lg font-semibold text-slate-900 truncate">
                             {activeConv.title || "(no subject)"}
                           </div>
                           <hr className="my-2" />
                           <div className="flex items-center gap-3">
-                            <Avatar size="md" url={activeLecturer?.photoUrl || activeLecturer?.photoURL} name={activeLecturer?.name || "Lecturer"} />
+                            <Avatar size="md" url={userPhoto(activeLecturer)} name={activeLecturer?.name || "Lecturer"} />
                             <div className="min-w-0">
                               <div className="font-semibold text-slate-900 truncate">
                                 {(activeLecturer?.title ? activeLecturer.title + " " : "") + (activeLecturer?.name || "Lecturer")}
                               </div>
                               <div className="text-[11px] text-slate-600 truncate">
-                                {activeLecturer?.faculty || ""}
+                                {userUnit(activeLecturer)}
                               </div>
                               <div className="text-[11px] text-slate-500">
                                 Last updated: {fmtDate(activeConv.lastUpdated)}
@@ -728,9 +995,7 @@ export default function ContactLecturer() {
                             </div>
                           </div>
                         </div>
-
-                        {/* Messages (paragraphs preserved) */}
-                        <div ref={messagesBoxRef} className="p-4 max-h-[56vh] overflow-auto space-y-3">
+                          <div ref={messagesBoxRef} className="p-4 space-y-3">
                           {activeConv.messages?.map(m => {
                             const isLect = m.authorRole === "lecturer";
                             const who = isLect ? activeLecturer : me;
@@ -741,8 +1006,8 @@ export default function ContactLecturer() {
                             const hasMultipleFiles = Array.isArray(m.files) && m.files.length > 1;
 
                             return (
-                              <div key={m.id} className="flex items-start gap-2">
-                                <Avatar size="sm" url={(who?.photoUrl || who?.photoURL)} name={name}/>
+                              <div key={m.id || `${m.createdAt}_${Math.random()}`} className="flex items-start gap-2">
+                                <Avatar size="sm" url={userPhoto(who)} name={name}/>
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
                                     <div className="text-sm font-medium text-slate-900">{name}</div>
@@ -752,17 +1017,15 @@ export default function ContactLecturer() {
                                     {isLect ? (activeLecturer?.title ? activeLecturer.title+" " : "") + (activeLecturer?.name || "Lecturer")
                                             : (myProgram || "")}
                                   </div>
-                                  {/* preserve paragraphs + wrap long words */}
                                   <div className={`text-sm rounded-lg px-3 py-2 whitespace-pre-line break-words ${isLect ? "bg-[#ECF9FE] border border-sky-100" : "bg-slate-50 border border-slate-100"}`}>
                                     {m.text}
                                   </div>
 
-                                  {/* images (click to open lightbox) */}
                                   {Array.isArray(m.images) && m.images.length > 0 && (
                                     <div className="mt-2 grid grid-cols-2 md:grid-cols-3 gap-2">
                                       {m.images.map((img, i) => (
                                         <img
-                                          key={i}
+                                          key={img.id || `${img.name || "img"}_${i}`}
                                           src={img.dataUrl || img.thumb}
                                           alt={img.name || "image"}
                                           className="w-full h-28 object-cover rounded cursor-zoom-in"
@@ -772,7 +1035,6 @@ export default function ContactLecturer() {
                                     </div>
                                   )}
 
-                                  {/* files (now downloadable with type + size) */}
                                   {Array.isArray(m.files) && m.files.length > 0 && (
                                     <div className="mt-2">
                                       {hasMultipleFiles && (
@@ -789,7 +1051,7 @@ export default function ContactLecturer() {
                                       )}
 
                                       <ul className="text-sm space-y-1">
-                                        {m.files.map((f,i)=>(<FileDownload key={i} file={f} />))}
+                                        {m.files.map((f,i)=>(<FileDownload key={f.id || `${f.name}_${i}`} file={f} />))}
                                       </ul>
                                     </div>
                                   )}
@@ -799,7 +1061,6 @@ export default function ContactLecturer() {
                           })}
                         </div>
 
-                        {/* Reply */}
                         <div className="p-4 border-t border-slate-200">
                           <div className="flex items-center justify-between">
                             <div className="font-medium text-slate-900">Reply</div>
@@ -841,7 +1102,7 @@ export default function ContactLecturer() {
                               {replyImages.length>0 && (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                   {replyImages.map((img,i)=>(
-                                    <div key={i} className="relative">
+                                    <div key={img.id || `${img.name}_${i}`} className="relative">
                                       <img src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />
                                       <button
                                         type="button"
@@ -855,7 +1116,7 @@ export default function ContactLecturer() {
                               {replyFiles.length>0 && (
                                 <ul className="text-xs space-y-1">
                                   {replyFiles.map((f,i)=>(
-                                    <li key={i} className="flex items-center gap-2">📎<span>{f.name}</span>
+                                    <li key={f.id || `${f.name}_${i}`} className="flex items-center gap-2">📎<span>{f.name}</span>
                                       <button
                                         type="button"
                                         className="text-xs underline"
@@ -878,7 +1139,7 @@ export default function ContactLecturer() {
             </div>
           )}
 
-          {/* ---- Start New ---- */}
+          {/* START NEW */}
           {tab === "start" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               <div className="font-semibold text-slate-900">Start New Thread</div>
@@ -887,12 +1148,12 @@ export default function ContactLecturer() {
               ) : (
                 <>
                   <div className="mt-3 flex items-center gap-2">
-                    <Avatar size="md" url={selectedLect.photoUrl || selectedLect.photoURL} name={selectedLect.name} />
+                    <Avatar size="md" url={userPhoto(selectedLect)} name={selectedLect.name} />
                     <div className="min-w-0">
                       <div className="font-medium text-slate-900 truncate">
                         {(selectedLect.title ? selectedLect.title + " " : "") + (selectedLect.name || "Lecturer")}
                       </div>
-                      <div className="text-xs text-slate-600 truncate">{selectedLect.faculty || ""}</div>
+                      <div className="text-xs text-slate-600 truncate">{userUnit(selectedLect)}</div>
                     </div>
                   </div>
 
@@ -945,7 +1206,7 @@ export default function ContactLecturer() {
                       {newImages.length>0 && (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                           {newImages.map((img,i)=>(
-                            <div key={i} className="relative">
+                            <div key={img.id || `${img.name}_${i}`} className="relative">
                               <img src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />
                               <button
                                 type="button"
@@ -959,7 +1220,7 @@ export default function ContactLecturer() {
                       {newFiles.length>0 && (
                         <ul className="text-xs space-y-1">
                           {newFiles.map((f,i)=>(
-                            <li key={i} className="flex items-center gap-2">📎<span>{f.name}</span>
+                            <li key={f.id || `${f.name}_${i}`} className="flex items-center gap-2">📎<span>{f.name}</span>
                               <button
                                 type="button"
                                 className="text-xs underline"
@@ -977,16 +1238,15 @@ export default function ContactLecturer() {
           )}
         </section>
 
-        {/* RIGHT: Reduced (by ~2cm) gutter for Google Ads */}
-        <aside className="hidden lg:block">
-          <div className="rounded-2xl border border-slate-200 bg-white p-2 sticky top-4">
-            {/* Replace this container with your Google ads script/ins */}
-            <div id="ad-slot-right-rail" className="w-[240px] min-h-[600px] mx-auto flex items-center justify-center text-xs text-slate-500">
-              {/* Google Ad (Right Rail 240x600 or responsive) */}
-              Ad space
-            </div>
-          </div>
-        </aside>
+        {/* RIGHT */}
+<aside className="hidden xl:block sticky top-4">
+  <div
+    id="ad-slot-right-rail"
+    className="w-[220px] min-h-[600px] mx-auto flex items-center justify-center"
+  >
+    <GoogleSidebarAd />
+  </div>
+</aside>
       </main>
 
       {/* ===== Lightbox Overlay ===== */}
@@ -1076,7 +1336,6 @@ function FileDownload({ file }) {
           )}
         </>
       )}
-      {/* explicit programmatic download fallback (works for blob-only as well) */}
       <button
         type="button"
         className="text-xs underline ml-2"

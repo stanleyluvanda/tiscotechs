@@ -1,0 +1,296 @@
+// src/components/upload/SingleImageUploader.jsx
+import { useState } from "react";
+
+/*
+  PROPS:
+  - value: current image URL (string | null)
+  - onChange(url): callback after successful upload
+  - folder: e.g. "profiles", "partners", "products"
+  - accept: MIME filter, default "image/*"
+  - maxSizeMB: default 5
+  - label: UI label above uploader (default "Profile Photo") ✅ NEW
+*/
+
+const FALLBACK_UPLOAD_LAMBDA =
+  /*"https://tepyhcsaf6ttzmbtigyuun1573u0jmhuj.lambda-url.us-east-1.on.aws";*/
+  "https://tepyhcsa6ttzmtbiqvuunj573u0jmuhj.lambda-url.us-east-1.on.aws";
+
+  // ✅ ADD HELPERS RIGHT HERE (top-level, outside the component)
+function looksPresigned(url = "") {
+  const u = String(url || "");
+  return /X-Amz-Signature=|X-Amz-Algorithm=|X-Amz-Credential=|X-Amz-Date=/.test(u);
+}
+
+function makeUniqueFilename(originalName = "image") {
+  const name = String(originalName || "image");
+  const dot = name.lastIndexOf(".");
+  const ext = dot >= 0 ? name.slice(dot) : "";
+  const base = dot >= 0 ? name.slice(0, dot) : name;
+
+  const safeBase = base.replace(/[^a-z0-9_-]+/gi, "_").slice(0, 50) || "image";
+  const stamp = Date.now();
+  const rand = Math.random().toString(36).slice(2, 8);
+
+  return `${safeBase}_${stamp}_${rand}${ext || ".jpg"}`;
+}
+
+export default function SingleImageUploader({
+  value = null,
+  onChange,
+  folder = "uploads",
+  accept = "image/*",
+  maxSizeMB = 5,
+  label = "Profile Photo", // ✅ NEW
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const UPLOAD_LAMBDA =
+    import.meta.env.VITE_UPLOAD_LAMBDA_URL || FALLBACK_UPLOAD_LAMBDA;
+
+  /*async function handleFile(file) {
+    setError("");
+    if (!file) return;
+
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxBytes) {
+      setError(`Max file size is ${maxSizeMB}MB`);
+      return;
+    }
+
+    if (!UPLOAD_LAMBDA) {
+      setError("Upload endpoint not configured");
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // 1) Ask Lambda for a signed URL + final public URL
+      const res = await fetch(UPLOAD_LAMBDA, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          folder,
+          filename: file.name,
+          type: file.type,
+          contentType: file.type || "application/octet-stream",
+          size: file.size,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("[SingleImageUploader] meta error", res.status);
+        setError("Failed to request upload URL");
+        setUploading(false);
+        return;
+      }
+
+      // 1) Ask Lambda for a signed URL + final public URL
+      const meta = await res.json();
+      console.log("[SingleImageUploader] upload meta:", meta);
+
+      // 🌟 Be flexible with field names returned by Lambda
+      const uploadUrl =
+        meta.uploadUrl ||
+        meta.uploadURL ||
+        meta.signedUrl ||
+        meta.url;
+
+      // ✅ Prefer CloudFront URL if Lambda provides it
+      const fileUrl =
+        meta.cloudfrontUrl ||
+        meta.cloudFrontUrl ||
+        meta.cdnUrl ||
+        meta.publicUrl ||
+        meta.fileUrl ||
+        meta.finalUrl ||
+        meta.url;
+
+      if (!uploadUrl || !fileUrl) {
+        setError("Upload service returned an invalid response");
+        setUploading(false);
+        return;
+      }
+
+      // 2) PUT file to S3 using the presigned URL
+      const putRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+      });
+
+      if (!putRes.ok) {
+        console.error("[SingleImageUploader] PUT failed", putRes.status);
+        setError("Upload failed. Try again.");
+        setUploading(false);
+        return;
+      }
+
+      // 3) Success → tell parent the final public URL
+      onChange && onChange(fileUrl);
+    } catch (err) {
+      console.error("[SingleImageUploader] upload failed", err);
+      setError("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }*/
+
+    async function handleFile(file) {
+  setError("");
+  if (!file) return;
+
+  const maxBytes = maxSizeMB * 1024 * 1024;
+  if (file.size > maxBytes) {
+    setError(`Max file size is ${maxSizeMB}MB`);
+    return;
+  }
+
+  if (!UPLOAD_LAMBDA) {
+    setError("Upload endpoint not configured");
+    return;
+  }
+
+  try {
+    setUploading(true);
+
+    // ✅ Make filename unique (prevents CloudFront stale-cache on overwrite)
+    const uniqueName = makeUniqueFilename(file.name);
+
+    // 1) Ask Lambda for a signed URL + final public URL
+    const res = await fetch(UPLOAD_LAMBDA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        folder,
+        filename: uniqueName,          // ✅ unique filename
+        originalName: file.name,       // ✅ optional (won’t break anything)
+        type: file.type,
+        contentType: file.type || "application/octet-stream",
+        size: file.size,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("[SingleImageUploader] meta error", res.status);
+      setError("Failed to request upload URL");
+      return;
+    }
+
+    const meta = await res.json();
+    console.log("[SingleImageUploader] upload meta:", meta);
+
+    // ---- Determine uploadUrl safely ----
+    let uploadUrl =
+      meta.uploadUrl ||
+      meta.uploadURL ||
+      meta.signedUrl ||
+      meta.signedURL;
+
+    // Only treat meta.url as uploadUrl if it looks presigned
+    if (!uploadUrl && meta.url && looksPresigned(meta.url)) {
+      uploadUrl = meta.url;
+    }
+
+    // ---- Determine fileUrl safely ----
+    let fileUrl =
+      meta.cloudfrontUrl ||
+      meta.cloudFrontUrl ||
+      meta.cdnUrl ||
+      meta.publicUrl ||
+      meta.fileUrl ||
+      meta.finalUrl;
+
+    // Only treat meta.url as fileUrl if it's NOT presigned
+    if (!fileUrl && meta.url && !looksPresigned(meta.url)) {
+      fileUrl = meta.url;
+    }
+
+    // Optional: construct if Lambda returns key + cdnDomain/base
+    if (!fileUrl && meta.key && (meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase)) {
+      const base = String(meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase).replace(/\/+$/, "");
+      const key = String(meta.key).replace(/^\/+/, "");
+      fileUrl = `${base}/${key}`;
+    }
+
+    // ✅ Safety check: never store a presigned URL as the public file URL
+if (looksPresigned(fileUrl)) {
+  console.error("[SingleImageUploader] fileUrl is presigned (bad):", fileUrl, meta);
+  setError("Upload service returned a temporary URL. Expected a CloudFront/public URL.");
+  return;
+}
+
+    if (!uploadUrl || !fileUrl) {
+      console.error("[SingleImageUploader] invalid meta:", meta);
+      setError("Upload service returned an invalid response");
+      return;
+    }
+
+    // 2) PUT file to S3 using the presigned URL
+    // ⚠️ Do NOT add Cache-Control header here unless your Lambda signs it,
+    // or the signature can fail. Cache-Control must be set in Lambda.
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: file,
+    });
+
+    if (!putRes.ok) {
+      console.error("[SingleImageUploader] PUT failed", putRes.status);
+      setError("Upload failed. Try again.");
+      return;
+    }
+
+    // 3) Success → tell parent the final public URL (prefer CloudFront URL)
+    onChange && onChange(fileUrl);
+  } catch (err) {
+    console.error("[SingleImageUploader] upload failed", err);
+    setError("Upload failed");
+  } finally {
+    setUploading(false);
+  }
+}
+
+  function onSelect(e) {
+    const file = e.target.files?.[0];
+    handleFile(file);
+  }
+
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+
+      <div className="flex items-center gap-4">
+        {/* Left: Image preview */}
+        <img
+          src={value || "/placeholder-avatar.png"}
+          alt="Preview"
+          className="w-20 h-20 rounded-full object-cover border"
+        />
+
+        {/* Right: Button */}
+        <div>
+          <label className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer hover:bg-blue-700">
+            {uploading ? "Uploading..." : "Choose Image"}
+            <input
+              type="file"
+              accept={accept}
+              onChange={onSelect}
+              className="hidden"
+              disabled={uploading}
+            />
+          </label>
+
+          {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}

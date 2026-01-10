@@ -613,6 +613,51 @@ export default function Login() {
       window.dispatchEvent(new Event("auth:changed"));
     } catch {}
 
+    // ✅ Ensure lecturers exist in global Users API (cross-browser visibility)
+if (serverRole === "lecturer") {
+  try {
+    const BASE =
+      (import.meta.env.VITE_POSTS_API_BASE ||
+        import.meta.env.VITE_CONTACTS_API_BASE ||
+        "http://localhost:5003").replace(/\/+$/, "");
+
+    const emailNorm = serverEmail;
+
+    await fetch(`${BASE}/api/users/upsert`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        user: {
+          uid: `email:${emailNorm}`,
+          role: "lecturer",
+          email: emailNorm,
+          name: merged.name,
+          title: merged.title || "",
+          university: merged.university || "",
+          faculty: merged.faculty || "",
+          photoUrl:
+            merged.photoUrl ||
+            merged.avatarUrl ||
+            merged.profile?.photoUrl ||
+            "",
+          profile: {
+            ...merged.profile,
+            photoUrl:
+              merged.photoUrl ||
+              merged.avatarUrl ||
+              merged.profile?.photoUrl ||
+              "",
+          },
+        },
+      }),
+    });
+  } catch (e) {
+    console.warn("[login] lecturer users upsert failed (non-blocking):", e);
+  }
+}
+
+/* ⬆️ END BLOCK ⬆️ */
+
     setPassword("");
     navigate(
       serverRole === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard"

@@ -1,10 +1,14 @@
-// src/pages/PartnerSignUp.jsx  
-import { useState } from "react";
+// src/pages/PartnerSignUp.jsx
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-/* Helpers (unchanged in spirit) */
-function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
-function isEmail(x = "") { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x); }
+// Upload to S3 (your existing component)
+import SingleImageUploader from "../components/upload/SingleImageUploader";
+
+/* Helpers */
+function isEmail(x = "") {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x);
+}
 function pwStrengthLabel(pw = "") {
   let score = 0;
   if (pw.length >= 8) score++;
@@ -24,52 +28,58 @@ async function sha256Hex(str) {
   }
   const enc = new TextEncoder().encode(str);
   const buf = await window.crypto.subtle.digest("SHA-256", enc);
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-/* ----- API base (same pattern as other auth pages) ----- */
-const API_BASE =
+/* API base (Partner-specific)
+   NOTE:
+   - Uses VITE_PARTNER_API_BASE first (your new API Gateway URL)
+   - Falls back to VITE_API_BASE, then localhost
+   - Strips trailing slashes to avoid // in URLs
+*/
+const RAW_API_BASE =
+  (import.meta?.env?.VITE_PARTNER_API_BASE &&
+    String(import.meta.env.VITE_PARTNER_API_BASE).trim()) ||
   (import.meta?.env?.VITE_API_BASE && String(import.meta.env.VITE_API_BASE).trim()) ||
   "http://localhost:5001";
 
+const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
+
 export default function PartnerSignUp() {
   const nav = useNavigate();
+
   const [form, setForm] = useState({
     orgName: "",
     contactName: "",
-    logoUrl: "",          // logo / avatar URL or data-URL
+    logoUrl: "", // optional text URL
     email: "",
     password: "",
     confirmPassword: "",
     agree: false,
   });
+
+  // S3 uploads
+  const [logo, setLogo] = useState(null);
+  const [banner, setBanner] = useState(null);
+
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [err, setErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // ✅ Start afresh: remove legacy local “partners DB” so signup/login is truly API-first
+  useEffect(() => {
+    try {
+      localStorage.removeItem("partners");
+    } catch {}
+    try {
+      localStorage.removeItem("partnersById");
+    } catch {}
+  }, []);
+
   const onChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
-  };
-
-  // handle file upload for logo/avatar
-  const onLogoFileChange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      console.warn("Selected file is not an image.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || "");
-      setForm((f) => ({ ...f, logoUrl: dataUrl }));
-    };
-    reader.onerror = () => {
-      console.error("Error reading logo file");
-    };
-    reader.readAsDataURL(file);
   };
 
   const validate = () => {
@@ -111,25 +121,27 @@ export default function PartnerSignUp() {
     try {
       const email = form.email.trim().toLowerCase();
       const passwordHash = await sha256Hex(form.password);
-      const logoUrl = form.logoUrl.trim(); // may be empty or data-URL
 
+      // S3 URLs take priority over text field
+      const logoUrl = (logo || form.logoUrl || "").trim();
+      const bannerUrl = (banner || "").trim();
+
+      // ✅ API-first payload (DynamoDB source of truth)
       const payload = {
         email,
         passwordHash,
         role: "partner",
-        // send photo/logo at top-level for backend helper
+        orgName: form.orgName.trim(),
+        contactName: form.contactName.trim(),
         photo: logoUrl,
-        profile: {
-          orgName: form.orgName.trim(),
-          contactName: form.contactName.trim(),
-          photo: logoUrl, // store inside profile as well
-          createdAt: new Date().toISOString(),
-        },
+        banner: bannerUrl,
       };
 
-      const res = await fetch(`${API_BASE}/api/auth/register/partner`, {
+      const base = String(API_BASE || "").replace(/\/+$/, "");
+      const res = await fetch(`${base}/api/auth/register/partner`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -137,38 +149,28 @@ export default function PartnerSignUp() {
 
       if (!res.ok || !data.ok) {
         const code = data?.error || "UNKNOWN";
-        if (code === "EMAIL_EXISTS") {
+        if (code === "EMAIL_EXISTS" || code === "User already exists") {
           setErr("An account with this email already exists. Please log in instead.");
-        } else if (code === "MISSING_FIELDS") {
+        } else if (code === "MISSING_FIELDS" || code === "Missing required fields") {
           setErr("Missing required fields. Please check the form and try again.");
         } else {
           setErr(`Sign up failed. (${code})`);
         }
-        setSubmitting(false);
         return;
       }
 
-      const user = data.user || {
-        email,
-        role: "partner",
-        orgName: form.orgName.trim(),
-        contactName: form.contactName.trim(),
-        photo: logoUrl,
-      };
+      // ✅ Store only the current session (NOT a local “database”)
+      const user =
+        data.user || {
+          email,
+          role: "partner",
+          orgName: payload.orgName,
+          contactName: payload.contactName,
+          photo: payload.photo,
+          banner: payload.banner,
+        };
 
-      // Store partner session locally (used by PartnerWelcome / PartnerDashboard)
       localStorage.setItem("partnerAuth", JSON.stringify(user));
-
-      // Optional: keep a local list of partners (for legacy UI, if needed)
-      try {
-        const partners = safeParse(localStorage.getItem("partners")) || [];
-        const remaining = partners.filter(
-          (p) => String(p.email || "").toLowerCase() !== email
-        );
-        remaining.unshift(user);
-        localStorage.setItem("partners", JSON.stringify(remaining));
-      } catch {}
-
       nav("/partner/welcome", { replace: true });
     } catch (e2) {
       console.error(e2);
@@ -185,24 +187,18 @@ export default function PartnerSignUp() {
       <main className="flex-1">
         <section className="max-w-xl mx-auto px-4 py-12">
           <h1 className="text-3xl font-bold">Partner Sign Up</h1>
-          <p className="text-slate-600 mt-1">
-            Create an account to list scholarships on ScholarsKnowledge.
-          </p>
+          <p className="text-slate-600 mt-1">Create an account to list scholarships on ScholarsKnowledge.</p>
 
-          <form
-            onSubmit={submit}
-            className="mt-6 bg-white rounded-2xl p-6 border space-y-5"
-          >
+          <form onSubmit={submit} className="mt-6 bg-white rounded-2xl p-6 border space-y-5">
             {err && (
               <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700">
                 {err}
               </div>
             )}
 
+            {/* ORG NAME */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">
-                Organization / University *
-              </span>
+              <span className="block text-sm text-slate-600 mb-1">Organization / University *</span>
               <input
                 name="orgName"
                 value={form.orgName}
@@ -212,10 +208,9 @@ export default function PartnerSignUp() {
               />
             </label>
 
+            {/* CONTACT NAME */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">
-                Contact Person *
-              </span>
+              <span className="block text-sm text-slate-600 mb-1">Contact Person *</span>
               <input
                 name="contactName"
                 value={form.contactName}
@@ -225,11 +220,9 @@ export default function PartnerSignUp() {
               />
             </label>
 
-            {/* Logo / Avatar URL (optional) */}
+            {/* Optional URL */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">
-                Logo / Avatar URL (optional)
-              </span>
+              <span className="block text-sm text-slate-600 mb-1">Logo URL (optional)</span>
               <input
                 name="logoUrl"
                 value={form.logoUrl}
@@ -237,54 +230,24 @@ export default function PartnerSignUp() {
                 className="w-full border rounded px-3 py-2"
                 placeholder="https://example.edu/logo.png"
               />
-              <span className="mt-1 block text-xs text-slate-500">
-                Paste a link to your organization logo or avatar image.
-              </span>
             </label>
 
-            {/* file upload for logo / avatar with visible icon + subtle border */}
-            <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">
-                <span className="inline-flex items-center gap-2 font-medium">
-                  <span aria-hidden="true">📁</span>
-                  <span>Upload logo / avatar (optional)</span>
-                </span>
-              </span>
-              <div className="w-full border border-slate-300 rounded px-3 py-2 bg-slate-50 inline-flex items-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onLogoFileChange}
-                  className="text-sm cursor-pointer"
-                />
-              </div>
-              <span className="mt-1 block text-xs text-slate-500">
-                If you upload an image, it will override the URL above and be
-                used as your profile avatar.
-              </span>
+            {/* S3 Logo uploader */}
+            <div className="space-y-1">
+              <span className="text-sm text-slate-700 font-medium">Upload Organization Logo</span>
+              <SingleImageUploader value={logo} onChange={setLogo} folder="partner-logos" />
+            </div>
 
-              {form.logoUrl && (
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
-                    {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                    <img
-                      src={form.logoUrl}
-                      alt="Logo preview"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <span className="text-xs text-slate-500">
-                    Preview of your organization avatar.
-                  </span>
-                </div>
-              )}
-            </label>
+            {/* S3 Banner uploader */}
+            <div className="space-y-1">
+              <span className="text-sm text-slate-700 font-medium">Upload Banner (optional)</span>
+              <SingleImageUploader value={banner} onChange={setBanner} folder="partner-banners" />
+            </div>
 
+            {/* EMAIL + PASSWORD */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">
-                  Email *
-                </span>
+                <span className="block text-sm text-slate-600 mb-1">Email *</span>
                 <input
                   type="email"
                   name="email"
@@ -296,9 +259,7 @@ export default function PartnerSignUp() {
               </label>
 
               <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">
-                  Password *
-                </span>
+                <span className="block text-sm text-slate-600 mb-1">Password *</span>
                 <div className="relative">
                   <input
                     type={showPw ? "text" : "password"}
@@ -311,35 +272,31 @@ export default function PartnerSignUp() {
                   <button
                     type="button"
                     onClick={() => setShowPw((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600 hover:text-slate-800"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600"
                   >
                     {showPw ? "Hide" : "Show"}
                   </button>
                 </div>
+
                 {form.password && (
                   <div className="mt-2">
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <div
                           key={i}
-                          className={`h-1 flex-1 rounded ${
-                            i < strength.bar ? "bg-green-500" : "bg-slate-200"
-                          }`}
+                          className={`h-1 flex-1 rounded ${i < strength.bar ? "bg-green-500" : "bg-slate-200"}`}
                         />
                       ))}
                     </div>
-                    <div className="mt-1 text-xs text-slate-600">
-                      Strength: {strength.label}
-                    </div>
+                    <div className="mt-1 text-xs text-slate-600">Strength: {strength.label}</div>
                   </div>
                 )}
               </label>
             </div>
 
+            {/* Confirm Password */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">
-                Confirm Password *
-              </span>
+              <span className="block text-sm text-slate-600 mb-1">Confirm Password *</span>
               <div className="relative">
                 <input
                   type={showPw2 ? "text" : "password"}
@@ -352,13 +309,14 @@ export default function PartnerSignUp() {
                 <button
                   type="button"
                   onClick={() => setShowPw2((s) => !s)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600 hover:text-slate-800"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600"
                 >
                   {showPw2 ? "Hide" : "Show"}
                 </button>
               </div>
             </label>
 
+            {/* Terms */}
             <label className="flex items-start gap-2">
               <input
                 type="checkbox"
@@ -368,29 +326,24 @@ export default function PartnerSignUp() {
                 className="mt-1"
               />
               <span className="text-sm text-slate-700">
-                I agree to the partnership requirements: no essays, no
-                application fees, and no collection of confidential personal
-                data (e.g., bank details, SSN).
+                I agree to the partnership requirements: no essays, no application fees, and no collection of confidential personal data.
               </span>
             </label>
 
+            {/* Submit */}
             <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
               <button
                 disabled={submitting}
                 className={`rounded px-4 py-2 text-sm font-semibold text-white ${
-                  submitting
-                    ? "bg-blue-400 cursor-not-allowed"
-                    : "bg-[#1a73e8] hover:opacity-90"
+                  submitting ? "bg-blue-400 cursor-not-allowed" : "bg-[#1a73e8] hover:opacity-90"
                 }`}
               >
                 {submitting ? "Creating..." : "Create Account"}
               </button>
+
               <span className="text-sm text-slate-600">
                 Already have an account?{" "}
-                <Link
-                  to="/partner/login"
-                  className="text-[#1a73e8] underline"
-                >
+                <Link to="/partner/login" className="text-[#1a73e8] underline">
                   Log in
                 </Link>
               </span>

@@ -284,13 +284,40 @@ export function getUserById(id) {
   const byId = safeParse(localStorage.getItem("usersById")) || {};
   return byId[id] || null;
 }
-export function listLecturersFor(university, faculty) {
-  const users = safeParse(localStorage.getItem("users")) || [];
-  return users.filter(u =>
-    (u.role || "").toLowerCase() === "lecturer" &&
-    (u.university || "") === (university || "") &&
-    (u.faculty || "") === (faculty || "")
-  );
+export async function listLecturersFor(university, faculty) {
+  const uni = String(university || "").trim();
+  const fac = String(faculty || "").trim();
+
+  // If you don't have uni yet, return empty list.
+  if (!uni) return [];
+
+  try {
+    const BASE =
+      (import.meta.env.VITE_POSTS_API_BASE ||
+        import.meta.env.VITE_CONTACTS_API_BASE ||
+        "http://localhost:5003").replace(/\/+$/, "");
+
+    const res = await fetch(`${BASE}/api/users`);
+    const data = await res.json();
+    const users = Array.isArray(data?.users) ? data.users : [];
+
+    // Filter lecturers by role + same university (+ optional same unit)
+    return users
+      .filter((u) => String(u?.role || "").toLowerCase().includes("lecturer"))
+      .filter((u) => String(u?.university || "").trim() === uni)
+      .filter((u) => {
+        if (!fac) return true; // if student has no faculty, don't filter
+        const uUnit = String(
+          u?.faculty || u?.school || u?.college || u?.department ||
+          u?.profile?.faculty || u?.profile?.school || u?.profile?.college || u?.profile?.department ||
+          ""
+        ).trim();
+        return !uUnit || uUnit === fac;
+      });
+  } catch (e) {
+    console.warn("[contactStore] listLecturersFor failed, returning empty list:", e);
+    return [];
+  }
 }
 
 /* Optional: manual nudge when UI wants to force-refresh */

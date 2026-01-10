@@ -5,8 +5,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 /* ----------------- Demo / fallback creds ----------------- */
 const DEMO_EMAIL =
   import.meta.env.VITE_ADMIN_EMAIL || "admin@scholarsknowledge.com";
-const DEMO_PASS =
-  import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
+const DEMO_PASS = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
 
 /* ----------------- Auth API base ----------------- */
 const AUTH_BASE =
@@ -14,6 +13,12 @@ const AUTH_BASE =
     String(import.meta.env.VITE_API_BASE).trim()) ||
   (import.meta.env.VITE_API_URL &&
     String(import.meta.env.VITE_API_URL).trim()) ||
+  "";
+
+/* ----------------- Admin Auth API base (NEW) ----------------- */
+const ADMIN_AUTH_BASE =
+  (import.meta.env.VITE_ADMIN_AUTH_API_BASE &&
+    String(import.meta.env.VITE_ADMIN_AUTH_API_BASE).trim()) ||
   "";
 
 /* Are we in “serverless only” mode? */
@@ -27,6 +32,10 @@ function safeParse(json) {
   } catch {
     return null;
   }
+}
+
+function stripTrailingSlashes(url) {
+  return String(url || "").replace(/\/+$/, "");
 }
 
 export default function AdminLogin() {
@@ -61,15 +70,20 @@ export default function AdminLogin() {
     // ===============================
     // 1) BACKEND MODE (DynamoDB)
     // ===============================
+    // Keep your existing SERVERLESS toggle behavior:
+    // - If you set VITE_SERVERLESS_MODE=false (i.e., backend mode), we call the backend.
     if (AUTH_BASE && !SERVERLESS) {
       try {
-        const resp = await fetch(`${AUTH_BASE}/api/auth/login`, {
+        // Prefer the dedicated Admin API if configured, otherwise fall back to AUTH_BASE
+        const base = stripTrailingSlashes(ADMIN_AUTH_BASE || AUTH_BASE);
+
+        const resp = await fetch(`${base}/admin/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: trimmedEmail,
             password: pass,
-            role: "admin",
+            role: "admin", // keeps compatibility with your backend role checks
           }),
         });
 

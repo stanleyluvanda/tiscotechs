@@ -1,22 +1,49 @@
 // src/pages/admin/AdminVideoPostsList.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import YouTubeEmbed from "../../components/YouTubeEmbed";
+import { fetchPosts, deletePost } from "../../lib/postsApi.js";
 
-function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
-function readPosts() {
-  const arr = safeParse(localStorage.getItem("videoPosts")) || [];
-  return Array.isArray(arr) ? arr : [];
-}
-function formatWhen(s) {
-  const d = new Date(s);
+const VIDEO_SCOPE = "admin-video-posts";
+
+function formatWhen(v) {
+  const d =
+    typeof v === "number"
+      ? new Date(v)
+      : typeof v === "string"
+      ? new Date(v)
+      : new Date(NaN);
   return Number.isFinite(d.getTime()) ? d.toLocaleString() : "—";
+}
+
+// Best-effort to find the video field regardless of backend naming
+function getVideoValue(p) {
+  return (
+    p?.videoUrlOrId ||
+    p?.videoUrl ||
+    p?.videoURL ||
+    p?.videoId ||
+    p?.youtubeId ||
+    p?.youtubeID ||
+    p?.idOrUrl ||
+    p?.url ||
+    ""
+  );
+}
+
+// Your posts store may use "Video" or "video" (or no type at all).
+function isVideoPost(p) {
+  const t = String(p?.type || p?.postType || "").toLowerCase();
+  // If backend doesn’t set type, we still keep items that have a video field.
+  return t === "video" || !!getVideoValue(p);
 }
 
 export default function AdminVideoPostsList() {
   const navigate = useNavigate();
-  const [items, setItems] = useState(() => readPosts());
+  const [items, setItems] = useState([]);
   const [previewId, setPreviewId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [errMsg, setErrMsg] = useState("");
 
   // gate
   useEffect(() => {
@@ -24,38 +51,57 @@ export default function AdminVideoPostsList() {
     if (!isAuthed) navigate("/admin/login", { replace: true });
   }, [navigate]);
 
-  // sync across tabs/creates/deletes
-  useEffect(() => {
-    const sync = () => setItems(readPosts());
-    const onStorage = (e) => { if (!e || e.key === "videoPosts") sync(); };
-    const onUpdated = () => sync();
-
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("videoPosts:updated", onUpdated);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("videoPosts:updated", onUpdated);
-    };
+  const load = useCallback(async () => {
+    setLoading(true);
+    setErrMsg("");
+    try {
+      const list = await fetchPosts({ scope: VIDEO_SCOPE });
+      const onlyVideos = (Array.isArray(list) ? list : []).filter(isVideoPost);
+      setItems(onlyVideos);
+    } catch (e) {
+      console.error("[AdminVideoPostsList] fetch failed", e);
+      setErrMsg(e?.message || "Failed to load video posts from backend.");
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const sorted = useMemo(
-    () => [...items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
-    [items]
-  );
+  // initial load
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const remove = (id) => {
+  const sorted = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const ta = typeof a?.createdAt === "number" ? a.createdAt : new Date(a?.createdAt || 0).getTime();
+      const tb = typeof b?.createdAt === "number" ? b.createdAt : new Date(b?.createdAt || 0).getTime();
+      return tb - ta;
+    });
+  }, [items]);
+
+  const remove = async (id) => {
+    if (!id) return;
     if (!confirm("Delete this video post?")) return;
-    const next = items.filter(p => p.id !== id);
-    localStorage.setItem("videoPosts", JSON.stringify(next));
-    setItems(next);
-    window.dispatchEvent(new Event("videoPosts:updated"));
-    if (previewId === id) setPreviewId(null);
+
+    try {
+      await deletePost(id);
+      setItems((prev) => prev.filter((p) => String(p?.id) !== String(id)));
+      if (previewId === id) setPreviewId(null);
+    } catch (e) {
+      console.error("[AdminVideoPostsList] delete failed", e);
+      alert(e?.message || "Failed to delete video post.");
+    }
   };
 
   const copy = async (text) => {
     const val = String(text ?? "");
-    try { await navigator.clipboard.writeText(val); alert("Copied!"); }
-    catch { alert(val); } // fallback: show text to copy
+    try {
+      await navigator.clipboard.writeText(val);
+      alert("Copied!");
+    } catch {
+      alert(val); // fallback: show text to copy
+    }
   };
 
   return (
@@ -78,7 +124,22 @@ export default function AdminVideoPostsList() {
         </div>
       </div>
 
-      {sorted.length === 0 ? (
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          onClick={load}
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-slate-50"
+          disabled={loading}
+        >
+          {loading ? "Refreshing…" : "Refresh"}
+        </button>
+        {errMsg ? <div className="text-sm text-red-700">{errMsg}</div> : null}
+      </div>
+
+      {loading ? (
+        <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600">
+          Loading…
+        </div>
+      ) : sorted.length === 0 ? (
         <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600">
           No videos yet. Click “New Video Post” to add one.
         </div>
@@ -88,65 +149,70 @@ export default function AdminVideoPostsList() {
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 text-left">Title</th>
-                <th className="px-4 py-3 text-left">YouTube ID</th>
+                <th className="px-4 py-3 text-left">YouTube ID/URL</th>
                 <th className="px-4 py-3 text-left">Audience</th>
                 <th className="px-4 py-3 text-left">Created</th>
                 <th className="px-4 py-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {sorted.map(p => (
-                <tr key={p.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3">
-                    {p.title || <span className="text-slate-500 italic">(untitled)</span>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">
-                      {String(p.videoUrlOrId ?? "")}
-                    </code>
-                  </td>
-                  <td className="px-4 py-3 capitalize">{p.audience}</td>
-                  <td className="px-4 py-3">{formatWhen(p.createdAt)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
-                        onClick={() => setPreviewId(previewId === p.id ? null : p.id)}
-                      >
-                        {previewId === p.id ? "Hide" : "Preview"}
-                      </button>
-                      <button
-                        className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
-                        onClick={() => copy(p.videoUrlOrId)}
-                        title="Copy ID"
-                      >
-                        Copy ID
-                      </button>
-                      <button
-                        className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
-                        onClick={() => copy(`https://youtu.be/${String(p.videoUrlOrId ?? "")}`)}
-                        title="Copy share link"
-                      >
-                        Copy Link
-                      </button>
-                      {/* Future: Edit -> navigate(`/admin/posts/video-new?id=${p.id}`) */}
-                      <button
-                        className="rounded border border-red-200 text-red-700 px-2 py-1 hover:bg-red-50"
-                        onClick={() => remove(p.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                    {previewId === p.id && (
-                      <div className="mt-3">
-                        <div className="aspect-video w-full max-w-xl overflow-hidden rounded-lg border border-slate-100">
-                          <YouTubeEmbed idOrUrl={p.videoUrlOrId} title={p.title || "Video Preview"} />
-                        </div>
+              {sorted.map((p) => {
+                const vid = getVideoValue(p);
+                return (
+                  <tr key={p.id} className="border-t border-slate-100">
+                    <td className="px-4 py-3">
+                      {p.title || <span className="text-slate-500 italic">(untitled)</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <code className="text-xs bg-slate-100 px-1.5 py-0.5 rounded">
+                        {String(vid || "")}
+                      </code>
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.audience ? <span className="capitalize">{String(p.audience)}</span> : "—"}
+                    </td>
+                    <td className="px-4 py-3">{formatWhen(p.createdAt)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
+                          onClick={() => setPreviewId(previewId === p.id ? null : p.id)}
+                        >
+                          {previewId === p.id ? "Hide" : "Preview"}
+                        </button>
+                        <button
+                          className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
+                          onClick={() => copy(vid)}
+                          title="Copy ID/URL"
+                        >
+                          Copy
+                        </button>
+                        <button
+                          className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50"
+                          onClick={() => copy(`https://youtu.be/${String(vid ?? "")}`)}
+                          title="Copy share link"
+                        >
+                          Copy Link
+                        </button>
+                        <button
+                          className="rounded border border-red-200 text-red-700 px-2 py-1 hover:bg-red-50"
+                          onClick={() => remove(p.id)}
+                        >
+                          Delete
+                        </button>
                       </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+
+                      {previewId === p.id && (
+                        <div className="mt-3">
+                          <div className="aspect-video w-full max-w-xl overflow-hidden rounded-lg border border-slate-100">
+                            <YouTubeEmbed idOrUrl={vid} title={p.title || "Video Preview"} />
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

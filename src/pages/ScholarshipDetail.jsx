@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Footer from "../components/Footer";
 
-// API only if explicitly provided via env; otherwise stay offline
+// ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE || // <-- primary (prod)
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
@@ -27,7 +28,11 @@ const LOCAL_KEYS = ["partnerScholarships", "scholarships", "postedScholarships"]
 const CATALOG_CACHE_KEY = "scholarship_catalog_cache"; // optional list cache
 
 function tryJson(getter) {
-  try { return getter(); } catch { return null; }
+  try {
+    return getter();
+  } catch {
+    return null;
+  }
 }
 
 // Some entries may be wrapped like { data: {...} }
@@ -75,9 +80,9 @@ function loadLocalByIdOrIndex(idStr) {
   const want = idStr.toString();
 
   // 0) Try the catalog cache (the list page can write exactly what it rendered)
-  const cacheMap = tryJson(() =>
-    JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "{}")
-  ) || {};
+  const cacheMap =
+    tryJson(() => JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "{}")) ||
+    {};
   if (cacheMap && cacheMap[want]) {
     const cand = unwrap(cacheMap[want]) || cacheMap[want];
     return cand;
@@ -115,10 +120,181 @@ function loadLocalByIdOrIndex(idStr) {
   return null;
 }
 
+/* =========================
+   ✅ "You may also like" helpers (STRICT personalization)
+   ========================= */
+const HABIT_KEY = "scholarship_browse_habit_v1";
+
+function normStr(x) {
+  return String(x || "").toLowerCase().trim();
+}
+
+function tokenize(text) {
+  return normStr(text)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((w) => w.length >= 3);
+}
+
+function safeParseArr(key, fallback = []) {
+  const v = tryJson(() => JSON.parse(localStorage.getItem(key) || "null"));
+  return Array.isArray(v) ? v : fallback;
+}
+
+function getAnyId(x) {
+  return String(
+    x?.id ?? x?.scholarshipId ?? x?.localId ?? x?.clientId ?? x?._id ?? x?.key ?? ""
+  );
+}
+
+function trackViewHabit(item) {
+  if (!item) return;
+  const sid = getAnyId(item).trim();
+  if (!sid) return;
+
+  const event = {
+    id: sid,
+    ts: Date.now(),
+    country: item.country || "",
+    level: item.level || "",
+    field: item.field || "",
+    fundingType: Array.isArray(item.fundingType) ? item.fundingType : [],
+    tokens: [...tokenize(item.title), ...tokenize(item.provider)],
+  };
+
+  const arr = safeParseArr(HABIT_KEY, []);
+  const filtered = arr.filter((x) => String(x?.id) !== sid);
+  filtered.unshift(event);
+  localStorage.setItem(HABIT_KEY, JSON.stringify(filtered.slice(0, 100)));
+}
+
+function buildTasteProfile() {
+  const events = safeParseArr(HABIT_KEY, []);
+  const recent = events.slice(0, 30);
+
+  const counts = {
+    country: new Map(),
+    level: new Map(),
+    field: new Map(),
+    funding: new Map(),
+    tokens: new Map(),
+    hasHistory: recent.length >= 3, // ✅ only personalize after a few views
+  };
+
+  function bump(map, key, w = 1) {
+    if (!key) return;
+    const k = String(key);
+    map.set(k, (map.get(k) || 0) + w);
+  }
+
+  recent.forEach((e, idx) => {
+    const weight = Math.max(1, 6 - Math.floor(idx / 6)); // newest weighted more
+    bump(counts.country, e.country, weight);
+    bump(counts.level, e.level, weight);
+    bump(counts.field, e.field, weight);
+    (e.fundingType || []).forEach((f) => bump(counts.funding, f, weight));
+    (e.tokens || []).forEach((t) => bump(counts.tokens, t, 1));
+  });
+
+  return counts;
+}
+
+function topKeys(map, n = 2) {
+  if (!map || !(map instanceof Map)) return [];
+  return Array.from(map.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([k]) => k)
+    .filter(Boolean);
+}
+
+function overlapCount(setA, setB) {
+  let c = 0;
+  setA.forEach((x) => {
+    if (setB.has(x)) c += 1;
+  });
+  return c;
+}
+
+/**
+ * ✅ Strict gate:
+ * - Must have at least ONE strong signal (field match OR enough keyword overlap)
+ * - And must pass score threshold
+ */
+function scoreAndGate(candidate, current, taste) {
+  if (!candidate) return { ok: false, score: -Infinity };
+
+  const cid = getAnyId(candidate);
+  const curId = getAnyId(current);
+  if (cid && curId && cid === curId) return { ok: false, score: -Infinity };
+
+  const candTokens = new Set([...tokenize(candidate.title), ...tokenize(candidate.provider)]);
+  const curTokens = new Set([...tokenize(current?.title), ...tokenize(current?.provider)]);
+  const tokenOverlapWithCurrent = overlapCount(candTokens, curTokens);
+
+  const tasteTopFields = topKeys(taste?.field, 2);
+  const tasteTopTokens = new Set(topKeys(taste?.tokens, 8));
+
+  const tokenOverlapWithTaste = overlapCount(candTokens, tasteTopTokens);
+
+  const sameFieldAsCurrent =
+    candidate.field && current?.field && candidate.field === current.field;
+
+  const sameFieldAsTaste =
+    candidate.field && tasteTopFields.includes(String(candidate.field));
+
+  // ✅ Strong signals required
+  const hasStrongSignal =
+    sameFieldAsCurrent ||
+    sameFieldAsTaste ||
+    tokenOverlapWithCurrent >= 2 ||
+    tokenOverlapWithTaste >= 2;
+
+  if (!hasStrongSignal) return { ok: false, score: -Infinity };
+
+  // ---- scoring (only after pass the gate) ----
+  let score = 0;
+
+  // Similarity to current scholarship (strong)
+  if (sameFieldAsCurrent) score += 12;
+  if (candidate.level && current?.level && candidate.level === current.level) score += 6;
+  if (candidate.country && current?.country && candidate.country === current.country) score += 4;
+
+  // Funding overlap (medium)
+  const candFunding = new Set(Array.isArray(candidate.fundingType) ? candidate.fundingType : []);
+  (Array.isArray(current?.fundingType) ? current.fundingType : []).forEach((f) => {
+    if (candFunding.has(f)) score += 2;
+  });
+
+  // Keyword overlaps
+  score += Math.min(8, tokenOverlapWithCurrent * 2);
+  score += Math.min(6, tokenOverlapWithTaste);
+
+  // Personalization boosts (taste profile) — only if enough history
+  if (taste?.hasHistory) {
+    if (taste?.field?.has(candidate.field)) score += Math.min(6, taste.field.get(candidate.field));
+    if (taste?.level?.has(candidate.level)) score += Math.min(4, taste.level.get(candidate.level));
+    if (taste?.country?.has(candidate.country)) score += Math.min(4, taste.country.get(candidate.country));
+  }
+
+  // ✅ Minimum score so we don't show “everything”
+  const MIN_SCORE = taste?.hasHistory ? 14 : 16; // stricter if no history
+  if (score < MIN_SCORE) return { ok: false, score };
+
+  return { ok: true, score };
+}
+
 export default function ScholarshipDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [err, setErr] = useState("");
+
+  // ✅ simple lightbox for banner
+  const [showBanner, setShowBanner] = useState(false);
+
+  // ✅ recommendations
+  const [recs, setRecs] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -127,31 +303,114 @@ export default function ScholarshipDetail() {
       setErr("");
       setItem(null);
 
-      const useApi = Boolean(API_BASE); // only if explicitly configured
+      const useApi = Boolean(API_BASE); // only if configured
 
       if (useApi) {
         try {
-          const res = await fetch(`${API_BASE}/api/scholarships/${id}`);
+          const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
+          const res = await fetch(url);
+
+          if (res.status === 404) {
+            throw new Error("NOT_FOUND");
+          }
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
           const data = await res.json();
           if (!alive) return;
           setItem(data);
           return;
-        } catch {
-          // fall through to local
+        } catch (e) {
+          // fallback to local
         }
       }
 
-      // Local-only or API failed: search in local stores
       const local = loadLocalByIdOrIndex(id);
-      if (alive) {
-        if (local) setItem(local);
-        else setErr("Not found (local).");
+      if (!alive) return;
+
+      if (local) {
+        setItem(local);
+        return;
+      }
+
+      if (API_BASE) {
+        setErr(
+          `Not found. This ID (${id}) is not in localStorage, and the API request failed or returned 404.`
+        );
+      } else {
+        setErr("Not found (local).");
       }
     })();
 
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [id]);
+
+  // ✅ close lightbox on ESC
+  useEffect(() => {
+    if (!showBanner) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setShowBanner(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showBanner]);
+
+  // ✅ STRICT "You may also like"
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      if (!item) return;
+
+      trackViewHabit(item);
+
+      let list = [];
+
+      // get catalog
+      if (API_BASE) {
+        try {
+          const res = await fetch(`${API_BASE}/api/scholarships?page=1&pageSize=200`);
+          if (res.ok) {
+            const data = await res.json();
+            list = Array.isArray(data?.items) ? data.items : [];
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // fallback to local arrays if API list fails
+      if (!list.length) {
+        const merged = [];
+        for (const k of LOCAL_KEYS) {
+          const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
+          if (Array.isArray(arr)) merged.push(...arr.map(unwrap));
+        }
+        list = merged.filter(Boolean);
+      }
+
+      const taste = buildTasteProfile();
+
+      // ✅ Only include strongly related items
+      const ranked = list
+        .map((x) => {
+          const r = scoreAndGate(x, item, taste);
+          return { x, ok: r.ok, s: r.score };
+        })
+        .filter((o) => o.ok)
+        .sort((a, b) => b.s - a.s)
+        .slice(0, 5)
+        .map((o) => o.x);
+
+      if (!alive) return;
+      setRecs(ranked);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [item]);
 
   if (err) {
     return (
@@ -302,14 +561,6 @@ export default function ScholarshipDetail() {
                 </section>
               )}
 
-              {false && (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 text-center text-slate-500">
-                  <div className="mx-auto max-w-full" style={{ minHeight: "120px" }}>
-                    Ad Space (95px tall)
-                  </div>
-                </div>
-              )}
-
               {howToApply && (
                 <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
                   <h2 className="text-lg font-semibold">How to Apply</h2>
@@ -323,55 +574,138 @@ export default function ScholarshipDetail() {
             <aside className="space-y-6">
               {bannerSrc && (
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                  <img
-                    src={bannerSrc}
-                    alt={`${provider || title} banner`}
-                    className="w-full h-40 object-cover"
-                    loading="lazy"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowBanner(true)}
+                    className="block w-full text-left"
+                    title="Click to enlarge"
+                  >
+                    <img
+                      src={bannerSrc}
+                      alt={`${provider || title} banner`}
+                      className="w-full h-auto object-contain bg-white"
+                      loading="lazy"
+                    />
+                  </button>
+                  <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+                    Click image to enlarge
+                  </div>
                 </div>
               )}
 
-              <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                <h3 className="text-sm font-semibold text-slate-700">At a glance</h3>
-                <dl className="mt-3 text-sm text-slate-700">
-                  <dt className="font-medium">Provider</dt>
-                  <dd className="mb-3">{provider || "-"}</dd>
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
+                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">
+                  <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
+                    <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
+                      At a glance
+                    </span>
+                  </h3>
 
-                  <dt className="font-medium">Country</dt>
-                  <dd className="mb-3">{country || "-"}</dd>
+                  <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
+                    <dt className="font-medium">Provider</dt>
+                    <dd className="mb-3">{provider || "-"}</dd>
 
-                  <dt className="font-medium">Level</dt>
-                  <dd className="mb-3">{level || "-"}</dd>
+                    <dt className="font-medium">Country</dt>
+                    <dd className="mb-3">{country || "-"}</dd>
 
-                  <dt className="font-medium">Field</dt>
-                  <dd className="mb-3">{field || "-"}</dd>
+                    <dt className="font-medium">Level</dt>
+                    <dd className="mb-3">{level || "-"}</dd>
 
-                  <dt className="font-medium">Deadline</dt>
-                  <dd className="mb-3">{deadline || "-"}</dd>
+                    <dt className="font-medium">Field</dt>
+                    <dd className="mb-3">{field || "-"}</dd>
 
-                  {amount && (
-                    <>
-                      <dt className="font-medium">Max Amount</dt>
-                      <dd className="mb-3">{amount}</dd>
-                    </>
+                    <dt className="font-medium">Deadline</dt>
+                    <dd className="mb-3">{deadline || "-"}</dd>
+
+                    {amount && (
+                      <>
+                        <dt className="font-medium">Max Amount</dt>
+                        <dd className="mb-3">{amount}</dd>
+                      </>
+                    )}
+                  </dl>
+
+                  {partnerApplyUrl && (
+                    <a
+                      href={partnerApplyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                    >
+                      Apply Now
+                    </a>
                   )}
-                </dl>
-                {partnerApplyUrl && (
-                  <a
-                    href={partnerApplyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                  >
-                    Apply Now
-                  </a>
-                )}
+                </div>
               </div>
+
+              {/* ✅ Only show if we have truly related recommendations */}
+              {recs.length > 0 && (
+                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+                  
+                  <div className="bg-slate-100 px-5 py-4">
+                      <h4 className="text-lg font-bold text-slate-900 text-center">You may also like</h4>
+                 </div>
+
+
+
+                  <div className="divide-y divide-slate-200">
+                    {recs.map((s, idx) => {
+                      const sid = getAnyId(s) || String(idx);
+                      const label = s?.title || "Untitled scholarship";
+                      return (
+                        <Link
+                          key={sid}
+                          to={`/scholarship/${encodeURIComponent(sid)}`}
+                          className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
+                        >
+                          <span className="font-semibold">{label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </aside>
           </div>
         </div>
       </div>
+
+      {/* ✅ Lightbox overlay */}
+      {showBanner && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setShowBanner(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+                <div className="text-sm font-semibold text-slate-700">
+                  {provider || title}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowBanner(false)}
+                  className="text-sm px-3 py-1 rounded border border-slate-300 hover:bg-slate-50"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="p-3 bg-slate-50">
+                <img
+                  src={bannerSrc}
+                  alt={`${provider || title} banner enlarged`}
+                  className="w-full h-auto object-contain rounded-lg bg-white"
+                />
+              </div>
+            </div>
+            <div className="mt-2 text-center text-[11px] text-white/80">
+              Tip: press Esc to close
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

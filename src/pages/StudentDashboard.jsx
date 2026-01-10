@@ -7,16 +7,179 @@ import StudentAlertsCTA from "../components/StudentAlertsCTA";
 import { computeUnreadForStudent } from "../lib/contactStore";
 import AccountSecurityCard from "../components/account/AccountSecurityCard.jsx";
 import VerifyGate from "../components/VerifyGate";
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
- 
+import AttachmentUploader from "../components/upload/AttachmentUploader"; // ⬅️ NEW
+//import { fetchPosts, createPost, deletePostOnServer } from "../lib/postsApi";
+import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
+import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";
 
 
 /* ================= Utils ================ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
+const UPLOAD_LAMBDA =
+  import.meta.env.VITE_UPLOAD_LAMBDA_URL ||
+  "https://tepyhcsa6ttzmtbiqvuunj573u0jmuhj.lambda-url.us-east-1.on.aws";
+
+function makeUniqueFilename(originalName = "image") {
+  const name = String(originalName || "image");
+  const dot = name.lastIndexOf(".");
+  const ext = dot >= 0 ? name.slice(dot) : "";
+  const base = dot >= 0 ? name.slice(0, dot) : name;
+  const safeBase = base.replace(/[^a-z0-9_-]+/gi, "_").slice(0, 50) || "image";
+  return `${safeBase}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext || ".jpg"}`;
+}
+
+async function uploadToCloudFront({ file, folder }) {
+  const uniqueName = makeUniqueFilename(file.name);
+
+  const meta = await fetch(UPLOAD_LAMBDA, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      folder,
+      filename: uniqueName,
+      contentType: file.type || "application/octet-stream",
+    }),
+  }).then((r) => r.json());
+
+  if (!meta?.uploadUrl || !(meta.publicUrl || meta.cloudfrontUrl)) {
+    throw new Error("Uploader did not return uploadUrl + CloudFront URL");
+  }
+
+  const put = await fetch(meta.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+
+  if (!put.ok) throw new Error(`PUT failed: ${put.status}`);
+
+  return meta.publicUrl || meta.cloudfrontUrl; // ✅ CloudFront URL
+}
+
+// ✅ ADD THIS RIGHT HERE (directly under safeParse)
+function isDataUrl(s = "") {
+  return typeof s === "string" && s.startsWith("data:");
+}
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] || "S") + (parts[1]?.[0] || "K")).toUpperCase();
 }
+
+// ✅ Strong local-only post ID (never collides, never duplicates)
+function makeLocalPostId() {
+  return `local_${crypto.randomUUID()}`;
+}
+
+
+// ✅ ADD THESE TWO HELPERS (place right here)
+function makeId(p, idx = 0) {
+  // Prefer stable server id (if your backend ever provides it)
+  const direct =
+    p?.id || p?._id || p?.postId || p?.uuid || p?.key || p?.createdAt;
+
+  if (direct) return String(direct);
+
+  // Fallback: deterministic signature (prevents React duplicate keys)
+  const created = p?.ts || p?.created || p?.time || p?.date || "";
+  const author = p?.authorId || p?.userId || p?.email || p?.name || "";
+  const title = p?.title || "";
+  const text = p?.text || p?.content || "";
+
+  return `${created}__${author}__${title}__${text}__${idx}`;
+}
+
+function dedupeById(list) {
+  const seen = new Set();
+  const out = [];
+  for (let i = 0; i < (list || []).length; i++) {
+    const p = list[i];
+    const id = makeId(p, i);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ ...p, id }); // ensure downstream has p.id for keying
+  }
+  return out;
+}
+
+
+
+
+/* ✅ ADD THIS RIGHT HERE (below initials, before audience helpers / component code) */
+function splitImagesAndFilesFromPost(post) {
+  const normArr = (v) => (Array.isArray(v) ? v.filter(Boolean) : []);
+
+  const looksLikeImage = (att) => {
+    const mime = String(att?.mime || att?.type || "").toLowerCase();
+    const name = String(att?.name || att?.fileName || "").toLowerCase();
+    const url  = String(att?.url || att?.s3Url || att?.dataUrl || "").toLowerCase();
+
+    if (mime.startsWith("image/")) return true;
+    if (name.match(/\.(png|jpg|jpeg|gif|webp|bmp|svg)$/)) return true;
+    if (url.match(/\.(png|jpg|jpeg|gif|webp|bmp|svg)(\?|#|$)/)) return true;
+
+    return false;
+  };
+
+  // Start with explicit images/files if present
+  const rawImages = normArr(post?.images);
+  const rawFiles  = normArr(post?.files);
+
+  // Also consider "attachments" if some posts still use it
+  const rawAtts = normArr(post?.attachments).map((a) => ({
+    id: a.key || a.url,
+    name: a.fileName || a.name || "file",
+    mime: a.mime || "application/octet-stream",
+    url: a.url || a.s3Url || null,
+    type: a.type || "",
+  }));
+
+  const allImages = [];
+  const allFiles = [];
+
+  // 1) images[] always treated as images
+  for (const it of rawImages) {
+    if (!it) continue;
+    allImages.push(it);
+  }
+
+  // 2) files[] might contain images (THIS is your bug case)
+  for (const it of rawFiles) {
+    if (!it) continue;
+    if (looksLikeImage(it)) allImages.push(it);
+    else allFiles.push(it);
+  }
+
+  // 3) attachments[] fallback classification
+  for (const it of rawAtts) {
+    if (!it) continue;
+    if (looksLikeImage(it)) allImages.push(it);
+    else allFiles.push(it);
+  }
+
+  // De-dupe by (id/url/name)
+  const dedupe = (arr) => {
+    const seen = new Set();
+    const out = [];
+    for (const x of arr) {
+      const key = String(x?.id || x?.url || x?.name || Math.random());
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(x);
+    }
+    return out;
+  };
+
+  return {
+    images: dedupe(allImages),
+    files: dedupe(allFiles),
+  };
+}
+
+
+
+
 
 // Auto-grow helper for textareas
 function autosize(el, maxPx = 220) {
@@ -346,7 +509,8 @@ function ToolbarButton({ onClick, label, title }) {
 }
 function Avatar({ size="md", url, name, online=false }) {
   const sizeClass = size==="lg"?"h-16 w-16":size==="sm"?"h-8 w-8":"h-10 w-10";
-  const cls = `${sizeClass} relative rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;
+  //const cls = `${sizeClass} relative rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;
+  const cls = `${sizeClass} relative flex-shrink-0 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;
   return (
     <div className={cls}>
       {url ? <img src={url} alt={name} className="h-full w-full object-cover rounded-full" /> : <div className="h-full w-full flex items-center justify-center text-white text-sm bg-gradient-to-tr from-blue-500 to-indigo-500">{initials(name)}</div>}
@@ -365,6 +529,30 @@ function ExpandableHtml({ html, initialChars=280 }) {
   return <div className="mt-3 text-slate-800 prose-sm max-w-none">{open||!tooLong?<div dangerouslySetInnerHTML={{__html:html}}/>:<div>{shortHtml}</div>}{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="mt-1 text-blue-600 text-sm hover:underline">{open?"Read less":"Read more"}</button>}</div>;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Bright, pulsing NEW badge */
 function NewBadge({ show }) {
   if (!show) return null;
@@ -382,27 +570,50 @@ function NewBadge({ show }) {
 const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
 
 /* ---------- Attachment resolvers (IDB -> object URL) ---------- */
-function useAttachmentUrl(att, preferFull=true) {
-  const [url, setUrl] = useState(att?.dataUrl || (preferFull ? null : att?.thumb || null));
+function useAttachmentUrl(att, preferFull = true) {
+  // NEW: prefer direct URLs from S3 (or any HTTP URL) if present
+  const directUrl = att?.url || att?.s3Url || null;
+
+  const [url, setUrl] = useState(
+    att?.dataUrl ||              // legacy in-memory/base64
+    directUrl ||                 // new S3 / HTTP-style
+    (preferFull ? null : att?.thumb || null)
+  );
+
   useEffect(() => {
     let toRevoke = null;
     let cancelled = false;
+
+    // If we already have a direct URL or dataUrl, do nothing.
+    if (directUrl || att?.dataUrl) {
+      return () => {};
+    }
+
+    // Fallback: old behaviour — try IndexedDB by id, then thumb
     if (!url && att?.id) {
       (async () => {
         const blob = await idbGet(att.id);
         if (cancelled) return;
         if (blob) {
           const obj = URL.createObjectURL(blob);
-          toRevoke = obj; setUrl(obj);
-        } else if (att.thumb) {
+          toRevoke = obj;
+          setUrl(obj);
+        } else if (att?.thumb) {
           setUrl(att.thumb);
         }
       })();
     }
-    return () => { cancelled = true; if (toRevoke) URL.revokeObjectURL(toRevoke); };
-  }, [att?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return () => {
+      cancelled = true;
+      if (toRevoke) URL.revokeObjectURL(toRevoke);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [att?.id, directUrl]);
+
   return url;
 }
+
 function AttachmentImage({ att, className="", onClick, enlarge=false }) {
   const url = useAttachmentUrl(att, enlarge); // enlarge -> fetch full
   if (!url) return null;
@@ -416,7 +627,8 @@ function AttachmentImage({ att, className="", onClick, enlarge=false }) {
     />
   );
 }
-function AttachmentLink({ att }) {
+
+/* function AttachmentLink({ att }) {
   const url = useAttachmentUrl(att, true);
   if (!url) return <span className="text-slate-400">{att.name || "file"}</span>;
   return (
@@ -424,7 +636,111 @@ function AttachmentLink({ att }) {
       {att.name || "file"}
     </a>
   );
+} */
+
+function getExt(name = "") {
+  const n = String(name || "").trim();
+  const i = n.lastIndexOf(".");
+  return i >= 0 ? n.slice(i + 1).toLowerCase() : "";
 }
+
+function guessNameFromUrl(u = "") {
+  try {
+    const url = String(u || "");
+    const clean = url.split("?")[0].split("#")[0];
+    const last = clean.split("/").pop() || "";
+    return decodeURIComponent(last) || "";
+  } catch {
+    return "";
+  }
+}
+
+// ✅ Always try to get a real filename (even if backend didn’t send one)
+function attachmentDisplayName(att = {}) {
+  const direct =
+    att.fileName ||
+    att.filename ||
+    att.originalName ||
+    att.originalFilename ||
+    att.name;
+
+  const fromUrl = guessNameFromUrl(att.url || att.s3Url || "");
+  const fromKey = guessNameFromUrl(att.key || "");
+
+  const picked = String(direct || fromUrl || fromKey || "").trim();
+  return picked || "file";
+}
+
+function fileKind(att = {}) {
+  const name = attachmentDisplayName(att);
+  const mime = String(att.mime || att.contentType || "").toLowerCase();
+  const ext = getExt(name);
+
+  if (mime.includes("pdf") || ext === "pdf") return "pdf";
+  if (mime.includes("word") || ["doc", "docx"].includes(ext)) return "word";
+  if (mime.includes("powerpoint") || ["ppt", "pptx"].includes(ext)) return "ppt";
+  if (mime.includes("excel") || ["xls", "xlsx", "csv"].includes(ext)) return "xls";
+  if (mime.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) return "img";
+  return "file";
+}
+
+// ✅ Badge text you wanted: PDF / W / P / XLS / IMG / FILE
+function kindBadge(kind) {
+  const cfg =
+    kind === "pdf"
+      ? { label: "PDF", cls: "bg-red-600 text-white border-red-700" }
+      : kind === "word"
+      ? { label: "W", cls: "bg-blue-600 text-white border-blue-700" }
+      : kind === "ppt"
+      ? { label: "P", cls: "bg-orange-500 text-white border-orange-600" }
+      : kind === "xls"
+      ? { label: "XLS", cls: "bg-green-600 text-white border-green-700" }
+      : kind === "img"
+      ? { label: "IMG", cls: "bg-slate-800 text-white border-slate-900" }
+      : { label: "FILE", cls: "bg-slate-200 text-slate-800 border-slate-300" };
+
+  return (
+    <span
+      className={`inline-flex items-center justify-center min-w-[26px] h-4 px-1.5 rounded-md border text-[10px] font-bold ${cfg.cls}`}
+      title={cfg.label}
+    >
+      {cfg.label}
+    </span>
+  );
+}
+
+function AttachmentLink({ att }) {
+  const url = useAttachmentUrl(att, true);
+  const name = attachmentDisplayName(att);
+  const kind = fileKind(att);
+
+  if (!url) {
+    return (
+      <span className="text-slate-400 inline-flex items-center gap-2">
+        {kindBadge(kind)}
+        <span className="break-all">{name}</span>
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      download={name}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline inline-flex items-center gap-2"
+      title={name}
+    >
+      {kindBadge(kind)}
+      <span className="break-all">{name}</span>
+    </a>
+  );
+}
+
+
+
+
 
 /* ---------- Reusable grid (with prev/next arrows) ---------- */
 function ImageGrid({
@@ -556,16 +872,26 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
           {/* replies */}
           {/* replies */}
 {(() => {
-  const replies = Array.isArray(comment.replies) ? comment.replies : [];
-  return replies.length > 0 ? (
+
+const replies = Array.isArray(comment.replies) ? comment.replies : [];
+  if (!replies.length) return null;
+
+  return (
     <div className="mt-2 pl-6 space-y-2">
-      {replies.map((r) => (
-        <div key={r?.id || Math.random().toString(36)} className="flex items-start gap-2">
+      {replies.map((r, index) => (
+        <div
+          key={r?.id || `${comment.id || "comment"}-reply-${index}`}
+          className="flex items-start gap-2"
+        >
           <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
           <div>
             <div className="font-medium text-slate-800">{r?.author}</div>
-            <div className="text-xs text-slate-500 mb-1">{r?.authorProgram || ""}</div>
+            <div className="text-xs text-slate-500 mb-1">
+              {r?.authorProgram || ""}
+            </div>
+
             <ExpandableText text={r?.text || ""} />
+
             {Array.isArray(r?.images) && r.images.length > 0 && (
               <div className="mt-2">
                 <ImageGrid
@@ -577,6 +903,7 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
                 />
               </div>
             )}
+
             {Array.isArray(r?.files) && r.files.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {r.files.map((f, i) => (
@@ -590,9 +917,8 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
         </div>
       ))}
     </div>
-  ) : null;
+  );
 })()}
-
           {/* reply composer */}
           <form
             onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}
@@ -700,7 +1026,39 @@ function PostCard({
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox.open]);
 
-  const images = post.images || [];
+  //const images = post.images || [];
+  //const { images, files } = splitImagesAndFilesFromPost(post);
+
+  const parsed = splitImagesAndFilesFromPost(post);
+
+const isImg = (a) => String(a?.mime || a?.type || "").toLowerCase().startsWith("image/");
+
+// ✅ Only true images go to ImageGrid
+const images = (parsed.images || []).filter(isImg);
+
+// ✅ Anything non-image must go to files (but dedupe so it doesn't show twice)
+const mergedFiles = [
+  ...(parsed.files || []),
+  ...(parsed.images || []).filter((a) => !isImg(a)),
+];
+
+const seen = new Set();
+const files = mergedFiles.filter((a) => {
+  const key = String(
+    a?.url || a?.s3Url || a?.key || a?.id || `${a?.name || a?.fileName || ""}`
+  );
+  if (!key) return true;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
+
+
+
+
+
+
+
 
   // show a delete button ONLY for student-authored posts by me
   const canDelete = post.authorType === "student" && post.author === (currentUser?.name || "");
@@ -841,17 +1199,22 @@ function PostCard({
       )}
 
       {/* Files (downloadable) */}
-      {post.files?.length>0 && (
-        <ul className="mt-2 text-sm text-slate-700 space-y-1">
-          {post.files.map((f,i)=> (
-            <li key={`${(f.id||f.name||"f")}-${i}`} className="flex items-center gap-2">
-              📎 <AttachmentLink att={f} />
-            </li>
-          ))}
-        </ul>
-      )}
+{files.length > 0 && (
+  <ul className="mt-2 text-sm text-slate-700 space-y-1">
+    {files.map((f, i) => (
+      <li key={`${(f.id || f.name || "f")}-${i}`} className="flex items-center gap-2">
+        📎 <AttachmentLink att={f} />
+      </li>
+    ))}
+  </ul>
+)}
 
-      <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
+
+
+
+
+
+     <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
         <button onClick={onToggleLike} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
           <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked?"currentColor":"none"} stroke="currentColor"><path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z"/></svg>
           Like {post.likes>0 && <span className="text-slate-500">({post.likes})</span>}
@@ -862,11 +1225,13 @@ function PostCard({
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
       </div>
 
+
+
       {showComments && (
         <div className="mt-3 space-y-3">
-          {(Array.isArray(post.comments) ? post.comments : []).map((c) => (
+          {(Array.isArray(post.comments) ? post.comments : []).map((c, index) => (
   <CommentThread
-    key={c?.id || Math.random().toString(36)}
+    key={c?.id || `${post.id}-comment-${index}`}
     comment={c}
     onAddReply={(text, images, files) => onAddReply(c?.id, text, images, files)}
     onOpenLightbox={(items, idx) => openLightbox(items, idx)}
@@ -887,7 +1252,7 @@ function PostCard({
                   setCmt(e.target.value);
                   autosize(e.target);
                 }}
-                placeholder="Write a comment…"
+                placeholder="Write a comment/feedback…"
                 rows={1}
                 className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5"
                 style={{ minHeight: 44, maxHeight: 220 }}
@@ -998,6 +1363,155 @@ export default function StudentDashboard() {
     "{}"
   );
 
+  // ===================== Profile sync (banner/avatar) =====================
+  // Uses the same API host you already use for auth/users.
+  // If you have a dedicated base for auth, put it in VITE_POSTS_API_BASE or VITE_CONTACTS_API_BASE.
+  const RAW_API_BASE =
+    (import.meta.env.VITE_POSTS_API_BASE && String(import.meta.env.VITE_POSTS_API_BASE).trim()) ||
+    (import.meta.env.VITE_CONTACTS_API_BASE && String(import.meta.env.VITE_CONTACTS_API_BASE).trim()) ||
+    "";
+
+  const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
+  // DEBUG (safe): confirm env base + final base
+console.log("[StudentDashboard] RAW_API_BASE =", RAW_API_BASE);
+console.log("[StudentDashboard] API_BASE =", API_BASE);
+
+  // Update ONLY bannerUrl/photoUrl for the logged-in user on the server
+  /*async function patchMyProfileOnServer(patch) {
+    const email = (current?.email || user?.email || "").trim();
+    if (!API_BASE || !email) return null;
+
+    // ✅ Adjust these paths if your backend uses different ones.
+    // Many of your routes follow: /api/auth/<role>/get-profile
+    // We'll use: student/update-profile (create it in backend if not existing yet).
+    const url = `${API_BASE}/api/auth/student/update-profile`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, ...patch }),
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || "update-profile failed");
+    return data?.user || data;
+  }*/
+
+
+  async function patchMyProfileOnServer(patch) {
+  const email = (current?.email || user?.email || "").trim();
+
+  // Step A: prove we have what we need
+  console.log("[StudentDashboard] patchMyProfileOnServer() called", {
+    hasAPIBase: !!API_BASE,
+    API_BASE,
+    email,
+    patchKeys: patch ? Object.keys(patch) : [],
+  });
+
+  if (!API_BASE || !email) {
+    console.warn("[StudentDashboard] patchMyProfileOnServer() aborted (missing API_BASE or email)", {
+      API_BASE,
+      email,
+    });
+    return null;
+  }
+
+  const url = `${API_BASE}/api/auth/student/update-profile`;
+  console.log("[StudentDashboard] update-profile URL:", url);
+  console.log("[StudentDashboard] update-profile payload preview:", {
+    email,
+    ...patch,
+  });
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, ...patch }),
+  });
+
+  // Step A: log raw response (helps catch HTML error pages, 502s, CORS, etc.)
+  const rawText = await res.text().catch(() => "");
+  console.log("[StudentDashboard] update-profile response:", {
+    ok: res.ok,
+    status: res.status,
+    statusText: res.statusText,
+    rawTextPreview: String(rawText || "").slice(0, 300),
+  });
+
+  let data = null;
+  try {
+    data = rawText ? JSON.parse(rawText) : null;
+  } catch (e) {
+    console.warn("[StudentDashboard] update-profile non-JSON response (this is important):", e);
+  }
+
+  if (!res.ok) {
+    throw new Error((data && (data.error || data.message)) || "update-profile failed");
+  }
+
+  return (data && (data.user || data)) || null;
+}
+
+  // Pull the latest profile from server when dashboard loads (for cross-device sync)
+  /*async function fetchMyProfileFromServer() {
+    const email = (current?.email || user?.email || "").trim();
+    if (!API_BASE || !email) return null;
+
+    const url = `${API_BASE}/api/auth/student/get-profile`;
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.error || "get-profile failed");
+    return data?.user || data;
+  }*/
+ async function fetchMyProfileFromServer() {
+  const email = (current?.email || user?.email || "").trim();
+
+  console.log("[StudentDashboard] get-profile email =", email);
+  console.log("[StudentDashboard] get-profile url =", `${API_BASE}/api/auth/student/get-profile`);
+
+  if (!API_BASE || !email) return null;
+
+  const res = await fetch(`${API_BASE}/api/auth/student/get-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  console.log("[StudentDashboard] get-profile status =", res.status);
+
+  const data = await res.json().catch(() => ({}));
+  console.log("[StudentDashboard] get-profile response =", data);
+
+  // keep your existing return line exactly as you have it
+  return data?.user || data?.data?.user || null;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const [user,setUser] = useState(()=>{
     const raw = loadActiveUser();
@@ -1006,6 +1520,7 @@ export default function StudentDashboard() {
     merged.countryCode = ensureCountryCode(merged.country, merged.countryCode);
     return merged;
   });
+
 
   // Presence heartbeat
   useEffect(() => {
@@ -1070,6 +1585,46 @@ export default function StudentDashboard() {
     };
   }, [user]);
 
+
+
+  // ✅ On first load, refresh profile from server (makes banner/avatar global across devices)
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const remote = await fetchMyProfileFromServer();
+        if (cancelled || !remote) return;
+
+        // Only merge profile fields we care about (avoid disturbing other local logic)
+        const merged = {
+          ...user,
+          bannerUrl: remote.bannerUrl ?? user.bannerUrl,
+          photoUrl: remote.photoUrl ?? user.photoUrl,
+        };
+
+        setUser(merged);
+        saveAndBroadcastUser(merged);
+      } catch (e) {
+        // Don’t break the page if server is unavailable
+        console.warn("[StudentDashboard] fetchMyProfileFromServer failed", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+
+
+
+
+
+
+
   // ===== Unread responses from lecturers (for the Contact card badge)
   const [unreadLecturerResponses, setUnreadLecturerResponses] = useState(0);
   useEffect(() => {
@@ -1108,7 +1663,8 @@ export default function StudentDashboard() {
       return null;
     };
     const findLabelText = (input) => {
-      const label = input.closest("label"); if (label) return label.textContent || label.innerText || "";
+      const
+       label = input.closest("label"); if (label) return label.textContent || label.innerText || "";
       const id = input.getAttribute("id");
       if (id) {
         const lbl = document.querySelector(`label[for="${id}"]`);
@@ -1133,36 +1689,130 @@ export default function StudentDashboard() {
   }, [consentStudentId, consentEmail, consentState]);
 
   // ===== Video posts saved by admin (right column)
-  const [videoPosts, setVideoPosts] = useState(() => {
-    const arr = safeParse(localStorage.getItem("videoPosts")) || [];
-    return Array.isArray(arr) ? arr : [];
-  });
-  useEffect(() => {
-  const sync = () => {
-    const arr = safeParse(localStorage.getItem("lecturerPosts")) || [];
-    setLecturerPosts(prev => {
-      // Prevent ping-pong if nothing really changed
-      try {
-        const prevStr = JSON.stringify(prev ?? []);
-        const nextStr = JSON.stringify(Array.isArray(arr) ? arr : []);
-        if (prevStr === nextStr) return prev;   // no state change -> no re-render -> no loop
-        return Array.isArray(arr) ? arr : [];
-      } catch {
-        return Array.isArray(arr) ? arr : [];
-      }
-    });
+  /*const [videoPosts, setVideoPosts] = useState(() => {
+  const arr = safeParse(localStorage.getItem("videoPosts")) || [];
+  return Array.isArray(arr) ? arr : [];
+});*/
+
+
+
+// ===== Video posts saved by admin (right column) — load from backend, not localStorage
+/*const [videoPosts, setVideoPosts] = useState([]);
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadAdminVideos() {
+    try {
+      // IMPORTANT:
+      // Your admin "Video Post" creator must save videos under THIS scope.
+      // (See note below: Admin video creator must use scope: "admin-video-posts")
+      const remote = await fetchPosts({
+        scope: "admin-video-posts",
+        role: "student", // safe; backend can ignore role or use it for filtering
+      });
+
+      if (cancelled) return;
+
+      const vids = (remote || [])
+        .filter(p => p && (p.type === "Video" || String(p.type||"").toLowerCase() === "video"))
+        .map(p => ({
+          ...p,
+          createdAt: p.createdAt ?? p.created_at ?? p.timestamp ?? 0,
+        }))
+        .sort((a,b) => (Number(b.createdAt)||0) - (Number(a.createdAt)||0));
+
+      setVideoPosts(vids);
+    } catch (e) {
+      console.warn("[StudentDashboard] loadAdminVideos failed", e);
+      // Don’t hard-fail the whole page; just keep videos empty
+      setVideoPosts([]);
+    }
+  }
+
+  loadAdminVideos();
+
+  // optional: refresh occasionally so students see new admin videos without reload
+  const t = setInterval(loadAdminVideos, 60_000);
+
+  return () => {
+    cancelled = true;
+    clearInterval(t);
   };
-  const onStorage = (e) => { if (!e || e.key === "lecturerPosts") sync(); };
+}, []);*/
+
+
+
+// ===== Video posts saved by admin (right column) — load from backend ONLY
+const [videoPosts, setVideoPosts] = useState([]);
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadAdminVideos() {
+    try {
+      const remote = await fetchPosts({
+        scope: "admin-video-posts",
+        role: "student",
+      });
+
+      if (cancelled) return;
+
+      const vids = (remote || [])
+        .filter(
+          (p) =>
+            p &&
+            (p.type === "Video" || String(p.type || "").toLowerCase() === "video")
+        )
+        .map((p) => ({
+          ...p,
+          createdAt: p.createdAt ?? p.created_at ?? p.timestamp ?? 0,
+        }))
+        .sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+
+      setVideoPosts(vids);
+    } catch (e) {
+      console.warn("[StudentDashboard] loadAdminVideos failed", e);
+      setVideoPosts([]);
+    }
+  }
+
+  loadAdminVideos();
+
+  // optional refresh
+  const t = setInterval(loadAdminVideos, 60_000);
+
+  return () => {
+    cancelled = true;
+    clearInterval(t);
+  };
+}, []);
+
+
+
+/*useEffect(() => {
+  const sync = () => {
+    const arr = safeParse(localStorage.getItem("videoPosts")) || [];
+    setVideoPosts(Array.isArray(arr) ? arr : []);
+  };
+
+  const onStorage = (e) => {
+    if (!e || e.key === "videoPosts") sync();
+  };
   const onUpdated = () => sync();
 
   window.addEventListener("storage", onStorage);
-  window.addEventListener("lecturerPosts:updated", onUpdated);
+  window.addEventListener("videoPosts:updated", onUpdated);
+  sync(); // initial load in case anything changed before mount
+
   return () => {
     window.removeEventListener("storage", onStorage);
-    window.removeEventListener("lecturerPosts:updated", onUpdated);
+    window.removeEventListener("videoPosts:updated", onUpdated);
   };
-}, []);
-  const visibleVideos = useMemo(() => {
+}, []);*/
+
+
+  /*const visibleVideos = useMemo(() => {
     const meCont = (user?.continent || "").trim().toLowerCase();
     return (videoPosts || [])
       .filter(p => p && p.type === "video")
@@ -1180,12 +1830,60 @@ export default function StudentDashboard() {
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [videoPosts, user?.continent]);
-  const latestVideo = visibleVideos[0] || null;
+  const latestVideo = visibleVideos[0] || null;*/
+
+  const visibleVideos = useMemo(() => {
+  const meCont = (user?.continent || "").trim().toLowerCase();
+  return (videoPosts || [])
+    /*.filter(p => p && p.type === "video")*/
+    .filter(p => p && String(p.type || "").toLowerCase() === "video")
+    .filter(p => {
+      const audience = (p.audience || "students").toLowerCase();
+      const includesStudents = audience === "students" || audience === "both";
+      if (!includesStudents) return false;
+      const va = p.videoAudience || { scope: "all" };
+      if (va.scope === "continent") {
+        const list = Array.isArray(va.continents) ? va.continents : [];
+        const hasMe = list.some(c => (c || "").trim().toLowerCase() === meCont);
+        return hasMe;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}, [videoPosts, user?.continent]);
+
+// ✅ ADD THIS: state for latestVideo
+/*const [latestVideo, setLatestVideo] = useState(null);
+
+// ✅ ADD THIS: keep state in sync with visibleVideos
+useEffect(() => {
+  setLatestVideo(visibleVideos[0] || null);
+}, [visibleVideos]);*/
+
+const latestVideo = visibleVideos[0] || null;
+
+
 
   const audKey = audienceKey(user);
   const baseFac = `FACULTY__${user.university}__${user.faculty}`;
   const facYearKey = `${baseFac}__${user.year}`;
   const ts = (v) => (typeof v === "number" ? v : Date.parse(v) || 0);
+
+  // Human-readable "time ago" label for posts
+  function formatTimeAgo(input) {
+    const t = typeof input === "number" ? input : Date.parse(input || "") || Date.now();
+    const diff = Math.max(0, Date.now() - t);
+    const sec = Math.floor(diff / 1000);
+    const min = Math.floor(sec / 60);
+    const hr  = Math.floor(min / 60);
+    const day = Math.floor(hr / 24);
+
+    if (sec < 60) return "Just now";
+    if (min < 60) return `${min}m`;
+    if (hr  < 24) return `${hr}h`;
+    if (day < 7) return `${day}d`;
+    return new Date(t).toLocaleDateString();
+  }
 
   // ===== Seeded posts
   const seeded = useMemo(()=>[
@@ -1242,6 +1940,395 @@ export default function StudentDashboard() {
     return stored && Array.isArray(stored) ? stored : seeded;
   });
 
+
+
+
+  /* ⬇️⬇️ PASTE THIS BLOCK RIGHT HERE ⬇️⬇️ */
+
+// Normalize reply objects coming from backend into the shape the UI expects
+function findUserByIdentity({ authorId, author, email }) {
+  const safe = (j) => { try { return JSON.parse(j || ""); } catch { return null; } };
+
+  const byId = safe(localStorage.getItem("usersById")) || {};
+  if (authorId && byId[authorId]) return byId[authorId];
+
+  const arr = safe(localStorage.getItem("users")) || [];
+  const nameNorm = (author || "").trim().toLowerCase();
+  const emailNorm = (email || "").trim().toLowerCase();
+
+  for (const u of arr) {
+    if (!u) continue;
+
+    const ids = [u.id, u.uid, u.userId, u.studentId].filter(Boolean);
+    if (authorId && ids.includes(authorId)) return u;
+
+    const uName = String(u.name || u.fullName || "").trim().toLowerCase();
+    if (nameNorm && uName === nameNorm) return u;
+
+    const uEmail = String(u.email || u.username || "").trim().toLowerCase();
+    if (emailNorm && uEmail === emailNorm) return u;
+  }
+  return null;
+}
+
+// Normalize reply objects coming from backend into the shape the UI expects
+function normalizeReplyFromBackend(r) {
+  if (!r) return null;
+
+  const authorId =
+    r.authorId || r.userId || r.uid || r.studentId || "";
+
+  const author =
+    r.author ||
+    r.authorName ||
+    r.name ||
+    "";
+
+  const email =
+    r.email ||
+    r.authorEmail ||
+    "";
+
+  // Try to recover extra info from local user store
+  const fallbackUser = findUserByIdentity({ authorId, author, email }) || {};
+
+  const authorProgram =
+    r.authorProgram ||
+    r.programName ||
+    r.program ||
+    fallbackUser.program ||
+    fallbackUser.faculty ||
+    "";
+
+  const authorPhoto =
+    r.authorPhoto ||
+    r.authorAvatarUrl ||
+    r.avatarUrl ||
+    r.photoUrl ||
+    r.profilePhotoUrl ||
+    fallbackUser.photoUrl ||
+    fallbackUser.avatarUrl ||
+    fallbackUser.profileImageUrl ||
+    "";
+
+  // 🔹 Attachments on the reply/comment itself
+  const atts = Array.isArray(r.attachments) ? r.attachments : [];
+
+  const imagesFromAtts = atts
+    .filter(a => (a.type || "").toLowerCase() === "image")
+    .map(a => ({
+      id: a.key || a.url,
+      name: a.fileName || a.name || "image",
+      mime: a.mime || "image/*",
+      url: a.url || a.s3Url || null,
+    }));
+
+  const filesFromAtts = atts
+    .filter(a => (a.type || "").toLowerCase() !== "image")
+    .map(a => ({
+      id: a.key || a.url,
+      name: a.fileName || a.name || "file",
+      mime: a.mime || "application/octet-stream",
+      url: a.url || a.s3Url || null,
+    }));
+
+  // Prefer explicit images/files arrays if backend already provided them,
+  // otherwise derive them from attachments.
+  const images =
+    Array.isArray(r.images) && r.images.length ? r.images : imagesFromAtts;
+
+  const files =
+    Array.isArray(r.files) && r.files.length ? r.files : filesFromAtts;
+
+  return {
+    ...r,
+    authorId,
+    author,
+    authorProgram,
+    authorPhoto,
+    images,
+    files,
+  };
+}
+
+// Normalize comments (which can contain replies)
+function normalizeCommentFromBackend(c) {
+  if (!c) return null;
+
+  const base = normalizeReplyFromBackend(c);
+  const replies = Array.isArray(c.replies)
+    ? c.replies.map(normalizeReplyFromBackend).filter(Boolean)
+    : [];
+
+  return { ...base, replies };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 🔄 Load posts from backend API (global feed for student dashboard)
+  const [feedLoading, setFeedLoading] = useState(false);
+  const [feedError, setFeedError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    let pollTimer = null;
+
+    // silent = false → show spinner/error
+    // silent = true  → background refresh (no spinner)
+    async function loadFromApi({ silent = false } = {}) {
+      if (!silent) {
+        setFeedLoading(true);
+        setFeedError("");
+      }
+
+      try {
+        // Only posts for this dashboard
+        const remote = await fetchPosts({
+          scope: "student-dashboard",
+          role: "student",
+        });
+
+        if (cancelled) return;
+
+        //const mapped = (remote || []).map((r) => {
+          //if (!r || typeof r !== "object") return r;
+
+
+
+          const mapped = dedupeById(
+  (remote || [])
+    .filter((r) => r && typeof r === "object")
+    .map((r) => {
+      // ✅ Normalize ID first (prevents duplicate keys / missing ids)
+      const id = r.id || r.postId || r._id || r.key || r.pk || r.sk;
+
+      // ✅ Normalize timestamps (IMPORTANT: never Date.now() for remote posts)
+      const createdAt =
+        r.createdAt ??
+        r.created_at ??
+        r.timestamp ??
+        (typeof r.time === "number" ? r.time : undefined) ??
+        0;
+
+      // ✅ Normalize post attachments (merge, do NOT overwrite r.files)
+      const atts = Array.isArray(r.attachments) ? r.attachments : [];
+
+      const attImages = atts
+        .filter((a) => (a.type || "").toLowerCase() === "image")
+        .map((a) => ({
+          id: a.key || a.url,
+          name: a.fileName || a.name || "image",
+          mime: a.mime || "image/*",
+          url: a.url || a.s3Url || null,
+        }));
+
+      const attFiles = atts
+        .filter((a) => (a.type || "").toLowerCase() !== "image")
+        .map((a) => ({
+          id: a.key || a.url,
+          name: a.fileName || a.name || "file",
+          mime: a.mime || "application/octet-stream",
+          url: a.url || a.s3Url || null,
+        }));
+
+      const rawImages = Array.isArray(r.images) ? r.images : [];
+      const rawFiles = Array.isArray(r.files) ? r.files : [];
+
+      const normImages = rawImages.map((img) => ({
+        id: img.id || img.key || img.url,
+        name: img.name || img.fileName || "image",
+        mime: img.mime || "image/*",
+        url: img.url || img.s3Url || null,
+      }));
+
+      const normFiles = rawFiles.map((f) => ({
+        id: f.id || f.key || f.url,
+        name: f.name || f.fileName || "file",
+        mime: f.mime || "application/octet-stream",
+        url: f.url || f.s3Url || null,
+      }));
+
+      const dedupeAtts = (arr) => {
+        const seen = new Set();
+        const out = [];
+        for (const x of arr) {
+          const k = x?.id || x?.url || `${x?.name}-${x?.mime}`;
+          if (!k || seen.has(k)) continue;
+          seen.add(k);
+          out.push(x);
+        }
+        return out;
+      };
+
+      const images = dedupeAtts([...attImages, ...normImages]);
+      const files = dedupeAtts([...attFiles, ...normFiles]);
+
+      // ✅ Normalize comments + replies using YOUR helpers you pasted above
+      const comments = dedupeById(
+        (Array.isArray(r.comments) ? r.comments : [])
+          .map(normalizeCommentFromBackend)
+          .filter(Boolean)
+          .map((c) => ({
+            ...c,
+            replies: dedupeById(Array.isArray(c.replies) ? c.replies : []),
+          }))
+      );
+
+      return {
+        ...r,
+        id,                      // ✅ ensure id exists + consistent
+        createdAt,
+        time: r.time || (createdAt ? formatTimeAgo(createdAt) : ""), // stable label
+        images,
+        files,
+        comments,
+        fromBackend: true,
+      };
+    })
+);
+
+        // Merge backend posts + any local `seeded`/existing posts (dedupe by id)
+        setPosts((prev) => {
+  const prevArr = Array.isArray(prev) ? prev : [];
+
+  // quick lookup of what server returned this round
+  const remoteIds = new Set(
+    (mapped || [])
+      .map((p) => p && p.id)
+      .filter(Boolean)
+  );
+
+  // previous posts by id (to preserve local like state, etc.)
+  const prevById = new Map();
+  for (const p of prevArr) {
+    if (p && p.id) prevById.set(p.id, p);
+  }
+
+  const byId = new Map();
+
+  // helper: stable fallback id for posts that somehow have no id
+  const stableFallbackId = (p) => {
+    const a = String(p?.authorId || p?.author || "");
+    const t = String(p?.title || "");
+    const c = String(p?.createdAt || p?.time || "");
+    return `noid_${a}_${c}_${t}`.slice(0, 180);
+  };
+
+  const now = Date.now();
+  const GRACE_MS = 90_000; // 90s grace for server propagation
+
+  // 1) Server posts (authoritative)
+  for (const p of mapped || []) {
+    if (!p) continue;
+
+    const id = p.id || stableFallbackId(p);
+    const existing = prevById.get(id) || null;
+
+    const backendComments = Array.isArray(p.comments) ? p.comments : null;
+    const existingComments =
+      existing && Array.isArray(existing.comments) ? existing.comments : null;
+
+    const merged = {
+      ...existing,     // keep any local-only fields we already had
+      ...p,            // then overwrite with server truth
+      id,
+      fromBackend: true,
+
+      // keep local like state if present
+      likes:
+        typeof existing?.likes === "number"
+          ? existing.likes
+          : (p.likes || 0),
+      liked:
+        typeof existing?.liked === "boolean"
+          ? existing.liked
+          : !!p.liked,
+
+      // comments/replies prefer backend when present
+      comments: backendComments ?? existingComments ?? [],
+    };
+
+    byId.set(id, merged);
+  }
+
+  // 2) Keep local-only posts AND keep "pending" backend posts that aren't returned yet
+  for (const p of prevArr) {
+    if (!p) continue;
+
+    const id = p.id || stableFallbackId(p);
+    if (byId.has(id)) continue; // already have server version
+
+    const isBackend = !!p.fromBackend;
+
+    if (!isBackend) {
+      // purely local post → keep
+      byId.set(id, p);
+      continue;
+    }
+
+    // If it WAS a backend post but server didn't return it this round:
+    // keep it for a short grace window (prevents "appears then disappears").
+    const createdAt = Number(p.createdAt || 0);
+    const stillInGrace = createdAt && (now - createdAt) < GRACE_MS;
+
+    // optional explicit flag if you set it on create success
+    const pendingUntil = Number(p.pendingServerUntil || 0);
+    const explicitlyPending = pendingUntil > now;
+
+    if (explicitlyPending || stillInGrace) {
+      byId.set(id, p);
+      continue;
+    }
+
+    // otherwise, treat as deleted / no longer valid → do not re-add
+  }
+
+  // newest-first
+  return Array.from(byId.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+});
+
+      } catch (err) {
+        console.error("[StudentDashboard] fetchPosts failed", err);
+        if (!silent && !cancelled) {
+          setFeedError("Could not load posts from server.");
+        }
+      } finally {
+        if (!silent && !cancelled) {
+          setFeedLoading(false);
+        }
+      }
+    }
+
+    // Initial load with spinner
+    loadFromApi({ silent: false });
+
+    // Poll every 30 seconds in the background
+    pollTimer = setInterval(() => {
+      if (!cancelled) {
+        loadFromApi({ silent: true });
+      }
+    }, 30000); // adjust if you want
+
+    return () => {
+      cancelled = true;
+      if (pollTimer) clearInterval(pollTimer);
+    };
+  }, []); // run once on mount
+
+
+
   // READ-ONLY: lecturer posts from lecturer portal (if present)
   const [lecturerPosts, setLecturerPosts] = useState(() => {
     const arr = safeParse(localStorage.getItem("lecturerPosts")) || [];
@@ -1283,20 +2370,59 @@ function persistLecturerPostsNow(arr) {
     // Fallback to lean copy if quota is tight
     try {
       const lean = (arr || []).map(p => ({
-        ...p,
-        images: (p.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-        files: (p.files || []).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
-        comments: (p.comments || []).map(c => ({
-          ...c,
-          images: (c.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-          files: (c.files || []).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
-          replies: (c.replies || []).map(r => ({
-            ...r,
-            images: (r.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-            files: (r.files || []).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
-          })),
-        })),
-      }));
+  ...p,
+  images: (p.images || []).map(img => ({
+    id: img.id,
+    name: img.name,
+    mime: img.mime,
+    url: img.url || null,
+    thumb: img.thumb || null,
+    dataUrl: img.dataUrl || null,
+  })),
+  files: (p.files || []).map(f => ({
+    id: f.id,
+    name: f.name,
+    mime: f.mime,
+    url: f.url || null,
+    dataUrl: f.dataUrl || null,
+  })),
+  comments: (p.comments || []).map(c => ({
+    ...c,
+    images: (c.images || []).map(img => ({
+      id: img.id,
+      name: img.name,
+      mime: img.mime,
+      url: img.url || null,
+      thumb: img.thumb || null,
+      dataUrl: img.dataUrl || null,
+    })),
+    files: (c.files || []).map(f => ({
+      id: f.id,
+      name: f.name,
+      mime: f.mime,
+      url: f.url || null,
+      dataUrl: f.dataUrl || null,
+    })),
+    replies: (c.replies || []).map(r => ({
+      ...r,
+      images: (r.images || []).map(img => ({
+        id: img.id,
+        name: img.name,
+        mime: img.mime,
+        url: img.url || null,
+        thumb: img.thumb || null,
+        dataUrl: img.dataUrl || null,
+      })),
+      files: (r.files || []).map(f => ({
+        id: f.id,
+        name: f.name,
+        mime: f.mime,
+        url: f.url || null,
+        dataUrl: f.dataUrl || null,
+      })),
+    })),
+  })),
+}));
       localStorage.setItem("lecturerPosts", JSON.stringify(lean));
       window.dispatchEvent(new Event("lecturerPosts:updated"));
     } catch {}
@@ -1330,16 +2456,55 @@ useEffect(() => {
     try {
       const lean = (lecturerPosts || []).map(p => ({
         ...p,
-        images: (p.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-        files:  (p.files  || []).map(f   => ({ id: f.id,  name: f.name,  mime: f.mime  })),
+        images: (p.images || []).map(img => ({
+          id: img.id,
+          name: img.name,
+          mime: img.mime,
+          url: img.url || null,
+          thumb: img.thumb || null,
+          dataUrl: img.dataUrl || null,
+        })),
+        files: (p.files || []).map(f => ({
+          id: f.id,
+          name: f.name,
+          mime: f.mime,
+          url: f.url || null,
+          dataUrl: f.dataUrl || null,
+        })),
         comments: (p.comments || []).map(c => ({
           ...c,
-          images: (c.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-          files:  (c.files  || []).map(f   => ({ id: f.id,  name: f.name,  mime: f.mime  })),
+          images: (c.images || []).map(img => ({
+            id: img.id,
+            name: img.name,
+            mime: img.mime,
+            url: img.url || null,
+            thumb: img.thumb || null,
+            dataUrl: img.dataUrl || null,
+          })),
+          files: (c.files || []).map(f => ({
+            id: f.id,
+            name: f.name,
+            mime: f.mime,
+            url: f.url || null,
+            dataUrl: f.dataUrl || null,
+          })),
           replies: (c.replies || []).map(r => ({
             ...r,
-            images: (r.images || []).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-            files:  (r.files  || []).map(f   => ({ id: f.id,  name: f.name,  mime: f.mime  })),
+            images: (r.images || []).map(img => ({
+              id: img.id,
+              name: img.name,
+              mime: img.mime,
+              url: img.url || null,
+              thumb: img.thumb || null,
+              dataUrl: img.dataUrl || null,
+            })),
+            files: (r.files || []).map(f => ({
+              id: f.id,
+              name: f.name,
+              mime: f.mime,
+              url: f.url || null,
+              dataUrl: f.dataUrl || null,
+            })),
           })),
         })),
       }));
@@ -1378,27 +2543,70 @@ useEffect(() => {
   }, [posts]);
   const markTypeSeen = (t) => setLastSeenByType(prev => ({ ...prev, [t]: latestByType[t] || Date.now() }));
 
+
+
+
+
   // persist posts safely
   useEffect(()=>{
     try {
       localStorage.setItem("posts", JSON.stringify(posts));
     } catch (e) {
       try {
-        const lean = posts.map(p => ({
-          ...p,
-          images: (p.images||[]).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-          files: (p.files||[]).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
-          comments: (p.comments||[]).map(c => ({
-            ...c,
-            images: (c.images||[]).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-            files: (c.files||[]).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
-            replies: (c.replies||[]).map(r => ({
-              ...r,
-              images: (r.images||[]).map(img => ({ id: img.id, name: img.name, mime: img.mime })),
-              files: (r.files||[]).map(f => ({ id: f.id, name: f.name, mime: f.mime })),
+        const lean = (posts || []).map(p => ({
+        ...p,
+        images: (p.images || []).map(img => ({
+          id: img.id,
+          name: img.name,
+          mime: img.mime,
+          url: img.url || null,
+          thumb: img.thumb || null,
+          dataUrl: img.dataUrl || null,
+        })),
+        files: (p.files || []).map(f => ({
+          id: f.id,
+          name: f.name,
+          mime: f.mime,
+          url: f.url || null,
+          dataUrl: f.dataUrl || null,
+        })),
+        comments: (p.comments || []).map(c => ({
+          ...c,
+          images: (c.images || []).map(img => ({
+            id: img.id,
+            name: img.name,
+            mime: img.mime,
+            url: img.url || null,
+            thumb: img.thumb || null,
+            dataUrl: img.dataUrl || null,
+          })),
+          files: (c.files || []).map(f => ({
+            id: f.id,
+            name: f.name,
+            mime: f.mime,
+            url: f.url || null,
+            dataUrl: f.dataUrl || null,
+          })),
+          replies: (c.replies || []).map(r => ({
+            ...r,
+            images: (r.images || []).map(img => ({
+              id: img.id,
+              name: img.name,
+              mime: img.mime,
+              url: img.url || null,
+              thumb: img.thumb || null,
+              dataUrl: img.dataUrl || null,
+            })),
+            files: (r.files || []).map(f => ({
+              id: f.id,
+              name: f.name,
+              mime: f.mime,
+              url: f.url || null,
+              dataUrl: f.dataUrl || null,
             })),
           })),
-        }));
+        })),
+      }));
         localStorage.setItem("posts", JSON.stringify(lean));
       } catch {}
     }
@@ -1502,18 +2710,111 @@ useEffect(() => {
   },[idleWarning]);
 
   /* ===== Banner/Avatar ===== */
-  const onPickBanner = async (e)=>{
+  /*const onPickBanner = async (e)=>{
     const f = e.target.files?.[0];
     if (!f || !f.type.startsWith("image/")) return;
     const dataUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
     setUser(u=>{ const next = { ...u, bannerUrl:dataUrl }; saveAndBroadcastUser(next); return next; });
-  };
-  const onPickAvatar = async (e)=>{
+  };*/
+
+  /*const onPickBanner = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f || !f.type.startsWith("image/")) return;
+
+    const dataUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
+
+    // 1) Update locally immediately (current behavior)
+    let nextUser = null;
+    setUser((u) => {
+      const next = { ...u, bannerUrl: dataUrl };
+      nextUser = next;
+      saveAndBroadcastUser(next);
+      return next;
+    });
+
+    // 2) Also persist to server (new behavior)
+    try {
+      await patchMyProfileOnServer({ bannerUrl: dataUrl });
+    } catch (err) {
+      console.warn("[StudentDashboard] banner save failed", err);
+      // keep local banner; just warn
+    }
+  };*/
+  const onPickBanner = async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+
+  try {
+    const cloudUrl = await uploadToCloudFront({ file, folder: "banners" });
+
+    // ✅ IMPORTANT: persist to server so it's global
+    /*await updateMyProfileOnServer({ bannerUrl: cloudUrl });*/
+    await patchMyProfileOnServer({ bannerUrl: cloudUrl });
+
+    // update UI
+    setUser((u) => ({ ...u, bannerUrl: cloudUrl }));
+  } catch (err) {
+    console.error(err);
+    alert("Banner upload failed. See console.");
+  }
+};
+
+
+
+
+
+
+
+
+  /*const onPickAvatar = async (e)=>{
     const f = e.target.files?.[0];
     if (!f || !f.type.startsWith("image/")) return;
     const dataUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
     setUser(u=>{ const next = { ...u, photoUrl:dataUrl }; saveAndBroadcastUser(next); return next; });
-  };
+  };*/
+  /*const onPickAvatar = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f || !f.type.startsWith("image/")) return;
+
+    const dataUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
+
+    // 1) Update locally immediately
+    setUser((u) => {
+      const next = { ...u, photoUrl: dataUrl };
+      saveAndBroadcastUser(next);
+      return next;
+    });
+
+    // 2) Persist to server
+    try {
+      await patchMyProfileOnServer({ photoUrl: dataUrl });
+    } catch (err) {
+      console.warn("[StudentDashboard] avatar save failed", err);
+    }
+  };*/
+  const onPickAvatar = async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = ""; // so selecting same file again triggers change
+  if (!file) return;
+
+  try {
+    const cloudUrl = await uploadToCloudFront({ file, folder: "profiles" });
+
+    // ✅ IMPORTANT: persist to server so it's global
+    /*await updateMyProfileOnServer({ photoUrl: cloudUrl });*/
+    await patchMyProfileOnServer({ photoUrl: cloudUrl });
+
+    // update UI
+    setUser((u) => ({ ...u, photoUrl: cloudUrl }));
+  } catch (err) {
+    console.error(err);
+    alert("Avatar upload failed. See console.");
+  }
+};
+
+
+  
 
   /* ===== Composer ===== */
   const [composerOpen,setComposerOpen]=useState(false);
@@ -1522,27 +2823,16 @@ useEffect(() => {
   const [composerTitle,setComposerTitle] = useState("");
   const [bookTitle, setBookTitle] = useState("");              // NEW: for Academic Books
   const [toFaculty,setToFaculty]=useState(false);
-  const [imagePreviews,setImagePreviews]=useState([]); // [{name,dataUrl}]
-  const [docFiles,setDocFiles]=useState([]);           // [{name,mime,dataUrl}]
+
+  // ⬇️ NEW: S3-backed attachments from AttachmentUploader
+  // Shape: [{ url, key, fileName, size, mime, type }]
+  const [attachments, setAttachments] = useState([]);
+
 
   const exec = (cmd, value=null)=>{ document.execCommand(cmd,false,value); editorRef.current?.focus(); };
   const addLink = ()=>{ const url = prompt("Enter URL (include https://)"); if (url) exec("createLink", url); };
-  const onPickImages = async (e)=>{
-    const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
-    const slots = Math.max(0, 6 - imagePreviews.length);
-    const chosen = files.slice(0, slots);
-    const dataUrls = await Promise.all(chosen.map(f=>fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420)));
-    const next = dataUrls.map((dataUrl,i)=>({ name: chosen[i].name, dataUrl }));
-    setImagePreviews(arr=>[...arr, ...next]);
-    e.target.value="";
-  };
 
-  const onPickDocs = async (e)=>{
-  const files = Array.from(e.target.files||[]);
-  const mapped = await Promise.all(files.map(async f=>({ name:f.name, mime:f.type||"application/octet-stream", dataUrl: await readFileAsDataURL(f) })));
-  setDocFiles(arr=>[...arr, ...mapped]);
-  e.target.value="";
-};
+  
 
   const handlePaste = (e) => {
     e.preventDefault();
@@ -1565,7 +2855,10 @@ useEffect(() => {
       const blob = dataURLtoBlob(src.dataUrl);
       await idbSet(id, blob);
       const thumb = await makeThumb(src.dataUrl, 360, 360, 0.72);
-      imgDescs.push({ id, name: src.name || "image.jpg", mime: blob.type || "image/jpeg", thumb });
+      imgDescs.push({ id, name: src.name || "image.jpg", mime: blob.type || "image/jpeg", 
+        thumb,
+        dataUrl: src.dataUrl,               // ⬅️ NEW
+      });
     }
     const fileDescs = [];
     for (let i=0;i<files.length;i++) {
@@ -1573,13 +2866,16 @@ useEffect(() => {
       const id = `att_file_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const blob = dataURLtoBlob(src.dataUrl);
       await idbSet(id, blob);
-      fileDescs.push({ id, name: src.name || "file", mime: blob.type || src.mime || "application/octet-stream" });
+      fileDescs.push({ id, name: src.name || "file", mime: blob.type || src.mime || "application/octet-stream",
+        dataUrl: src.dataUrl,  });             // ⬅️ NEW });
     }
     return { imgDescs, fileDescs };
   }
 
+  
   // Create post
-  const onPost = async (e)=>{
+  // Create post (and send to backend API)
+  const onPost = async (e) => {
     e.preventDefault();
     const html = (editorRef.current?.innerHTML || "").trim();
 
@@ -1588,46 +2884,170 @@ useEffect(() => {
       alert("Only lecturers can post videos to students.");
       return;
     }
-    // Academic Books: recommend a cover + title
-    if (composerType === "Academic Books" && imagePreviews.length === 0) {
+
+    const attachmentList = Array.isArray(attachments) ? attachments : [];
+
+    // Academic Books: require at least one image as a cover
+    if (
+      composerType === "Academic Books" &&
+      attachmentList.filter((a) => a.type === "image").length === 0
+    ) {
       alert("Please add at least one image as the book cover.");
       return;
     }
 
-    if (!html && imagePreviews.length===0 && docFiles.length===0 && composerType !== "Academic Books") return;
+    // If no text and no attachments (for non-Book posts), do nothing
+    if (!html && attachmentList.length === 0 && composerType !== "Academic Books") {
+      return;
+    }
 
-    const audience = toFaculty ? facultyYearAudienceKey({ university:user.university, faculty:user.faculty, year:user.year }) : audKey;
-    const { imgDescs, fileDescs } = await persistAttachments(imagePreviews, docFiles);
+    const audience = toFaculty
+      ? facultyYearAudienceKey({
+          university: user.university,
+          faculty: user.faculty,
+          year: user.year,
+        })
+      : audKey;
+
+    // Map S3 attachments into the existing images/files shape for the UI
+    const imgDescs = attachmentList
+      .filter((a) => a.type === "image")
+      .map((a) => ({
+        id: a.key || a.url,
+        name: a.fileName || "image",
+        mime: a.mime || "image/*",
+        url: a.url,
+      }));
+
+    const fileDescs = attachmentList
+      .filter((a) => a.type !== "image")
+      .map((a) => ({
+        id: a.key || a.url,
+        name: a.fileName || "file",
+        mime: a.mime || "application/octet-stream",
+        url: a.url,
+      }));
+
     const now = Date.now();
-    const newPost = {
-      id:`p${now}`,
+    const localPost = {
+      //id: `p${now}`,//
+      //id: makeId("p"),
+      id: makeLocalPostId(),
       createdAt: now,
-      authorType:"student",
-      author:user.name,
-      authorPhoto:user.photoUrl,
+      authorType: "student",
+      author: user.name,
+      authorPhoto: user.photoUrl,
       authorProgram: toFaculty ? `${user.faculty} • ${user.year}` : user.program,
-      time:"Just now",
+      time: formatTimeAgo(now),// ⬅️ instead of hard-coded "Just now"
       audience,
-      type:composerType,
-      title: (composerType === "Academic Books" ? (bookTitle || composerTitle) : composerTitle || "").trim(),
+      type: composerType,
+      title:
+        (composerType === "Academic Books"
+          ? bookTitle || composerTitle
+          : composerTitle || ""
+        ).trim(),
       html,
-      images: imgDescs,   // first image acts as cover for Academic Books
+      images: imgDescs,
       files: fileDescs,
-      likes:0, liked:false, comments:[]
+      likes: 0,
+      liked: false,
+      comments: [],
     };
-    setPosts(p=>[newPost, ...p]);
 
+    // 🔼 Send to backend
+    try {
+      // Canonical avatar pulled from the current user
+      const avatar =
+        user.photoUrl ||
+        user.avatarUrl ||
+        user.profilePhotoUrl ||
+        user.profileImageUrl ||
+        "";
+
+      const payload = {
+        role: "student",
+        scope: "student-dashboard",
+        text: stripHtml(html),
+        html,
+        title: localPost.title,
+        type: composerType,
+
+        authorId: user.id,
+        authorName: user.name,
+
+        // ⭐ Send avatar under multiple common keys so the backend
+        // can store any of them and our fetch mapper can still find it.
+        authorAvatarUrl: avatar,
+        authorPhotoUrl: avatar,
+        avatarUrl: avatar,
+        photoUrl: avatar,
+
+        // 🔹 send the same header text we show locally
+        authorProgram: localPost.authorProgram,
+
+        programCode: user.programCode || "",
+        programName: user.program,
+        year: user.year,
+        audience,
+
+        // Raw S3 descriptors from AttachmentUploader
+        attachments: attachmentList,
+      };
+
+      const saved = await createPost(payload);
+
+      // Prefer id/createdAt from server if returned
+      const merged = {
+        ...localPost,
+        id: saved?.id || localPost.id,
+        createdAt: saved?.createdAt || localPost.createdAt,
+        updatedAt: saved?.updatedAt || localPost.createdAt,
+        fromBackend: true,
+      };
+
+      //setPosts((p) => [merged, ...(p || [])]);//Is replaced by the below code block
+
+      setPosts((p) => {
+  const prev = Array.isArray(p) ? p : [];
+  // remove any existing copy by id, then add newest on top
+  return [merged, ...prev.filter(x => x?.id !== merged.id)];
+});
+
+
+
+
+
+
+    } catch (err) {
+      console.error("[StudentDashboard] createPost failed", err);
+      alert(
+        "Could not save your post to the server. It may not be visible to other devices yet."
+      );
+      // Still show locally so student doesn’t lose work
+      //setPosts((p) => [localPost, ...(p || [])]);// Tis line is replaced by the below code block to guarantees your feed array never contains duplicates with the same key.
+
+      setPosts((p) => {
+  const prev = Array.isArray(p) ? p : [];
+  return [localPost, ...prev.filter(x => x?.id !== localPost.id)];
+});
+
+
+
+
+
+
+
+    }
+
+    // Reset composer
     if (editorRef.current) editorRef.current.innerHTML = "";
-    setImagePreviews([]); setDocFiles([]);
-    setComposerType("Notes"); setToFaculty(false);
-    setComposerTitle(""); setBookTitle("");
+    setAttachments([]);
+    setComposerType("Notes");
+    setToFaculty(false);
+    setComposerTitle("");
+    setBookTitle("");
     setComposerOpen(false);
   };
-
-
-
-
-
 
   // Route actions to the right source (student posts vs lecturer posts),
 // update exactly one store, and write-through lecturerPosts immediately.
@@ -1663,58 +3083,182 @@ function updatePostById(postId, updater) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /* ===== Likes/Comments/Replies/Delete ===== */
-  const toggleLike = (postId) => {
+
+const toggleLike = (postId) => {
   updatePostById(postId, (x) => ({
     ...x,
     liked: !x.liked,
     likes: x.liked ? Math.max(0, (x.likes || 0) - 1) : (x.likes || 0) + 1,
   }));
 };
-  const addComment = async (postId, text, images = [], files = []) => {
+
+
+// ✅ NEW: sync updated post (with comments/replies) to the global posts API
+{/*const syncPostToServer = async (updatedPost) => {
+  if (!updatedPost?.id) return;
+  try {
+    //await createPostOnServer(
+      {await createPost({
+      ...updatedPost,
+      scope: "student-dashboard",
+      updatedAt: Date.now(),
+      // ensure server sees a non-empty text field
+      text:
+        (updatedPost.text && String(updatedPost.text).trim()) ||
+        stripHtml(updatedPost.html || "").trim() ||
+        updatedPost.title ||
+        "Post",
+    });
+  } catch (e) {
+    console.warn("[StudentDashboard] syncPostToServer failed", e);
+  }
+};*/}
+
+// ✅ NEW: sync updated post (with comments/replies) to the global posts API
+const syncPostToServer = async (updatedPost) => {
+  if (!updatedPost?.id) return;
+  try {
+    await createPost({
+      ...updatedPost,
+      scope: "student-dashboard",
+      updatedAt: Date.now(),
+      // ensure server sees a non-empty text field
+      text:
+        (updatedPost.text && String(updatedPost.text).trim()) ||
+        stripHtml(updatedPost.html || "").trim() ||
+        updatedPost.title ||
+        "Post",
+    });
+  } catch (e) {
+    console.warn("[StudentDashboard] syncPostToServer failed", e);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const addComment = async (postId, text, images = [], files = []) => {
   const t = (text || "").trim();
   if (!t && images.length === 0 && files.length === 0) return;
 
+  // Downscale + persist attachments (same behaviour as before)
   const { imgDescs, fileDescs } = await persistAttachments(images, files);
   const now = Date.now();
-  updatePostById(postId, (x) => {
-    const comments = Array.isArray(x.comments) ? x.comments.slice() : [];
-    comments.push({
-      id: `c${now}`,
-      author: user.name,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.program,
+
+  const me = user || {};
+  const authorId =
+    me.id || me.uid || me.userId || me.studentId || "";
+  const authorName =
+    me.name || me.fullName || me.studentName || "";
+  const authorProgram = me.program || "";
+  const authorPhoto =
+    me.photoUrl || me.avatarUrl || me.profileImageUrl || "";
+
+  // Call backend so we get the REAL saved comment (incl. id)
+  let serverComment = null;
+  try {
+    const res = await createComment({
+      postId,
       text: t,
+      authorId,
+      authorName,
+      authorProgram,
+      authorPhoto,
       images: imgDescs,
       files: fileDescs,
-      replies: [],
-      createdAt: now,
     });
-    return { ...x, comments };
-  });
+    console.log("[postsApi] createComment response:", res);
+    serverComment = res && (res.comment || res.data?.comment) || null;
+  } catch (err) {
+    console.error("[StudentDashboard] createComment failed:", err);
+  }
+
+  const finalComment =
+    serverComment && serverComment.id
+      ? {
+          ...serverComment,
+          authorPhoto: serverComment.authorPhoto || authorPhoto,
+          authorProgram:
+            serverComment.authorProgram || authorProgram,
+          images: Array.isArray(serverComment.images)
+            ? serverComment.images
+            : imgDescs,
+          //files: Array.isArray(serverComment.files)
+            //? serverComment.files
+            //: fileDescs,
+            images:
+          Array.isArray(serverComment.images) &&
+          serverComment.images.length > 0
+            ? serverComment.images
+            : imgDescs,
+        files:
+          Array.isArray(serverComment.files) &&
+          serverComment.files.length > 0
+            ? serverComment.files
+            : fileDescs,
+
+
+        }
+      : {
+          id: `c_${now}_${Math.random().toString(36).slice(2, 8)}`,
+          postId,
+          authorId,
+          authorName,
+          author: authorName,
+          authorPhoto,
+          authorProgram,
+          text: t,
+          images: imgDescs,
+          files: fileDescs,
+          replies: [],
+          createdAt: now,
+          updatedAt: now,
+        };
+
+  //updatePostById(postId, (x) => {
+    //const comments = Array.isArray(x.comments) ? x.comments.slice() : [];
+    //comments.push(finalComment);
+    //return { ...x, comments };
+  //});
+//};
+
+updatePostById(postId, (x) => {
+  const comments = Array.isArray(x.comments) ? x.comments.slice() : [];
+  comments.push(finalComment);
+
+  const updated = { ...x, comments, updatedAt: Date.now() };
+
+  // ✅ NEW: push the updated post to server so lecturers can see the thread
+  queueMicrotask(() => syncPostToServer(updated));
+
+  return updated;
+});
 };
+
+
+
+
+
+
+
+
 
 const addReply = async (postId, commentId, text, images = [], files = []) => {
   const t = (text || "").trim();
@@ -1722,30 +3266,152 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
 
   const { imgDescs, fileDescs } = await persistAttachments(images, files);
   const now = Date.now();
-  updatePostById(postId, (x) => {
-    const base = Array.isArray(x.comments) ? x.comments.slice() : [];
-    const nextComments = base.map((c) => {
-      if (!c || c.id !== commentId) return c;
-      const replies = Array.isArray(c.replies) ? c.replies.slice() : [];
-      replies.push({
-        id: `r${now}`,
-        author: user.name,
-        authorPhoto: user.photoUrl,
-        authorProgram: user.program,
-        text: t,
-        images: imgDescs,
-        files: fileDescs,
-        createdAt: now,
-      });
-      return { ...c, replies };
+
+  const me = user || {};
+  const authorId =
+    me.id || me.uid || me.userId || me.studentId || "";
+  const authorName =
+    me.name || me.fullName || me.studentName || "";
+  const authorProgram = me.program || "";
+  const authorPhoto =
+    me.photoUrl || me.avatarUrl || me.profileImageUrl || "";
+
+  let serverReply = null;
+  try {
+    const res = await createReply({
+      postId,
+      commentId,
+      text: t,
+      authorId,
+      authorName,
+      authorProgram,
+      authorPhoto,
+      images: imgDescs,
+      files: fileDescs,
     });
-    return { ...x, comments: nextComments };
+    console.log("[postsApi] createReply response:", res);
+    serverReply = res && (res.reply || res.data?.reply) || null;
+  } catch (err) {
+    console.error("[StudentDashboard] createReply failed:", err);
+  }
+
+  const finalReply =
+    serverReply && serverReply.id
+      ? {
+          ...serverReply,
+          authorPhoto: serverReply.authorPhoto || authorPhoto,
+          authorProgram:
+            serverReply.authorProgram || authorProgram,
+          //images: Array.isArray(serverReply.images)
+            //? serverReply.images
+            //: imgDescs,
+          //files: Array.isArray(serverReply.files)
+            //? serverReply.files
+            //: fileDescs,
+
+            // ✅ only use server images/files if they’re non-empty
+        images:
+          Array.isArray(serverReply.images) &&
+          serverReply.images.length > 0
+            ? serverReply.images
+            : imgDescs,
+        files:
+          Array.isArray(serverReply.files) &&
+          serverReply.files.length > 0
+            ? serverReply.files
+            : fileDescs,
+
+
+
+        }
+      : {
+          id: `r_${now}_${Math.random().toString(36).slice(2, 8)}`,
+          postId,
+          commentId,
+          authorId,
+          authorName,
+          author: authorName,
+          authorPhoto,
+          authorProgram,
+          text: t,
+          images: imgDescs,
+          files: fileDescs,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+  //updatePostById(postId, (x) => {
+    //const base = Array.isArray(x.comments) ? x.comments.slice() : [];
+    //const nextComments = base.map((c) => {
+      //if (!c || c.id !== commentId) return c;
+      //const replies = Array.isArray(c.replies) ? c.replies.slice() : [];
+      //replies.push(finalReply);
+      //return { ...c, replies };
+    //});
+    //return { ...x, comments: nextComments };
+  //});
+//};
+
+
+updatePostById(postId, (x) => {
+  const base = Array.isArray(x.comments) ? x.comments.slice() : [];
+  const nextComments = base.map((c) => {
+    if (!c || c.id !== commentId) return c;
+    const replies = Array.isArray(c.replies) ? c.replies.slice() : [];
+    replies.push(finalReply);
+    return { ...c, replies };
   });
+
+  const updated = { ...x, comments: nextComments, updatedAt: Date.now() };
+
+  // ✅ NEW: push the updated post to server so lecturers can see the thread
+  queueMicrotask(() => syncPostToServer(updated));
+
+  return updated;
+});
 };
-  const deletePost = (postId)=>{
-    if (!confirm("Delete this post?")) return;
-    setPosts(p => p.filter(x => x.id !== postId));
-  };
+  
+
+  
+    // 2️⃣ Persist to backend
+    //try {
+      //await createReply({
+        //postId,
+        //commentId,
+        //text: t,
+        //authorId,
+        //authorName,
+      //});
+    //} catch (err) {
+      //console.error("[StudentDashboard] createReply failed:", err);
+    //}
+  //};
+
+
+
+  //const deletePost = (postId)=>{
+    //if (!confirm("Delete this post?")) return;
+    //setPosts(p => p.filter(x => x.id !== postId));
+  //};
+
+  const deletePost = async (postId) => {
+  if (!confirm("Delete this post?")) return;
+
+  // Optimistic UI: remove immediately from this tab
+  setPosts((p) => (Array.isArray(p) ? p.filter((x) => x.id !== postId) : p));
+
+  try {
+    await deletePostOnServer(postId);
+  } catch (err) {
+    console.error("[StudentDashboard] deletePostOnServer failed", err);
+    // Optional: you could re-add the post or show a toast; for now just log.
+    alert("Could not delete the post on the server. It may still appear on other devices.");
+  }
+};
+
+
+
+
 
   /* ===== Post refs for scroll-to from notifications ===== */
   const postRefs = useRef({}); // id -> element
@@ -1774,31 +3440,70 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
   };
 
   // Combine student + lecturer posts for FEED rendering (so scroll works)
-  const feedCombined = useMemo(() => {
-    const a = Array.isArray(posts) ? posts : [];
-    const b = Array.isArray(lecturerPosts) ? lecturerPosts : [];
-    const normalizedLect = b.map(p => (p.authorType ? p : { ...p, authorType: "lecturer" }));
-    return [...a, ...normalizedLect];
-  }, [posts, lecturerPosts]);
+  //const feedCombined = useMemo(() => {
+    //const a = Array.isArray(posts) ? posts : [];
+    //const b = Array.isArray(lecturerPosts) ? lecturerPosts : [];
+    //const normalizedLect = b.map(p => (p.authorType ? p : { ...p, authorType: "lecturer" }));
+    //return [...a, ...normalizedLect];
+  //}, [posts, lecturerPosts]);
+
+  // Combine student + lecturer posts for FEED rendering (dedupe by id so PDFs don't render twice)
+const feedCombined = useMemo(() => {
+  const a = Array.isArray(posts) ? posts : [];
+  const b = Array.isArray(lecturerPosts) ? lecturerPosts : [];
+
+  const normalizedLect = b.map((p) =>
+    p?.authorType ? p : { ...p, authorType: "lecturer" }
+  );
+
+  // Dedupe by id (prefer the version that has S3 urls / richer fields)
+  const byId = new Map();
+  const add = (p) => {
+    if (!p || !p.id) return;
+    const prev = byId.get(p.id);
+    if (!prev) {
+      byId.set(p.id, p);
+      return;
+    }
+    // keep the "better" copy: more attachments or newer timestamps
+    const prevScore =
+      (prev.images?.length || 0) + (prev.files?.length || 0) + (prev.attachments?.length || 0);
+    const nextScore =
+      (p.images?.length || 0) + (p.files?.length || 0) + (p.attachments?.length || 0);
+
+    const prevTs = prev.updatedAt || prev.createdAt || 0;
+    const nextTs = p.updatedAt || p.createdAt || 0;
+
+    if (nextScore > prevScore || nextTs > prevTs) byId.set(p.id, p);
+  };
+
+  // add both sources; duplicates collapse to one
+  a.forEach(add);
+  normalizedLect.forEach(add);
+
+  return Array.from(byId.values());
+}, [posts, lecturerPosts]);
+
+
+
+
 
   /* ===== Filtering (add "View my posts") ===== */
   let filtered = feedCombined
-    .filter(p => (showLecturerOnly ? p.authorType === "lecturer" : true))
-    .filter(p => (showMineOnly ? (p.authorType==="student" && p.author===user.name) : true))
-    .filter(p => (filterType === "All" ? true : p.type === filterType))
-    //.filter(p => showFacultyOnly ? isForMyFaculty(p.audience) : (p.audience === "GLOBAL" || p.audience === audKey) )//
-
-    .filter(p =>
-  showFacultyOnly
-    ? isForMyFaculty(p.audience)
-    : (p.audience === "GLOBAL" || isMyAudience(p, user, baseFac, audKey))
-)
-
-
-
-
-
-    .filter(matchesSearch);
+  .filter(p => (showLecturerOnly ? p.authorType === "lecturer" : true))
+  .filter(p => (showMineOnly ? (p.authorType==="student" && p.author===user.name) : true))
+  .filter(p => {
+    if (filterType === "All") return true;
+    const postType = (p.type || "Notes").trim().toLowerCase();
+    const wanted   = filterType.trim().toLowerCase();
+    return postType === wanted;
+  })
+  .filter(p =>
+    showFacultyOnly
+      ? isForMyFaculty(p.audience)
+      : (p.audience === "GLOBAL" || p.audience === audKey)
+  )
+  .filter(matchesSearch);
   if (showingTab === "Answered") filtered = filtered.filter(p => (p.comments?.length||0) > 0);
   if (showingTab === "Top") filtered = filtered.slice().sort((a,b)=> (b.likes||0) - (a.likes||0));
   else filtered = filtered.slice().sort((a,b)=> ts(b.createdAt||0) - ts(a.createdAt||0));
@@ -1818,6 +3523,7 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
     next.countryCode = ensureCountryCode(next.country, next.countryCode);
     setUser(next);
     saveAndBroadcastUser(next);
+
   };
 
 
@@ -1829,10 +3535,6 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
     // (optional) you could also scroll into view here if you want
   }
 }, [editProfile]);
-
-
-
-
 
 
 
@@ -1892,13 +3594,14 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
   /* ===== Layout ===== */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
+    
 
       {/* ⬇️ Add VerifyGate at the very top-level of the page */}
     <VerifyGate email={current?.email} />
     
       <main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
         {/* LEFT */}
-        <aside className="space-y-4">
+        <aside className="space-y-4 pb-24">
           <Card className="p-0 overflow-hidden">
             <div className="relative h-20 bg-slate-200">
               {user.bannerUrl ? <img src={user.bannerUrl} alt="Banner" className="h-full w-full object-cover"/> : <div className="h-full w-full bg-gradient-to-r from-blue-200 to-indigo-200" />}
@@ -2053,7 +3756,20 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
               ))}
             </div>
           </SidebarCard>
+           {/* Normal Google Ad card */}
+                    <GoogleSidebarAd />
+            
+                 {/* Sticky Google Ad card (stays visible while scrolling) */}
+          <div className="sticky top-[160px] pt-2">
+            {/* "safe" height: viewport minus top offset minus bottom gap */}
+            <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
+              <GoogleSidebarAd />
+            </div>
+          </div>
         </aside>
+
+      
+
 
         {/* CENTER */}
         <section className="space-y-4">
@@ -2096,12 +3812,6 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
                   <ToolbarButton onClick={()=>exec("bold")} label="B" title="Bold"/>
                   <ToolbarButton onClick={()=>exec("italic")} label={<em>I</em>} title="Italic"/>
                   <ToolbarButton onClick={addLink} label="🔗" title="Add link"/>
-                  <label className="ml-auto text-sm text-slate-600 cursor-pointer">📷 Images
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={onPickImages}/>
-                  </label>
-                  <label className="text-sm text-slate-600 cursor-pointer">📎 Files
-                    <input type="file" multiple className="hidden" onChange={onPickDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
-                  </label>
                 </div>
 
                 {/* Title (and Book Title helper) */}
@@ -2136,31 +3846,35 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
                   suppressContentEditableWarning
                 />
 
-                {imagePreviews.length>0 && (
-                  <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {imagePreviews.map((img,idx)=>(
-                      <div key={(img.dataUrl||img.name)+idx} className="relative">
-                        <img src={img.dataUrl} alt={img.name} className="w-full h-32 object-cover rounded"/>
-                        <button type="button" onClick={()=>setImagePreviews(arr=>arr.filter((_,i)=>i!==idx))} className="absolute right-1 top-1 bg-white/80 text-xs px-1 rounded">✕</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {docFiles.length>0 && (
-                  <ul className="mt-2 text-sm text-slate-700 space-y-1">
-                    {docFiles.map((d,i)=>(
-                      <li key={i} className="flex items-center gap-2">
-                        📎 <span className="font-medium">{d.name}</span>
-                        <button type="button" className="text-xs underline" onClick={()=>setDocFiles(arr=>arr.filter((_,idx)=>idx!==i))}>remove</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+
+
+
+                 {/* S3-backed attachments (images + documents) */}
+                <div className="mt-3">
+                  <AttachmentUploader
+                    role="student"
+                    folder="student-posts"
+                    maxFiles={5}
+                    value={attachments}
+                    onChange={setAttachments}
+                  />
+                </div>
+
+
 
                 <div className="mt-3 flex justify-end gap-2">
                   <button
                     type="button"
-                    onClick={()=>{ setComposerOpen(false); if (editorRef.current) editorRef.current.innerHTML=""; setImagePreviews([]); setDocFiles([]); setComposerType("Notes"); setToFaculty(false); setComposerTitle(""); setBookTitle(""); }}
+                    onClick={()=>{ 
+                      setComposerOpen(false);
+                      if (editorRef.current) editorRef.current.innerHTML=""; 
+                      setAttachments([]);
+                      setComposerType("Notes"); 
+                      setToFaculty(false); 
+                      setComposerTitle(""); 
+                      setBookTitle(""); 
+                    }}
+
                     className="rounded-full border border-slate-100 px-4 py-2 text-sm hover:bg-slate-50"
                   >
                     Cancel
@@ -2199,23 +3913,46 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
             </div>
           </Card>
 
-          {filtered.map(p=>(
-            <div key={p.id} ref={el => { if (el) postRefs.current[p.id] = el; }} data-post-id={p.id}>
-              <PostCard
-                post={p}
-                onToggleLike={()=>toggleLike(p.id)}
-                onAddComment={(text,images,files)=>addComment(p.id, text, images, files)}
-                onAddReply={(commentId,text,images,files)=>addReply(p.id, commentId, text, images, files)}
-                onDeletePost={deletePost}
-                currentUser={user}
-                isHighlighted={highlightPostId === p.id}
-              />
+          {/* Small loading hint above the feed */}
+          {feedLoading && (
+            <div className="text-sm text-slate-500 px-1 mb-1">
+              Loading posts…
             </div>
-          ))}
+          )}
+
+          
+
+         {filtered.map((p, idx) => (
+  <div
+    key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}
+    ref={(el) => {
+      //if (el) postRefs.current[p.id] = el;
+      if (el && p?.id) postRefs.current[p.id] = el;
+    }}
+    data-post-id={p.id}
+  >
+    <PostCard
+      post={p}
+      onToggleLike={() => toggleLike(p.id)}
+      onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
+      onAddReply={(commentId, text, images, files) =>
+        addReply(p.id, commentId, text, images, files)
+      }
+      onDeletePost={deletePost}
+      currentUser={user}
+      isHighlighted={highlightPostId === p.id}
+    />
+  </div>
+))}
+
+
+
+
+
         </section>
 
         {/* RIGHT */}
-        <aside className="space-y-4">
+        <aside className="space-y-4 pb-24">
           <Card>
             {latestVideo ? (
               <>
@@ -2231,9 +3968,14 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
                 <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
                   <YouTubeEmbed idOrUrl={latestVideo.videoUrlOrId} title={latestVideo.title || "ScholarsKnowledge Updates"} />
                 </div>
+                
+
                 <div className="mt-2 text-xs text-slate-500 text-center">
-                  Posted {new Date(latestVideo.createdAt).toLocaleString()}
+                     {latestVideo?.createdAt
+                      ? `Posted ${new Date(latestVideo.createdAt).toLocaleString()}`
+                    : null}
                 </div>
+
               </>
             ) : (
               <>
@@ -2308,9 +4050,26 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
         Student Market Place
       </Link>
     </li>
+    <li>
+      <Link
+        to="/student/video-tips"
+        className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+      >
+        Video Tips
+      </Link>
+    </li>
   </ul>
 </div>
-
+ {/* Normal Google Ad card */}
+          <GoogleSidebarAd />
+  
+       {/* Sticky Google Ad card (stays visible while scrolling) */}
+<div className="sticky top-[160px] pt-2">
+  {/* "safe" height: viewport minus top offset minus bottom gap */}
+  <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
+    <GoogleSidebarAd />
+  </div>
+</div>
         </aside>
       </main>
 
@@ -2401,31 +4160,41 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
               </div>
             </div>
             <div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">
-              {notifications.map(p=>(
-                <button
-                  key={p.id}
-                  className="w-full text-left p-3 flex gap-3 items-start hover:bg-slate-50"
-                  onClick={()=>{
-                    setNotifOpen(false);
-                    markAllSeen();
-                    setTimeout(()=>scrollToPost(p.id), 50);
-                  }}
-                  title="Open this post"
-                >
-                  <Avatar size="sm" url={p.authorPhoto} name={p.author}/>
-                  <div className="min-w-0">
-                    <div className="text-sm">
-                      <span className="font-semibold">{p.author}</span>
-                      <span className="text-slate-600"> posted in </span>
-                      <span className="font-medium">
-                        {p.audience===audKey ? "your program" : p.audience?.startsWith("FACULTY__") ? "your faculty" : "group"}
-                      </span>
-                    </div>
-                    {p.title && <div className="text-sm text-slate-900 truncate">{p.title}</div>}
-                    <div className="text-xs text-slate-500">{p.type} • {new Date(p.createdAt).toLocaleString()}</div>
-                  </div>
-                </button>
-              ))}
+              
+                {notifications.map((n, idx) => (
+  <button
+    key={n?.id || n?.postId || `${n?.type || "notif"}__${n?.createdAt || 0}__${idx}`}
+    className="w-full text-left p-3 flex gap-3 items-start hover:bg-slate-50"
+    onClick={() => {
+      setNotifOpen(false);
+      markAllSeen();
+      const targetId = n?.id || n?.postId;
+      if (targetId) setTimeout(() => scrollToPost(targetId), 50);
+    }}
+    title="Open this post"
+  >
+    <Avatar size="sm" url={n?.authorPhoto} name={n?.author} />
+    <div className="min-w-0">
+      <div className="text-sm">
+        <span className="font-semibold">{n?.author}</span>
+        <span className="text-slate-600"> posted in </span>
+        <span className="font-medium">
+          {n?.audience === audKey
+            ? "your program"
+            : n?.audience?.startsWith("FACULTY__")
+            ? "your faculty"
+            : "group"}
+        </span>
+      </div>
+
+      {n?.title && <div className="text-sm text-slate-900 truncate">{n.title}</div>}
+
+      <div className="text-xs text-slate-500">
+        {n?.type} • {n?.createdAt ? new Date(n.createdAt).toLocaleString() : ""}
+      </div>
+    </div>
+  </button>
+))}
               {notifications.length === 0 && (
                 <div className="p-4 text-sm text-slate-500">No notifications.</div>
               )}

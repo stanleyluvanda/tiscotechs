@@ -13,7 +13,7 @@ function toLower(x) {
   return String(x || "").trim().toLowerCase();
 }
 
-export default function VerifyGate({ email }) {
+export default function VerifyGate({ email, role = "student", onVerified }) {
   const mail = toLower(email || "");
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -101,8 +101,22 @@ export default function VerifyGate({ email }) {
     if (!mail || !code) return;
     setErr("");
     try {
-      const res = await confirmVerify(mail, code.trim());
+      await confirmVerify(mail, code.trim());
+
+      // ✅ Mark UI verified
       setOk(true);
+
+      // ✅ NEW (backwards compatible): notify parent + global listeners
+      try {
+        onVerified?.({ email: mail, role });
+      } catch {}
+      try {
+        window.dispatchEvent(
+          new CustomEvent("sk:verified", { detail: { email: mail, role } })
+        );
+      } catch {}
+
+      // Close the gate shortly after
       setTimeout(() => setOpen(false), 600);
     } catch (e) {
       setErr(e?.message || "Invalid code.");

@@ -1,28 +1,32 @@
 // src/pages/StudentSignUp.jsx
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
 import {
   getContinents,
-  getCountriesWithFlags, // returns [{ name, code }, ...]
+  getCountriesWithFlags,
   getUniversities,
   getFaculties,
   getPrograms,
   YEARS,
 } from "../data/eduData.js";
+
+import SingleImageUploader from "../components/upload/SingleImageUploader";
 import { apiRegisterStudent } from "../lib/api";
-import { Link } from "react-router-dom";
 
 /* ---------- Helpers ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 const normalizeEmail = (e) => String(e || "").trim().toLowerCase();
+
 async function sha256Hex(str) {
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest("SHA-256", enc);
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
+
 function trySet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 
-/** Check if an email is already registered for a given role (uses localStorage "users"). */
+/* --- Local email role-check --- */
 function emailExistsForRoleLocal(email, role) {
   const em = normalizeEmail(email);
   const r  = String(role || "student").toLowerCase();
@@ -33,7 +37,7 @@ function emailExistsForRoleLocal(email, role) {
   );
 }
 
-/* --- Optional flag as emoji helper (kept in case you want emoji elsewhere) --- */
+// Flag helpers
 const FLAG = (iso2) => {
   const code = String(iso2 || "").toUpperCase();
   if (!/^[A-Z]{2}$/.test(code)) return "🏳️";
@@ -41,8 +45,8 @@ const FLAG = (iso2) => {
   return String.fromCodePoint(A + (code.charCodeAt(0) - 65), A + (code.charCodeAt(1) - 65));
 };
 
-// Small PNG flag icon from FlagCDN
-const flagPng = (code) => `https://flagcdn.com/24x18/${String(code || "").toLowerCase()}.png`;
+const flagPng = (code) =>
+  `https://flagcdn.com/24x18/${String(code || "").toLowerCase()}.png`;
 
 // ---------- Turnstile helpers ----------
 const TURNSTILE_KEY = (import.meta.env?.VITE_TURNSTILE_SITE_KEY ?? "").trim();
@@ -70,6 +74,7 @@ function loadTurnstileScript() {
 export default function StudentSignUp() {
   const navigate = useNavigate();
 
+  /* ----------------- FORM STATE ----------------- */
   const [form, setForm] = useState({
     name: "",
     gender: "",
@@ -85,16 +90,17 @@ export default function StudentSignUp() {
     year: "",
     agree: false,
   });
-  const [error, setError] = useState("");
-  const [photo, setPhoto] = useState(null);
-  const [photoUrl, setPhotoUrl] = useState("");
 
-  // Turnstile state
+  const [error, setError] = useState("");
+
+  /* ----------------- PHOTO (S3 URL) ----------------- */
+  const [photo, setPhoto] = useState(null);  // SingleImageUploader output
+
+  /* ----------------- Turnstile ----------------- */
   const [turnstileToken, setTurnstileToken] = useState("");
   const turnstileRef = useRef(null);
   const turnstileWidgetIdRef = useRef(null);
 
-  // init Turnstile
   useEffect(() => {
     let destroyed = false;
     (async () => {
@@ -121,6 +127,7 @@ export default function StudentSignUp() {
         console.warn("Turnstile failed to load:", e);
       }
     })();
+
     return () => {
       destroyed = true;
       if (window.turnstile && turnstileWidgetIdRef.current) {
@@ -130,13 +137,7 @@ export default function StudentSignUp() {
     };
   }, []);
 
-  // cleanup photo object URL
-  useEffect(() => {
-    return () => {
-      if (photoUrl) URL.revokeObjectURL(photoUrl);
-    };
-  }, [photoUrl]);
-
+  /* ----------------- FORM HANDLERS ----------------- */
   const onBasic = (e) => {
     const { name, type, value, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
@@ -156,55 +157,17 @@ export default function StudentSignUp() {
 
   const onUniversity = (e) =>
     setForm((f) => ({ ...f, university: e.target.value, faculty: "", program: "", year: "" }));
-  const onFaculty = (e) => setForm((f) => ({ ...f, faculty: e.target.value, program: "", year: "" }));
-  const onProgram = (e) => setForm((f) => ({ ...f, program: e.target.value, year: "" }));
-  const onYear = (e) => setForm((f) => ({ ...f, year: e.target.value }));
 
-  const onPhoto = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return setError("Please select an image file.");
-    setError("");
-    if (photoUrl) URL.revokeObjectURL(photoUrl);
-    setPhoto(file);
-    setPhotoUrl(URL.createObjectURL(file));
-  };
-  const clearPhoto = () => {
-    if (photoUrl) URL.revokeObjectURL(photoUrl);
-    setPhoto(null);
-    setPhotoUrl("");
-  };
+  const onFaculty = (e) =>
+    setForm((f) => ({ ...f, faculty: e.target.value, program: "", year: "" }));
 
-  async function downscaleImageToDataURL(file, maxDim = 320, quality = 0.82) {
-    const blobUrl = URL.createObjectURL(file);
-    try {
-      const img = await new Promise((res, rej) => {
-        const i = new Image();
-        i.onload = () => res(i);
-        i.onerror = rej;
-        i.src = blobUrl;
-      });
-      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-      const w = Math.max(1, Math.round(img.width * scale));
-      const h = Math.max(1, Math.round(img.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, w, h);
-      let q = quality;
-      let dataURL = canvas.toDataURL("image/jpeg", q);
-      const TARGET = 400 * 1024;
-      while (dataURL.length * 0.75 > TARGET && q > 0.5) {
-        q -= 0.06;
-        dataURL = canvas.toDataURL("image/jpeg", q);
-      }
-      return dataURL;
-    } finally {
-      URL.revokeObjectURL(blobUrl);
-    }
-  }
+  const onProgram = (e) =>
+    setForm((f) => ({ ...f, program: e.target.value, year: "" }));
 
+  const onYear = (e) =>
+    setForm((f) => ({ ...f, year: e.target.value }));
+
+  /* ----------------- SUBMIT ----------------- */
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -223,135 +186,188 @@ export default function StudentSignUp() {
       "year",
       "agree",
     ];
+
     const missing = required.filter((k) => !form[k]);
     if (missing.includes("agree"))
       return setError("You must agree to the Privacy Policy and Terms of Use.");
-    if (missing.length) return setError("Please complete all fields.");
+    if (missing.length)
+      return setError("Please complete all fields.");
+
     if (form.password !== form.confirmPassword)
       return setError("Passwords do not match.");
-    if (!turnstileToken) return setError("Please complete the verification.");
 
-    try {
-      let photoDataUrl = "";
-      if (photo) photoDataUrl = await downscaleImageToDataURL(photo);
+    if (!turnstileToken)
+      return setError("Please complete the verification.");
 
-      // Normalize email
-      const emailNorm = normalizeEmail(form.email);
+    // Normalize email
+    const emailNorm = normalizeEmail(form.email);
 
-      // Local duplicate check (dev-only)
-      if (emailExistsForRoleLocal(emailNorm, "student")) {
-        setError("An account with this email already exists for a student. Please log in instead.");
-        return;
-      }
-
-      // Hash password ONCE and reuse for backend + local
-      const passwordHash = await sha256Hex(form.password);
-
-      // Profile object (for local + backend convenience)
-      const profile = {
-        name: form.name,
-        fullName: form.name,
-        studentName: form.name,
-        gender: form.gender,
-        continent: form.continent,
-        country: form.country,
-        countryCode: form.countryCode,
-        university: form.university,
-        faculty: form.faculty,
-        program: form.program,
-        year: form.year,
-        photoUrl: photoDataUrl,
-      };
-
-      // ---- Call real backend via apiRegisterStudent ----
-      let backendResp;
-      try {
-        backendResp = await apiRegisterStudent({
-          email: emailNorm,
-          passwordHash,
-          role: "student",
-          profile,
-          // also send top-level fields for Lambda convenience
-          name: form.name,
-          gender: form.gender,
-          continent: form.continent,
-          country: form.country,
-          countryCode: form.countryCode,
-          university: form.university,
-          faculty: form.faculty,
-          program: form.program,
-          year: form.year,
-          photo: photoDataUrl,
-          turnstileToken,
-        });
-      } catch (err) {
-        console.error("[student-signup] backend network error:", err);
-        backendResp = { ok: false, error: "network" };
-      }
-
-      if (!backendResp || !backendResp.ok) {
-        const code = String(backendResp?.error || "").toUpperCase();
-        if (code === "ALREADY_EXISTS" || code === "EMAIL_EXISTS" || code === "EMAIL_EXISTS_STUDENT") {
-          setError("An account with this email already exists for a student. Please log in instead.");
-        } else if (code === "MISSING_FIELDS") {
-          setError("Some required fields are missing. Please review the form.");
-        } else {
-          setError("Could not create your account. Please try again.");
-        }
-        return;
-      }
-
-      // ---- Local mirrors (for dashboards) ----
-      sessionStorage.setItem("currentPassword", form.password);
-
-      const id = `u_${Date.now()}`;
-      const newUser = {
-        id,
-        uid: id,
-        role: "student",
-        name: form.name,
-        gender: form.gender,
-        email: emailNorm,
-        continent: form.continent,
-        country: form.country,
-        countryCode: form.countryCode,
-        university: form.university,
-        faculty: form.faculty,
-        program: form.program,
-        year: form.year,
-        photoUrl: photoDataUrl,
-        createdAt: new Date().toISOString(),
-      };
-
-      const users = safeParse(localStorage.getItem("users")) || [];
-      const byId = safeParse(localStorage.getItem("usersById")) || {};
-
-      users.push({ ...newUser, passwordHash });
-      byId[id] = { ...newUser, passwordHash };
-
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("usersById", JSON.stringify(byId));
-
-      const stubUser = { ...newUser }; // no password in memory
-      sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
-      trySet("currentUser", JSON.stringify(stubUser));
-      for (const k of ["authUserId", "activeUserId", "currentUserId", "loggedInUserId"]) {
-        sessionStorage.setItem(k, id);
-        trySet(k, id);
-      }
-
-      if (window.turnstile && turnstileWidgetIdRef.current) {
-        try { window.turnstile.reset(turnstileWidgetIdRef.current); } catch {}
-      }
-
-      navigate("/student-dashboard");
-    } catch (err) {
-      console.error(err);
-      setError("Registration failed. Please try again.");
+    // Local duplicate check
+    if (emailExistsForRoleLocal(emailNorm, "student")) {
+      setError("An account with this email already exists for a student. Please log in instead.");
+      return;
     }
+
+    // Hash password ONCE
+    const passwordHash = await sha256Hex(form.password);
+
+    // Build profile object
+    const profile = {
+      name: form.name,
+      fullName: form.name,
+      studentName: form.name,
+      gender: form.gender,
+      continent: form.continent,
+      country: form.country,
+      countryCode: form.countryCode,
+      university: form.university,
+      faculty: form.faculty,
+      program: form.program,
+      year: form.year,
+      photoUrl: photo || "",   // <-- S3 URL
+    };
+
+    /* ----------------- BACKEND CALL ----------------- */
+    let backendResp;
+    try {
+      backendResp = await apiRegisterStudent({
+        email: emailNorm,
+        passwordHash,
+        role: "student",
+        profile,
+        name: form.name,
+        gender: form.gender,
+        continent: form.continent,
+        country: form.country,
+        countryCode: form.countryCode,
+        university: form.university,
+        faculty: form.faculty,
+        program: form.program,
+        year: form.year,
+        photo: photo || "",
+        turnstileToken,
+      });
+    } catch (err) {
+      console.error("[student-signup] backend network error:", err);
+      backendResp = { ok: false, error: "network" };
+    }
+
+    if (!backendResp || !backendResp.ok) {
+      const code = String(backendResp?.error || "").toUpperCase();
+      if (["ALREADY_EXISTS","EMAIL_EXISTS","EMAIL_EXISTS_STUDENT"].includes(code)) {
+        setError("An account with this email already exists for a student. Please log in instead.");
+      } else if (code === "MISSING_FIELDS") {
+        setError("Some required fields are missing. Please review the form.");
+      } else {
+        setError("Could not create your account. Please try again.");
+      }
+      return;
+    }
+
+
+
+
+    // ✅ Best-effort: mirror student into global Users API (for Contact Lecturer list)
+try {
+  const BASE =
+    (import.meta.env.VITE_POSTS_API_BASE ||
+      import.meta.env.VITE_CONTACTS_API_BASE ||
+      "http://localhost:5003").replace(/\/+$/, "");
+
+  await fetch(`${BASE}/api/users/upsert`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      user: {
+        uid: `email:${emailNorm}`, // stable id across devices/logins
+        role: "student",
+        email: emailNorm,
+        name: form.name,
+        gender: form.gender,
+        continent: form.continent,
+        country: form.country,
+        countryCode: form.countryCode,
+        university: form.university,
+        faculty: form.faculty,
+        program: form.program,
+        year: form.year,
+        photoUrl: photo || "",
+        profile: { ...profile, photoUrl: photo || "" },
+      },
+    }),
+  });
+} catch (e) {
+  console.warn("[student-signup] users upsert failed (non-blocking):", e);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /* ---------------- LOCAL MIRRORS ----------------- */
+    sessionStorage.setItem("currentPassword", form.password);
+
+    const id = `u_${Date.now()}`;
+    const newUser = {
+      id,
+      uid: id,
+      role: "student",
+      name: form.name,
+      gender: form.gender,
+      email: emailNorm,
+      continent: form.continent,
+      country: form.country,
+      countryCode: form.countryCode,
+      university: form.university,
+      faculty: form.faculty,
+      program: form.program,
+      year: form.year,
+      photoUrl: photo || "",
+      createdAt: new Date().toISOString(),
+    };
+
+    const users = safeParse(localStorage.getItem("users")) || [];
+    const byId = safeParse(localStorage.getItem("usersById")) || {};
+
+    users.push({ ...newUser, passwordHash });
+    byId[id] = { ...newUser, passwordHash };
+
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.setItem("usersById", JSON.stringify(byId));
+
+    const stubUser = { ...newUser };
+    sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
+    trySet("currentUser", JSON.stringify(stubUser));
+
+    for (const k of ["authUserId","activeUserId","currentUserId","loggedInUserId"]) {
+      sessionStorage.setItem(k, id);
+      trySet(k, id);
+    }
+
+    if (window.turnstile && turnstileWidgetIdRef.current) {
+      try { window.turnstile.reset(turnstileWidgetIdRef.current); } catch {}
+    }
+
+    navigate("/student-dashboard");
   };
 
-  // ----- options -----
+  /* ----------------- OPTIONS ----------------- */
   const continents = getContinents();
   const rawCountries = form.continent ? getCountriesWithFlags(form.continent) : [];
   const countries = (rawCountries || []).map((c) => ({
@@ -363,49 +379,32 @@ export default function StudentSignUp() {
   const faculties = getFaculties(form.continent, form.country, form.university) || [];
   const programs = getPrograms(form.continent, form.country, form.university, form.faculty) || [];
 
+  /* ----------------- RENDER ----------------- */
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#f0f6ff] via-white to-[#eef2ff]">
       <main className="flex-1">
         <section className="max-w-2xl mx-auto px-4 py-12">
+
           <div className="text-center">
             <img src="/images/1754280544595.jpeg" alt="ScholarsKnowledge Logo" className="mx-auto h-14 w-14 object-contain" />
             <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">Student Sign Up</h1>
           </div>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4 bg-white/70 rounded-2xl p-6 border">
-            {error && <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+            {error && (
+              <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+                {error}
+              </p>
+            )}
 
-            {/* Photo */}
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-20 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center border">
-                {photoUrl ? (
-                  <img src={photoUrl} alt="Profile preview" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-slate-500">👤</span>
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onPhoto}
-                  className="block w-full text-sm text-slate-600
-                             file:mr-3 file:py-2 file:px-4
-                             file:rounded file:border-0
-                             file:text-sm file:font-semibold
-                             file:bg-blue-600 file:text-white
-                             hover:file:bg-blue-700"
-                />
-                {photo && (
-                  <button type="button" onClick={clearPhoto} className="text-sm text-slate-600 underline self-start">
-                    Remove photo
-                  </button>
-                )}
-                <p className="text-xs text-slate-500">Large images will be resized.</p>
-              </div>
-            </div>
+            {/* NEW S3 IMAGE UPLOADER */}
+            <SingleImageUploader
+              value={photo}
+              onChange={setPhoto}
+              folder="profiles"
+            />
 
-            {/* Basic */}
+            {/* BASIC */}
             <input
               name="name"
               className="w-full border rounded px-3 py-2"
@@ -414,10 +413,15 @@ export default function StudentSignUp() {
               onChange={onBasic}
             />
 
-            {/* Gender (binary only) */}
+            {/* Gender */}
             <label className="block">
               <span className="block text-sm text-slate-600 mb-1">Gender</span>
-              <select name="gender" className="w-full border rounded px-3 py-2" value={form.gender} onChange={onBasic}>
+              <select
+                name="gender"
+                className="w-full border rounded px-3 py-2"
+                value={form.gender}
+                onChange={onBasic}
+              >
                 <option value="">Select Gender</option>
                 <option value="Female">Female</option>
                 <option value="Male">Male</option>
@@ -433,7 +437,7 @@ export default function StudentSignUp() {
               onChange={onBasic}
             />
 
-            {/* Passwords */}
+            {/* PASSWORD */}
             <div className="grid md:grid-cols-2 gap-4">
               <input
                 name="password"
@@ -453,20 +457,22 @@ export default function StudentSignUp() {
               />
             </div>
 
-            {/* Continent */}
+            {/* CONTINENT */}
             <label className="block">
               <span className="block text-sm text-slate-600 mb-1">Continent</span>
-              <select className="w-full border rounded px-3 py-2" value={form.continent} onChange={onContinent}>
+              <select
+                className="w-full border rounded px-3 py-2"
+                value={form.continent}
+                onChange={onContinent}
+              >
                 <option value="">Select Continent</option>
-                {getContinents().map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                {continents.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </label>
 
-            {/* Country (custom dropdown with rectangular flag icons) */}
+            {/* COUNTRY */}
             <CountrySelect
               label="Country"
               disabled={!form.continent}
@@ -481,26 +487,29 @@ export default function StudentSignUp() {
               label="University"
               value={form.university}
               onChange={onUniversity}
-              options={getUniversities(form.continent, form.country) || []}
+              options={universities}
               placeholder="Select University"
               disabled={!form.country}
             />
+
             <Select
               label="College/School/Faculty/Department"
               value={form.faculty}
               onChange={onFaculty}
-              options={getFaculties(form.continent, form.country, form.university) || []}
+              options={faculties}
               placeholder="Select Faculty/School"
               disabled={!form.university}
             />
+
             <Select
               label="Academic Program"
               value={form.program}
               onChange={onProgram}
-              options={getPrograms(form.continent, form.country, form.university, form.faculty) || []}
+              options={programs}
               placeholder="Select Program"
               disabled={!form.faculty}
             />
+
             <Select
               label="Year of Study"
               value={form.year}
@@ -510,7 +519,7 @@ export default function StudentSignUp() {
               disabled={!form.program}
             />
 
-            {/* Terms + Turnstile row */}
+            {/* TERMS + TURNSTILE */}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-start md:items-center gap-3 mb-2">
               <label className="flex items-start gap-2 min-w-0">
                 <input
@@ -522,31 +531,23 @@ export default function StudentSignUp() {
                 />
                 <span className="text-sm text-slate-700">
                   I agree to the{" "}
-                  <Link
-                    to="/privacy-policy"
-                    className="text-[#1a73e8] underline"
-                  >
+                  <Link to="/privacy-policy" className="text-[#1a73e8] underline">
                     Privacy Policy
                   </Link>{" "}
                   and{" "}
-                  <Link
-                    to="/terms-of-use"
-                    className="text-[#1a73e8] underline"
-                  >
+                  <Link to="/terms-of-use" className="text-[#1a73e8] underline">
                     Terms of Use
-                  </Link>
-                  .
+                  </Link>.
                 </span>
               </label>
 
               {TURNSTILE_KEY ? (
                 <div className="justify-self-end pr-2">
-                  {/* This div is the mount point for Turnstile */}
                   <div ref={turnstileRef} className="turnstile-wide" />
                 </div>
               ) : (
                 <div className="text-xs text-red-600 justify-self-end pr-2">
-                  Missing <code>VITE_TURNSTILE_SITE_KEY</code> in <code>.env</code>
+                  Missing <code>VITE_TURNSTILE_SITE_KEY</code>
                 </div>
               )}
             </div>
@@ -558,25 +559,27 @@ export default function StudentSignUp() {
             >
               Submit
             </button>
-
             <p className="text-sm text-slate-600 text-center">
-              Already have an account?{" "}
-              <a href="/login?role=student" className="text-[#1a73e8] underline">
-                Log in
-              </a>
-            </p>
+                 Already have an account?{" "}
+              <Link to="/login?role=student" className="text-[#1a73e8] underline">
+               Log in
+             </Link>
+           </p>
           </form>
         </section>
       </main>
 
       <footer className="bg-blue-900 text-white py-6 text-center text-sm">
-        © {new Date().getFullYear()} ScholarsKnowledge · <a href="/login" className="underline">Contact Sales</a>
+        © {new Date().getFullYear()} ScholarsKnowledge ·{" "}
+        <a href="/login" className="underline">
+          Contact Sales
+        </a>
       </footer>
     </div>
   );
 }
 
-/* ---------- Reusable select ---------- */
+/* ---------- Reusable Select ---------- */
 function Select({ label, value, onChange, options, placeholder, disabled }) {
   return (
     <label className="block">
@@ -589,16 +592,14 @@ function Select({ label, value, onChange, options, placeholder, disabled }) {
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
+          <option key={o} value={o}>{o}</option>
         ))}
       </select>
     </label>
   );
 }
 
-/* ---------- CountrySelect with rectangular flag icons (24x18) ---------- */
+/* ---------- Country Select ---------- */
 function CountrySelect({ label, countries, value, onSelect, disabled }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -634,16 +635,10 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
         className={`w-full border rounded px-3 py-2 text-left bg-white ${
           disabled ? "bg-slate-50 cursor-not-allowed" : "hover:bg-slate-50"
         }`}
-        aria-haspopup="listbox"
-        aria-expanded={open}
       >
         {selected ? (
           <span className="inline-flex items-center gap-2">
-            <img
-              src={flagPng(selected.code)}
-              alt=""
-              className="w-[24px] h-[18px] border object-contain"
-            />
+            <img src={flagPng(selected.code)} className="w-[24px] h-[18px] border object-contain" />
             <span>{selected.name}</span>
           </span>
         ) : (
@@ -653,7 +648,6 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
 
       {open && !disabled && (
         <ul
-          role="listbox"
           className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg"
         >
           {countries.map(({ name, code }) => {
@@ -661,7 +655,6 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
             return (
               <li
                 key={`${name}-${c}`}
-                role="option"
                 tabIndex={0}
                 onClick={() => {
                   onSelect({ name, code: c });
@@ -677,7 +670,6 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
               >
                 <img
                   src={flagPng(c)}
-                  alt=""
                   className="w-[24px] h-[18px] border object-contain"
                 />
                 <span>{name}</span>

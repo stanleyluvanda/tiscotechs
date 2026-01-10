@@ -1,11 +1,18 @@
 // src/utils/scholarshipsApi.js
-const API_BASE = (
-  import.meta?.env?.VITE_API_URL ||
-  import.meta?.env?.VITE_API_BASE ||
-  ""
-).replace(/\/+$/, ""); // strip trailing slash
+
+// Prefer a dedicated scholarships API base so we don't break other APIs that use VITE_API_BASE.
+const RAW_API_BASE =
+  (import.meta?.env?.VITE_SCHOLARSHIPS_API_BASE &&
+    String(import.meta.env.VITE_SCHOLARSHIPS_API_BASE).trim()) ||
+  (import.meta?.env?.VITE_API_URL && String(import.meta.env.VITE_API_URL).trim()) ||
+  (import.meta?.env?.VITE_API_BASE && String(import.meta.env.VITE_API_BASE).trim()) ||
+  "";
+
+// Strip trailing slashes so we can safely append paths.
+const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
 
 const LS_KEY = "scholarships_local";
+const IS_PROD = !!import.meta?.env?.PROD;
 
 /* ---------- Local helpers ---------- */
 function readLocal() {
@@ -26,29 +33,52 @@ function ensureId(item) {
   return { ...item, id: Date.now() };
 }
 
-/* ---------- API + fallback ops ---------- */
-export async function listScholarships({ q = "", status = "all", page = 1, pageSize = 50 } = {}) {
-  // Try API
-  if (API_BASE) {
-    try {
-      const params = new URLSearchParams({
-        q,
-        status,
-        page: String(page),
-        pageSize: String(pageSize),
-      });
-      const r = await fetch(`${API_BASE}/api/scholarships?${params.toString()}`);
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return await r.json(); // { items, total }
-    } catch (_) {
-      // fall through to local
+/* ---------- Internal helpers ---------- */
+async function apiFetch(path, opts) {
+  if (!API_BASE) {
+    if (IS_PROD) {
+      throw new Error(
+        "Scholarships API base is missing in production. Set VITE_SCHOLARSHIPS_API_BASE in Amplify."
+      );
     }
+    return null; // dev: allow local fallback
   }
 
-  // Local fallback
+  const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+
+  try {
+    const r = await fetch(url, opts);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch (e) {
+    // In prod: never fall back to local (that breaks cross-device visibility)
+    if (IS_PROD) throw e;
+    return null; // dev: allow local fallback
+  }
+}
+
+/* ---------- API + fallback ops ---------- */
+export async function listScholarships({
+  q = "",
+  status = "all",
+  page = 1,
+  pageSize = 50,
+} = {}) {
+  const params = new URLSearchParams({
+    q,
+    status,
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+
+  const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
+    method: "GET",
+  });
+  if (apiData) return apiData; // { items, total }
+
+  // Local fallback (DEV ONLY)
   let items = readLocal();
 
-  // Filter
   if (q) {
     const s = q.toLowerCase();
     items = items.filter((it) =>
@@ -58,10 +88,12 @@ export async function listScholarships({ q = "", status = "all", page = 1, pageS
     );
   }
   if (status && status !== "all") {
-    items = items.filter((it) => (it.status || "pending").toLowerCase() === status.toLowerCase());
+    items = items.filter(
+      (it) =>
+        (it.status || "pending").toLowerCase() === status.toLowerCase()
+    );
   }
 
-  // Sort newest first by createdAt or id
   items.sort((a, b) => (b.createdAt || b.id || 0) - (a.createdAt || a.id || 0));
 
   const total = items.length;
@@ -70,57 +102,49 @@ export async function listScholarships({ q = "", status = "all", page = 1, pageS
   return { items: paged, total };
 }
 
-export async function updateScholarship(id, patch) {
-  // Try API
-  if (API_BASE) {
-    try {
-      const r = await fetch(`${API_BASE}/api/scholarships/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
-      });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return await r.json();
-    } catch (_) {
-      // fall through to local
-    }
-  }
+export async function createScholarship(data) {
+  const apiData = await apiFetch(`/api/scholarships`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data || {}),
+  });
+  if (apiData) return apiData;
 
-  // Local fallback
+  // Local fallback (DEV ONLY)
+  const items = readLocal();
+  const withId = ensureId({
+    ...data,
+    createdAt: data?.createdAt || Date.now(),
+    status: String(data?.status || "pending").toLowerCase(),
+  });
+  items.unshift(withId);
+  writeLocal(items);
+  return withId;
+}
+
+export async function updateScholarship(id, patch) {
+  const apiData = await apiFetch(`/api/scholarships/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch || {}),
+  });
+  if (apiData) return apiData;
+
+  // Local fallback (DEV ONLY)
   const items = readLocal();
   const idx = items.findIndex((x) => String(x.id) === String(id));
   if (idx === -1) throw new Error("Not found (local)");
-  items[idx] = { ...items[idx], ...patch };
+  items[idx] = { ...items[idx], ...patch, id: items[idx].id };
   writeLocal(items);
   return items[idx];
 }
 
 export async function deleteScholarship(id) {
-  // Try API
-  if (API_BASE) {
-    try {
-      const r = await fetch(`${API_BASE}/api/scholarships/${id}`, { method: "DELETE" });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return { ok: true };
-    } catch (_) {
-      // fall through to local
-    }
-  }
+  const apiData = await apiFetch(`/api/scholarships/${id}`, { method: "DELETE" });
+  if (apiData) return { ok: true };
 
-  // Local fallback
+  // Local fallback (DEV ONLY)
   const items = readLocal().filter((x) => String(x.id) !== String(id));
   writeLocal(items);
   return { ok: true };
-}
-
-/* Optional: use this if you ever need to create via local directly */
-export function createLocalScholarship(data) {
-  const items = readLocal();
-  const withId = ensureId({
-    ...data,
-    createdAt: data.createdAt || Date.now(),
-  });
-  items.push(withId);
-  writeLocal(items);
-  return withId;
 }

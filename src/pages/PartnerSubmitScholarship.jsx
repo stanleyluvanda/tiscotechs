@@ -7,11 +7,99 @@ import Quill from "quill";
 import "quill/dist/quill.snow.css";
 
 // Normalize API base (empty string if not set) and strip trailing slashes
+// IMPORTANT: Partner scholarship submission must hit the Scholarships API.
 const API_BASE = (
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
 ).replace(/\/+$/, "");
+
+function isCloudfrontUrl(u = "") {
+  return /^https:\/\/[^/]+\.cloudfront\.net\//i.test(String(u || ""));
+}
+
+/** Accept multiple backend response field names without breaking existing backend */
+function pickCloudfrontUrl(obj) {
+  if (!obj || typeof obj !== "object") return "";
+  return (
+    obj.cloudfrontUrl ||
+    obj.cloudFrontUrl ||
+    obj.publicUrl ||
+    obj.url ||
+    obj.cdnUrl ||
+    obj.cdnURL ||
+    obj.location ||
+    ""
+  );
+}
+
+async function getUploadUrl({ fileName, contentType }) {
+  if (!API_BASE) throw new Error("Missing API_BASE (VITE_SCHOLARSHIPS_API_BASE).");
+
+  const res = await fetch(`${API_BASE}/api/scholarships/upload-url`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fileName, contentType }),
+  });
+
+  const txt = await res.text();
+  if (!res.ok) throw new Error(`upload-url HTTP ${res.status}: ${txt}`);
+
+  let j = {};
+  try {
+    j = JSON.parse(txt);
+  } catch {
+    // keep {}
+  }
+
+  const uploadUrl = j.uploadUrl;
+  const publicUrl = pickCloudfrontUrl(j);
+
+  if (!uploadUrl || !publicUrl) {
+    throw new Error(`upload-url response missing fields. Got: ${txt}`);
+  }
+
+  return { uploadUrl, publicUrl };
+}
+
+async function putFileToS3(uploadUrl, file) {
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!put.ok) {
+    const txt = await put.text().catch(() => "");
+    throw new Error(`PUT upload failed HTTP ${put.status}: ${txt}`);
+  }
+}
+
+async function importHostedUrlToCloudfront(url) {
+  if (!API_BASE) throw new Error("Missing API_BASE.");
+
+  const res = await fetch(`${API_BASE}/api/scholarships/import-image`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  const txt = await res.text();
+  if (!res.ok) throw new Error(`import-image HTTP ${res.status}: ${txt}`);
+
+  let j = {};
+  try {
+    j = JSON.parse(txt);
+  } catch {
+    // keep {}
+  }
+
+  const cf = pickCloudfrontUrl(j);
+  if (!cf) throw new Error(`import-image 200 OK but no CloudFront URL. Got: ${txt}`);
+
+  // normalize
+  return { ...j, cloudfrontUrl: cf };
+}
 
 /** Match the same values you filter on in Scholarship.jsx */
 const LEVEL_OPTIONS = [
@@ -50,14 +138,7 @@ function getPartnerEmail() {
     const raw = localStorage.getItem("partnerAuth");
     if (!raw) return "";
     const obj = JSON.parse(raw);
-    return (
-      obj.email ||
-      obj.userEmail ||
-      obj.username ||
-      obj.user ||
-      obj.name ||
-      ""
-    );
+    return obj.email || obj.userEmail || obj.username || obj.user || obj.name || "";
   } catch {
     return "";
   }
@@ -67,7 +148,7 @@ export default function PartnerSubmitScholarship() {
   const [form, setForm] = useState({
     title: "",
     provider: "",
-    continent: "All",   // UI only; not sent
+    continent: "All", // UI only; not sent
     country: "Multiple",
     level: "",
     field: "",
@@ -84,9 +165,9 @@ export default function PartnerSubmitScholarship() {
     amount: "",
     // Internal notes (not public)
     notes: "",
-    // NEW: image fields
-    imageUrl: "",   // hosted URL (preferred if present)
-    imageData: "",  // base64 data URL from local upload (fallback)
+    // image fields
+    imageUrl: "", // hosted URL (preferred if present)
+    imageData: "", // base64 data URL from local upload (fallback)
   });
 
   const [msg, setMsg] = useState("");
@@ -95,6 +176,60 @@ export default function PartnerSubmitScholarship() {
   const [imgPreview, setImgPreview] = useState("");
 
   const partnerEmail = getPartnerEmail();
+
+  // ✅ Step A: states + helper for "paste link => CloudFront"
+  const [importingHosted, setImportingHosted] = useState(false);
+  const pendingHostedRef = useRef(""); // latest external URL being imported
+
+  // Auto-import debounce + loop guard
+  const importTimerRef = useRef(null);
+  const lastImportedRef = useRef(""); // remembers the raw URL that was imported
+
+  async function forceImportHostedUrl(rawUrl) {
+    const raw = String(rawUrl || "").trim();
+    if (!raw) return;
+
+    // ✅ Change 1: allow data:image base64 AND http(s)
+    const isHttp = /^https?:\/\//i.test(raw);
+    const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
+    if (!isHttp && !isDataImage) return;
+
+    // already cloudfront => just preview + store
+    if (isCloudfrontUrl(raw)) {
+      setErr("");
+      setImgPreview(raw);
+      setForm((f) => ({ ...f, imageUrl: raw, imageData: "" }));
+      return;
+    }
+
+    // prevent duplicate in-flight imports of same URL
+    if (pendingHostedRef.current === raw) return;
+
+    try {
+      setErr("");
+      setImportingHosted(true);
+      pendingHostedRef.current = raw;
+
+      if (!API_BASE) throw new Error("Missing API_BASE. Cannot import hosted URL to CloudFront.");
+
+      const j = await importHostedUrlToCloudfront(raw);
+      const cf = j?.cloudfrontUrl || j?.publicUrl || j?.cloudFrontUrl;
+      if (!cf) throw new Error("Import succeeded but no CloudFront URL returned.");
+
+      // mark imported (so effect doesn't loop on the same external URL)
+      lastImportedRef.current = raw;
+
+      // overwrite input with CloudFront URL
+      setImgPreview(cf);
+      setForm((f) => ({ ...f, imageUrl: cf, imageData: "" }));
+    } catch (e) {
+      console.error(e);
+      setErr(String(e?.message || e || "Could not import hosted URL to CloudFront."));
+    } finally {
+      setImportingHosted(false);
+      pendingHostedRef.current = "";
+    }
+  }
 
   /** ===== Country options depend on selected continent ===== */
   const countryOptions = useMemo(() => {
@@ -107,18 +242,58 @@ export default function PartnerSubmitScholarship() {
   }, [form.continent]);
 
   /** ===== Basic input handlers ===== */
+  // Editing imageUrl clears base64 + clears preview so auto-import can refresh it
   const onChange = (e) => {
     const { name, value } = e.target;
+
     setForm((f) => {
       if (name === "continent") return { ...f, continent: value, country: "Multiple" };
+      if (name === "imageUrl") return { ...f, imageUrl: value, imageData: "" }; // clear base64
       return { ...f, [name]: value };
     });
+
+    if (name === "imageUrl") setImgPreview("");
   };
+
+  // ✅ Step B: update existing auto-import effect to use forceImportHostedUrl
+  useEffect(() => {
+    const raw = String(form.imageUrl || "").trim();
+
+    if (importTimerRef.current) clearTimeout(importTimerRef.current);
+    if (!raw) return;
+
+    // if already CloudFront, just preview it
+    if (isCloudfrontUrl(raw)) {
+      setImgPreview(raw);
+      return;
+    }
+
+    // ✅ Change 2 + 3: do NOT reject data:, and only proceed for http(s) OR data:image;base64
+    const isHttp = /^https?:\/\//i.test(raw);
+    const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
+    if (!isHttp && !isDataImage) return;
+
+    // avoid re-import loop for the same raw URL
+    if (lastImportedRef.current === raw) return;
+
+    // debounce typing
+    importTimerRef.current = setTimeout(() => {
+      forceImportHostedUrl(raw);
+    }, 700);
+
+    return () => {
+      if (importTimerRef.current) clearTimeout(importTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.imageUrl]);
 
   const toggleFunding = (v) => {
     setForm((f) => {
       const has = f.fundingType.includes(v);
-      return { ...f, fundingType: has ? f.fundingType.filter((x) => x !== v) : [...f.fundingType, v] };
+      return {
+        ...f,
+        fundingType: has ? f.fundingType.filter((x) => x !== v) : [...f.fundingType, v],
+      };
     });
   };
 
@@ -188,38 +363,62 @@ export default function PartnerSubmitScholarship() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** ===== Image upload (to data URL for payload/local fallback) ===== */
+  /** ===== Image upload ===== */
   const onPickImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith("image/")) {
       setErr("Please choose a valid image file (PNG/JPG/SVG).");
       return;
     }
+
     setErr("");
     setUploadingImg(true);
+
     try {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = String(reader.result || "");
-        setImgPreview(dataUrl);
-        setForm((f) => ({ ...f, imageData: dataUrl }));
-        setUploadingImg(false);
-      };
-      reader.onerror = () => {
-        setUploadingImg(false);
-        setErr("Failed to read the selected image.");
-      };
-      reader.readAsDataURL(file);
-    } catch {
+      // Fallback: if API not configured, keep base64 behavior
+      if (!API_BASE) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = String(reader.result || "");
+          setImgPreview(dataUrl);
+          setForm((f) => ({ ...f, imageData: dataUrl, imageUrl: "" }));
+          setUploadingImg(false);
+        };
+        reader.onerror = () => {
+          setUploadingImg(false);
+          setErr("Failed to read the selected image.");
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      // ✅ CloudFront upload path
+      const safeName = (file.name || "image").replace(/[^\w.\-]+/g, "_");
+      const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
+
+      const uploadUrl = j?.uploadUrl;
+      const publicUrl = j?.publicUrl;
+
+      if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+
+      await putFileToS3(uploadUrl, file);
+
+      // Save ONLY CloudFront URL
+      setImgPreview(publicUrl);
+      setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));
+    } catch (err2) {
+      console.error(err2);
+      setErr(String(err2?.message || err2 || "Image upload failed. Please try again."));
+    } finally {
       setUploadingImg(false);
-      setErr("Failed to process the selected image.");
     }
   };
 
   const clearImage = () => {
     setImgPreview("");
-    setForm((f) => ({ ...f, imageData: "" }));
+    setForm((f) => ({ ...f, imageData: "", imageUrl: "" }));
   };
 
   /** ===== Submit (API-first, then local fallback) ===== */
@@ -242,6 +441,19 @@ export default function PartnerSubmitScholarship() {
       return;
     }
 
+    // ✅ Step D: Block submit while import is running
+    if (importingHosted) {
+      setErr("Please wait: importing hosted image URL to CloudFront…");
+      return;
+    }
+
+    // ✅ Enforce: if an image URL is present, it must be CloudFront
+    const imgUrl = String(form.imageUrl || "").trim();
+    if (imgUrl && !isCloudfrontUrl(imgUrl)) {
+      setErr("Image URL must be imported to CloudFront first (wait for import) or upload the file.");
+      return;
+    }
+
     const payload = {
       title: form.title,
       provider: form.provider,
@@ -252,19 +464,17 @@ export default function PartnerSubmitScholarship() {
       deadline: form.deadline,
       link: form.link,
       partnerApplyUrl: form.partnerApplyUrl,
-      description: form.description,   // HTML
-      eligibility: form.eligibility,   // HTML
-      benefits: form.benefits,         // HTML
-      howToApply: form.howToApply,     // HTML
+      description: form.description,
+      eligibility: form.eligibility,
+      benefits: form.benefits,
+      howToApply: form.howToApply,
       amount: form.amount,
       notes: form.notes,
       // ✅ image: prefer hosted URL if provided; otherwise data URL
-      imageUrl: (form.imageUrl || "").trim(),
+      imageUrl: imgUrl,
       imageData: form.imageData || "",
-      // linkage + defaults
       partnerEmail: String(partnerEmail),
       createdAt: Date.now(),
-      // ✅ DEFAULT TO PENDING (required)
       status: "pending",
     };
 
@@ -276,22 +486,28 @@ export default function PartnerSubmitScholarship() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+
+        const txt = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
+
+        let data = {};
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          // keep {}
+        }
 
         setMsg(`Saved! Scholarship #${data?.id ?? ""} created.`);
         setErr("");
         resetFormAndEditors();
-        return; // ✅ done
+        return;
       } catch (apiErr) {
         console.warn("Submit via API failed; falling back to localStorage:", apiErr);
-        // continue to local fallback
       }
     }
 
-    // 2) Fallback to localStorage: write to the UNIFIED store used by Admin list
+    // 2) Fallback to localStorage
     try {
-      // use the same key the admin list reads in fallback mode
       const saved = saveLocalScholarship(payload, "scholarships_local");
       setMsg(`Scholarship submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`);
       setErr("");
@@ -323,6 +539,15 @@ export default function PartnerSubmitScholarship() {
       imageData: "",
     });
     setImgPreview("");
+    lastImportedRef.current = "";
+    pendingHostedRef.current = "";
+    setImportingHosted(false);
+
+    if (importTimerRef.current) {
+      clearTimeout(importTimerRef.current);
+      importTimerRef.current = null;
+    }
+
     [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef].forEach((r) => {
       if (r.current) r.current.setContents([]);
     });
@@ -333,20 +558,20 @@ export default function PartnerSubmitScholarship() {
       {/* wider container */}
       <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold">Submit a Scholarship</h1>
-        <p className="mt-1 text-slate-600">
-          Partners and universities can list their opportunities here.
-        </p>
+        <p className="mt-1 text-slate-600">Partners and universities can list their opportunities here.</p>
 
         {/* Bordered card around the whole form & messages (matches login style) */}
         <div className="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
           {/* a bit more breathing room */}
           <div className="p-6 md:p-8">
-
             {/* Heads-up if not logged in as partner */}
             {!partnerEmail && (
               <div className="mb-4 p-3 rounded bg-amber-50 border border-amber-200 text-amber-800">
                 You’re not logged in as a Partner. Please{" "}
-                <a href="/partner/login" className="underline">log in</a> to submit and manage your listings.
+                <a href="/partner/login" className="underline">
+                  log in
+                </a>{" "}
+                to submit and manage your listings.
               </div>
             )}
 
@@ -396,7 +621,9 @@ export default function PartnerSubmitScholarship() {
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   >
                     {["All", ...Object.keys(REGIONS)].map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -410,7 +637,9 @@ export default function PartnerSubmitScholarship() {
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   >
                     {countryOptions.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -427,7 +656,9 @@ export default function PartnerSubmitScholarship() {
                   >
                     <option value="">— Select —</option>
                     {LEVEL_OPTIONS.map((lv) => (
-                      <option key={lv} value={lv}>{lv}</option>
+                      <option key={lv} value={lv}>
+                        {lv}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -443,7 +674,9 @@ export default function PartnerSubmitScholarship() {
                   >
                     <option value="">— Select —</option>
                     {FIELDS_OF_STUDY.map((f) => (
-                      <option key={f} value={f}>{f}</option>
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -497,11 +730,12 @@ export default function PartnerSubmitScholarship() {
                 </label>
               </div>
 
-              {/* NEW: Logo/Banner section with subtle background */}
+              {/* Logo/Banner */}
               <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div className="text-sm font-medium">Logo / Banner</div>
                 <p className="mt-1 text-xs text-slate-600">
-                  Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on the details page.
+                  Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
+                  the details page.
                 </p>
 
                 {/* URL input */}
@@ -511,9 +745,23 @@ export default function PartnerSubmitScholarship() {
                     name="imageUrl"
                     value={form.imageUrl}
                     onChange={onChange}
+                    // ✅ Step C: import immediately on paste + on blur
+                    onPaste={(e) => {
+                      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+                      // let React update input first
+                      setTimeout(() => forceImportHostedUrl(pasted), 0);
+                    }}
+                    onBlur={() => {
+                      forceImportHostedUrl(form.imageUrl);
+                    }}
                     placeholder="https://example.edu/logo.png"
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
+                  {(uploadingImg || importingHosted) && (
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      {importingHosted ? "Importing hosted URL to CloudFront…" : "Processing image…"}
+                    </div>
+                  )}
                 </label>
 
                 <div className="my-3 text-center text-xs text-slate-500">— or —</div>
@@ -521,12 +769,7 @@ export default function PartnerSubmitScholarship() {
                 {/* File picker */}
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center px-3 py-2 border border-slate-300 rounded cursor-pointer text-sm hover:bg-white">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={onPickImage}
-                      className="hidden"
-                    />
+                    <input type="file" accept="image/*" onChange={onPickImage} className="hidden" />
                     Choose Image…
                   </label>
                   {uploadingImg && <span className="text-xs text-slate-500">Processing image…</span>}
@@ -545,11 +788,10 @@ export default function PartnerSubmitScholarship() {
                 {imgPreview ? (
                   <div className="mt-3">
                     <div className="text-xs text-slate-600 mb-1">Preview</div>
-                    <img
-                      src={imgPreview}
-                      alt="Selected preview"
-                      className="max-h-32 rounded border border-slate-200"
-                    />
+                    <img src={imgPreview} alt="Selected preview" className="max-h-32 rounded border border-slate-200" />
+                    {isCloudfrontUrl(imgPreview) && (
+                      <div className="mt-1 text-[11px] text-green-700">✅ CloudFront URL detected</div>
+                    )}
                   </div>
                 ) : form.imageUrl ? (
                   <div className="mt-3">
@@ -564,7 +806,7 @@ export default function PartnerSubmitScholarship() {
                 ) : null}
               </div>
 
-              {/* Funding Type — multi-select as checkboxes */}
+              {/* Funding Type */}
               <div>
                 <div className="text-sm font-medium mb-1">Funding Type (choose all that apply)</div>
                 <div className="flex flex-wrap gap-2">
@@ -584,7 +826,7 @@ export default function PartnerSubmitScholarship() {
                 </div>
               </div>
 
-              {/* Editors section with subtle background */}
+              {/* Editors */}
               <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div>
                   <div className="text-sm font-medium">Scholarship Description</div>
@@ -639,10 +881,14 @@ export default function PartnerSubmitScholarship() {
                   Submit Scholarship
                 </button>
               </div>
+
+              {/* Helpful footer for debugging */}
+              <div className="text-[11px] text-slate-500">
+                API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
+              </div>
             </form>
           </div>
         </div>
-
       </div>
     </div>
   );

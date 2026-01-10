@@ -1,28 +1,47 @@
-// src/pages/PartnerWelcome.jsx  
+// src/pages/PartnerWelcome.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import { isVerified } from "../lib/verifyGate";
 import VerifyGate from "../components/VerifyGate";
 
+
+async function apiUpdatePartnerProfile(payload) {
+  const res = await fetch(`${AUTH_BASE}/api/auth/partner/update-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    throw new Error(data.error || "UPDATE_FAILED");
+  }
+  return data.user;
+}
+
 /* ---------- API base (scholarships, etc.) ---------- */
-const API_BASE =
+// Prefer a dedicated scholarships base if you have it, otherwise use your existing vars.
+const API_BASE = (
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
-  "http://localhost:5000";
+  "http://localhost:5000"
+).replace(/\/+$/, "");
 
-/* Are we running in "serverless/local only" mode? */
+/* Are we running in "serverless/local only" mode?
+   IMPORTANT: default to FALSE so we use the real API unless you explicitly turn this on. */
 const SERVERLESS =
-  String(import.meta.env.VITE_SERVERLESS_MODE ?? "true").toLowerCase() ===
-  "true";
+  String(import.meta.env.VITE_SERVERLESS_MODE ?? "false").toLowerCase() === "true";
 
-/* ---------- Auth API base (email + password reset) ---------- */
-const AUTH_BASE =
-  (import.meta.env.VITE_API_BASE &&
-    String(import.meta.env.VITE_API_BASE).trim()) ||
-  (import.meta.env.VITE_API_URL &&
-    String(import.meta.env.VITE_API_URL).trim()) ||
-  "http://localhost:5001"; // same default as Login/AuthHandler
+/* ---------- Auth API base (email + password reset + partner profile) ---------- */
+// ✅ PartnerWelcome must use PartnerAuthAPI, not the generic auth base.
+const AUTH_BASE = (
+  import.meta.env.VITE_PARTNER_API_BASE || // ✅ your PartnerAuthAPI (Amplify env var you already have)
+  import.meta.env.VITE_API_BASE ||
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5001"
+).replace(/\/+$/, "");
 
 /* ---------- Helpers ---------- */
 function safeParse(json) {
@@ -84,6 +103,37 @@ async function apiChangePartnerEmail(oldEmail, newEmail, currentPassword) {
   return data; // { ok: true, email, role, oldEmail }
 }
 
+/* ---------- NEW: Partner profile persistence (logo/banner + org fields) ---------- */
+async function partnerGetProfile(email) {
+  const res = await fetch(`${AUTH_BASE}/api/auth/partner/get-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.ok) {
+    const msg = data?.error || `HTTP_${res.status}`;
+    throw new Error(msg);
+  }
+  return data.user || {};
+}
+
+async function partnerUpdateProfile(payload) {
+  const res = await fetch(`${AUTH_BASE}/api/auth/partner/update-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.ok) {
+    const msg = data?.error || `HTTP_${res.status}`;
+    throw new Error(msg);
+  }
+  return data.user || {};
+}
+
 /* ---------- Keep local 'partners' in sync with login ---------- */
 function syncLocalPartnerRecords(updatedUser, originalEmail) {
   if (!updatedUser) return;
@@ -141,12 +191,10 @@ function normalizeScholarship(s = {}) {
     id: s.id || s.scholarshipId || `sch_${Math.random().toString(36).slice(2)}`,
     title: s.title || s.name || "Untitled Scholarship",
     deadline: s.deadline || s.closeDate || s.dueDate || "",
-    createdAt:
-      s.createdAt || s.postedAt || s.created || s.timestamp || Date.now(),
+    createdAt: s.createdAt || s.postedAt || s.created || s.timestamp || Date.now(),
     status: (s.status || "Open").toString(),
     partnerId: s.partnerId || s.ownerId || s.postedById || "",
-    partnerEmail:
-      (s.partnerEmail || s.postedByEmail || s.email || "").toLowerCase(),
+    partnerEmail: (s.partnerEmail || s.postedByEmail || s.email || "").toLowerCase(),
     postedByEmail: (s.postedByEmail || s.email || "").toLowerCase(),
     orgName: s.orgName || s.organization || s.university || "",
     description: s.description || s.summary || "",
@@ -158,14 +206,7 @@ function normalizeScholarship(s = {}) {
 /** Decide the avatar URL from user object (signup should store one of these) */
 function getPartnerAvatar(user) {
   if (!user) return "";
-  return (
-    user.photo ||
-    user.logo ||
-    user.logoUrl ||
-    user.avatar ||
-    user.avatarUrl ||
-    ""
-  );
+  return user.photo || user.logo || user.logoUrl || user.avatar || user.avatarUrl || "";
 }
 
 /** Try API first for this partner's items, then fall back to localStorage */
@@ -176,6 +217,7 @@ async function loadAllScholarshipsForPartner(partner) {
     partner?.username ||
     ""
   ).toLowerCase();
+
   const partnerId = String(partner?.id || "");
 
   const readLocal = () => {
@@ -198,28 +240,29 @@ async function loadAllScholarshipsForPartner(partner) {
     return merged.map(normalizeScholarship);
   };
 
-  if (
-    SERVERLESS ||
-    API_BASE.includes("izhwiz3a17.execute-api") // current HTTP API
-  ) {
+  // If you explicitly run serverless mode, stay local-only.
+  if (SERVERLESS) {
     return readLocal();
   }
 
+  // Otherwise: always try API first (works across browsers/devices),
+  // and only fall back to local if API fails.
   try {
     const params = new URLSearchParams();
     if (partnerEmail) params.set("partnerEmail", partnerEmail);
     else if (partnerId) params.set("partnerId", partnerId);
 
-    const res = await fetch(`${API_BASE}/api/scholarships?` + params.toString());
+    const url = `${API_BASE}/api/scholarships?` + params.toString();
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
     const data = await res.json();
-    const list = Array.isArray(data.items)
-      ? data.items
-      : Array.isArray(data)
-      ? data
-      : [];
+    const list = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
+
     return list.map(normalizeScholarship);
-  } catch {
+  } catch (e) {
+    console.warn("[PartnerWelcome] API fetch failed, falling back to local:", e);
     return readLocal();
   }
 }
@@ -230,18 +273,17 @@ export default function PartnerWelcome() {
   const [originalEmail] = useState(() => user?.email || "");
 
   // -------- VerifyGate state for partner email --------
-  const emailForGate =
-    (user?.email || user?.userEmail || user?.username || "").toLowerCase();
-  const [verified, setVerified] = useState(() =>
-    emailForGate ? isVerified(emailForGate) : false
-  );
+  const emailForGate = (user?.email || user?.userEmail || user?.username || "").toLowerCase();
+  const [verified, setVerified] = useState(() => (emailForGate ? isVerified(emailForGate) : false));
 
   useEffect(() => {
-    if (emailForGate) {
-      setVerified(isVerified(emailForGate));
-    } else {
+    if (!emailForGate) {
       setVerified(false);
+      return;
     }
+    // ✅ If we already flipped to verified in this session, don't let the effect
+    // overwrite it back to false due to storage timing.
+    setVerified((prev) => (prev ? true : isVerified(emailForGate)));
   }, [emailForGate]);
 
   const [editOpen, setEditOpen] = useState(false);
@@ -258,6 +300,71 @@ export default function PartnerWelcome() {
     website: user?.website || "",
     photo: initialAvatar || "",
   }));
+
+  // ✅ NEW: load persisted profile (logo/banner + fields) once per email
+  const [profileLoadedFor, setProfileLoadedFor] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfile() {
+      try {
+        if (SERVERLESS) return;
+        const email = (user?.email || "").trim().toLowerCase();
+        if (!email) return;
+
+        // Avoid re-loading repeatedly for same email
+        if (profileLoadedFor === email) return;
+
+        const u = await partnerGetProfile(email);
+        if (cancelled) return;
+
+        // Map backend -> local fields without breaking existing ones
+        const next = {
+          ...user,
+          // keep your existing names, but also accept backend names:
+          orgName: u.orgName ?? u.organization ?? user?.orgName ?? "",
+          contactName: u.contactName ?? user?.contactName ?? "",
+          phone: u.phone ?? user?.phone ?? "",
+          website: u.website ?? user?.website ?? "",
+          // Persisted URLs (preferred)
+          logoUrl: u.logoUrl ?? user?.logoUrl ?? "",
+          bannerUrl: u.bannerUrl ?? user?.bannerUrl ?? "",
+          // Keep legacy fields too (UI reads "photo" via getPartnerAvatar)
+          photo: u.logoUrl ?? user?.photo ?? user?.logoUrl ?? "",
+          email: (u.email || email).toLowerCase(),
+        };
+
+        setPartner(next);
+        setUser(next);
+
+        // Update the edit form so UI displays persisted values
+        setForm((f) => ({
+          ...f,
+          orgName: next.orgName || "",
+          contactName: next.contactName || "",
+          email: next.email || f.email || "",
+          phone: next.phone || "",
+          website: next.website || "",
+          // Keep your existing "photo" field as the logo URL (or empty)
+          photo: (next.photo || next.logoUrl || "").trim(),
+        }));
+
+        setProfileLoadedFor(email);
+      } catch (e) {
+        console.warn("[PartnerWelcome] get-profile failed:", e);
+        // do not block UI
+        setProfileLoadedFor((user?.email || "").trim().toLowerCase() || "");
+      }
+    }
+
+    if (user?.email) loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+    // We intentionally depend on user?.email and profileLoadedFor only
+  }, [user?.email, profileLoadedFor]);
 
   // Password fields
   const [currentPw, setCurrentPw] = useState("");
@@ -288,12 +395,7 @@ export default function PartnerWelcome() {
   const myScholarships = useMemo(() => {
     if (!user) return [];
     const uId = user.id || "";
-    const uEmail = (
-      user.email ||
-      user.userEmail ||
-      user.username ||
-      ""
-    ).toLowerCase();
+    const uEmail = (user.email || user.userEmail || user.username || "").toLowerCase();
     const uOrg = (user.orgName || "").trim().toLowerCase();
     return allScholarships
       .filter((s) => {
@@ -323,6 +425,9 @@ export default function PartnerWelcome() {
   };
 
   // handle avatar/logo file change in EDIT modal
+  // NOTE: this still creates a data URL preview. Your "best practice" flow
+  // should upload to S3 and set form.photo to the returned URL. This code
+  // remains unchanged to avoid breaking your current UI.
   const onAvatarFileChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -349,8 +454,7 @@ export default function PartnerWelcome() {
 
     try {
       const emailChanging = (form.email || "") !== (user?.email || "");
-      const wantsPwChange =
-        newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;
+      const wantsPwChange = newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;
 
       const trimmedEmail = (form.email || "").trim().toLowerCase();
       const oldEmail = (originalEmail || user?.email || "").trim().toLowerCase();
@@ -426,12 +530,90 @@ export default function PartnerWelcome() {
         }
       }
 
+      // ✅ NEW (B): Persist profile/logo globally in DynamoDB
+      // Note: your backend expects { email, userId, logoUrl, bannerUrl, phone, website, contactName, organization }
+      // We map orgName -> organization, photo -> logoUrl
+      if (!SERVERLESS) {
+        const payload = {
+          email: trimmedEmail,
+          userId: user?.id || user?.userId || "", // IMPORTANT
+          logoUrl: String(form.photo || "").trim(),
+          bannerUrl: String(user?.bannerUrl || "").trim(), // no UI field yet, keep existing
+          phone: String(form.phone || "").trim(),
+          website: String(form.website || "").trim(),
+          contactName: String(form.contactName || "").trim(),
+          organization: String(form.orgName || "").trim(),
+        };
+
+        // If userId missing, don't hard-crash; just warn (keeps existing logic intact)
+        if (payload.userId) {
+          const persisted = await partnerUpdateProfile(payload);
+
+          // Merge persisted fields back (source of truth)
+          const merged = {
+            ...(user || {}),
+            orgName: persisted.orgName ?? persisted.organization ?? payload.organization,
+            contactName: persisted.contactName ?? payload.contactName,
+            phone: persisted.phone ?? payload.phone,
+            website: persisted.website ?? payload.website,
+            email: (persisted.email || payload.email).toLowerCase(),
+            logoUrl: persisted.logoUrl ?? payload.logoUrl,
+            bannerUrl: persisted.bannerUrl ?? payload.bannerUrl,
+            photo: (persisted.logoUrl ?? payload.logoUrl) || (user?.photo || ""),
+          };
+
+          // Update local state + storage so other parts of UI immediately reflect
+          setPartner(merged);
+          setUser(merged);
+
+          setForm((f) => ({
+            ...f,
+            orgName: merged.orgName || "",
+            contactName: merged.contactName || "",
+            email: merged.email || f.email || "",
+            phone: merged.phone || "",
+            website: merged.website || "",
+            photo: merged.photo || merged.logoUrl || "",
+          }));
+        } else {
+          console.warn("[PartnerWelcome] Missing userId; update-profile skipped.");
+        }
+      }
+
       // 3) Update local user + hashes (including updated photo/logo)
-      const updated = {
+      /*const updated = {
         ...(user || {}),
         ...form,
         email: trimmedEmail,
-      };
+        // also keep canonical fields
+        logoUrl: String(form.photo || "").trim(),
+      };*/
+
+
+      // 3) Persist profile updates to backend (THIS was missing)
+const backendUser = await apiUpdatePartnerProfile({
+  email: trimmedEmail,
+  userId: user?.userId || user?.id, // authorization guard
+  organization: form.orgName,
+  contactName: form.contactName,
+  phone: form.phone,
+  website: form.website,
+  logoUrl: form.photo || "", // 🔥 THIS is the key
+});
+
+// 4) Update local state from backend truth
+const updated = {
+  ...(user || {}),
+  ...backendUser,
+  orgName: backendUser.organization,
+  photo: backendUser.logoUrl,
+};
+
+
+
+
+
+
 
       if (wantsPwChange) {
         updated.passwordHash = await sha256Hex(newPw);
@@ -498,10 +680,7 @@ export default function PartnerWelcome() {
 
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="w-full max-w-md">
-            <VerifyGate
-              email={emailForGate}
-              onVerified={() => setVerified(true)}
-            />
+            <VerifyGate email={emailForGate} onVerified={() => setVerified(true)} />
           </div>
         </main>
 
@@ -510,10 +689,9 @@ export default function PartnerWelcome() {
     );
   }
 
-  // --------- MAIN DASHBOARD (student-style layout) ----------
+  // --------- MAIN DASHBOARD ----------
   const initials =
-    (user?.orgName || "P")[0]?.toUpperCase() +
-    (user?.contactName || "K")[0]?.toUpperCase();
+    (user?.orgName || "P")[0]?.toUpperCase() + (user?.contactName || "K")[0]?.toUpperCase();
   const avatarUrl = getPartnerAvatar(user);
   const verificationLabel = verified ? "Verified partner" : "Email not verified";
 
@@ -565,18 +743,12 @@ export default function PartnerWelcome() {
               </div>
             </div>
 
-            {/* Scholarships stats card — labels all in one line */}
+            {/* Scholarships stats card */}
             <div className="rounded-2xl bg-white shadow-sm border border-slate-200 px-4 py-4 flex flex-col gap-3">
               <div className="flex justify-between gap-4 text-[10px] sm:text-xs text-slate-500">
-                <span className="flex-1 whitespace-nowrap">
-                  Scholarships posted
-                </span>
-                <span className="flex-1 text-center whitespace-nowrap">
-                  Pending for Approval
-                </span>
-                <span className="flex-1 text-right whitespace-nowrap">
-                  Approved
-                </span>
+                <span className="flex-1 whitespace-nowrap">Scholarships posted</span>
+                <span className="flex-1 text-center whitespace-nowrap">Pending for Approval</span>
+                <span className="flex-1 text-right whitespace-nowrap">Approved</span>
               </div>
               <div className="flex items-end justify-between gap-4">
                 <div className="flex-1">
@@ -585,14 +757,10 @@ export default function PartnerWelcome() {
                   </div>
                 </div>
                 <div className="flex-1 text-center">
-                  <div className="mt-1 text-lg font-semibold text-slate-900">
-                    {pendingCount}
-                  </div>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">{pendingCount}</div>
                 </div>
                 <div className="flex-1 text-right">
-                  <div className="mt-1 text-lg font-semibold text-slate-900">
-                    {approvedCount}
-                  </div>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">{approvedCount}</div>
                 </div>
               </div>
             </div>
@@ -601,12 +769,8 @@ export default function PartnerWelcome() {
             <div className="rounded-2xl bg-white shadow-sm border border-slate-200 px-4 py-3 flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs text-slate-500">Account status</div>
-                <div className="text-sm font-semibold text-slate-900">
-                  {verificationLabel}
-                </div>
-                <div className="text-xs text-slate-500">
-                  Keep your info up to date for students.
-                </div>
+                <div className="text-sm font-semibold text-slate-900">{verificationLabel}</div>
+                <div className="text-xs text-slate-500">Keep your info up to date for students.</div>
               </div>
               <button
                 onClick={() => setEditOpen(true)}
@@ -617,9 +781,9 @@ export default function PartnerWelcome() {
             </div>
           </div>
 
-          {/* Main 3-column layout: fixed side widths, flexible center */}
+          {/* Main 3-column layout */}
           <div className="grid gap-3 lg:gap-4 md:grid-cols-3 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
-            {/* LEFT: profile card */}
+            {/* LEFT */}
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
@@ -647,25 +811,19 @@ export default function PartnerWelcome() {
 
                   <dl className="mt-4 space-y-2 text-xs sm:text-sm text-slate-700">
                     <div className="flex justify-between gap-3">
-                      <dt className="text-slate-500 min-w-[60px] text-left">
-                        Email
-                      </dt>
+                      <dt className="text-slate-500 min-w-[60px] text-left">Email</dt>
                       <dd className="font-medium text-right whitespace-nowrap overflow-hidden text-ellipsis">
                         {user?.email || "—"}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-3">
-                      <dt className="text-slate-500 min-w-[60px] text-left">
-                        Phone
-                      </dt>
+                      <dt className="text-slate-500 min-w-[60px] text-left">Phone</dt>
                       <dd className="font-medium text-right whitespace-nowrap overflow-hidden text-ellipsis">
                         {user?.phone || "—"}
                       </dd>
                     </div>
                     <div className="flex justify-between gap-3">
-                      <dt className="text-slate-500 min-w-[60px] text-left">
-                        Website
-                      </dt>
+                      <dt className="text-slate-500 min-w-[60px] text-left">Website</dt>
                       <dd className="font-medium text-right whitespace-nowrap overflow-hidden text-ellipsis">
                         {user?.website || "—"}
                       </dd>
@@ -695,9 +853,7 @@ export default function PartnerWelcome() {
                 </div>
 
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Quick tips
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Quick tips</h3>
                   <ul className="mt-2 space-y-1.5 text-xs text-slate-600">
                     <li>• Clear, simple eligibility helps more students apply.</li>
                     <li>• Add an apply link that works on mobile and desktop.</li>
@@ -707,7 +863,7 @@ export default function PartnerWelcome() {
               </div>
             </aside>
 
-            {/* CENTER: posted scholarships */}
+            {/* CENTER */}
             <main className="col-span-12 md:col-span-1">
               <div className="rounded-2xl bg-white shadow-sm border border-slate-200 flex flex-col h-full">
                 <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
@@ -738,7 +894,7 @@ export default function PartnerWelcome() {
                         if (rawStatus === "pending") statusLabel = "Pending for Approval";
                         else if (rawStatus === "approved") statusLabel = "Approved";
 
-                        // Color coding for the dot + pill
+                        // Color coding
                         const dotClass =
                           rawStatus === "approved"
                             ? "bg-green-500"
@@ -754,10 +910,7 @@ export default function PartnerWelcome() {
                             : "bg-slate-100 text-slate-700 ring-slate-200";
 
                         return (
-                          <li
-                            key={sch.id}
-                            className="group hover:bg-slate-50/80 transition"
-                          >
+                          <li key={sch.id} className="group hover:bg-slate-50/80 transition">
                             <div className="px-4 lg:px-5 py-3 flex items-start gap-4">
                               <div
                                 className={`mt-1 h-2.5 w-2.5 rounded-full ${dotClass}`}
@@ -774,21 +927,13 @@ export default function PartnerWelcome() {
                                         Deadline: {sch.deadline}
                                       </span>
                                     )}
-                                    <span className="whitespace-nowrap">
-                                      {postedDate}
-                                    </span>
+                                    <span className="whitespace-nowrap">{postedDate}</span>
                                   </div>
                                 </div>
 
                                 <div className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
-                                  {sch.orgName && (
-                                    <span className="truncate">
-                                      Org: {sch.orgName}
-                                    </span>
-                                  )}
-                                  {sch.amount && (
-                                    <span>Amount: {sch.amount}</span>
-                                  )}
+                                  {sch.orgName && <span className="truncate">Org: {sch.orgName}</span>}
+                                  {sch.amount && <span>Amount: {sch.amount}</span>}
                                   <span
                                     className={`inline-flex items-center rounded-full px-2 py-0.5 ring-1 text-[11px] ${pillClass}`}
                                   >
@@ -825,62 +970,39 @@ export default function PartnerWelcome() {
 
                 <div className="border-t border-slate-200 px-4 lg:px-5 py-3 bg-slate-50/60 rounded-b-2xl">
                   <p className="text-xs text-slate-500 text-center">
-                    Posting clear, scam-free scholarships helps students trust
-                    your organization and our platform.
+                    Posting clear, scam-free scholarships helps students trust your organization and our platform.
                   </p>
                 </div>
               </div>
             </main>
 
-            {/* RIGHT: partnership standards column */}
+            {/* RIGHT */}
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Partnership standards
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Partnership standards</h3>
                   <ul className="mt-2 space-y-1.5 text-xs sm:text-sm text-slate-700">
-                    <li className="flex gap-2">
-                      <span>✅</span>
-                      <span>No essays for students.</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span>✅</span>
-                      <span>No application fees.</span>
-                    </li>
-
+                    <li className="flex gap-2"><span>✅</span><span>No essays for students.</span></li>
+                    <li className="flex gap-2"><span>✅</span><span>No application fees.</span></li>
                     <li className="flex gap-2">
                       <span>✅</span>
                       <span>
-                        The scholarship URL must point directly to the
-                        provider’s official scholarship page and include enough
-                        information to help students understand the application
-                        process and apply with ease.
+                        The scholarship URL must point directly to the provider’s official scholarship page and include enough
+                        information to help students understand the application process and apply with ease.
                       </span>
                     </li>
                     <li className="flex gap-2">
                       <span>✅</span>
                       <span>
-                        Scholarship providers must share a contact email using
-                        their organization’s domain and ensure it remains
-                        reachable.
+                        Scholarship providers must share a contact email using their organization’s domain and ensure it remains reachable.
                       </span>
                     </li>
-
-                    <li className="flex gap-2">
-                      <span>✅</span>
-                      <span>
-                        No confidential data collection (bank details, IDs,
-                        SSNs, etc.).
-                      </span>
-                    </li>
+                    <li className="flex gap-2"><span>✅</span><span>No confidential data collection (bank details, IDs, SSNs, etc.).</span></li>
                   </ul>
                 </div>
 
                 <div className="rounded-2xl bg-indigo-600 text-white shadow-sm p-4">
-                  <h3 className="text-sm font-semibold">
-                    Make your scholarship stand out
-                  </h3>
+                  <h3 className="text-sm font-semibold">Make your scholarship stand out</h3>
                   <ul className="mt-2 space-y-1.5 text-xs text-indigo-100">
                     <li>• Use a clear title students understand instantly.</li>
                     <li>• Mention key fields of study or regions.</li>
@@ -902,14 +1024,12 @@ export default function PartnerWelcome() {
         </div>
       )}
 
-      {/* EDIT MODAL (with avatar/logo editing) */}
+      {/* EDIT MODAL */}
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Update Account Information
-              </h3>
+              <h3 className="text-lg font-semibold text-slate-900">Update Account Information</h3>
               <button
                 onClick={() => {
                   setEditOpen(false);
@@ -929,9 +1049,7 @@ export default function PartnerWelcome() {
               {/* Account fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
-                  <div className="text-sm font-medium text-slate-700">
-                    Organization
-                  </div>
+                  <div className="text-sm font-medium text-slate-700">Organization</div>
                   <input
                     name="orgName"
                     value={form.orgName}
@@ -941,9 +1059,7 @@ export default function PartnerWelcome() {
                 </label>
 
                 <label className="block">
-                  <div className="text-sm font-medium text-slate-700">
-                    Contact Name
-                  </div>
+                  <div className="text-sm font-medium text-slate-700">Contact Name</div>
                   <input
                     name="contactName"
                     value={form.contactName}
@@ -974,9 +1090,7 @@ export default function PartnerWelcome() {
                 </label>
 
                 <label className="block md:col-span-2">
-                  <div className="text-sm font-medium text-slate-700">
-                    Website
-                  </div>
+                  <div className="text-sm font-medium text-slate-700">Website</div>
                   <input
                     name="website"
                     value={form.website}
@@ -988,9 +1102,7 @@ export default function PartnerWelcome() {
 
                 {/* Logo / avatar URL + upload */}
                 <label className="block md:col-span-2">
-                  <div className="text-sm font-medium text-slate-700">
-                    Logo / Avatar URL
-                  </div>
+                  <div className="text-sm font-medium text-slate-700">Logo / Avatar URL</div>
                   <input
                     name="photo"
                     value={form.photo}
@@ -1013,15 +1125,9 @@ export default function PartnerWelcome() {
                   {form.photo && (
                     <div className="mt-3 flex items-center gap-3">
                       <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
-                        <img
-                          src={form.photo}
-                          alt="Logo preview"
-                          className="h-full w-full object-cover"
-                        />
+                        <img src={form.photo} alt="Logo preview" className="h-full w-full object-cover" />
                       </div>
-                      <span className="text-xs text-slate-500">
-                        Preview of your organization avatar.
-                      </span>
+                      <span className="text-xs text-slate-500">Preview of your organization avatar.</span>
                     </div>
                   )}
                 </label>
@@ -1031,13 +1137,9 @@ export default function PartnerWelcome() {
 
               {/* Password change */}
               <div>
-                <h4 className="text-sm font-semibold text-slate-800">
-                  Change Password
-                </h4>
+                <h4 className="text-sm font-semibold text-slate-800">Change Password</h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  {user?.password
-                    ? "Update your password below."
-                    : "Set a password for quicker login next time."}
+                  {user?.password ? "Update your password below." : "Set a password for quicker login next time."}
                 </p>
 
                 {pwErr && (
@@ -1048,24 +1150,18 @@ export default function PartnerWelcome() {
 
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <label className="block">
-                    <div className="text-sm font-medium text-slate-700">
-                      Current password
-                    </div>
+                    <div className="text-sm font-medium text-slate-700">Current password</div>
                     <input
                       type="password"
                       value={currentPw}
                       onChange={(e) => setCurrentPw(e.target.value)}
-                      placeholder={
-                        user?.password ? "Current password" : "Not set"
-                      }
+                      placeholder={user?.password ? "Current password" : "Not set"}
                       className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                     />
                   </label>
 
                   <label className="block">
-                    <div className="text-sm font-medium text-slate-700">
-                      New password
-                    </div>
+                    <div className="text-sm font-medium text-slate-700">New password</div>
                     <input
                       type="password"
                       value={newPw}
@@ -1076,9 +1172,7 @@ export default function PartnerWelcome() {
                   </label>
 
                   <label className="block">
-                    <div className="text-sm font-medium text-slate-700">
-                      Confirm new password
-                    </div>
+                    <div className="text-sm font-medium text-slate-700">Confirm new password</div>
                     <input
                       type="password"
                       value={confirmPw}
