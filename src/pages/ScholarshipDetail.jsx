@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Footer from "../components/Footer";
 
+// ✅ Sidebar ads (same component used elsewhere)
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
+
 // ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
   import.meta.env.VITE_SCHOLARSHIPS_API_BASE || // <-- primary (prod)
@@ -144,7 +147,13 @@ function safeParseArr(key, fallback = []) {
 
 function getAnyId(x) {
   return String(
-    x?.id ?? x?.scholarshipId ?? x?.localId ?? x?.clientId ?? x?._id ?? x?.key ?? ""
+    x?.id ??
+      x?.scholarshipId ??
+      x?.localId ??
+      x?.clientId ??
+      x?._id ??
+      x?.key ??
+      ""
   );
 }
 
@@ -229,8 +238,14 @@ function scoreAndGate(candidate, current, taste) {
   const curId = getAnyId(current);
   if (cid && curId && cid === curId) return { ok: false, score: -Infinity };
 
-  const candTokens = new Set([...tokenize(candidate.title), ...tokenize(candidate.provider)]);
-  const curTokens = new Set([...tokenize(current?.title), ...tokenize(current?.provider)]);
+  const candTokens = new Set([
+    ...tokenize(candidate.title),
+    ...tokenize(candidate.provider),
+  ]);
+  const curTokens = new Set([
+    ...tokenize(current?.title),
+    ...tokenize(current?.provider),
+  ]);
   const tokenOverlapWithCurrent = overlapCount(candTokens, curTokens);
 
   const tasteTopFields = topKeys(taste?.field, 2);
@@ -258,14 +273,24 @@ function scoreAndGate(candidate, current, taste) {
 
   // Similarity to current scholarship (strong)
   if (sameFieldAsCurrent) score += 12;
-  if (candidate.level && current?.level && candidate.level === current.level) score += 6;
-  if (candidate.country && current?.country && candidate.country === current.country) score += 4;
+  if (candidate.level && current?.level && candidate.level === current.level)
+    score += 6;
+  if (
+    candidate.country &&
+    current?.country &&
+    candidate.country === current.country
+  )
+    score += 4;
 
   // Funding overlap (medium)
-  const candFunding = new Set(Array.isArray(candidate.fundingType) ? candidate.fundingType : []);
-  (Array.isArray(current?.fundingType) ? current.fundingType : []).forEach((f) => {
-    if (candFunding.has(f)) score += 2;
-  });
+  const candFunding = new Set(
+    Array.isArray(candidate.fundingType) ? candidate.fundingType : []
+  );
+  (Array.isArray(current?.fundingType) ? current.fundingType : []).forEach(
+    (f) => {
+      if (candFunding.has(f)) score += 2;
+    }
+  );
 
   // Keyword overlaps
   score += Math.min(8, tokenOverlapWithCurrent * 2);
@@ -273,9 +298,12 @@ function scoreAndGate(candidate, current, taste) {
 
   // Personalization boosts (taste profile) — only if enough history
   if (taste?.hasHistory) {
-    if (taste?.field?.has(candidate.field)) score += Math.min(6, taste.field.get(candidate.field));
-    if (taste?.level?.has(candidate.level)) score += Math.min(4, taste.level.get(candidate.level));
-    if (taste?.country?.has(candidate.country)) score += Math.min(4, taste.country.get(candidate.country));
+    if (taste?.field?.has(candidate.field))
+      score += Math.min(6, taste.field.get(candidate.field));
+    if (taste?.level?.has(candidate.level))
+      score += Math.min(4, taste.level.get(candidate.level));
+    if (taste?.country?.has(candidate.country))
+      score += Math.min(4, taste.country.get(candidate.country));
   }
 
   // ✅ Minimum score so we don't show “everything”
@@ -370,7 +398,9 @@ export default function ScholarshipDetail() {
       // get catalog
       if (API_BASE) {
         try {
-          const res = await fetch(`${API_BASE}/api/scholarships?page=1&pageSize=200`);
+          const res = await fetch(
+            `${API_BASE}/api/scholarships?page=1&pageSize=200`
+          );
           if (res.ok) {
             const data = await res.json();
             list = Array.isArray(data?.items) ? data.items : [];
@@ -384,7 +414,8 @@ export default function ScholarshipDetail() {
       if (!list.length) {
         const merged = [];
         for (const k of LOCAL_KEYS) {
-          const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
+          const arr =
+            tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
           if (Array.isArray(arr)) merged.push(...arr.map(unwrap));
         }
         list = merged.filter(Boolean);
@@ -422,11 +453,11 @@ export default function ScholarshipDetail() {
 
   if (!item) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">
-        Loading…
-      </div>
-    );
-  }
+      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">Loading…</div>      
+       );
+      }
+  // ✅ AdSense gate: show ads only after scholarship content is loaded
+const canShowAds = Boolean(item);
 
   const {
     title,
@@ -460,211 +491,246 @@ export default function ScholarshipDetail() {
       `}</style>
 
       <div className="flex-1">
-        <div className="max-w-5xl mx-auto px-4 pt-8">
-          <Link to="/scholarship" className="text-blue-600 hover:underline text-sm">
-            ← Back to Scholarships
-          </Link>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-            <h1 className="text-2xl font-bold">{title}</h1>
-            <p className="mt-1 text-slate-600">
-              <span className="font-medium">{provider}</span>
-              {country ? ` • ${country}` : ""}
-              {level ? ` • ${level}` : ""}
-              {field ? ` • ${field}` : ""}
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-              {Array.isArray(fundingType) && fundingType.length > 0 && (
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-slate-500">Funding:</span>
-                  <span className="inline-flex flex-wrap gap-1">
-                    {fundingType.map((f) => (
-                      <span
-                        key={f}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
-                      >
-                        {f}
-                      </span>
-                    ))}
-                  </span>
-                </span>
-              )}
-              {amount && (
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-slate-500">Amount:</span>
-                  <span className="font-medium">{amount}</span>
-                </span>
-              )}
-              {deadline && (
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-slate-500">Deadline:</span>
-                  <span className="font-medium">{deadline}</span>
-                </span>
-              )}
-            </div>
-
-            <div className="mt-4 flex gap-3">
-              {partnerApplyUrl && (
-                <a
-                  href={partnerApplyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                >
-                  Apply Now
-                </a>
-              )}
-              {link && (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-                >
-                  Provider Page
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {description && (
-                <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h2 className="text-lg font-semibold">Scholarship Description</h2>
-                  <div className="mt-3">
-                    <RichHtml html={description} />
-                  </div>
-                </section>
-              )}
-
-              {eligibility && (
-                <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h2 className="text-lg font-semibold">Eligibility</h2>
-                  <div className="mt-3">
-                    <RichHtml html={eligibility} />
-                  </div>
-                </section>
-              )}
-
-              {benefits && (
-                <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h2 className="text-lg font-semibold">Benefits</h2>
-                  <div className="mt-3">
-                    <RichHtml html={benefits} />
-                  </div>
-                </section>
-              )}
-
-              {howToApply && (
-                <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h2 className="text-lg font-semibold">How to Apply</h2>
-                  <div className="mt-3">
-                    <RichHtml html={howToApply} />
-                  </div>
-                </section>
-              )}
-            </div>
-
-            <aside className="space-y-6">
-              {bannerSrc && (
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setShowBanner(true)}
-                    className="block w-full text-left"
-                    title="Click to enlarge"
-                  >
-                    <img
-                      src={bannerSrc}
-                      alt={`${provider || title} banner`}
-                      className="w-full h-auto object-contain bg-white"
-                      loading="lazy"
-                    />
-                  </button>
-                  <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-                    Click image to enlarge
-                  </div>
+        {/* ✅ Side ads ONLY on 2xl+ so center feed never gets squeezed */}
+        <div className="mx-auto w-full max-w-[1400px] px-4">
+          <div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">
+            {/* LEFT ADS (2nd ad frozen) */}
+            <aside className="hidden 2xl:block pt-8">
+              <div className="space-y-4">
+                <div className="max-h-[250px] overflow-hidden">
+                  {canShowAds && <GoogleSidebarAd />}
                 </div>
-              )}
+                <div className="sticky top-[140px]">
+                  {canShowAds && <GoogleSidebarAd />}
+                </div>
+              </div>
+            </aside>
 
-              <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">
-                  <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
-                    <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
-                      At a glance
-                    </span>
-                  </h3>
+            {/* CENTER (unchanged layout/dimensions) */}
+            <main className="min-w-0">
+              <div className="max-w-5xl mx-auto px-4 pt-8">
+                <Link
+                  to="/scholarship"
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  ← Back to Scholarships
+                </Link>
+              </div>
 
-                  <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
-                    <dt className="font-medium">Provider</dt>
-                    <dd className="mb-3">{provider || "-"}</dd>
+              <div className="max-w-5xl mx-auto px-4 py-6">
+                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                  <h1 className="text-2xl font-bold">{title}</h1>
+                  <p className="mt-1 text-slate-600">
+                    <span className="font-medium">{provider}</span>
+                    {country ? ` • ${country}` : ""}
+                    {level ? ` • ${level}` : ""}
+                    {field ? ` • ${field}` : ""}
+                  </p>
 
-                    <dt className="font-medium">Country</dt>
-                    <dd className="mb-3">{country || "-"}</dd>
-
-                    <dt className="font-medium">Level</dt>
-                    <dd className="mb-3">{level || "-"}</dd>
-
-                    <dt className="font-medium">Field</dt>
-                    <dd className="mb-3">{field || "-"}</dd>
-
-                    <dt className="font-medium">Deadline</dt>
-                    <dd className="mb-3">{deadline || "-"}</dd>
-
-                    {amount && (
-                      <>
-                        <dt className="font-medium">Max Amount</dt>
-                        <dd className="mb-3">{amount}</dd>
-                      </>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                    {Array.isArray(fundingType) && fundingType.length > 0 && (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-slate-500">Funding:</span>
+                        <span className="inline-flex flex-wrap gap-1">
+                          {fundingType.map((f) => (
+                            <span
+                              key={f}
+                              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
+                            >
+                              {f}
+                            </span>
+                          ))}
+                        </span>
+                      </span>
                     )}
-                  </dl>
+                    {amount && (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-slate-500">Amount:</span>
+                        <span className="font-medium">{amount}</span>
+                      </span>
+                    )}
+                    {deadline && (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-slate-500">Deadline:</span>
+                        <span className="font-medium">{deadline}</span>
+                      </span>
+                    )}
+                  </div>
 
-                  {partnerApplyUrl && (
-                    <a
-                      href={partnerApplyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                    >
-                      Apply Now
-                    </a>
-                  )}
+                  <div className="mt-4 flex gap-3">
+                    {partnerApplyUrl && (
+                      <a
+                        href={partnerApplyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                      >
+                        Apply Now
+                      </a>
+                    )}
+                    {link && (
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
+                      >
+                        Provider Page
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* ✅ Only show if we have truly related recommendations */}
-              {recs.length > 0 && (
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                  
-                  <div className="bg-slate-100 px-5 py-4">
-                      <h4 className="text-lg font-bold text-slate-900 text-center">You may also like</h4>
-                 </div>
+              <div className="max-w-5xl mx-auto px-4 pb-16">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2 space-y-6">
+                    {description && (
+                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-semibold">
+                          Scholarship Description
+                        </h2>
+                        <div className="mt-3">
+                          <RichHtml html={description} />
+                        </div>
+                      </section>
+                    )}
 
+                    {eligibility && (
+                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-semibold">Eligibility</h2>
+                        <div className="mt-3">
+                          <RichHtml html={eligibility} />
+                        </div>
+                      </section>
+                    )}
 
+                    {benefits && (
+                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-semibold">Benefits</h2>
+                        <div className="mt-3">
+                          <RichHtml html={benefits} />
+                        </div>
+                      </section>
+                    )}
 
-                  <div className="divide-y divide-slate-200">
-                    {recs.map((s, idx) => {
-                      const sid = getAnyId(s) || String(idx);
-                      const label = s?.title || "Untitled scholarship";
-                      return (
-                        <Link
-                          key={sid}
-                          to={`/scholarship/${encodeURIComponent(sid)}`}
-                          className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
-                        >
-                          <span className="font-semibold">{label}</span>
-                        </Link>
-                      );
-                    })}
+                    {howToApply && (
+                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                        <h2 className="text-lg font-semibold">How to Apply</h2>
+                        <div className="mt-3">
+                          <RichHtml html={howToApply} />
+                        </div>
+                      </section>
+                    )}
                   </div>
+
+                  <aside className="space-y-6">
+                    {bannerSrc && (
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setShowBanner(true)}
+                          className="block w-full text-left"
+                          title="Click to enlarge"
+                        >
+                          <img
+                            src={bannerSrc}
+                            alt={`${provider || title} banner`}
+                            className="w-full h-auto object-contain bg-white"
+                            loading="lazy"
+                          />
+                        </button>
+                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+                          Click image to enlarge
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">
+                        <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
+                          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
+                            At a glance
+                          </span>
+                        </h3>
+
+                        <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
+                          <dt className="font-medium">Provider</dt>
+                          <dd className="mb-3">{provider || "-"}</dd>
+
+                          <dt className="font-medium">Country</dt>
+                          <dd className="mb-3">{country || "-"}</dd>
+
+                          <dt className="font-medium">Level</dt>
+                          <dd className="mb-3">{level || "-"}</dd>
+
+                          <dt className="font-medium">Field</dt>
+                          <dd className="mb-3">{field || "-"}</dd>
+
+                          <dt className="font-medium">Deadline</dt>
+                          <dd className="mb-3">{deadline || "-"}</dd>
+
+                          {amount && (
+                            <>
+                              <dt className="font-medium">Max Amount</dt>
+                              <dd className="mb-3">{amount}</dd>
+                            </>
+                          )}
+                        </dl>
+
+                        {partnerApplyUrl && (
+                          <a
+                            href={partnerApplyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                          >
+                            Apply Now
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {recs.length > 0 && (
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="bg-slate-100 px-5 py-4">
+                          <h4 className="text-lg font-bold text-slate-900 text-center">
+                            You may also like
+                          </h4>
+                        </div>
+
+                        <div className="divide-y divide-slate-200">
+                          {recs.map((s, idx) => {
+                            const sid = getAnyId(s) || String(idx);
+                            const label = s?.title || "Untitled scholarship";
+                            return (
+                              <Link
+                                key={sid}
+                                to={`/scholarship/${encodeURIComponent(sid)}`}
+                                className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
+                              >
+                                <span className="font-semibold">{label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </aside>
                 </div>
-              )}
+              </div>
+            </main>
+
+            {/* RIGHT ADS (2nd ad frozen) */}
+            <aside className="hidden 2xl:block pt-8">
+              <div className="space-y-4">
+                <div className="max-h-[250px] overflow-hidden">
+                  {canShowAds && <GoogleSidebarAd />}
+                </div>
+                <div className="sticky top-[140px]">
+                  {canShowAds && <GoogleSidebarAd />}
+                </div>
+              </div>
             </aside>
           </div>
         </div>

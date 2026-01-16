@@ -31,7 +31,7 @@ export default function Home() {
           {/* Right: hero visual */}
           <div className="relative">
             <img
-               src="/images/students.jpg"
+               src="/images/Welcome.png"
               alt="AI campus illustration"
               className="w-full rounded-2xl shadow-md"
               />
@@ -146,13 +146,13 @@ function SectionTabs() {
     tag: "Lectures",
     title: "Notes,Assignments & Questions",
     text: "Share academics,Engage your students, and Boost academic productivity",
-    image: "/images/for-lecturer.jpg",
+    image: "/public/images/Lectures..png",
   },
   {
     tag: "Global & University Academic Platforms",
     title: "Student-Lecturer Academic Interaction",
     text: "Interact locally and globally,initiate Topics,Comment and Reply academic Interactive threads.",
-    image: "/images/for-students.jpg",
+    image: "/public/images/studentimage.png",
   },
   {
     tag: "Lecturers Management",
@@ -229,7 +229,7 @@ const cardsStudents = [
       tag: "Scholarship Institutions",
       title: "Submit and Manage Scholarships",
       text: "Universities,Colleges,Institutions and organizations can publish verified scholarships directly to students.",
-      image: "/images/submit-scholarship.jpg",
+      image: "/public/images/Submit scholarships.png",
     },
     {
       tag: "Education Loan Partners",
@@ -241,7 +241,7 @@ const cardsStudents = [
       tag: "University & Colleges Collaborations",
       title: "Expand Student Opportunities",
       text: "Universities and Colleges collaborate with ScholarsKnowledge to give students access to shared Academic resources locally and  worldwide.",
-      image: "/story-1.png",
+      image: "/public/images/collaboration image.png",
     },
   ];
 

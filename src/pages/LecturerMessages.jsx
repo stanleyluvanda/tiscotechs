@@ -1050,16 +1050,7 @@ export default function LecturerMessages() {
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox.open]);
 
-  /* ====== Google AdSense push ====== */
-  useEffect(() => {
-    try {
-      if (typeof window !== "undefined") {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
-    } catch (e) {
-      console.warn("AdSense error in LecturerMessages sidebar:", e);
-    }
-  }, []);
+  
 
   // ✅ student card resolver (used in left rail + header)
   /*onst resolveStudentCard = (studentId, newestThread) => {

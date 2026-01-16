@@ -1,7 +1,6 @@
 // src/pages/ContactLecturer.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import {
   loadStudentThreads,
   loadConversation,
@@ -1237,16 +1236,7 @@ const scrollToBottom = () => {
             </div>
           )}
         </section>
-
-        {/* RIGHT */}
-<aside className="hidden xl:block sticky top-4">
-  <div
-    id="ad-slot-right-rail"
-    className="w-[220px] min-h-[600px] mx-auto flex items-center justify-center"
-  >
-    <GoogleSidebarAd />
-  </div>
-</aside>
+        
       </main>
 
       {/* ===== Lightbox Overlay ===== */}

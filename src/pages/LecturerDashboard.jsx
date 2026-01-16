@@ -14,6 +14,7 @@ import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,} from "../lib/postsApi.js";
 
 
+// ✅ ADD THIS HERE (top-level helper, before the component)
 
 // 🔗 Simple backend helper for lecturer posts (same API as Student dashboard)
 const POSTS_API_URL =
@@ -166,9 +167,6 @@ async function postCommentToServer(payload) {
   if (!res.ok) throw new Error(data?.message || txt || `HTTP ${res.status}`);
   return data; // expect { ok:true, comment:{...} } or similar
 }
-
-
-
 
 
 
@@ -1321,8 +1319,8 @@ useEffect(() => {
   /* Seed posts once */
   const seeded = useMemo(() => {
     const exampleProgram = availablePrograms[0] || "Academic Program";
-    return [
-      {
+    return [];[
+      /*{
         id: "lp1",
         authorId: user.id,
         authorType: "lecturer",
@@ -1364,7 +1362,7 @@ useEffect(() => {
         likes: 0,
         liked: false,
         comments: [],
-      },
+      },*/
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -3257,7 +3255,6 @@ const deletePost = async (post) => {
                   )}
 
                   
-
                   {/* Actions */}
                   <div className="mt-3 flex justify-end gap-2">
                     <button
@@ -3343,7 +3340,7 @@ const deletePost = async (post) => {
 </Card>
 
 
-          <Card className="overflow-hidden">
+          {/*<Card className="overflow-hidden">
             <div className="font-semibold text-slate-900 text-center">Students’ Messages</div>
             <p className="text-sm text-slate-600 mt-1 text-center">
               Read and respond to students’ questions.
@@ -3361,7 +3358,7 @@ const deletePost = async (post) => {
                 </span>
               )}
             </div>
-          </Card>
+          </Card>*/}
 
           {/* Students' links: quick links under Students’ Messages */}
               <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
@@ -3496,12 +3493,49 @@ function Avatar({ size = "md", url, name, online=false }) {
   );
 }
 
+function sanitizePastedHtml(html = "") {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  // remove dangerous tags
+  doc.querySelectorAll("script, style, iframe, object, embed, link, meta").forEach(n => n.remove());
+
+  // remove attributes that make it depend on external CSS (and remove inline styles)
+  doc.querySelectorAll("*").forEach((el) => {
+    el.removeAttribute("class");
+    el.removeAttribute("style");
+
+    // remove event handlers + javascript: URLs
+    [...el.attributes].forEach((a) => {
+      const name = a.name.toLowerCase();
+      const val = String(a.value || "").trim().toLowerCase();
+      if (name.startsWith("on")) el.removeAttribute(a.name);
+      if ((name === "href" || name === "src") && val.startsWith("javascript:")) {
+        el.removeAttribute(a.name);
+      }
+    });
+  });
+
+  return doc.body.innerHTML;
+}
+
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
 function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
   const [showComments, setShowComments] = useState(true);
   const [cmt, setCmt] = useState("");
+  const [cmtHtml, setCmtHtml] = useState(""); // ✅ ADD THIS LINE HERE
   const [cmtImages, setCmtImages] = useState([]); // [{name,dataUrl}]
   const [cmtFiles, setCmtFiles] = useState([]);   // [{name,mime,dataUrl}]
+  // ✅ ADD THESE TWO HERE (right after the state)
+  const cmtRef = useRef(null);
+
+  useEffect(() => {
+    const el = cmtRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = el.scrollHeight + "px";
+  }, [cmt]);
+
+  
 
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
   const openLightbox = (items = [], index = 0) => {
@@ -3715,23 +3749,88 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
               onAddReply={(text, images, files) => onAddReply(c.id, text, images, files)}  // ✅ pass just (commentId, text…)
             />
           ))}
+{/* add comment */}
+      <form
+  onSubmit={(e) => {
+    e.preventDefault();
 
-          {/* add comment */}
-          <form
-            onSubmit={(e)=>{ e.preventDefault(); 
-              onAddComment(cmt, cmtImages, cmtFiles);
-              setCmt(""); setCmtImages([]); setCmtFiles([]); }}
-            className="flex flex-col gap-2"
-          >
-            <div className="flex items-start gap-2">
-              <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
-              <input
-                value={cmt}
-                onChange={(e) => setCmt(e.target.value)}
-                placeholder="Write a comment…"
-                className="flex-1 border border-slate-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              />
-              <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
+    const text = (cmt || "").replace(/\r\n/g, "\n");
+    onAddComment(text, cmtImages, cmtFiles);
+
+    setCmt("");
+    setCmtHtml("");
+    setCmtImages([]);
+    setCmtFiles([]);
+  }}
+  
+    
+  className="flex flex-col gap-2"
+  >
+
+
+            {/*<div className="flex items-start gap-2">
+  <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
+
+  <div className="flex-1">*/}
+
+    <div className="flex items-start gap-2">
+  <div className="shrink-0">
+    <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
+  </div>
+
+  <div className="flex-1 min-w-0">
+
+
+    <textarea
+      ref={cmtRef}
+      value={cmt}
+      onChange={(e) => setCmt(e.target.value)}
+      onPaste={(e) => {
+  const html = e.clipboardData?.getData("text/html") || "";
+  setCmtHtml(sanitizePastedHtml(html));
+}}
+      placeholder="Write a comment on a post…"
+      rows={1}
+      onInput={(e) => {
+        e.currentTarget.style.height = "0px";
+        e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+      }}
+      className="w-full border border-slate-200 rounded-2xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white resize-none overflow-hidden whitespace-pre-wrap break-words leading-6"
+    />
+  </div>
+
+  <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
+    <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
+  </label>
+  <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📎
+    <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
+  </label>
+
+  <button className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
+    Post
+  </button>
+</div>
+{/* ✅ Preview (only shows formatting when paste provided HTML) */}
+{/*{(cmtHtml || cmt)?.trim?.() && (
+  <div className="pl-10">
+    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+      <div className="text-xs text-slate-500 mb-2">Preview</div>   
+
+      {cmtHtml ? ( 
+        <div className="prose prose-sm max-w-none prose-headings:font-bold prose-strong:font-bold">
+          <div dangerouslySetInnerHTML={{ __html: cmtHtml }} />
+        </div>
+        
+      ) : (
+        renderTextWithHeadings((cmt || "").replace(/\r\n/g, "\n"))
+      )}
+    </div>
+  </div>
+)}*/}
+
+
+            
+              {/*<label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
               </label>
               <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📎
@@ -3740,7 +3839,7 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
               <button className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
                 Post
               </button>
-            </div>
+            </div>*/}
 
             {(cmtImages.length>0 || cmtFiles.length>0) && (
               <div className="pl-10 space-y-2">
@@ -3777,10 +3876,17 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
   );
 }
 
-function CommentThread({ comment, onAddReply }) {
+
+
+
+
+/*function CommentThread({ comment, onAddReply }) {
   const [reply,setReply]=useState("");
   const [replyImages,setReplyImages]=useState([]); // [{name,dataUrl}]
   const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
+
+  const [replyHtml, setReplyHtml] = useState("");   // ✅ add
+   const replyRef = useRef(null);                   // ✅ add
 
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
   const openLightbox = (items = [], index = 0) => {
@@ -3804,6 +3910,66 @@ function CommentThread({ comment, onAddReply }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox.open]); // eslint-disable-line
 
+
+  useEffect(() => {
+  const el = replyRef.current;
+  if (!el) return;
+  el.style.height = "0px";
+  el.style.height = el.scrollHeight + "px";
+}, [reply]);*/
+
+
+function CommentThread({ comment, onAddReply }) {
+  const [reply, setReply] = useState("");
+  const [replyImages, setReplyImages] = useState([]); // [{name,dataUrl}]
+  const [replyFiles, setReplyFiles] = useState([]);   // [{name,mime,dataUrl}]
+
+  const [replyHtml, setReplyHtml] = useState("");     // ✅ add
+  const replyRef = useRef(null);                      // ✅ add
+
+  const [lightbox, setLightbox] = useState({ open: false, items: [], index: 0 });
+
+  const openLightbox = (items = [], index = 0) => {
+    if (!Array.isArray(items) || items.length === 0) return;
+    setLightbox({
+      open: true,
+      items: items.slice(),
+      index: Math.max(0, Math.min(index, items.length - 1)),
+    });
+  };
+
+  const closeLightbox = () => setLightbox((l) => ({ ...l, open: false }));
+
+  const step = (dir) =>
+    setLightbox((l) => {
+      const len = l.items?.length || 0;
+      if (len <= 1) return l;
+      return { ...l, index: (l.index + dir + len) % len };
+    });
+
+  useEffect(() => {
+    if (!lightbox.open) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") step(1);
+      else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "Escape") closeLightbox();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox.open]); // eslint-disable-line
+
+  // ✅ auto-grow + retract
+  useEffect(() => {
+    const el = replyRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = el.scrollHeight + "px";
+  }, [reply]);
+
+
+
+
+
   const onPickReplyImages = async (e)=>{
     const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
     const dataUrls = await Promise.all(files.map(f=>fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420)));
@@ -3825,7 +3991,11 @@ function CommentThread({ comment, onAddReply }) {
         <div className="flex-1">
           <div className="font-medium text-slate-800">{displayWithTitle(comment.author, "", "")}</div>
           <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>
-          <ExpandableText text={comment.text}/>
+          {/*<ExpandableText text={comment.text}/>*/}
+          <ExpandableText
+  text={comment.text}
+  className="whitespace-pre-wrap break-words leading-6"
+/>
 
           {/* comment images */}
           {comment.images?.length>0 && (
@@ -3851,10 +4021,18 @@ function CommentThread({ comment, onAddReply }) {
   const replies = Array.isArray(comment.replies) ? comment.replies : [];
   return replies.length > 0 ? (
     <div className="mt-2 pl-6 space-y-2">
-      {replies.map((r) => (
+      {/*{replies.map((r) => (
         <div key={r.id} className="flex items-start gap-2">
           <Avatar size="sm" url={r.authorPhoto} name={r.author} />
-          <div>
+          <div>*/}
+
+            {replies.map((r) => (
+  <div key={r.id} className="flex items-start gap-2">
+    <div className="shrink-0">
+      <Avatar size="sm" url={r.authorPhoto} name={r.author} />
+    </div>
+
+    <div className="min-w-0 flex-1">
             <div className="font-medium text-slate-800">
               {displayWithTitle(r.author, "", "")}
             </div>
@@ -3888,7 +4066,6 @@ function CommentThread({ comment, onAddReply }) {
     </div>
   ) : null;
 })()}
-
           {/* Lightbox for comment/replies */}
           {lightbox.open && (
             <div
@@ -3949,58 +4126,95 @@ function CommentThread({ comment, onAddReply }) {
           )}
 
           {/* add reply */}
-          <form
-            onSubmit={(e)=>{ e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}
-            className="mt-2"
-          >
-            <div className="flex items-start gap-2">
-              <input
-                value={reply}
-                onChange={(e)=>setReply(e.target.value)}
-                placeholder="Write a reply…"
-                className="flex-1 border border-slate-200 rounded-full px-3 py-1.5"
-              />
-              <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
-              </label>
-              <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📎
-                <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
-              </label>
-              {/* Reply button made visible with solid color distinct from Comment 'Post' */}
-              <button className="rounded-full bg-emerald-600 text-white px-3 py-1.5 text-sm font-semibold hover:bg-emerald-700">
-                Reply
-              </button>
-            </div>
+          
+<form
+   onSubmit={(e) => {
+    e.preventDefault();
 
-            {(replyImages.length>0 || replyFiles.length>0) && (
-              <div className="mt-2 space-y-2 pl-1">
-                {replyImages.length>0 && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {replyImages.map((img,i)=>(
-                      <div key={i} className="relative">
-                        <img src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />
-                        <button
-                          type="button"
-                          className="absolute right-1 top-1 bg-white/90 rounded text-xs px-1"
-                          onClick={()=> setReplyImages(prev => prev.filter((_,idx)=>idx!==i))}
-                        >✕</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {replyFiles.length>0 && (
-                  <ul className="text-xs space-y-1">
-                    {replyFiles.map((f,i)=>(
-                      <li key={i} className="flex items-center gap-2">
-                        📎<span>{f.name}</span>
-                        <button type="button" className="text-xs underline" onClick={()=> setReplyFiles(prev => prev.filter((_,idx)=>idx!==i))}>remove</button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </form>
+    const text = (reply || "").replace(/\r\n/g, "\n");
+    /*onAddReply(text, replyImages, replyFiles);*/
+    onAddReply(text, replyImages, replyFiles, replyHtml);
+
+    setReply("");
+    setReplyHtml("");
+    setReplyImages([]);
+    setReplyFiles([]);
+  }}
+  className="mt-2 flex flex-col gap-2"
+
+>
+  
+
+
+
+  <div className="flex items-start gap-2">
+    {/* ✅ wrap textarea in flex-1, textarea uses w-full */}
+    <div className="flex-1">
+      <textarea
+        ref={replyRef}
+        value={reply}
+        onChange={(e) => setReply(e.target.value)}
+        onPaste={(e) => {
+          const html = e.clipboardData?.getData("text/html") || "";
+          setReplyHtml(sanitizePastedHtml(html));
+        }}
+        placeholder="Write a reply…"
+        rows={1}
+        onInput={(e) => {
+          e.currentTarget.style.height = "0px";
+          e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+        }}
+        className="w-full border border-slate-200 rounded-2xl px-3 py-2 resize-none overflow-hidden whitespace-pre-wrap break-words leading-6"
+      />
+    </div>
+
+    <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
+      <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
+    </label>
+
+    <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📎
+      <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
+    </label>
+
+    <button className="rounded-full bg-emerald-600 text-white px-3 py-1.5 text-sm font-semibold hover:bg-emerald-700">
+      Reply
+    </button>
+  </div>
+  
+
+  
+  {(replyImages.length > 0 || replyFiles.length > 0) && (
+    <div className="mt-2 space-y-2 pl-1">
+      {replyImages.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          {replyImages.map((img, i) => (
+            <div key={i} className="relative">
+              <img src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />
+              <button
+                type="button"
+                className="absolute right-1 top-1 bg-white/90 rounded text-xs px-1"
+                onClick={() => setReplyImages((prev) => prev.filter((_, idx) => idx !== i))}
+              >✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {replyFiles.length > 0 && (
+        <ul className="text-xs space-y-1">
+          {replyFiles.map((f, i) => (
+            <li key={i} className="flex items-center gap-2">
+              📎<span>{f.name}</span>
+              <button type="button" className="text-xs underline" onClick={() => setReplyFiles((prev) => prev.filter((_, idx) => idx !== i))}>
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</form>
         </div>
       </div>
     </div>
@@ -4009,7 +4223,7 @@ function CommentThread({ comment, onAddReply }) {
 
 /* ---------- Expandable text/html ---------- */
 function stripHtml(s = "") { const div = document.createElement("div"); div.innerHTML = s; return (div.textContent || div.innerText || "").trim(); }
-function ExpandableText({ text, initialChars = 180 }) {
+/*function ExpandableText({ text, initialChars = 180 }) {
   const [open, setOpen] = useState(false);
   if (!text) return null;
   const tooLong = text.length > initialChars;
@@ -4019,6 +4233,88 @@ function ExpandableText({ text, initialChars = 180 }) {
       <span>{shown}</span>
       {tooLong && (
         <button onClick={() => setOpen((v) => !v)} className="ml-2 text-blue-600 hover:underline">
+          {open ? "Read less" : "Read more"}
+        </button>
+      )}
+    </div>
+  );
+}*/
+/* ---------- Expandable text/html ---------- */
+
+function renderTextWithHeadings(text = "") {
+  const lines = String(text).replace(/\r\n/g, "\n").split("\n");
+
+  const isHeadingLine = (s) => {
+    const t = s.trim();
+    if (!t) return false;
+
+    // Only bold known headings (safe) or ALL CAPS headings
+    const common =
+      /^(key aspects|benefits|challenges|challenges & criticisms|limitations|overview|summary|modern trends|policy issues|trade imbalances|governance & regulation|types of trade)$/i;
+
+    const allCaps = /^[A-Z0-9\s]{6,}$/.test(t);
+
+    return common.test(t) || allCaps;
+  };
+
+  return (
+    <div className="whitespace-pre-wrap break-words leading-6">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+
+        // keep blank lines (paragraph spacing)
+        if (!trimmed) return <div key={i} className="h-3" />;
+
+        // Bold "Label:" at start of line, e.g. "Definition: ...."
+        const m = trimmed.match(/^([A-Za-z][A-Za-z\s]{1,30}):\s*(.*)$/);
+        if (m) {
+          const label = m[1];
+          const rest = m[2] || "";
+          return (
+            <div key={i}>
+              <strong>{label}:</strong> {rest}
+            </div>
+          );
+        }
+
+        // Bold heading lines like "Key Aspects" / "Benefits"
+        if (isHeadingLine(trimmed)) {
+          return (
+            <div key={i} className="font-semibold mt-2">
+              {trimmed}
+            </div>
+          );
+        }
+
+        // normal line (bullets like • stay visible as characters)
+        return <div key={i}>{line}</div>;
+      })}
+    </div>
+  );
+}
+
+function ExpandableText({ text, initialChars = 180, className = "" }) {
+  const [open, setOpen] = useState(false);
+  if (!text) return null;
+
+  const tooLong = text.length > initialChars;
+  const shown = open || !tooLong ? text : text.slice(0, initialChars) + "…";
+
+  return (
+    <div className="mt-1 text-slate-800">
+      {/*<div className={`whitespace-pre-wrap break-words ${className || ""}`}>
+        {shown}
+      </div>*/}
+      <div className={className}>
+  {renderTextWithHeadings(shown)}
+</div>
+
+      {tooLong && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="ml-2 text-blue-600 hover:underline"
+        >
           {open ? "Read less" : "Read more"}
         </button>
       )}

@@ -15,6 +15,7 @@ import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";
 
 
+
 /* ================= Utils ================ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 const UPLOAD_LAMBDA =
@@ -519,34 +520,87 @@ function Avatar({ size="md", url, name, online=false }) {
   );
 }
 function stripHtml(s=""){ const d=document.createElement("div"); d.innerHTML=s; return (d.textContent||d.innerText||"").trim(); }
-function ExpandableText({ text, initialChars=180 }) {
+/*function ExpandableText({ text, initialChars=180 }) {
   const [open,setOpen]=useState(false); if(!text) return null;
   const tooLong = text.length>initialChars, shown = open||!tooLong?text:text.slice(0,initialChars)+"…";
   return <div className="mt-1 text-slate-800"><span>{shown}</span>{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="ml-2 text-blue-600 hover:underline"> {open?"Read less":"Read more"}</button>}</div>;
+}*/
+function ExpandableText({ text, initialChars = 180, className = "" }) {
+  const [open, setOpen] = useState(false);
+  if (!text) return null;
+
+  const raw = String(text || "");
+  const tooLong = raw.length > initialChars;
+  const shown = open || !tooLong ? raw : raw.slice(0, initialChars) + "…";
+
+  // ✅ Only apply heading/bold heuristics when the content "looks pasted"
+  // (multiple paragraphs / bullets / lots of line breaks)
+  const looksPasted =
+    /\n{2,}/.test(raw) || /[•·▪–—]\s/.test(raw) || raw.split("\n").length >= 4;
+
+  const renderTextWithHeadingsSafe = (t = "") => {
+    const lines = String(t).replace(/\r\n/g, "\n").split("\n");
+    return (
+      <div className="whitespace-pre-wrap break-words leading-6">
+        {lines.map((line, i) => {
+          const trimmed = line.trim();
+
+          // keep blank lines (paragraph spacing)
+          if (!trimmed) return <div key={i} className="h-3" />;
+
+          // Bold "Label:" lines ONLY when pasted-like
+          if (looksPasted) {
+            const m = trimmed.match(/^([A-Za-z][A-Za-z\s]{1,30}):\s*(.*)$/);
+            if (m) {
+              const label = m[1];
+              const rest = m[2] || "";
+              return (
+                <div key={i}>
+                  <strong>{label}:</strong> {rest}
+                </div>
+              );
+            }
+
+            // Bold standalone heading lines like "Key Aspects" / "Benefits" (pasted-like only)
+            const common =
+              /^(key aspects|benefits|challenges|challenges & criticisms|limitations|overview|summary|modern trends|policy issues|trade imbalances|governance & regulation)$/i;
+
+            if (common.test(trimmed)) {
+              return (
+                <div key={i} className="font-semibold mt-2">
+                  {trimmed}
+                </div>
+              );
+            }
+          }
+
+          // normal line
+          return <div key={i}>{line}</div>;
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className={`mt-1 text-slate-800 ${className}`}>
+      {renderTextWithHeadingsSafe(shown)}
+      {tooLong && (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="mt-1 text-blue-600 hover:underline"
+        >
+          {open ? "Read less" : "Read more"}
+        </button>
+      )}
+    </div>
+  );
 }
+
+
 function ExpandableHtml({ html, initialChars=280 }) {
   const [open,setOpen]=useState(false); const plain=stripHtml(html); const tooLong=plain.length>initialChars; const shortHtml=plain.slice(0,initialChars)+(tooLong?"…":"");
   return <div className="mt-3 text-slate-800 prose-sm max-w-none">{open||!tooLong?<div dangerouslySetInnerHTML={{__html:html}}/>:<div>{shortHtml}</div>}{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="mt-1 text-blue-600 text-sm hover:underline">{open?"Read less":"Read more"}</button>}</div>;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -921,7 +975,15 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
 })()}
           {/* reply composer */}
           <form
-            onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}
+            /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
+            onSubmit={(e) => {
+  e.preventDefault();
+  const text = (reply || "").replace(/\r\n/g, "\n"); // ✅ keep newlines
+  onAddReply(text, replyImages, replyFiles);
+  setReply("");
+  setReplyImages([]);
+  setReplyFiles([]);
+}}
             className="mt-2"
           >
             <div className="flex items-start gap-2">
@@ -948,6 +1010,18 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
                 Reply
               </button>
             </div>
+            {/* ✅ Preview */}
+  {/* ✅ Preview for reply */}
+{/*{reply?.trim() && (
+  <div className="pl-10">
+    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+      <div className="text-xs text-slate-500 mb-2">Preview</div>
+      
+      <ExpandableText text={(reply || "").replace(/\r\n/g, "\n")} />
+    </div>
+  </div>
+)}
+*/}
 
             {(replyImages.length>0 || replyFiles.length>0) && (
               <div className="mt-2 space-y-2 pl-1">
@@ -1240,7 +1314,13 @@ const files = mergedFiles.filter((a) => {
 
           {/* comment composer with attachments */}
           <form
-            onSubmit={(e)=>{e.preventDefault(); onAddComment(cmt, cmtImages, cmtFiles); setCmt(""); setCmtImages([]); setCmtFiles([]);}}
+            /*onSubmit={(e)=>{e.preventDefault(); onAddComment(cmt, cmtImages, cmtFiles); setCmt(""); setCmtImages([]); setCmtFiles([]);}}*/
+            onSubmit={(e)=>{ 
+  e.preventDefault(); 
+  const text = (cmt || "").replace(/\r\n/g, "\n"); // keep newlines
+  onAddComment(text, cmtImages, cmtFiles);
+  setCmt(""); setCmtImages([]); setCmtFiles([]); 
+}}
             className="flex flex-col gap-2"
           >
             <div className="flex items-start gap-2">
@@ -1254,7 +1334,8 @@ const files = mergedFiles.filter((a) => {
                 }}
                 placeholder="Write a comment/feedback…"
                 rows={1}
-                className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5"
+                /*className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5"*/
+                className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
                 style={{ minHeight: 44, maxHeight: 220 }}
               />
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
@@ -1886,7 +1967,7 @@ const latestVideo = visibleVideos[0] || null;
   }
 
   // ===== Seeded posts
-  const seeded = useMemo(()=>[
+  /*const seeded = useMemo(()=>[
     {
       id:"p3",
       createdAt: Date.now()-60*60*1000,
@@ -1938,7 +2019,17 @@ const latestVideo = visibleVideos[0] || null;
   const [posts,setPosts] = useState(()=>{
     const stored = safeParse(localStorage.getItem("posts"));
     return stored && Array.isArray(stored) ? stored : seeded;
-  });
+  });*/
+
+  // ===== Seeded posts (DISABLED)
+// Keep this variable so nothing else breaks, but it returns an empty array.
+const seeded = useMemo(() => [], []);
+
+// Posts state: prefer localStorage if present, otherwise start empty (NOT seeded)
+const [posts, setPosts] = useState(() => {
+  const stored = safeParse(localStorage.getItem("posts"));
+  return stored && Array.isArray(stored) ? stored : [];
+});
 
 
 
@@ -2080,6 +2171,8 @@ function normalizeCommentFromBackend(c) {
   // 🔄 Load posts from backend API (global feed for student dashboard)
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
+  // ✅ Show sidebar ads only when the feed has enough real content
+const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
 
   useEffect(() => {
     let cancelled = false;
@@ -2340,6 +2433,9 @@ function normalizeCommentFromBackend(c) {
     const normalizedLect = b.map(p => p.authorType ? p : { ...p, authorType: "lecturer" });
     return [...a, ...normalizedLect].sort((x,y) => (y.createdAt||0) - (x.createdAt||0));
   }, [posts, lecturerPosts]);
+
+  
+
 
   useEffect(() => {
     const sync = () => {
@@ -3594,8 +3690,7 @@ const feedCombined = useMemo(() => {
   /* ===== Layout ===== */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
-    
-
+      
       {/* ⬇️ Add VerifyGate at the very top-level of the page */}
     <VerifyGate email={current?.email} />
     
@@ -3757,13 +3852,14 @@ const feedCombined = useMemo(() => {
             </div>
           </SidebarCard>
            {/* Normal Google Ad card */}
-                    <GoogleSidebarAd />
+                    {showSidebarAds ? <GoogleSidebarAd /> : null}
+
             
                  {/* Sticky Google Ad card (stays visible while scrolling) */}
           <div className="sticky top-[160px] pt-2">
             {/* "safe" height: viewport minus top offset minus bottom gap */}
             <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
-              <GoogleSidebarAd />
+              {showSidebarAds ? <GoogleSidebarAd /> : null}
             </div>
           </div>
         </aside>
@@ -3914,11 +4010,16 @@ const feedCombined = useMemo(() => {
           </Card>
 
           {/* Small loading hint above the feed */}
-          {feedLoading && (
+          {/*{feedLoading && (
             <div className="text-sm text-slate-500 px-1 mb-1">
               Loading posts…
             </div>
-          )}
+          )}*/}
+          {feedLoading && (filtered?.length || 0) === 0 && (
+  <div className="text-sm text-slate-500 px-1 mb-1">
+    Loading posts…
+  </div>
+)}
 
           
 
@@ -3991,7 +4092,7 @@ const feedCombined = useMemo(() => {
         
 
           {/* Contact Lecturer card */}
-          <div className="mt-3">
+          {/*<div className="mt-3">
             <div className="w-full border border-slate-200 bg-white rounded-2xl p-4">
               <div className="font-semibold text-slate-900">Contact a Lecturer</div>
               <p className="text-sm text-slate-600 mt-1">
@@ -4017,7 +4118,7 @@ const feedCombined = useMemo(() => {
                 )}
               </div>
             </div>
-          </div>
+          </div>*/}
 
           {/* Students' links: quick links under Contact a Lecturer */}
 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
@@ -4061,13 +4162,13 @@ const feedCombined = useMemo(() => {
   </ul>
 </div>
  {/* Normal Google Ad card */}
-          <GoogleSidebarAd />
+          {showSidebarAds ? <GoogleSidebarAd /> : null}
   
        {/* Sticky Google Ad card (stays visible while scrolling) */}
 <div className="sticky top-[160px] pt-2">
   {/* "safe" height: viewport minus top offset minus bottom gap */}
   <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
-    <GoogleSidebarAd />
+  {showSidebarAds ? <GoogleSidebarAd /> : null}
   </div>
 </div>
         </aside>

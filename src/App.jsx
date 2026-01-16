@@ -1,6 +1,7 @@
 
 // src/App.jsx
-import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+//import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -43,6 +44,7 @@ import TermsOfUse from "./pages/TermsOfUse.jsx"
 // ✅ NEW: Video Tips page import
 import VideoTips from "./pages/VideoTips.jsx";
 import UploadTest from "./pages/UploadTest.jsx";
+import AdminSupportInbox from "./pages/AdminSupportInbox.jsx";
 
 
 
@@ -113,6 +115,7 @@ export default function App() {
         <Route path="/admin/members" element={<AdminMembers />} />
         <Route path="/admin/scholarships" element={<AdminScholarships />} />
         <Route path="/admin/scholarships/:id" element={<AdminScholarshipForm />} />
+        <Route path="/admin/support" element={<AdminSupportInbox />} />
 
         {/* Admin Scholarships */}
         <Route path="/admin/scholarships/new" element={<AdminScholarshipForm />} />

@@ -1503,36 +1503,12 @@ export default function GlobalAcademicPlatform() {
   }, [user, navigate]);
 
   // initial seed if server empty
-  const seeded = useMemo(() => {
-    const now = Date.now();
-    return [
-      {
-        id: `seed_${now}`,
-        title: "Welcome to the Global Academic Platform",
-        bodyHtml: "Discuss topics with students and lecturers worldwide. Be kind and cite sources!",
-        category: "Current & Trending Topics",
-        topic: "Artificial Intelligence (AI)",
-        views: 35,
-        likes: 5,
-        saved: false,
-        author: {
-          id: user?.id,
-          name: user?.name || "Student",
-          title: userTitle || "",
-          program: user?.program || "Program",
-          photoUrl: user?.photoUrl || "",
-          // ❌ university intentionally removed for GLOBAL
-          country: user?.countryName || user?.country || "",
-          countryCode: user?.countryCode || user?.country_code || "",
-        },
-        createdAt: now - 7200_000,
-        attachments: [],
-        comments: [],
-        scope: SCOPE,
-      },
-    ];
+  // initial seed if server empty  ✅ DISABLED (returns no posts)
+const seeded = useMemo(() => {
+  return [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
 
   // Fetch loop (prevents “local only” + reduces flicker by merging)
   useEffect(() => {

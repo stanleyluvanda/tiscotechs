@@ -1,9 +1,12 @@
-// src/pages/Scholarship.jsx 
+// src/pages/Scholarship.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { listScholarships } from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback)
+
+// ✅ Google Ads (same component you used in dashboards)
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 const CONTINENT_NAMES = Object.keys(REGIONS);
 
@@ -93,8 +96,7 @@ function filterSortPaginate({
   // Country
   if (country && country !== "All") {
     out = out.filter(
-      (s) =>
-        String(s.country || "").toLowerCase() === country.toLowerCase()
+      (s) => String(s.country || "").toLowerCase() === country.toLowerCase()
     );
   }
 
@@ -108,9 +110,7 @@ function filterSortPaginate({
   // Level (multi)
   if (levels && levels.length > 0) {
     const setLv = new Set(levels.map((x) => x.toLowerCase()));
-    out = out.filter((s) =>
-      setLv.has(String(s.level || "").toLowerCase())
-    );
+    out = out.filter((s) => setLv.has(String(s.level || "").toLowerCase()));
   }
 
   // Funding
@@ -136,14 +136,12 @@ function filterSortPaginate({
   } else if (sort === "deadlineAsc") {
     out.sort(
       (a, b) =>
-        new Date(a.deadline || "2100-01-01") -
-        new Date(b.deadline || "2100-01-01")
+        new Date(a.deadline || "2100-01-01") - new Date(b.deadline || "2100-01-01")
     );
   } else if (sort === "deadlineDesc") {
     out.sort(
       (a, b) =>
-        new Date(b.deadline || "1900-01-01") -
-        new Date(a.deadline || "1900-01-01")
+        new Date(b.deadline || "1900-01-01") - new Date(a.deadline || "1900-01-01")
     );
   } else if (sort === "title") {
     out.sort((a, b) =>
@@ -279,6 +277,8 @@ export default function Scholarship() {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // ✅ AdSense content gate: only show ads when there is real publisher content
+const canShowAds = !loading && items.length >= 4;
 
   // Toggle a checkbox value in levels
   const toggleLevel = (val) => {
@@ -289,280 +289,310 @@ export default function Scholarship() {
   };
 
   return (
-    <div className="mx-auto px-4 py-8 max-w-[1056px]">
-      <h1 className="text-2xl font-bold">Scholarships</h1>
-      <p className="mt-1 text-slate-600">
-        Browse scholarships from partner universities and external providers.
-      </p>
+    // ✅ Outer layout: left ad | center feed (unchanged width) | right ad
+    <div className="mx-auto w-full px-4 py-8">
+      <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">
+        {/* LEFT ADS (hidden on small screens) */}
+        <aside className="hidden xl:block w-[200px] shrink-0">
+          <div className="space-y-4">
+            {canShowAds && <GoogleSidebarAd />}
+            <div className="sticky top-[140px]">
+              {canShowAds && <GoogleSidebarAd />}
+            </div>
+          </div>
+        </aside>
 
-      {/* Optional subtle banner if you want to surface fallback mode; left off by default */}
-      {usedFallback && (
-        <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
-          Showing scholarships from your device (offline/fallback mode).
-        </div>
-      )}
+        {/* CENTER FEED (keeps EXACT same dimension as before) */}
+        <main className="w-full max-w-[1056px] shrink-0">
+          <h2 className="text-3xl font-bold">
+            Scholarships & Funding Opportunities for International students
+          </h2>
+          <p className="mt-1 text-blue-900">
+            Explore verified scholarship and funding opportunities offered by
+            partner universities, foundations, governments, and accredited
+            external providers worldwide.
+          </p>
 
-      {/* Controls */}
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
-        <input
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search by title, provider, country…"
-          className="w-full border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"
-        />
-
-        <select
-          value={continent}
-          onChange={(e) => {
-            setContinent(e.target.value);
-            setCountry("All");
-            setPage(1);
-          }}
-          className="border border-slate-300 rounded px-3 py-2 text-sm"
-          aria-label="Filter by continent"
-        >
-          {["All", ...CONTINENT_NAMES].map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={country}
-          onChange={(e) => {
-            setCountry(e.target.value);
-            setPage(1);
-          }}
-          className="border border-slate-300 rounded px-3 py-2 text-sm"
-          aria-label="Filter by country"
-        >
-          {countryOptions.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={field}
-          onChange={(e) => {
-            setField(e.target.value);
-            setPage(1);
-          }}
-          className="border border-slate-300 rounded px-3 py-2 text-sm"
-          aria-label="Filter by field of study"
-        >
-          {["All", ...FIELDS_OF_STUDY].map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </select>
-
-        {/* ⭐ Level multi-select as a compact dropdown */}
-        <div className="relative" data-level-popover>
-          <button
-            type="button"
-            onClick={() => setLevelOpen((o) => !o)}
-            className="w-full text-left text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 min-w-[160px] flex items-center justify-between gap-2"
-            aria-haspopup="menu"
-            aria-expanded={levelOpen ? "true" : "false"}
-          >
-            <span>Level{levels.length ? ` (${levels.length})` : ""}</span>
-            <span className="text-slate-500">▾</span>
-          </button>
-
-          {levelOpen && (
-            <div
-              className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"
-              role="menu"
-              data-level-popover
-            >
-              <div className="max-h-64 overflow-auto p-2 space-y-1">
-                {LEVEL_OPTIONS.map((opt) => {
-                  const checked = levels.includes(opt);
-                  return (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        className="accent-blue-600"
-                        checked={checked}
-                        onChange={() => {
-                          toggleLevel(opt);
-                        }}
-                      />
-                      <span className="text-sm text-slate-700">{opt}</span>
-                    </label>
-                  );
-                })}
-              </div>
-
-              <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
-                <button
-                  type="button"
-                  onClick={() => setLevels([])}
-                  className="text-xs text-slate-600 underline"
-                >
-                  Clear
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLevelOpen(false)}
-                  className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-slate-50"
-                >
-                  Done
-                </button>
-              </div>
+          {/* Optional subtle banner if you want to surface fallback mode; left off by default */}
+          {usedFallback && (
+            <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
+              Showing scholarships from your device (offline/fallback mode).
             </div>
           )}
-        </div>
 
-        <div className="flex gap-2 xl:col-span-2">
-          <select
-            value={funding}
-            onChange={(e) => {
-              setFunding(e.target.value);
-              setPage(1);
-            }}
-            className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
-            aria-label="Funding type"
-          >
-            {fundingOptions.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
+          {/* Controls */}
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
+            <input
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search by title, provider, country…"
+              className="w-full border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"
+            />
 
-          <select
-            value={sort}
-            onChange={(e) => {
-              setSort(e.target.value);
-              setPage(1);
-            }}
-            className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
-            aria-label="Sort by"
-          >
-            <option value="newest">Newest</option>
-            <option value="deadlineAsc">Deadline (soonest)</option>
-            <option value="deadlineDesc">Deadline (latest)</option>
-            <option value="title">Title (A–Z)</option>
-          </select>
-
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
-      {/* States */}
-      {loading && (
-        <div className="mt-6 text-slate-600">Loading scholarships…</div>
-      )}
-      {err && <div className="mt-6 text-red-600">{err}</div>}
-      {!loading && !err && items.length === 0 && (
-        <div className="mt-6 text-slate-600">No scholarships found.</div>
-      )}
-
-      {/* List */}
-      <ul className="mt-6 grid gap-3">
-        {items.map((s) => {
-          const snippet = truncate(stripHtml(s.description || ""), 200);
-          const fundingStr = Array.isArray(s.fundingType)
-            ? s.fundingType.join(", ")
-            : s.fundingType || "";
-          return (
-            <li
-              key={s.id}
-              className="border border-slate-200 rounded-lg p-4 bg-white"
+            <select
+              value={continent}
+              onChange={(e) => {
+                setContinent(e.target.value);
+                setCountry("All");
+                setPage(1);
+              }}
+              className="border border-slate-300 rounded px-3 py-2 text-sm"
+              aria-label="Filter by continent"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-lg font-semibold">{s.title}</div>
-                  <div className="mt-0.5 text-sm text-slate-600">
-                    {s.provider}
-                    {s.country ? ` • ${s.country}` : ""}
-                    {s.level ? ` • ${s.level}` : ""}
-                    {s.field ? ` • ${s.field}` : ""}
-                    {fundingStr ? ` • ${fundingStr}` : ""}
+              {["All", ...CONTINENT_NAMES].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={country}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setPage(1);
+              }}
+              className="border border-slate-300 rounded px-3 py-2 text-sm"
+              aria-label="Filter by country"
+            >
+              {countryOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={field}
+              onChange={(e) => {
+                setField(e.target.value);
+                setPage(1);
+              }}
+              className="border border-slate-300 rounded px-3 py-2 text-sm"
+              aria-label="Filter by field of study"
+            >
+              {["All", ...FIELDS_OF_STUDY].map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+
+            {/* ⭐ Level multi-select as a compact dropdown */}
+            <div className="relative" data-level-popover>
+              <button
+                type="button"
+                onClick={() => setLevelOpen((o) => !o)}
+                className="w-full text-left text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 min-w-[160px] flex items-center justify-between gap-2"
+                aria-haspopup="menu"
+                aria-expanded={levelOpen ? "true" : "false"}
+              >
+                <span>Level{levels.length ? ` (${levels.length})` : ""}</span>
+                <span className="text-slate-500">▾</span>
+              </button>
+
+              {levelOpen && (
+                <div
+                  className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"
+                  role="menu"
+                  data-level-popover
+                >
+                  <div className="max-h-64 overflow-auto p-2 space-y-1">
+                    {LEVEL_OPTIONS.map((opt) => {
+                      const checked = levels.includes(opt);
+                      return (
+                        <label
+                          key={opt}
+                          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            className="accent-blue-600"
+                            checked={checked}
+                            onChange={() => {
+                              toggleLevel(opt);
+                            }}
+                          />
+                          <span className="text-sm text-slate-700">{opt}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
+                    <button
+                      type="button"
+                      onClick={() => setLevels([])}
+                      className="text-xs text-slate-600 underline"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLevelOpen(false)}
+                      className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-slate-50"
+                    >
+                      Done
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  {s.amount ? (
-                    <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-                      Reward: {s.amount}
-                    </div>
-                  ) : null}
-                  {s.deadline && (
-                    <div className="text-xs text-slate-500">
-                      Deadline: {s.deadline}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Description snippet */}
-              {snippet && (
-                <p className="mt-3 text-sm text-slate-700">{snippet}</p>
               )}
+            </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link
-                  to={`/scholarship/${s.id}`}
-                  className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
-                >
-                  View details
-                </Link>
-                {s.partnerApplyUrl && (
-                  <a
-                    href={s.partnerApplyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-1.5 hover:bg-blue-50"
-                  >
-                    Apply on Provider site
-                  </a>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+            <div className="flex gap-2 xl:col-span-2">
+              <select
+                value={funding}
+                onChange={(e) => {
+                  setFunding(e.target.value);
+                  setPage(1);
+                }}
+                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
+                aria-label="Funding type"
+              >
+                {fundingOptions.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <button
-            className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            Prev
-          </button>
-          <div className="text-sm text-slate-600">
-            Page {page} of {totalPages}
+              <select
+                value={sort}
+                onChange={(e) => {
+                  setSort(e.target.value);
+                  setPage(1);
+                }}
+                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
+                aria-label="Sort by"
+              >
+                <option value="newest">Newest</option>
+                <option value="deadlineAsc">Deadline (soonest)</option>
+                <option value="deadlineDesc">Deadline (latest)</option>
+                <option value="title">Title (A–Z)</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50"
+              >
+                Reset
+              </button>
+            </div>
           </div>
-          <button
-            className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-          >
-            Next
-          </button>
-        </div>
-      )}
+
+          {/* States */}
+          {loading && (
+            <div className="mt-6 text-slate-600">Loading scholarships…</div>
+          )}
+          {err && <div className="mt-6 text-red-600">{err}</div>}
+          {!loading && !err && items.length === 0 && (
+            <div className="mt-6 text-slate-600">No scholarships found.</div>
+          )}
+
+          {/* List */}
+          <ul className="mt-6 grid gap-3">
+            {items.map((s) => {
+              const snippet = truncate(stripHtml(s.description || ""), 200);
+              const fundingStr = Array.isArray(s.fundingType)
+                ? s.fundingType.join(", ")
+                : s.fundingType || "";
+              return (
+                <li
+                  key={s.id}
+                  className="border border-slate-200 rounded-lg p-4 bg-white"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="text-lg font-semibold">{s.title}</div>
+                      <div className="mt-0.5 text-sm text-slate-600">
+                        {s.provider}
+                        {s.country ? ` • ${s.country}` : ""}
+                        {s.level ? ` • ${s.level}` : ""}
+                        {s.field ? ` • ${s.field}` : ""}
+                        {fundingStr ? ` • ${fundingStr}` : ""}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      {s.amount ? (
+                        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                          Reward: {s.amount}
+                        </div>
+                      ) : null}
+                      {s.deadline && (
+                        <div className="text-xs text-slate-500">
+                          Deadline: {s.deadline}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description snippet */}
+                  {snippet && (
+                    <p className="mt-3 text-sm text-slate-700">{snippet}</p>
+                  )}
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      to={`/scholarship/${s.id}`}
+                      className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
+                    >
+                      View details
+                    </Link>
+                    {s.partnerApplyUrl && (
+                      <a
+                        href={s.partnerApplyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-1.5 hover:bg-blue-50"
+                      >
+                        Apply on Provider site
+                      </a>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <button
+                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Prev
+              </button>
+              <div className="text-sm text-slate-600">
+                Page {page} of {totalPages}
+              </div>
+              <button
+                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </main>
+
+        {/* RIGHT ADS (hidden on small screens) */}
+        <aside className="hidden xl:block w-[200px] shrink-0">
+          <div className="space-y-4">
+            {canShowAds && <GoogleSidebarAd />}
+            <div className="sticky top-[140px]">
+              {canShowAds && <GoogleSidebarAd />}
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

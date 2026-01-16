@@ -382,6 +382,18 @@ function WhatsAppIcon({ className = "" }) {
     </svg>
   );
 }
+function LocationPinIcon({ className = "" }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 2c-3.87 0-7 3.13-7 7 0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
+    </svg>
+  );
+}
 
 /* ============ Categories ============ */
 const CATEGORY_MAP = {
@@ -571,36 +583,8 @@ export default function StudentMarketplace() {
   }, [user, navigate]);
 
   /* ---------- Seed & load items (scoped to this university) ---------- */
-  const seeded = useMemo(() => {
-    const now = Date.now();
-    return [
-      {
-        id: `m${now - 1}`,
-        title: "Used Calculus Textbook (Stewart)",
-        price: 15,
-        currency: "$",
-        mainCategory: "Books",
-        subCategory: "",
-        condition: "",
-        description: "7th Edition, lightly used. No highlights.",
-        images: [],
-        likes: 1,
-        saved: false,
-        comments: [],
-        seller: {
-          id: user?.id,
-          name: user?.name || "Student",
-          program: user?.program || "Program",
-          photoUrl: user?.photoUrl || "",
-        },
-        university: uni,
-        createdAt: now - 3600_000,
-        deleted: false,
-      },
-    ];
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uni]);
+// ✅ DISABLED (no seeded items)
+const seeded = useMemo(() => [], [uni]);
 
   /*const [items, setItems] = useState(() => {
     const ls = safeParse(localStorage.getItem(STORE_KEY));
@@ -616,6 +600,7 @@ export default function StudentMarketplace() {
   /// 🔄 NEW: load & poll listings from backend (global marketplace)
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
+  const firstLoadRef = useMemo(() => ({ done: false }), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -624,7 +609,8 @@ export default function StudentMarketplace() {
     async function loadFromApi() {
       if (cancelled) return;
 
-      setFeedLoading(true);
+      /*setFeedLoading(true);*/
+      if (!firstLoadRef.done) setFeedLoading(true);
       setFeedError("");
 
       try {
@@ -807,7 +793,9 @@ export default function StudentMarketplace() {
           setFeedError("Could not load marketplace listings.");
         }
       } finally {
-        if (!cancelled) setFeedLoading(false);
+        /*if (!cancelled) setFeedLoading(false);*/
+        if (!cancelled && !firstLoadRef.done) setFeedLoading(false);
+        firstLoadRef.done = true;
       }
     }
 
@@ -956,6 +944,7 @@ export default function StudentMarketplace() {
   const [photos, setPhotos] = useState([]);
   const [sellerMobile, setSellerMobile] = useState("");
   const [sellerWhatsapp, setSellerWhatsapp] = useState("");
+  const [sellerLocation, setSellerLocation] = useState(""); // ✅ NEW
 
   useEffect(() => {
     const first = CATEGORY_MAP[mainCategory]?.[0] ?? "";
@@ -1081,6 +1070,8 @@ export default function StudentMarketplace() {
       // ✅ ADD THESE TWO LINES RIGHT HERE
       sellerMobile: sellerMobile.trim(),
       sellerWhatsapp: sellerWhatsapp.trim(),
+      sellerLocation: sellerLocation.trim(), // ✅ NEW
+
 
       // ✅ REPLACE seller: {...} WITH THIS
       seller: {
@@ -1116,6 +1107,7 @@ export default function StudentMarketplace() {
     setCondition("");
     setSellerMobile("");
     setSellerWhatsapp("");
+    setSellerLocation(""); // ✅ NEW
 
     // Persist to backend
     try {
@@ -1136,6 +1128,7 @@ export default function StudentMarketplace() {
         // optional contacts
         sellerMobile: baseItem.sellerMobile || "",
         sellerWhatsapp: baseItem.sellerWhatsapp || "",
+        sellerLocation: baseItem.sellerLocation || "", // ✅ NEW (optional extra field)
         location: uni || null, // optional
       });
 
@@ -1426,11 +1419,16 @@ export default function StudentMarketplace() {
                 Only for {uni || "your university"}.
               </p>
               {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
-              {feedLoading && (
+              {/*{feedLoading && (
                 <p className="mt-1 text-[11px] text-slate-500 text-center">
                   Refreshing listings…
                 </p>
-              )}
+              )}*/}
+              <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
+              {feedLoading ? "Refreshing listings…" : "\u00A0"}
+                </div>
+
+
             </CardBody>
           </Card>
 
@@ -1675,6 +1673,12 @@ export default function StudentMarketplace() {
                       placeholder="Mobile number (optional) e.g. +1 202 555 0456"
                       className="w-full border border-slate-200 rounded px-3 py-2"
                     />
+                    <input
+  value={sellerLocation}
+  onChange={(e) => setSellerLocation(e.target.value)}
+  placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
+  className="w-full border border-slate-200 rounded px-3 py-2"
+/>
                   </div>
 
                   {photos.length > 0 && (
@@ -1713,6 +1717,7 @@ export default function StudentMarketplace() {
                         setCondition("");
                         setSellerMobile("");
                         setSellerWhatsapp("");
+                        setSellerLocation(""); // ✅ NEW
                       }}
                       className="rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
                     >
@@ -1769,6 +1774,7 @@ export default function StudentMarketplace() {
 
             const mobile = (item.sellerMobile ?? item.mobile ?? "").toString().trim();
             const whatsapp = (item.sellerWhatsapp ?? item.whatsapp ?? "").toString().trim();
+            const locationText = (item.sellerLocation ??item.availabilityLocation ??item.locationText ??"").toString().trim();
             const waDigits = whatsapp.replace(/[^\d]/g, "");
 
             // Make sure Comments component also "sees" a seller object
@@ -1849,7 +1855,8 @@ export default function StudentMarketplace() {
                       </div>
 
                       {/* Contacts (same line, pushed a bit away) */}
-                      {(mobile || whatsapp) && (
+                      {(mobile || whatsapp || locationText) && (
+                      /*{(mobile || whatsapp) && (*/
                         <div className="flex items-center gap-3 ml-6">
                           {whatsapp && (
                             <a
@@ -1876,6 +1883,16 @@ export default function StudentMarketplace() {
                           )}
                         </div>
                       )}
+
+                      {locationText && (
+                     <span
+                     className="inline-flex items-center gap-1 text-slate-700"
+                       title={`Location: ${locationText}`}
+                       >
+                      <LocationPinIcon className="h-4 w-4 text-red-600" />
+                      <span className="text-sm">{locationText}</span>
+                      </span>
+                     )}
                     </div>
 
                     <div className="mt-1">

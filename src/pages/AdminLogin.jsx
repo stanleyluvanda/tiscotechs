@@ -21,6 +21,12 @@ const ADMIN_AUTH_BASE =
     String(import.meta.env.VITE_ADMIN_AUTH_API_BASE).trim()) ||
   "";
 
+/* ----------------- Support Admin token (NEW) ----------------- */
+const SUPPORT_ADMIN_TOKEN =
+  (import.meta.env.VITE_SUPPORT_ADMIN_TOKEN &&
+    String(import.meta.env.VITE_SUPPORT_ADMIN_TOKEN).trim()) ||
+  "";
+
 /* Are we in “serverless only” mode? */
 const SERVERLESS =
   String(import.meta.env.VITE_SERVERLESS_MODE ?? "true").toLowerCase() ===
@@ -36,6 +42,20 @@ function safeParse(json) {
 
 function stripTrailingSlashes(url) {
   return String(url || "").replace(/\/+$/, "");
+}
+
+function setSupportTokenSidecar() {
+  // Keep Support token separate so we don't break existing adminAuth payload usage.
+  if (!SUPPORT_ADMIN_TOKEN) return;
+
+  try {
+    localStorage.setItem(
+      "supportAdminAuth",
+      JSON.stringify({ token: SUPPORT_ADMIN_TOKEN })
+    );
+  } catch {
+    // ignore
+  }
 }
 
 export default function AdminLogin() {
@@ -70,8 +90,6 @@ export default function AdminLogin() {
     // ===============================
     // 1) BACKEND MODE (DynamoDB)
     // ===============================
-    // Keep your existing SERVERLESS toggle behavior:
-    // - If you set VITE_SERVERLESS_MODE=false (i.e., backend mode), we call the backend.
     if (AUTH_BASE && !SERVERLESS) {
       try {
         // Prefer the dedicated Admin API if configured, otherwise fall back to AUTH_BASE
@@ -83,7 +101,7 @@ export default function AdminLogin() {
           body: JSON.stringify({
             email: trimmedEmail,
             password: pass,
-            role: "admin", // keeps compatibility with your backend role checks
+            role: "admin",
           }),
         });
 
@@ -104,20 +122,35 @@ export default function AdminLogin() {
             loggedInAt: new Date().toISOString(),
           };
 
+          // ✅ existing admin login storage (unchanged)
           localStorage.setItem("adminAuth", JSON.stringify(payload));
+
+          // ✅ NEW: set support token for Support Inbox auth (sidecar key)
+          setSupportTokenSidecar();
+
+          // (optional) mirror into adminAuth for convenience, without changing structure used elsewhere
+          if (SUPPORT_ADMIN_TOKEN) {
+            try {
+              const current = safeParse(localStorage.getItem("adminAuth")) || {};
+              localStorage.setItem(
+                "adminAuth",
+                JSON.stringify({ ...current, supportToken: SUPPORT_ADMIN_TOKEN })
+              );
+            } catch {
+              // ignore
+            }
+          }
+
           setLoading(false);
           navigate(redirectTo, { replace: true });
           return;
         }
 
-        // Backend reachable but rejected → DO NOT fall back to demo
         setLoading(false);
         setError("Invalid admin email or password.");
         return;
       } catch (err) {
         console.warn("[AdminLogin] backend error:", err);
-        // If backend is configured but unreachable, we also do NOT silently
-        // fall back for security reasons.
         setLoading(false);
         setError(
           "Could not reach admin auth service. Please try again or contact support."
@@ -150,7 +183,25 @@ export default function AdminLogin() {
       loggedInAt: new Date().toISOString(),
       demo: true,
     };
+
+    // ✅ existing admin login storage (unchanged)
     localStorage.setItem("adminAuth", JSON.stringify(payload));
+
+    // ✅ NEW: set support token for Support Inbox auth (sidecar key)
+    setSupportTokenSidecar();
+
+    // (optional) mirror into adminAuth
+    if (SUPPORT_ADMIN_TOKEN) {
+      try {
+        const current = safeParse(localStorage.getItem("adminAuth")) || {};
+        localStorage.setItem(
+          "adminAuth",
+          JSON.stringify({ ...current, supportToken: SUPPORT_ADMIN_TOKEN })
+        );
+      } catch {
+        // ignore
+      }
+    }
 
     setLoading(false);
     navigate(redirectTo, { replace: true });

@@ -35,6 +35,12 @@ export default function AdminDashboard() {
           to="/admin/posts/video-new"
           cta="New Video Post"
         />
+        <AdminCard
+          title="Support Inbox"
+          body="View messages sent from the Contact page. Mark as read, reply status, and track issues."
+          to="/admin/support"
+          cta="Open Inbox"
+        />
       </div>
 
       <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4">
@@ -45,6 +51,7 @@ export default function AdminDashboard() {
           <Link className="text-blue-600 hover:underline" to="/admin/posts/video-new">New Video Post</Link>
           <Link className="text-blue-600 hover:underline" to="/admin/posts/videos">Manage Video Posts</Link>
           <Link className="text-blue-600 hover:underline" to="/admin/consents">Student Alert Consents</Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/support">Support Inbox</Link>
 
         </div>
       </div>

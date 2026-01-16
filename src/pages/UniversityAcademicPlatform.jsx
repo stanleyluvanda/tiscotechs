@@ -1354,7 +1354,7 @@ export default function UniversityAcademicPlatform() {
     return () => clearInterval(interval);
   }, [user, navigate]);
 
-  const seeded = useMemo(() => {
+  /*const seeded = useMemo(() => {
     const now = Date.now();
     return [
       {
@@ -1383,7 +1383,13 @@ export default function UniversityAcademicPlatform() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uni]);
 
-  const [posts, setPosts] = useState(() => seeded);
+  const [posts, setPosts] = useState(() => seeded);*/
+  
+  // ✅ Seeded posts DISABLED for UniversityAcademicPlatform
+const seeded = useMemo(() => [], [uni]);
+
+// ✅ Start empty (not seeded)
+const [posts, setPosts] = useState(() => []);
 
   const postsRef = useRef([]);
   useEffect(() => {

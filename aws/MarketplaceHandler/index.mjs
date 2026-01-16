@@ -314,6 +314,8 @@ export const handler = async (event) => {
 
         sellerMobile: parsed.sellerMobile ? String(parsed.sellerMobile) : "",
         sellerWhatsapp: parsed.sellerWhatsapp ? String(parsed.sellerWhatsapp) : "",
+        // ✅ NEW: availability/pickup location (e.g. "Mabibo Hostel")
+        sellerLocation: parsed.sellerLocation ? String(parsed.sellerLocation) : "",
         location: parsed.location ? String(parsed.location) : null,
 
         status: "active",
