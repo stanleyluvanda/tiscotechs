@@ -896,8 +896,15 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
       <div className="flex items-start gap-2">
         <Avatar size="sm" url={comment.authorPhoto} name={comment.author}/>
         <div className="flex-1">
-          <div className="font-medium text-slate-800">{comment.author}</div>
-          <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>
+          {/*<div className="font-medium text-slate-800">{comment.author}</div>
+          <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>*/}
+          <div className="font-bold text-slate-900">{comment.author}</div>
+
+{comment.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {comment.authorProgram}
+  </div>
+) : null}
           <ExpandableText text={comment.text}/>
 
           {/* comment images */}
@@ -939,10 +946,17 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
         >
           <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
           <div>
-            <div className="font-medium text-slate-800">{r?.author}</div>
+            {/*<div className="font-medium text-slate-800">{r?.author}</div>
             <div className="text-xs text-slate-500 mb-1">
               {r?.authorProgram || ""}
-            </div>
+            </div>*/}
+            <div className="font-bold text-slate-900">{r?.author}</div>
+
+{r?.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {r.authorProgram}
+  </div>
+) : null}
 
             <ExpandableText text={r?.text || ""} />
 

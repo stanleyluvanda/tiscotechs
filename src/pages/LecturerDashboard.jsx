@@ -1319,8 +1319,8 @@ useEffect(() => {
   /* Seed posts once */
   const seeded = useMemo(() => {
     const exampleProgram = availablePrograms[0] || "Academic Program";
-    return [];[
-      /*{
+    return [
+      {
         id: "lp1",
         authorId: user.id,
         authorType: "lecturer",
@@ -1362,7 +1362,7 @@ useEffect(() => {
         likes: 0,
         liked: false,
         comments: [],
-      },*/
+      },
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -3984,17 +3984,39 @@ function CommentThread({ comment, onAddReply }) {
     e.target.value="";
   };
 
+  const commentAuthorName =
+    comment.authorName ||
+    comment.author ||
+    comment.studentName ||
+    comment.lecturerName ||
+    comment.name ||
+    comment.displayName ||
+    "Student";
+
   return (
-    <div className="text-sm">
-      <div className="flex items-start gap-2">
-        <Avatar size="sm" url={comment.authorPhoto} name={comment.author}/>
-        <div className="flex-1">
-          <div className="font-medium text-slate-800">{displayWithTitle(comment.author, "", "")}</div>
-          <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>
-          {/*<ExpandableText text={comment.text}/>*/}
-          <ExpandableText
-  text={comment.text}
-  className="whitespace-pre-wrap break-words leading-6"
+  <div className="text-sm">
+    <div className="flex items-start gap-2">
+      <Avatar size="sm" url={comment.authorPhoto} name={commentAuthorName} />
+      <div className="flex-1">
+        {/*<div className="font-medium text-slate-800">
+          {displayWithTitle(commentAuthorName, "", commentAuthorName)}
+        </div>
+        <div className="text-xs text-slate-500 mb-1">{comment.authorProgram || ""}</div>*/}
+        <div className="font-bold text-slate-900">
+  {displayWithTitle(commentAuthorName, "", commentAuthorName)}
+</div>
+
+{comment.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {comment.authorProgram}
+  </div>
+) : null}
+
+        <ExpandableText
+          text={comment.text}
+          className="whitespace-pre-wrap break-words leading-6"
+        
+
 />
 
           {/* comment images */}
@@ -4026,7 +4048,7 @@ function CommentThread({ comment, onAddReply }) {
           <Avatar size="sm" url={r.authorPhoto} name={r.author} />
           <div>*/}
 
-            {replies.map((r) => (
+            {/*{replies.map((r) => (
   <div key={r.id} className="flex items-start gap-2">
     <div className="shrink-0">
       <Avatar size="sm" url={r.authorPhoto} name={r.author} />
@@ -4065,7 +4087,66 @@ function CommentThread({ comment, onAddReply }) {
       ))}
     </div>
   ) : null;
+})()}*/}
+
+
+{replies.map((r) => {
+  const replyAuthorName =
+    r.authorName ||
+    r.author ||
+    r.studentName ||
+    r.lecturerName ||
+    r.name ||
+    r.displayName ||
+    "Student";
+
+  return (
+    <div key={r.id} className="flex items-start gap-2">
+      <div className="shrink-0">
+        <Avatar size="sm" url={r.authorPhoto} name={replyAuthorName} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="font-bold text-slate-900">
+          {displayWithTitle(replyAuthorName, "", replyAuthorName)}
+        </div>
+        {/*<div className="text-xs text-slate-500 mb-1">{r.authorProgram || ""}</div>*/}
+        {r.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {r.authorProgram}
+  </div>
+) : null}
+        <ExpandableText text={r.text} />
+
+        {r.images?.length > 0 && (
+          <div className="mt-2">
+            <ImageGrid
+              images={r.images}
+              onOpen={(idx) => openLightbox(r.images, idx)}
+              max={3}
+              tileClass="h-24"
+              cols="grid-cols-2 md:grid-cols-3"
+            />
+          </div>
+        )}
+
+        {r.files?.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {r.files.map((f, i) => (
+              <li key={i} className="flex items-center gap-2">
+                📎 <AttachmentLink att={f} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+})}
+</div>
+  ) : null;
 })()}
+
           {/* Lightbox for comment/replies */}
           {lightbox.open && (
             <div

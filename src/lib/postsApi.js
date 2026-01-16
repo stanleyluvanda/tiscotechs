@@ -743,7 +743,7 @@ export async function postReplyToServer(payload) {
 /**
  * Delete a post by id.
  */
-export async function deletePost(id) {
+/*export async function deletePost(id) {
   if (!id) throw new Error("id is required to delete a post");
 
   const url = buildPostsUrl("/api/posts", { id, postId: id });
@@ -757,6 +757,34 @@ export async function deletePost(id) {
 // Backwards-compatible alias so existing imports keep working.
 export async function deletePostOnServer(id) {
   return deletePost(id);
+}*/
+
+/**
+ * Delete a post by id (supports both signatures):
+ *   deletePost({ postId, scope })
+ *   deletePost(postId, scope)
+ */
+export async function deletePost(arg1, arg2) {
+  const postId = typeof arg1 === "object" ? arg1?.postId : arg1;
+  const scope = typeof arg1 === "object" ? arg1?.scope : arg2;
+
+  if (!postId) throw new Error("postId is required to delete a post");
+
+  // scope is important in your system (student-dashboard / lecturer-dashboard etc.)
+  const params = { postId };
+  if (scope) params.scope = scope;
+
+  const url = buildPostsUrl("/api/posts", params);
+
+  return doJsonFetch(url, {
+    method: "DELETE",
+    body: { postId, scope },
+  });
+}
+
+// Backwards-compatible alias so existing imports keep working.
+export async function deletePostOnServer(arg1, arg2) {
+  return deletePost(arg1, arg2);
 }
 
 /* ================= Marketplace helpers (keep using same API) ================= */
