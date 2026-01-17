@@ -89,7 +89,7 @@ export default function Home() {
           <p className="mt-2 text-slate-600 text-center">Explore how universities and learning communities leverage ScholarsKnowledge to achieve their goals.</p>
           <div className="mt-6 grid md:grid-cols-3 gap-6">
             <StoryCard
-  image="/images/submit-scholarship.jpg"
+  image="/public/images/Submit scholarships.png"
   title="Scholarships Providers"
   linkTo="/partner/signup"
   linkText="Submit a Scholarship"

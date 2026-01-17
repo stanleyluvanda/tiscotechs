@@ -1436,6 +1436,69 @@ function getProgramsSafe(continent, country, university, faculty, fallbackProgra
   return [fallbackProgram].filter(Boolean);
 }
 
+
+
+/* ================= make comment/reply attachments URL-based (CloudFront), never base64 ================= */
+function guessMime(name = "", fallback = "application/octet-stream") {
+  const n = String(name || "").toLowerCase();
+  if (n.endsWith(".pdf")) return "application/pdf";
+  if (n.endsWith(".ppt") || n.endsWith(".pptx")) return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+  if (n.endsWith(".doc") || n.endsWith(".docx")) return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  return fallback;
+}
+
+function dataUrlToFile(dataUrl, fileName, mimeFallback) {
+  const blob = dataURLtoBlob(dataUrl);
+  const mime = blob.type || mimeFallback || "application/octet-stream";
+  return new File([blob], fileName || "file", { type: mime });
+}
+
+async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
+  const upImgs = [];
+  const upFiles = [];
+
+  // images
+  for (const img of (imgDescs || [])) {
+    if (!img) continue;
+
+    // already url-based
+    if (img.url || img.s3Url) {
+      upImgs.push({ ...img, url: img.url || img.s3Url, dataUrl: undefined });
+      continue;
+    }
+
+    if (img.dataUrl) {
+      const file = dataUrlToFile(img.dataUrl, img.name || "image.jpg", img.mime || "image/jpeg");
+      const url = await uploadToCloudFront({ file, folder: "comment-images" });
+      upImgs.push({ id: img.id || url, name: img.name || file.name, mime: file.type, url });
+    }
+  }
+
+  // files
+  for (const f of (fileDescs || [])) {
+    if (!f) continue;
+
+    // already url-based
+    if (f.url || f.s3Url) {
+      upFiles.push({ ...f, url: f.url || f.s3Url, dataUrl: undefined });
+      continue;
+    }
+
+    if (f.dataUrl) {
+      const mime = f.mime || guessMime(f.name);
+      const file = dataUrlToFile(f.dataUrl, f.name || "file", mime);
+      const url = await uploadToCloudFront({ file, folder: "comment-files" });
+      upFiles.push({ id: f.id || url, name: f.name || file.name, mime: file.type || mime, url });
+    }
+  }
+
+  return { upImgs, upFiles };
+}
+
+
+
+
+
 /* ================== MAIN ================== */
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -1443,11 +1506,6 @@ export default function StudentDashboard() {
   // ✅ Read ?editProfile=1 from the URL on every render (no extra state)
   const [searchParams] = useSearchParams();
   const editProfile = searchParams.get("editProfile") === "1";
-
-
-
-
-
 
 
 
@@ -3270,6 +3328,20 @@ const addComment = async (postId, text, images = [], files = []) => {
 
   // Downscale + persist attachments (same behaviour as before)
   const { imgDescs, fileDescs } = await persistAttachments(images, files);
+  
+  // ✅ Upload comment attachments to CloudFront so DynamoDB stores only URLs
+let upImgs = imgDescs;
+let upFiles = fileDescs;
+try {
+  const up = await uploadDescsToCloudFront(imgDescs, fileDescs);
+  upImgs = up.upImgs;
+  upFiles = up.upFiles;
+} catch (e) {
+  console.error("[addComment] CloudFront upload failed:", e);
+  // If upload fails, better to stop than save base64 that will break persistence
+  return;
+}
+
   const now = Date.now();
 
   const me = user || {};
@@ -3291,14 +3363,21 @@ const addComment = async (postId, text, images = [], files = []) => {
       authorName,
       authorProgram,
       authorPhoto,
-      images: imgDescs,
-      files: fileDescs,
+      //images: imgDescs,
+      //files: fileDescs,
+       images: upImgs,   // ✅ USE UPLOADED URL DESCS
+      files: upFiles,   // ✅ USE UPLOADED URL DESCS
     });
     console.log("[postsApi] createComment response:", res);
     serverComment = res && (res.comment || res.data?.comment) || null;
   } catch (err) {
     console.error("[StudentDashboard] createComment failed:", err);
   }
+  // ✅ ADD THIS RIGHT HERE ⬇️⬇️⬇️
+if (!serverComment?.id) {
+  alert("Comment failed to save. Attachment upload too large or incomplete.");
+  return;
+}
 
   const finalComment =
     serverComment && serverComment.id
@@ -3317,12 +3396,13 @@ const addComment = async (postId, text, images = [], files = []) => {
           Array.isArray(serverComment.images) &&
           serverComment.images.length > 0
             ? serverComment.images
-            : imgDescs,
+            //: imgDescs,
+            : upImgs,   // ✅ ALWAYS URLs
         files:
           Array.isArray(serverComment.files) &&
           serverComment.files.length > 0
             ? serverComment.files
-            : fileDescs,
+            : upFiles,  // ✅ ALWAYS URLs
 
 
         }
@@ -3375,6 +3455,18 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
   if (!t && images.length === 0 && files.length === 0) return;
 
   const { imgDescs, fileDescs } = await persistAttachments(images, files);
+  // ✅ Upload reply attachments to CloudFront so DynamoDB stores only URLs
+let upImgs = imgDescs;
+let upFiles = fileDescs;
+try {
+  const up = await uploadDescsToCloudFront(imgDescs, fileDescs);
+  upImgs = up.upImgs;
+  upFiles = up.upFiles;
+} catch (e) {
+  console.error("[addComment] CloudFront upload failed:", e);
+  // If upload fails, better to stop than save base64 that will break persistence
+  return;
+}
   const now = Date.now();
 
   const me = user || {};
@@ -3396,14 +3488,21 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
       authorName,
       authorProgram,
       authorPhoto,
-      images: imgDescs,
-      files: fileDescs,
+      //images: imgDescs,
+      //files: fileDescs,
+      images: upImgs,   // ✅ NOT imgDescs
+      files: upFiles,   // ✅ NOT fileDescs
     });
     console.log("[postsApi] createReply response:", res);
     serverReply = res && (res.reply || res.data?.reply) || null;
   } catch (err) {
     console.error("[StudentDashboard] createReply failed:", err);
   }
+  // ✅ ADD THIS RIGHT HERE ⬇️⬇️⬇️
+if (!serverReply?.id) {
+  alert("Reply failed to save. Attachment upload too large or incomplete.");
+  return;
+}
 
   const finalReply =
     serverReply && serverReply.id
@@ -3424,12 +3523,13 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
           Array.isArray(serverReply.images) &&
           serverReply.images.length > 0
             ? serverReply.images
-            : imgDescs,
+            : upImgs,   // ✅ ALWAYS URLs
         files:
           Array.isArray(serverReply.files) &&
           serverReply.files.length > 0
             ? serverReply.files
-            : fileDescs,
+            //: fileDescs,
+            : upFiles,  // ✅ ALWAYS URLs
 
 
 

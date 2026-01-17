@@ -239,10 +239,10 @@ export default function PartnerSignUp() {
             </div>
 
             {/* S3 Banner uploader */}
-            <div className="space-y-1">
+            {/*<div className="space-y-1">
               <span className="text-sm text-slate-700 font-medium">Upload Banner (optional)</span>
               <SingleImageUploader value={banner} onChange={setBanner} folder="partner-banners" />
-            </div>
+            </div>*/}
 
             {/* EMAIL + PASSWORD */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1798,6 +1798,149 @@ const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT
     return { publicUrl, key };
   }
 
+  /* ✅✅✅ PASTE Comment/Reply attachment upload (CloudFront) — cross-device RIGHT HERE
+   (between uploadBlobToCloudFront() and onPickBanner)
+*/
+
+/* ============================================================
+   Comment/Reply attachment upload (CloudFront) — cross-device
+   ============================================================ */
+
+function safeName(name = "file") {
+  const n = String(name || "file").trim() || "file";
+  return n.replace(/[/\\]+/g, "_");
+}
+
+/*async function uploadDataUrlToCloudFront({ dataUrl, name, mime, folder }) {
+  const blob = dataURLtoBlobSafe(dataUrl);
+  const contentType = mime || blob.type || "application/octet-stream";
+  const fileName = safeName(name || `file_${Date.now()}`);
+
+  const { publicUrl, key } = await uploadBlobToCloudFront({
+    blob,
+    fileName,
+    contentType,
+    folder,
+  });
+
+  return {
+    id: key || `cf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    name: fileName,
+    fileName,
+    mime: contentType,
+    url: publicUrl,     // ✅ students can click/download
+    s3Url: publicUrl,   // optional alias
+    key,
+    size: blob.size || 0,
+  };
+}*/
+
+
+
+async function uploadItemToCloudFront({ item, fallbackName, fallbackMime, folder }) {
+  if (item?.url && /^https?:\/\//i.test(item.url)) {
+    return {
+      id: item.id || item.key || `cf_${Date.now()}`,
+      name: item.name || item.fileName || fallbackName || "file",
+      fileName: item.fileName || item.name || fallbackName || "file",
+      mime: item.mime || item.type || fallbackMime || "application/octet-stream",
+      url: item.url,
+      s3Url: item.url,
+      key: item.key || item.id || "",
+      size: item.size || 0,
+    };
+  }
+
+  let blob = null;
+  let name = item?.name || item?.fileName || fallbackName || "file";
+  let mime = item?.mime || item?.type || fallbackMime || "application/octet-stream";
+
+  if (item?.dataUrl) {
+    blob = dataURLtoBlobSafe(item.dataUrl);
+    mime = mime || blob.type;
+  }
+
+  if (!blob && item?.id) {
+    const rec = await idbGet(item.id);
+    if (rec instanceof Blob) {
+      blob = rec;
+    } else {
+      blob = rec?.blob || rec?.file || rec?.data || null;
+      name = rec?.name || name;
+      mime = rec?.type || rec?.mime || mime;
+    }
+  }
+
+  if (!blob) return null;
+
+  const fileName = safeName(name || "file");
+  const { publicUrl, key } = await uploadBlobToCloudFront({
+    blob,
+    fileName,
+    contentType: mime || blob.type || "application/octet-stream",
+    folder,
+  });
+
+  return {
+    id: key || item?.id || `cf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    name: fileName,
+    fileName,
+    mime: mime || blob.type || "application/octet-stream",
+    url: publicUrl,
+    s3Url: publicUrl,
+    key,
+    size: blob.size || 0,
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function uploadCommentReplyAttachments(images = [], files = [], folderBase = "lecturer/comments") {
+  const imgUploads = (Array.isArray(images) ? images : []).map(async (img) => {
+    const out = await uploadItemToCloudFront({
+      item: img,
+      fallbackName: img?.name || `image_${Date.now()}.jpg`,
+      fallbackMime: "image/jpeg",
+      folder: `${folderBase}/images`,
+    });
+    return out ? { ...out, kind: "image", thumb: img?.dataUrl || img?.thumb || "" } : null;
+  });
+
+  const fileUploads = (Array.isArray(files) ? files : []).map(async (f) => {
+    const out = await uploadItemToCloudFront({
+      item: f,
+      fallbackName: f?.name || `file_${Date.now()}`,
+      fallbackMime: f?.mime || "application/octet-stream",
+      folder: `${folderBase}/files`,
+    });
+    return out ? { ...out, kind: "file" } : null;
+  });
+
+  const [uploadedImages, uploadedFiles] = await Promise.all([
+    Promise.all(imgUploads),
+    Promise.all(fileUploads),
+  ]);
+
+  return {
+    uploadedImages: uploadedImages.filter(Boolean),
+    uploadedFiles: uploadedFiles.filter(Boolean),
+  };
+}
+
 
 const onPickBanner = async (e) => {
   const f = e.target.files?.[0];
@@ -2573,7 +2716,7 @@ function updatePostById(postId, updater) {
 
 
 
-const addComment = async (postId, text, images = [], files = []) => {
+/*const addComment = async (postId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
   if (!trimmed && images.length === 0 && files.length === 0) return;
 
@@ -2640,7 +2783,7 @@ const addComment = async (postId, text, images = [], files = []) => {
         ),
       }));
     }
-  } catch (err) {
+   } catch (err) {
     console.error("[LecturerDashboard] addComment failed:", err);
     // leave it visible, but mark as not pending
     updatePostById(postId, (x) => ({
@@ -2650,16 +2793,97 @@ const addComment = async (postId, text, images = [], files = []) => {
       ),
     }));
   }
+};*/
+
+
+   const addComment = async (postId, text, images = [], files = []) => {
+  const trimmed = String(text || "").trim();
+  if (!trimmed && images.length === 0 && files.length === 0) return;
+
+  // ✅ Upload attachments to CloudFront so students can download
+  let cfImages = [];
+  let cfFiles = [];
+  try {
+    const up = await uploadCommentReplyAttachments(images, files, "lecturer/comments");
+    cfImages = up.uploadedImages || [];
+    cfFiles = up.uploadedFiles || [];
+  } catch (e) {
+    console.error("[LecturerDashboard] comment attachment upload failed:", e);
+    // If upload fails, still allow comment text to post (attachments omitted)
+    cfImages = [];
+    cfFiles = [];
+  }
+
+  const optimisticId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // 1) optimistic local update (uses CloudFront urls if available)
+  updatePostById(postId, (x) => ({
+    ...x,
+    updatedAt: Date.now(),
+    comments: [
+      {
+        id: optimisticId,
+        __pending: true,
+        postId,
+        authorId: user.id,
+        authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+        author: `${user.title ? user.title + " " : ""}${user.name}`,
+        authorPhoto: user.photoUrl,
+        authorProgram: user.faculty,
+        text: trimmed,
+        images: cfImages,
+        files: cfFiles,
+        replies: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+      ...(x.comments || []),
+    ],
+  }));
+
+  // 2) persist to backend
+  try {
+    const resp = await postCommentToServer({
+      postId,
+      text: trimmed,
+      images: cfImages,  // ✅ now CloudFront-backed
+      files: cfFiles,    // ✅ now CloudFront-backed
+      authorId: user.id,
+      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+      authorPhoto: user.photoUrl,
+      authorProgram: user.faculty,
+    });
+
+    const serverComment = resp?.comment;
+
+    // 3) replace optimistic with server comment
+    if (serverComment?.id) {
+      updatePostById(postId, (x) => ({
+        ...x,
+        updatedAt: Date.now(),
+        comments: (x.comments || []).map((c) => (c.id === optimisticId ? serverComment : c)),
+      }));
+    } else {
+      updatePostById(postId, (x) => ({
+        ...x,
+        comments: (x.comments || []).map((c) => (c.id === optimisticId ? { ...c, __pending: false } : c)),
+      }));
+    }
+  } catch (err) {
+    console.error("[LecturerDashboard] addComment failed:", err);
+    updatePostById(postId, (x) => ({
+      ...x,
+      comments: (x.comments || []).map((c) => (c.id === optimisticId ? { ...c, __pending: false } : c)),
+    }));
+  }
 };
 
+  
 
 
 
 
-
-
-
-  const addReply = async (postId, commentId, text, images = [], files = []) => {
+  /*const addReply = async (postId, commentId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
   if (!trimmed && images.length === 0 && files.length === 0) return;
 
@@ -2752,7 +2976,116 @@ const addComment = async (postId, text, images = [], files = []) => {
       ),
     }));
   }
+};*/
+
+
+const addReply = async (postId, commentId, text, images = [], files = []) => {
+  const trimmed = String(text || "").trim();
+  if (!trimmed && images.length === 0 && files.length === 0) return;
+
+  // ✅ Upload attachments to CloudFront so students can download
+  let cfImages = [];
+  let cfFiles = [];
+  try {
+    const up = await uploadCommentReplyAttachments(images, files, "lecturer/replies");
+    cfImages = up.uploadedImages || [];
+    cfFiles = up.uploadedFiles || [];
+  } catch (e) {
+    console.error("[LecturerDashboard] reply attachment upload failed:", e);
+    cfImages = [];
+    cfFiles = [];
+  }
+
+  const optimisticId = `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // optimistic local update
+  updatePostById(postId, (x) => ({
+    ...x,
+    comments: (x.comments || []).map((c) =>
+      c.id === commentId
+        ? {
+            ...c,
+            replies: [
+              {
+                id: optimisticId,
+                __pending: true,
+                postId,
+                commentId,
+                authorId: user.id,
+                authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+                authorPhoto: user.photoUrl,
+                authorProgram: user.faculty,
+                text: trimmed,
+                images: cfImages,
+                files: cfFiles,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              },
+              ...(c.replies || []),
+            ],
+          }
+        : c
+    ),
+  }));
+
+  try {
+    const resp = await postReplyToServer({
+      postId,
+      commentId,
+      text: trimmed,
+      images: cfImages, // ✅ CloudFront-backed
+      files: cfFiles,   // ✅ CloudFront-backed
+      authorId: user.id,
+      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+      authorPhoto: user.photoUrl,
+      authorProgram: user.faculty,
+    });
+
+    const serverReply = resp?.reply;
+
+    if (serverReply?.id) {
+      updatePostById(postId, (x) => ({
+        ...x,
+        comments: (x.comments || []).map((c) =>
+          c.id === commentId
+            ? {
+                ...c,
+                replies: (c.replies || []).map((r) => (r.id === optimisticId ? serverReply : r)),
+              }
+            : c
+        ),
+      }));
+    } else {
+      updatePostById(postId, (x) => ({
+        ...x,
+        comments: (x.comments || []).map((c) =>
+          c.id === commentId
+            ? {
+                ...c,
+                replies: (c.replies || []).map((r) => (r.id === optimisticId ? { ...r, __pending: false } : r)),
+              }
+            : c
+        ),
+      }));
+    }
+  } catch (err) {
+    console.error("[LecturerDashboard] addReply failed:", err);
+    updatePostById(postId, (x) => ({
+      ...x,
+      comments: (x.comments || []).map((c) =>
+        c.id === commentId
+          ? {
+              ...c,
+              replies: (c.replies || []).map((r) => (r.id === optimisticId ? { ...r, __pending: false } : r)),
+            }
+          : c
+      ),
+    }));
+  }
 };
+
+
+
 
   /* Delete post */
   /*const deletePost = (post) => {

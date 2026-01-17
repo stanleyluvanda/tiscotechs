@@ -46,6 +46,15 @@ function buildHeaders(origin) {
 function safeArr(v) {
   return Array.isArray(v) ? v : [];
 }
+
+// ✅ NEW: guard against base64 dataUrl attachments (prevents DynamoDB 400KB item limit issues)
+function hasBase64DataUrl(arr) {
+  return (
+    Array.isArray(arr) &&
+    arr.some((x) => x && typeof x.dataUrl === "string" && x.dataUrl.startsWith("data:"))
+  );
+}
+
 function uid(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -135,10 +144,10 @@ async function loadThread(postId) {
       authorProgram: c.authorProgram || "",
       authorRole: c.authorRole || "",
       authorTitle: c.authorTitle || "",
-authorUniversity: c.authorUniversity || "",
-authorFaculty: c.authorFaculty || "",
-authorCountry: c.authorCountry || "",
-authorCountryCode: c.authorCountryCode || "",
+      authorUniversity: c.authorUniversity || "",
+      authorFaculty: c.authorFaculty || "",
+      authorCountry: c.authorCountry || "",
+      authorCountryCode: c.authorCountryCode || "",
 
       html: c.html || "",
       text: c.text || "",
@@ -157,10 +166,10 @@ authorCountryCode: c.authorCountryCode || "",
         authorRole: r.authorRole || "",
         authorTitle: r.authorTitle || "",
         // ✅ ADD THESE RIGHT HERE
-  authorUniversity: r.authorUniversity || "",
-  authorFaculty: r.authorFaculty || "",
-  authorCountry: r.authorCountry || "",
-  authorCountryCode: r.authorCountryCode || "",
+        authorUniversity: r.authorUniversity || "",
+        authorFaculty: r.authorFaculty || "",
+        authorCountry: r.authorCountry || "",
+        authorCountryCode: r.authorCountryCode || "",
         html: r.html || "",
         text: r.text || "",
         images: safeArr(r.images),
@@ -255,6 +264,18 @@ export const handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
       }
 
+      // ✅ NEW: Reject base64 dataUrl attachments (must be uploaded to CloudFront/S3 and sent as url)
+      if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
+        return {
+          statusCode: 413,
+          headers,
+          body: JSON.stringify({
+            ok: false,
+            error: "Attachments must be uploaded first (url required).",
+          }),
+        };
+      }
+
       const postId = String(payload.postId || "").trim();
       const text = String(payload.text || "").trim();
       const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
@@ -301,11 +322,11 @@ export const handler = async (event) => {
         authorProgram: payload.authorProgram || "",
         authorRole: payload.authorRole || payload.role || "",
         authorTitle: payload.authorTitle || payload.title || "",
-         // ✅ ADD THESE (author meta)
-       authorUniversity: payload.authorUniversity || payload.university || "",
-       authorFaculty: payload.authorFaculty || payload.faculty || "",
-       authorCountry: payload.authorCountry || payload.country || "",
-       authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
+        // ✅ ADD THESE (author meta)
+        authorUniversity: payload.authorUniversity || payload.university || "",
+        authorFaculty: payload.authorFaculty || payload.faculty || "",
+        authorCountry: payload.authorCountry || payload.country || "",
+        authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
 
         html: payload.html || "",
         text,
@@ -344,6 +365,18 @@ export const handler = async (event) => {
       const payload = readJsonBody(event);
       if (!payload) {
         return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
+      }
+
+      // ✅ NEW: Reject base64 dataUrl attachments (must be uploaded to CloudFront/S3 and sent as url)
+      if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
+        return {
+          statusCode: 413,
+          headers,
+          body: JSON.stringify({
+            ok: false,
+            error: "Attachments must be uploaded first (url required).",
+          }),
+        };
       }
 
       const postId = String(payload.postId || "").trim();
@@ -395,10 +428,10 @@ export const handler = async (event) => {
         authorRole: payload.authorRole || payload.role || "",
         authorTitle: payload.authorTitle || payload.title || "",
         // ✅ ADD THESE (author meta)
-  authorUniversity: payload.authorUniversity || payload.university || "",
-  authorFaculty: payload.authorFaculty || payload.faculty || "",
-  authorCountry: payload.authorCountry || payload.country || "",
-  authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
+        authorUniversity: payload.authorUniversity || payload.university || "",
+        authorFaculty: payload.authorFaculty || payload.faculty || "",
+        authorCountry: payload.authorCountry || payload.country || "",
+        authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
 
         html: payload.html || "",
         text,
