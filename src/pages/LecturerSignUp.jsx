@@ -41,6 +41,59 @@ function trySet(k, v) {
   } catch {}
 }
 
+/* ---------- Password UX helpers (UI only) ---------- */
+function scorePassword(pw = "") {
+  const p = String(pw || "");
+  let score = 0;
+
+  const hasLower = /[a-z]/.test(p);
+  const hasUpper = /[A-Z]/.test(p);
+  const hasDigit = /\d/.test(p);
+  const hasSymbol = /[^A-Za-z0-9]/.test(p);
+
+  if (p.length >= 8) score++;
+  if (p.length >= 12) score++;
+  if (hasLower) score++;
+  if (hasUpper) score++;
+  if (hasDigit) score++;
+  if (hasSymbol) score++;
+
+  score = Math.min(score, 5);
+
+  const label =
+    score <= 2 ? "Weak" : score === 3 ? "Fair" : score === 4 ? "Good" : "Strong";
+
+  const tips = [];
+  if (p.length < 12) tips.push("Use at least 12 characters");
+  if (!hasUpper) tips.push("Add an uppercase letter");
+  if (!hasLower) tips.push("Add a lowercase letter");
+  if (!hasDigit) tips.push("Add a number");
+  if (!hasSymbol) tips.push("Add a symbol (e.g. !@#$)");
+
+  return { score, label, tips };
+}
+
+function generateStrongPassword(length = 14) {
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits = "0123456789";
+  const symbols = "!@#$%^&*()-_=+[]{};:,.?/";
+
+  const all = lower + upper + digits + symbols;
+  const pick = (s) => s[Math.floor(Math.random() * s.length)];
+
+  // ensure at least one of each category
+  let out = [pick(lower), pick(upper), pick(digits), pick(symbols)];
+  while (out.length < length) out.push(pick(all));
+
+  // shuffle
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.join("");
+}
+
 /* ---------- Turnstile helpers ---------- */
 const TURNSTILE_KEY = (import.meta.env?.VITE_TURNSTILE_SITE_KEY ?? "").trim();
 
@@ -141,6 +194,14 @@ export default function LecturerSignUp() {
     };
   }, []);
 
+  /* ------------------ Password UX derived state (UI only) ------------------ */
+  const pw = form.password || "";
+  const cpw = form.confirmPassword || "";
+  const pwTouched = pw.length > 0 || cpw.length > 0;
+  const pwStrength = scorePassword(pw);
+  const passwordsMatch = pw.length > 0 && cpw.length > 0 && pw === cpw;
+  const passwordsMismatch = pwTouched && cpw.length > 0 && pw !== cpw;
+
   /* ------------------ Form handlers ------------------ */
   const onBasic = (e) => {
     const { name, type, value, checked } = e.target;
@@ -222,7 +283,7 @@ export default function LecturerSignUp() {
       countryCode: form.countryCode,
       university: form.university,
       faculty: form.faculty,
-      photoUrl: photo || "",   // ✅ add this
+      photoUrl: photo || "", // ✅ add this
       photo: photo || "", // <--- S3 URL
     };
 
@@ -254,7 +315,6 @@ export default function LecturerSignUp() {
       return;
     }
 
-
     //✅ Best-effort: mirror lecturer into global Users API (for Contact Lecturer list)
     try {
       const BASE =
@@ -262,20 +322,19 @@ export default function LecturerSignUp() {
           import.meta.env.VITE_CONTACTS_API_BASE ||
           "http://localhost:5003").replace(/\/+$/, "");
 
-      
-      await fetch(`${BASE}/api/users/lecturers/upsert`, {    
+      await fetch(`${BASE}/api/users/lecturers/upsert`, {
         /*await fetch(`${BASE}/api/users/upsert`, {*/
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           lecturer: {
-            uid: `email:${emailNorm}`,        // stable id across devices/logins
+            uid: `email:${emailNorm}`, // stable id across devices/logins
             role: "lecturer",
             email: emailNorm,
             name: form.name,
             title: form.title,
             university: form.university,
-            faculty: form.faculty,            // this field currently holds Faculty/School/College/Dept selection
+            faculty: form.faculty, // this field currently holds Faculty/School/College/Dept selection
             photoUrl: photo || "",
             profile: { ...profile, photoUrl: photo || "" },
           },
@@ -284,8 +343,6 @@ export default function LecturerSignUp() {
     } catch (e) {
       console.warn("[lecturer-signup] users upsert failed (non-blocking):", e);
     }
-
-
 
     /* ------------------ Local mirrors ------------------ */
     sessionStorage.setItem("currentEmail", emailNorm);
@@ -340,9 +397,7 @@ export default function LecturerSignUp() {
 
   /* ------------------ Options ------------------ */
   const continents = getContinents();
-  const rawCountries = form.continent
-    ? getCountriesWithFlags(form.continent)
-    : [];
+  const rawCountries = form.continent ? getCountriesWithFlags(form.continent) : [];
 
   const countries = rawCountries.map((c) => ({
     name: c.name || c.value,
@@ -357,11 +412,11 @@ export default function LecturerSignUp() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#f0f6ff] via-white to-[#eef2ff]">
       <main className="flex-1">
         <section className="max-w-2xl mx-auto px-4 py-12">
-
           <div className="text-center">
             <img
               src="/images/1754280544595.jpeg"
               className="mx-auto h-14 w-14 object-contain"
+              alt="ScholarsKnowledge Logo"
             />
             <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">
               Lecturer Sign Up
@@ -402,7 +457,7 @@ export default function LecturerSignUp() {
                 <span className="block text-sm text-slate-600 mb-1">Title</span>
                 <select
                   name="title"
-                  className="w-full border rounded px-3 py-2 md:max-w-[100px]"
+                  className="w-full border rounded px-3 py-2 md:max-w-[120px]"
                   value={form.title}
                   onChange={onBasic}
                 >
@@ -441,24 +496,81 @@ export default function LecturerSignUp() {
               onChange={onBasic}
             />
 
-            {/* Passwords */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <input
-                name="password"
-                type="password"
-                className="w-full border rounded px-3 py-2"
-                placeholder="Password"
-                value={form.password}
-                onChange={onBasic}
-              />
-              <input
-                name="confirmPassword"
-                type="password"
-                className="w-full border rounded px-3 py-2"
-                placeholder="Confirm password"
-                value={form.confirmPassword}
-                onChange={onBasic}
-              />
+            {/* PASSWORD (enhanced UX, no backend changes) */}
+            <div className="space-y-2">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <input
+                    name="password"
+                    type="password"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={onBasic}
+                  />
+
+                  {pw.length > 0 && (
+                    <div className="text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-600">
+                          Strength:{" "}
+                          <span className="font-semibold text-slate-900">
+                            {pwStrength.label}
+                          </span>
+                        </span>
+
+                        <button
+                          type="button"
+                          className="text-[#1a73e8] underline whitespace-nowrap"
+                          onClick={() => {
+                            const gen = generateStrongPassword(14);
+                            setForm((f) => ({ ...f, password: gen, confirmPassword: gen }));
+                          }}
+                          title="Generate a strong password"
+                        >
+                          Generate strong password
+                        </button>
+                      </div>
+
+                      <div className="mt-1 h-2 w-full rounded bg-slate-200 overflow-hidden">
+                        <div
+                          className="h-full rounded bg-[#1a73e8]"
+                          style={{ width: `${(pwStrength.score / 5) * 100}%` }}
+                        />
+                      </div>
+
+                      {pwStrength.tips.length > 0 && (
+                        <div className="mt-1 text-slate-600">
+                          Suggestions: {pwStrength.tips.slice(0, 2).join(" • ")}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <input
+                    name="confirmPassword"
+                    type="password"
+                    className={`w-full border rounded px-3 py-2 ${
+                      passwordsMatch ? "border-green-400" : passwordsMismatch ? "border-red-400" : ""
+                    }`}
+                    placeholder="Confirm password"
+                    value={form.confirmPassword}
+                    onChange={onBasic}
+                  />
+
+                  {pwTouched && cpw.length > 0 && (
+                    <div className={`text-xs ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
+                      {passwordsMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-600">
+                Use 12+ characters with upper/lowercase letters, a number, and a symbol.
+              </div>
             </div>
 
             {/* Continent */}
@@ -471,7 +583,9 @@ export default function LecturerSignUp() {
               >
                 <option value="">Select Continent</option>
                 {continents.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </label>
@@ -506,7 +620,7 @@ export default function LecturerSignUp() {
             />
 
             {/* Terms + Turnstile */}
-            <div className="grid md:grid-cols-[1fr_auto] items-start md:items-center gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-start md:items-center gap-3">
               <label className="flex items-start gap-2">
                 <input
                   type="checkbox"
@@ -523,14 +637,17 @@ export default function LecturerSignUp() {
                   and{" "}
                   <Link to="/terms-of-use" className="text-[#1a73e8] underline">
                     Terms of Use
-                  </Link>.
+                  </Link>
+                  .
                 </span>
               </label>
 
               {TURNSTILE_KEY ? (
-                <div className="turnstile-slot" ref={turnstileRef} />
+                <div className="justify-self-end pr-2">
+                  <div ref={turnstileRef} className="turnstile-wide" />
+                </div>
               ) : (
-                <div className="text-xs text-red-600">
+                <div className="text-xs text-red-600 justify-self-end pr-2">
                   Missing <code>VITE_TURNSTILE_SITE_KEY</code>
                 </div>
               )}
@@ -547,8 +664,8 @@ export default function LecturerSignUp() {
             <p className="text-sm text-slate-600 text-center">
               Already have an account?{" "}
               <Link to="/login?role=lecturer" className="text-[#1a73e8] underline">
-              Log in
-            </Link>
+                Log in
+              </Link>
             </p>
           </form>
         </section>
@@ -577,7 +694,9 @@ function Select({ label, value, onChange, options, placeholder, disabled }) {
       >
         <option value="">{placeholder}</option>
         {(options || []).map((o) => (
-          <option key={o} value={o}>{o}</option>
+          <option key={o} value={o}>
+            {o}
+          </option>
         ))}
       </select>
     </label>
@@ -627,6 +746,7 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
             <img
               src={flagPng(selected.code)}
               className="w-[24px] h-[18px] border object-contain"
+              alt=""
             />
             <span>{selected.name}</span>
           </span>
@@ -636,9 +756,7 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
       </button>
 
       {open && !disabled && (
-        <ul
-          className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg"
-        >
+        <ul className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg">
           {countries.map(({ name, code }) => {
             const c = String(code || "").toUpperCase();
             return (
@@ -660,6 +778,7 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
                 <img
                   src={flagPng(c)}
                   className="w-[24px] h-[18px] border object-contain"
+                  alt=""
                 />
                 <span>{name}</span>
               </li>

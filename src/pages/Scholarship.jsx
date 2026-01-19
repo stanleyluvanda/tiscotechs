@@ -3,7 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
-import { listScholarships } from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback)
+import {
+  listScholarships,
+  readScholarshipsCache,
+} from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback + cache)
 
 // ✅ Google Ads (same component you used in dashboards)
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
@@ -136,17 +139,17 @@ function filterSortPaginate({
   } else if (sort === "deadlineAsc") {
     out.sort(
       (a, b) =>
-        new Date(a.deadline || "2100-01-01") - new Date(b.deadline || "2100-01-01")
+        new Date(a.deadline || "2100-01-01") -
+        new Date(b.deadline || "2100-01-01")
     );
   } else if (sort === "deadlineDesc") {
     out.sort(
       (a, b) =>
-        new Date(b.deadline || "1900-01-01") - new Date(a.deadline || "1900-01-01")
+        new Date(b.deadline || "1900-01-01") -
+        new Date(a.deadline || "1900-01-01")
     );
   } else if (sort === "title") {
-    out.sort((a, b) =>
-      String(a.title || "").localeCompare(String(b.title || ""))
-    );
+    out.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
   }
 
   const total = out.length;
@@ -156,11 +159,20 @@ function filterSortPaginate({
 }
 
 export default function Scholarship() {
-  const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
+  const [baseItems, setBaseItems] = useState(() => {
+    const cached = readScholarshipsCache("approved");
+    return cached?.items || [];
+  });
+
+  const [loading, setLoading] = useState(() => {
+    // If we have cached items, don't show a "blank loading" state.
+    const cached = readScholarshipsCache("approved");
+    return !(cached?.items && cached.items.length > 0);
+  });
+
   const [err, setErr] = useState("");
-  const [usedFallback, setUsedFallback] = useState(false); // informational banner
+  const [usedFallback, setUsedFallback] = useState(false); // informational banner (cache/dev)
 
   // Filters / sorting / pagination
   const [q, setQ] = useState("");
@@ -199,71 +211,80 @@ export default function Scholarship() {
     return ["All", ...REGIONS[continent]];
   }, [continent]);
 
-  // Funding options inferred from current results
+  // Funding options inferred from baseItems (not paged items)
   const fundingOptions = useMemo(() => {
     const set = new Set();
-    items.forEach((s) => {
+    baseItems.forEach((s) => {
       const val = s.fundingType || s.funding;
       if (!val) return;
       if (Array.isArray(val)) val.forEach((v) => v && set.add(String(v)));
       else set.add(String(val));
     });
     return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, [items]);
+  }, [baseItems]);
 
-  const levelCsv = useMemo(
-    () => (levels.length > 0 ? levels.join(",") : ""),
-    [levels]
-  );
+  // Toggle a checkbox value in levels
+  const toggleLevel = (val) => {
+    setLevels((prev) => (prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]));
+    setPage(1);
+  };
 
-  // ✅ Load from the unified source (API if present, otherwise local)
-  //    Always request only APPROVED items; then apply your existing client filters.
+  // ✅ NEW: apply filters instantly from baseItems (no network)
+  const { items, total } = useMemo(() => {
+    return filterSortPaginate({
+      list: baseItems,
+      q,
+      continent,
+      country,
+      field,
+      funding,
+      levels,
+      sort,
+      page,
+      pageSize,
+    });
+  }, [baseItems, q, continent, country, field, funding, levels, sort, page]);
+
+  // ✅ Load approved list ONCE (not every filter change)
   useEffect(() => {
     let alive = true;
+
     (async () => {
-      setLoading(true);
       setErr("");
 
+      // If we have no cache, show loading spinner
+      if (!baseItems || baseItems.length === 0) setLoading(true);
+
       try {
-        // Pull a generous page from the unified source (already merged admin/partner)
-        const { items: baseItems } = await listScholarships({
+        const res = await listScholarships({
           status: "approved",
-          // We still pass q for a cheap server-side filter when API exists,
-          // but we'll re-apply all filters client-side to keep current behavior identical.
-          q,
+          q: "", // ✅ fetch once; keep filtering client-side for instant UI
           page: 1,
-          pageSize: 1000,
+          pageSize: 2000, // generous; your client filtering expects a big list
         });
 
         if (!alive) return;
 
-        const { items: filtered, total } = filterSortPaginate({
-          list: baseItems,
-          q,
-          continent,
-          country,
-          field,
-          funding,
-          levels,
-          sort,
-          page,
-          pageSize,
-        });
+        const next = Array.isArray(res?.items) ? res.items : [];
+        setBaseItems(next);
 
-        setItems(filtered);
-        setTotal(total);
-        setUsedFallback(false); // we can't know from helper; keep banner off by default
+        // informational banner: dev local or cache is not "offline", but you can show if you want
+        const source = res?.meta?.source || "api";
+        setUsedFallback(source !== "api");
+
         setLoading(false);
       } catch (e) {
         if (!alive) return;
-        setErr(e.message || "Failed to load scholarships");
+        setErr(e?.message || "Failed to load scholarships");
         setLoading(false);
       }
     })();
+
     return () => {
       alive = false;
     };
-  }, [q, continent, country, field, funding, levels, levelCsv, sort, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ only once
 
   const resetFilters = () => {
     setQ("");
@@ -277,16 +298,9 @@ export default function Scholarship() {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  // ✅ AdSense content gate: only show ads when there is real publisher content
-const canShowAds = !loading && items.length >= 4;
 
-  // Toggle a checkbox value in levels
-  const toggleLevel = (val) => {
-    setLevels((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-    setPage(1);
-  };
+  // ✅ AdSense content gate: only show ads when there is real publisher content
+  const canShowAds = !loading && items.length >= 4;
 
   return (
     // ✅ Outer layout: left ad | center feed (unchanged width) | right ad
@@ -296,9 +310,7 @@ const canShowAds = !loading && items.length >= 4;
         <aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">
-              {canShowAds && <GoogleSidebarAd />}
-            </div>
+            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
           </div>
         </aside>
 
@@ -308,15 +320,14 @@ const canShowAds = !loading && items.length >= 4;
             Scholarships & Funding Opportunities for International students
           </h2>
           <p className="mt-1 text-blue-900">
-            Explore verified scholarship and funding opportunities offered by
-            partner universities, foundations, governments, and accredited
-            external providers worldwide.
+            Explore verified scholarship and funding opportunities offered by partner universities,
+            foundations, governments, and accredited external providers worldwide.
           </p>
 
-          {/* Optional subtle banner if you want to surface fallback mode; left off by default */}
+          {/* Optional subtle banner if you want to surface cache/dev mode */}
           {usedFallback && (
             <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
-              Showing scholarships from your device (offline/fallback mode).
+              Showing cached scholarships for faster loading.
             </div>
           )}
 
@@ -412,9 +423,7 @@ const canShowAds = !loading && items.length >= 4;
                             type="checkbox"
                             className="accent-blue-600"
                             checked={checked}
-                            onChange={() => {
-                              toggleLevel(opt);
-                            }}
+                            onChange={() => toggleLevel(opt)}
                           />
                           <span className="text-sm text-slate-700">{opt}</span>
                         </label>
@@ -485,9 +494,7 @@ const canShowAds = !loading && items.length >= 4;
           </div>
 
           {/* States */}
-          {loading && (
-            <div className="mt-6 text-slate-600">Loading scholarships…</div>
-          )}
+          {loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}
           {err && <div className="mt-6 text-red-600">{err}</div>}
           {!loading && !err && items.length === 0 && (
             <div className="mt-6 text-slate-600">No scholarships found.</div>
@@ -500,11 +507,9 @@ const canShowAds = !loading && items.length >= 4;
               const fundingStr = Array.isArray(s.fundingType)
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
+
               return (
-                <li
-                  key={s.id}
-                  className="border border-slate-200 rounded-lg p-4 bg-white"
-                >
+                <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="text-lg font-semibold">{s.title}</div>
@@ -524,17 +529,13 @@ const canShowAds = !loading && items.length >= 4;
                         </div>
                       ) : null}
                       {s.deadline && (
-                        <div className="text-xs text-slate-500">
-                          Deadline: {s.deadline}
-                        </div>
+                        <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
                       )}
                     </div>
                   </div>
 
                   {/* Description snippet */}
-                  {snippet && (
-                    <p className="mt-3 text-sm text-slate-700">{snippet}</p>
-                  )}
+                  {snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
@@ -587,9 +588,7 @@ const canShowAds = !loading && items.length >= 4;
         <aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">
-              {canShowAds && <GoogleSidebarAd />}
-            </div>
+            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
           </div>
         </aside>
       </div>

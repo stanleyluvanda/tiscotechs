@@ -3002,7 +3002,7 @@ useEffect(() => {
 
   
 
-  const handlePaste = (e) => {
+  /*const handlePaste = (e) => {
     e.preventDefault();
     const text = e.clipboardData?.getData("text/plain") || "";
     if (document.queryCommandSupported("insertText")) document.execCommand("insertText", false, text);
@@ -3012,7 +3012,59 @@ useEffect(() => {
       sel.deleteFromDocument();
       sel.getRangeAt(0).insertNode(document.createTextNode(text));
     }
-  };
+  };*/
+
+  const handlePaste = (e) => {
+  e.preventDefault();
+
+  const cb = e.clipboardData || window.clipboardData;
+  const text = cb?.getData("text/plain") || "";
+
+  // Normalize line endings
+  const normalized = String(text).replace(/\r\n/g, "\n");
+
+  // Escape HTML special chars
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  // Convert:
+  // - blank lines => paragraph breaks
+  // - single newline => <br/>
+  const html = normalized
+    .split(/\n{2,}/g)
+    .map((para) => para.split("\n").map(esc).join("<br/>"))
+    .map((p) => `<p>${p || "<br/>"}</p>`)
+    .join("");
+
+  // Insert HTML at cursor (keeps paragraphs)
+  if (document.queryCommandSupported?.("insertHTML")) {
+    document.execCommand("insertHTML", false, html);
+    return;
+  }
+
+  // Fallback: manual range insert
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  sel.deleteFromDocument();
+
+  const range = sel.getRangeAt(0);
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const frag = document.createDocumentFragment();
+  while (container.firstChild) frag.appendChild(container.firstChild);
+
+  range.insertNode(frag);
+  range.collapse(false);
+};
+
+
+
 
   // Persist attachments to IDB and return lightweight descriptors
   async function persistAttachments(images=[], files=[]) {

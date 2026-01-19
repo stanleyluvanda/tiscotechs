@@ -96,7 +96,7 @@ export default function VideoTips() {
             <p className="mt-1 text-sm md:text-base text-slate-600">
               These videos offer high-value academic guidance and essential
               insights for international students, particularly those preparing
-              to pursue educational opportunities in the United States.
+              to pursue educational opportunities in the Europe,Canada and United States.
             </p>
           </div>
 

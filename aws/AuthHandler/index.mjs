@@ -17,6 +17,9 @@
 //   POST /api/auth/partner/get-profile
 //   POST /api/auth/partner/update-profile
 //
+// ✅ ADDED (non-breaking):
+//   GET  /api/admin/members   -> list ALL users from DynamoDB (ScholarsUsers)
+//
 // DynamoDB table: ScholarsUsers (or env: USERS_TABLE / USER_TABLE_NAME / USER_TABLE)
 
 import {
@@ -25,6 +28,7 @@ import {
   PutItemCommand,
   DeleteItemCommand,
   UpdateItemCommand,
+  ScanCommand,
 } from "@aws-sdk/client-dynamodb";
 import crypto from "crypto";
 
@@ -95,7 +99,8 @@ function jsonResponse(statusCode, body, baseHeaders) {
     statusCode,
     headers: {
       ...baseHeaders,
-      "Access-Control-Allow-Methods": "POST,OPTIONS",
+      // ✅ include GET for the new /api/admin/members route
+      "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization",
     },
     body: JSON.stringify(body || {}),
@@ -140,6 +145,62 @@ function parseProfile(profileJson) {
     return JSON.parse(profileJson);
   } catch {
     return {};
+  }
+}
+
+/* =======================================================================
+   ADMIN MEMBERS (NEW — non-breaking)
+   ======================================================================= */
+
+/**
+ * Scan DynamoDB and return ALL user rows.
+ * - Handles pagination (so you don't get only 1MB worth of items)
+ * - Returns each user as a flat object: { email, role, ...profile }
+ *   so your AdminMembers.jsx normalizeUser() can read fields easily.
+ */
+async function listAllUsersFromDynamo() {
+  const all = [];
+  let ExclusiveStartKey = undefined;
+
+  do {
+    const out = await ddb.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+        ExclusiveStartKey,
+      })
+    );
+
+    const items = Array.isArray(out.Items) ? out.Items : [];
+    for (const it of items) {
+      const email = it.email?.S || "";
+      const role = (it.role?.S || "student").toLowerCase();
+      const profile = parseProfile(it.profile?.S || "{}");
+
+      // Flatten (profile fields become top-level, which your UI expects)
+      all.push({
+        email,
+        role,
+        ...profile,
+      });
+    }
+
+    ExclusiveStartKey = out.LastEvaluatedKey;
+  } while (ExclusiveStartKey);
+
+  return all;
+}
+
+async function handleAdminMembers(event, baseHeaders) {
+  try {
+    const users = await listAllUsersFromDynamo();
+    return jsonResponse(200, { ok: true, users }, baseHeaders);
+  } catch (err) {
+    console.error("AuthHandler admin/members error:", err);
+    return jsonResponse(
+      500,
+      { ok: false, error: "SERVER_ERROR", detail: String(err?.message || err) },
+      baseHeaders
+    );
   }
 }
 
@@ -803,7 +864,8 @@ export const handler = async (event) => {
       statusCode: 204,
       headers: {
         ...baseHeaders,
-        "Access-Control-Allow-Methods": "POST,OPTIONS",
+        // ✅ include GET for preflight
+        "Access-Control-Allow-Methods": "POST,GET,OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type,Authorization",
       },
       body: "",
@@ -813,6 +875,11 @@ export const handler = async (event) => {
   const path = String(
     event.requestContext?.http?.path || event.rawPath || event.path || ""
   ).toLowerCase();
+
+  // ✅ NEW: Admin members route (DynamoDB-backed)
+  if (method === "GET" && path.endsWith("/api/admin/members")) {
+    return handleAdminMembers(event, baseHeaders);
+  }
 
   // Existing routes (unchanged)
   if (method === "POST" && path.endsWith("/api/auth/login")) {

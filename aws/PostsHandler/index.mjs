@@ -1,12 +1,18 @@
 // aws/PostsHandler/index.mjs
 // Node.js 20 — DynamoDB-backed posts API (uses GSI1 for feed query)
+//
+// ✅ Universal + scalable:
+// - GET /api/posts supports pagination: ?scope=&limit=&cursor=&withThread=1|0
+// - GET /api/posts default keeps compatibility (withThread=1) BUT now thread loading is fast
+// - GET /api/posts/thread?postId=&limit=&cursor= for per-post thread loading (optional for UIs)
+// - Comments/replies keep FULL author snapshot fields so names never disappear
+// - Rejects base64 dataUrl attachments (prevents DynamoDB item size blowups)
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
-  DeleteCommand,
   QueryCommand,
   BatchWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
@@ -47,7 +53,6 @@ function safeArr(v) {
   return Array.isArray(v) ? v : [];
 }
 
-// ✅ NEW: guard against base64 dataUrl attachments (prevents DynamoDB 400KB item limit issues)
 function hasBase64DataUrl(arr) {
   return (
     Array.isArray(arr) &&
@@ -56,8 +61,9 @@ function hasBase64DataUrl(arr) {
 }
 
 function uid(prefix) {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
+
 function readJsonBody(event) {
   try {
     let bodyStr = event?.body || "{}";
@@ -67,9 +73,38 @@ function readJsonBody(event) {
     return null;
   }
 }
+
 function pad13(n) {
   const x = Number(n || 0);
   return String(isFinite(x) ? x : 0).padStart(13, "0");
+}
+
+function clampInt(v, def, min, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return def;
+  return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
+/* Cursor helpers: base64(json(lastEvaluatedKey)) */
+function encodeCursor(lastKey) {
+  if (!lastKey) return null;
+  try {
+    const s = JSON.stringify(lastKey);
+    return Buffer.from(s, "utf8").toString("base64url");
+  } catch {
+    return null;
+  }
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return undefined;
+  try {
+    const s = Buffer.from(String(cursor), "base64url").toString("utf8");
+    const obj = JSON.parse(s);
+    return obj && typeof obj === "object" ? obj : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /* ---------------- Data model ----------------
@@ -96,100 +131,120 @@ const skComment = (createdAt, commentId) => `CMT#${pad13(createdAt)}#${String(co
 const skReply = (commentId, createdAt, replyId) =>
   `RPL#${String(commentId)}#${pad13(createdAt)}#${String(replyId)}`;
 
-/* ---------------- Load comments + replies and nest them ---------------- */
-async function loadThread(postId) {
+/* ---------------- FAST thread loader (1 query per post) ----------------
+   This replaces the old "query comments then query replies per comment".
+   Now we query ALL items under pk in one go, then assemble.
+----------------------------------------------------------------------- */
+async function loadThreadFast(postId, { limit = 500, cursor } = {}) {
   const pk = pkPost(postId);
 
-  // Pull all comments
-  const commentsResp = await ddb.send(
+  const resp = await ddb.send(
     new QueryCommand({
       TableName: TABLE,
-      KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :c)",
-      ExpressionAttributeNames: { "#pk": "pk", "#sk": "sk" },
-      ExpressionAttributeValues: { ":pk": pk, ":c": "CMT#" },
-      ScanIndexForward: false, // newest comments first (matches typical UI)
-      Limit: 500,
+      KeyConditionExpression: "#pk = :pk",
+      ExpressionAttributeNames: { "#pk": "pk" },
+      ExpressionAttributeValues: { ":pk": pk },
+      ExclusiveStartKey: decodeCursor(cursor),
+      Limit: clampInt(limit, 500, 1, 2000),
+      ScanIndexForward: false, // newest items first overall (fine; we re-sort for nesting)
     })
   );
 
-  const commentItems = Array.isArray(commentsResp.Items) ? commentsResp.Items : [];
+  const items = Array.isArray(resp.Items) ? resp.Items : [];
 
-  // For each comment, pull replies
-  const out = [];
-  for (const c of commentItems) {
-    const commentId =
-      String(c.commentId || c.id || "").trim() ||
-      String(c.sk || "").split("#").slice(-1)[0] ||
-      uid("c");
+  const comments = [];
+  const replies = [];
 
-    const repliesResp = await ddb.send(
-      new QueryCommand({
-        TableName: TABLE,
-        KeyConditionExpression: "#pk = :pk AND begins_with(#sk, :r)",
-        ExpressionAttributeNames: { "#pk": "pk", "#sk": "sk" },
-        ExpressionAttributeValues: { ":pk": pk, ":r": `RPL#${commentId}#` },
-        ScanIndexForward: true,
-        Limit: 500,
-      })
-    );
-
-    const replyItems = Array.isArray(repliesResp.Items) ? repliesResp.Items : [];
-
-    const comment = {
-      id: commentId,
-      postId: String(c.postId || postId),
-      authorId: c.authorId || "",
-      authorName: c.authorName || "",
-      authorPhoto: c.authorPhoto || "",
-      authorProgram: c.authorProgram || "",
-      authorRole: c.authorRole || "",
-      authorTitle: c.authorTitle || "",
-      authorUniversity: c.authorUniversity || "",
-      authorFaculty: c.authorFaculty || "",
-      authorCountry: c.authorCountry || "",
-      authorCountryCode: c.authorCountryCode || "",
-
-      html: c.html || "",
-      text: c.text || "",
-      images: safeArr(c.images),
-      files: safeArr(c.files),
-      createdAt: c.createdAt || 0,
-      updatedAt: c.updatedAt || 0,
-      replies: replyItems.map((r) => ({
-        id: r.replyId || r.id || uid("r"),
-        postId: String(r.postId || postId),
-        commentId,
-        authorId: r.authorId || "",
-        authorName: r.authorName || "",
-        authorPhoto: r.authorPhoto || "",
-        authorProgram: r.authorProgram || "",
-        authorRole: r.authorRole || "",
-        authorTitle: r.authorTitle || "",
-        // ✅ ADD THESE RIGHT HERE
-        authorUniversity: r.authorUniversity || "",
-        authorFaculty: r.authorFaculty || "",
-        authorCountry: r.authorCountry || "",
-        authorCountryCode: r.authorCountryCode || "",
-        html: r.html || "",
-        text: r.text || "",
-        images: safeArr(r.images),
-        files: safeArr(r.files),
-        createdAt: r.createdAt || 0,
-        updatedAt: r.updatedAt || 0,
-      })),
-    };
-
-    out.push(comment);
+  for (const it of items) {
+    const sk = String(it.sk || "");
+    if (sk === "POST") continue;
+    if (sk.startsWith("CMT#")) comments.push(it);
+    else if (sk.startsWith("RPL#")) replies.push(it);
   }
 
-  return out;
+  // Map replies by commentId
+  const repliesByComment = new Map();
+  for (const r of replies) {
+    const commentId = String(r.commentId || "").trim() || String(r.sk || "").split("#")[1] || "";
+    if (!commentId) continue;
+    if (!repliesByComment.has(commentId)) repliesByComment.set(commentId, []);
+    repliesByComment.get(commentId).push(r);
+  }
+
+  // Sort replies oldest->newest within each comment for stable UI
+  for (const arr of repliesByComment.values()) {
+    arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  }
+
+  // Build nested comment objects
+  const out = comments
+    .map((c) => {
+      const commentId =
+        String(c.commentId || c.id || "").trim() ||
+        String(c.sk || "").split("#").slice(-1)[0] ||
+        uid("c");
+
+      const replyItems = repliesByComment.get(commentId) || [];
+
+      return {
+        id: commentId,
+        postId: String(c.postId || postId),
+
+        authorId: c.authorId || "",
+        authorName: c.authorName || "",
+        authorPhoto: c.authorPhoto || "",
+        authorProgram: c.authorProgram || "",
+        authorRole: c.authorRole || "",
+        authorTitle: c.authorTitle || "",
+        authorUniversity: c.authorUniversity || "",
+        authorFaculty: c.authorFaculty || "",
+        authorCountry: c.authorCountry || "",
+        authorCountryCode: c.authorCountryCode || "",
+
+        html: c.html || "",
+        text: c.text || "",
+        images: safeArr(c.images),
+        files: safeArr(c.files),
+
+        createdAt: c.createdAt || 0,
+        updatedAt: c.updatedAt || 0,
+
+        replies: replyItems.map((r) => ({
+          id: r.replyId || r.id || uid("r"),
+          postId: String(r.postId || postId),
+          commentId,
+
+          authorId: r.authorId || "",
+          authorName: r.authorName || "",
+          authorPhoto: r.authorPhoto || "",
+          authorProgram: r.authorProgram || "",
+          authorRole: r.authorRole || "",
+          authorTitle: r.authorTitle || "",
+          authorUniversity: r.authorUniversity || "",
+          authorFaculty: r.authorFaculty || "",
+          authorCountry: r.authorCountry || "",
+          authorCountryCode: r.authorCountryCode || "",
+
+          html: r.html || "",
+          text: r.text || "",
+          images: safeArr(r.images),
+          files: safeArr(r.files),
+
+          createdAt: r.createdAt || 0,
+          updatedAt: r.updatedAt || 0,
+        })),
+      };
+    })
+    // newest comments first (matches your current UI)
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  return { comments: out, cursor: encodeCursor(resp.LastEvaluatedKey) };
 }
 
 /* ---------------- Delete post + all children (comments/replies) ---------------- */
 async function deleteWholePost(postId) {
   const pk = pkPost(postId);
 
-  // Get all items under pk (POST + comments + replies)
   let items = [];
   let lastKey = undefined;
 
@@ -210,7 +265,6 @@ async function deleteWholePost(postId) {
 
   if (!items.length) return { deleted: false, count: 0 };
 
-  // Batch delete in chunks of 25
   let deletedCount = 0;
   for (let i = 0; i < items.length; i += 25) {
     const batch = items.slice(i, i + 25);
@@ -252,9 +306,41 @@ export const handler = async (event) => {
   if (method === "OPTIONS") return { statusCode: 200, headers, body: "" };
 
   const path = rawPath || "";
+
   const isCommentPath = path === "/api/posts/comment" || path.endsWith("/posts/comment");
   const isReplyPath = path === "/api/posts/reply" || path.endsWith("/posts/reply");
+  const isThreadPath = path === "/api/posts/thread" || path.endsWith("/posts/thread");
   const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
+
+  /* ---------- GET /api/posts/thread?postId=... ---------- */
+  if (isThreadPath && method === "GET") {
+    try {
+      const qs = event.queryStringParameters || {};
+      const postId = String(qs.postId || qs.id || "").trim();
+      if (!postId) {
+        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "postId is required" }) };
+      }
+
+      const limit = clampInt(qs.limit, 500, 1, 2000);
+      const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
+      const res = await loadThreadFast(postId, { limit, cursor });
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          ok: true,
+          postId,
+          comments: res.comments,
+          cursor: res.cursor,
+        }),
+      };
+    } catch (err) {
+      console.error("[PostsHandlerDDB] thread GET failed:", err);
+      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to load thread" }) };
+    }
+  }
 
   /* ---------- POST /api/posts/comment ---------- */
   if (isCommentPath && method === "POST") {
@@ -264,7 +350,6 @@ export const handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
       }
 
-      // ✅ NEW: Reject base64 dataUrl attachments (must be uploaded to CloudFront/S3 and sent as url)
       if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
         return {
           statusCode: 413,
@@ -322,7 +407,7 @@ export const handler = async (event) => {
         authorProgram: payload.authorProgram || "",
         authorRole: payload.authorRole || payload.role || "",
         authorTitle: payload.authorTitle || payload.title || "",
-        // ✅ ADD THESE (author meta)
+
         authorUniversity: payload.authorUniversity || payload.university || "",
         authorFaculty: payload.authorFaculty || payload.faculty || "",
         authorCountry: payload.authorCountry || payload.country || "",
@@ -367,7 +452,6 @@ export const handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
       }
 
-      // ✅ NEW: Reject base64 dataUrl attachments (must be uploaded to CloudFront/S3 and sent as url)
       if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
         return {
           statusCode: 413,
@@ -427,7 +511,7 @@ export const handler = async (event) => {
         authorProgram: payload.authorProgram || "",
         authorRole: payload.authorRole || payload.role || "",
         authorTitle: payload.authorTitle || payload.title || "",
-        // ✅ ADD THESE (author meta)
+
         authorUniversity: payload.authorUniversity || payload.university || "",
         authorFaculty: payload.authorFaculty || payload.faculty || "",
         authorCountry: payload.authorCountry || payload.country || "",
@@ -460,18 +544,25 @@ export const handler = async (event) => {
     }
   }
 
+  /* ---------- /api/posts ---------- */
   if (isPostsPath) {
-    const scope =
-      event.queryStringParameters && event.queryStringParameters.scope
-        ? String(event.queryStringParameters.scope)
-        : null;
+    const qs = event.queryStringParameters || {};
+    const scope = qs.scope ? String(qs.scope) : null;
 
-    /* ---------- GET /api/posts?scope=... ---------- */
+    /* ---------- GET /api/posts?scope=...&limit=&cursor=&withThread= ---------- */
     if (method === "GET") {
       try {
         const sc = scope || "student-dashboard";
 
-        // Query feed via GSI1 (newest first)
+        // Keep compatibility by default (withThread=1)
+        const withThread =
+          qs.withThread == null ? "1" : String(qs.withThread).trim();
+        const wantThread = withThread === "1" || withThread.toLowerCase() === "true";
+
+        // IMPORTANT: smaller default keeps UI snappy; still "unlimited" via cursor
+        const limit = clampInt(qs.limit, 30, 1, 200);
+        const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
         const resp = await ddb.send(
           new QueryCommand({
             TableName: TABLE,
@@ -480,7 +571,8 @@ export const handler = async (event) => {
             ExpressionAttributeNames: { "#gpk": "gsi1pk" },
             ExpressionAttributeValues: { ":gpk": gsi1pk(sc) },
             ScanIndexForward: false,
-            Limit: 200,
+            Limit: limit,
+            ExclusiveStartKey: decodeCursor(cursor),
           })
         );
 
@@ -496,12 +588,38 @@ export const handler = async (event) => {
           base.id = base.id || postId;
           base.postId = postId;
 
-          base.comments = postId ? await loadThread(postId) : [];
+          // ✅ FAST: 1 query per post (and only if requested)
+          /*if (wantThread && postId) {
+            const thr = await loadThreadFast(postId, { limit: 500 });
+            base.comments = thr.comments;
+          } else {
+            base.comments = base.comments || [];
+          }*/
+
+          if (wantThread && postId) {
+  const thr = await loadThreadFast(postId, { limit: 500 });
+  base.comments = thr.comments;
+} else {
+  // ✅ FORCE empty comments when withThread=0 (prevents old embedded comments from leaking through)
+  base.comments = [];
+}
+
+
+
 
           posts.push(base);
         }
 
-        return { statusCode: 200, headers, body: JSON.stringify({ ok: true, scope: sc, posts }) };
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            ok: true,
+            scope: sc,
+            posts,
+            cursor: encodeCursor(resp.LastEvaluatedKey),
+          }),
+        };
       } catch (err) {
         console.error("[PostsHandlerDDB] GET failed:", err);
         return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to load posts" }) };
@@ -529,8 +647,8 @@ export const handler = async (event) => {
         const now = Date.now();
         const createdAt = payload.createdAt || now;
 
-        const postId = String(payload.id || payload.postId || `p_${now}_${Math.random().toString(36).slice(2, 8)}`);
-        const scope = String(payload.scope || "student-dashboard");
+        const postId = String(payload.id || payload.postId || `p_${now}_${Math.random().toString(36).slice(2, 10)}`);
+        const sc = String(payload.scope || "student-dashboard");
 
         const photoUrl =
           payload.authorAvatarUrl ||
@@ -555,21 +673,18 @@ export const handler = async (event) => {
             : "";
 
         const item = {
-          // Primary key
           pk: pkPost(postId),
           sk: skPost(),
 
-          // GSI1 keys (feed)
-          gsi1pk: gsi1pk(scope),
+          gsi1pk: gsi1pk(sc),
           gsi1sk: gsi1sk(createdAt, postId),
 
-          // Your existing fields (kept broad to be drop-in)
           ...payload,
 
           id: postId,
           postId,
 
-          scope,
+          scope: sc,
           role: payload.role || "student",
           type: payload.type || "Notes",
 
@@ -591,7 +706,6 @@ export const handler = async (event) => {
 
         await ddb.send(new PutCommand({ TableName: TABLE, Item: item }));
 
-        // return post as client expects (comments assembled on GET)
         const out = { ...item };
         delete out.pk;
         delete out.sk;

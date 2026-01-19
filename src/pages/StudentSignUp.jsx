@@ -15,25 +15,36 @@ import SingleImageUploader from "../components/upload/SingleImageUploader";
 import { apiRegisterStudent } from "../lib/api";
 
 /* ---------- Helpers ---------- */
-function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
+function safeParse(json) {
+  try {
+    return JSON.parse(json || "");
+  } catch {
+    return null;
+  }
+}
 const normalizeEmail = (e) => String(e || "").trim().toLowerCase();
 
 async function sha256Hex(str) {
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest("SHA-256", enc);
-  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function trySet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+function trySet(k, v) {
+  try {
+    localStorage.setItem(k, v);
+  } catch {}
+}
 
 /* --- Local email role-check --- */
 function emailExistsForRoleLocal(email, role) {
   const em = normalizeEmail(email);
-  const r  = String(role || "student").toLowerCase();
+  const r = String(role || "student").toLowerCase();
   const users = safeParse(localStorage.getItem("users")) || [];
-  return users.some(u =>
-    normalizeEmail(u?.email) === em &&
-    String(u?.role || "student").toLowerCase() === r
+  return users.some(
+    (u) =>
+      normalizeEmail(u?.email) === em &&
+      String(u?.role || "student").toLowerCase() === r
   );
 }
 
@@ -42,11 +53,67 @@ const FLAG = (iso2) => {
   const code = String(iso2 || "").toUpperCase();
   if (!/^[A-Z]{2}$/.test(code)) return "🏳️";
   const A = 0x1f1e6;
-  return String.fromCodePoint(A + (code.charCodeAt(0) - 65), A + (code.charCodeAt(1) - 65));
+  return String.fromCodePoint(
+    A + (code.charCodeAt(0) - 65),
+    A + (code.charCodeAt(1) - 65)
+  );
 };
 
 const flagPng = (code) =>
   `https://flagcdn.com/24x18/${String(code || "").toLowerCase()}.png`;
+
+/* ---------- Password UX helpers (UI only) ---------- */
+function scorePassword(pw = "") {
+  const p = String(pw || "");
+  let score = 0;
+
+  const hasLower = /[a-z]/.test(p);
+  const hasUpper = /[A-Z]/.test(p);
+  const hasDigit = /\d/.test(p);
+  const hasSymbol = /[^A-Za-z0-9]/.test(p);
+
+  if (p.length >= 8) score++;
+  if (p.length >= 12) score++;
+  if (hasLower) score++;
+  if (hasUpper) score++;
+  if (hasDigit) score++;
+  if (hasSymbol) score++;
+
+  score = Math.min(score, 5);
+
+  const label =
+    score <= 2 ? "Weak" : score === 3 ? "Fair" : score === 4 ? "Good" : "Strong";
+
+  const tips = [];
+  if (p.length < 12) tips.push("Use at least 12 characters");
+  if (!hasUpper) tips.push("Add an uppercase letter");
+  if (!hasLower) tips.push("Add a lowercase letter");
+  if (!hasDigit) tips.push("Add a number");
+  if (!hasSymbol) tips.push("Add a symbol (e.g. !@#$)");
+
+  return { score, label, tips, hasLower, hasUpper, hasDigit, hasSymbol };
+}
+
+function generateStrongPassword(length = 14) {
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const digits = "0123456789";
+  const symbols = "!@#$%^&*()-_=+[]{};:,.?/";
+
+  const all = lower + upper + digits + symbols;
+  const pick = (s) => s[Math.floor(Math.random() * s.length)];
+
+  // Ensure at least one of each category
+  let out = [pick(lower), pick(upper), pick(digits), pick(symbols)];
+  while (out.length < length) out.push(pick(all));
+
+  // Shuffle
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out.join("");
+}
 
 // ---------- Turnstile helpers ----------
 const TURNSTILE_KEY = (import.meta.env?.VITE_TURNSTILE_SITE_KEY ?? "").trim();
@@ -94,7 +161,7 @@ export default function StudentSignUp() {
   const [error, setError] = useState("");
 
   /* ----------------- PHOTO (S3 URL) ----------------- */
-  const [photo, setPhoto] = useState(null);  // SingleImageUploader output
+  const [photo, setPhoto] = useState(null); // SingleImageUploader output
 
   /* ----------------- Turnstile ----------------- */
   const [turnstileToken, setTurnstileToken] = useState("");
@@ -109,7 +176,9 @@ export default function StudentSignUp() {
         if (destroyed || !turnstileRef.current || !t || !TURNSTILE_KEY) return;
 
         if (turnstileWidgetIdRef.current) {
-          try { t.remove(turnstileWidgetIdRef.current); } catch {}
+          try {
+            t.remove(turnstileWidgetIdRef.current);
+          } catch {}
           turnstileWidgetIdRef.current = null;
         }
 
@@ -131,11 +200,21 @@ export default function StudentSignUp() {
     return () => {
       destroyed = true;
       if (window.turnstile && turnstileWidgetIdRef.current) {
-        try { window.turnstile.remove(turnstileWidgetIdRef.current); } catch {}
+        try {
+          window.turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {}
         turnstileWidgetIdRef.current = null;
       }
     };
   }, []);
+
+  /* ----------------- Password UX derived state (UI only) ----------------- */
+  const pw = form.password || "";
+  const cpw = form.confirmPassword || "";
+  const pwTouched = pw.length > 0 || cpw.length > 0;
+  const pwStrength = scorePassword(pw);
+  const passwordsMatch = pw.length > 0 && cpw.length > 0 && pw === cpw;
+  const passwordsMismatch = pwTouched && cpw.length > 0 && pw !== cpw;
 
   /* ----------------- FORM HANDLERS ----------------- */
   const onBasic = (e) => {
@@ -224,7 +303,7 @@ export default function StudentSignUp() {
       faculty: form.faculty,
       program: form.program,
       year: form.year,
-      photoUrl: photo || "",   // <-- S3 URL
+      photoUrl: photo || "", // <-- S3 URL
     };
 
     /* ----------------- BACKEND CALL ----------------- */
@@ -254,7 +333,7 @@ export default function StudentSignUp() {
 
     if (!backendResp || !backendResp.ok) {
       const code = String(backendResp?.error || "").toUpperCase();
-      if (["ALREADY_EXISTS","EMAIL_EXISTS","EMAIL_EXISTS_STUDENT"].includes(code)) {
+      if (["ALREADY_EXISTS", "EMAIL_EXISTS", "EMAIL_EXISTS_STUDENT"].includes(code)) {
         setError("An account with this email already exists for a student. Please log in instead.");
       } else if (code === "MISSING_FIELDS") {
         setError("Some required fields are missing. Please review the form.");
@@ -264,61 +343,38 @@ export default function StudentSignUp() {
       return;
     }
 
-
-
-
     // ✅ Best-effort: mirror student into global Users API (for Contact Lecturer list)
-try {
-  const BASE =
-    (import.meta.env.VITE_POSTS_API_BASE ||
-      import.meta.env.VITE_CONTACTS_API_BASE ||
-      "http://localhost:5003").replace(/\/+$/, "");
+    try {
+      const BASE =
+        (import.meta.env.VITE_POSTS_API_BASE ||
+          import.meta.env.VITE_CONTACTS_API_BASE ||
+          "http://localhost:5003").replace(/\/+$/, "");
 
-  await fetch(`${BASE}/api/users/upsert`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      user: {
-        uid: `email:${emailNorm}`, // stable id across devices/logins
-        role: "student",
-        email: emailNorm,
-        name: form.name,
-        gender: form.gender,
-        continent: form.continent,
-        country: form.country,
-        countryCode: form.countryCode,
-        university: form.university,
-        faculty: form.faculty,
-        program: form.program,
-        year: form.year,
-        photoUrl: photo || "",
-        profile: { ...profile, photoUrl: photo || "" },
-      },
-    }),
-  });
-} catch (e) {
-  console.warn("[student-signup] users upsert failed (non-blocking):", e);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      await fetch(`${BASE}/api/users/upsert`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          user: {
+            uid: `email:${emailNorm}`, // stable id across devices/logins
+            role: "student",
+            email: emailNorm,
+            name: form.name,
+            gender: form.gender,
+            continent: form.continent,
+            country: form.country,
+            countryCode: form.countryCode,
+            university: form.university,
+            faculty: form.faculty,
+            program: form.program,
+            year: form.year,
+            photoUrl: photo || "",
+            profile: { ...profile, photoUrl: photo || "" },
+          },
+        }),
+      });
+    } catch (e) {
+      console.warn("[student-signup] users upsert failed (non-blocking):", e);
+    }
 
     /* ---------------- LOCAL MIRRORS ----------------- */
     sessionStorage.setItem("currentPassword", form.password);
@@ -355,13 +411,15 @@ try {
     sessionStorage.setItem("currentUser", JSON.stringify(stubUser));
     trySet("currentUser", JSON.stringify(stubUser));
 
-    for (const k of ["authUserId","activeUserId","currentUserId","loggedInUserId"]) {
+    for (const k of ["authUserId", "activeUserId", "currentUserId", "loggedInUserId"]) {
       sessionStorage.setItem(k, id);
       trySet(k, id);
     }
 
     if (window.turnstile && turnstileWidgetIdRef.current) {
-      try { window.turnstile.reset(turnstileWidgetIdRef.current); } catch {}
+      try {
+        window.turnstile.reset(turnstileWidgetIdRef.current);
+      } catch {}
     }
 
     navigate("/student-dashboard");
@@ -384,13 +442,21 @@ try {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#f0f6ff] via-white to-[#eef2ff]">
       <main className="flex-1">
         <section className="max-w-2xl mx-auto px-4 py-12">
-
           <div className="text-center">
-            <img src="/images/1754280544595.jpeg" alt="ScholarsKnowledge Logo" className="mx-auto h-14 w-14 object-contain" />
-            <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">Student Sign Up</h1>
+            <img
+              src="/images/1754280544595.jpeg"
+              alt="ScholarsKnowledge Logo"
+              className="mx-auto h-14 w-14 object-contain"
+            />
+            <h1 className="mt-3 text-3xl md:text-4xl font-bold text-slate-900">
+              Student Sign Up
+            </h1>
           </div>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4 bg-white/70 rounded-2xl p-6 border">
+          <form
+            onSubmit={onSubmit}
+            className="mt-8 space-y-4 bg-white/70 rounded-2xl p-6 border"
+          >
             {error && (
               <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
                 {error}
@@ -398,11 +464,7 @@ try {
             )}
 
             {/* NEW S3 IMAGE UPLOADER */}
-            <SingleImageUploader
-              value={photo}
-              onChange={setPhoto}
-              folder="profiles"
-            />
+            <SingleImageUploader value={photo} onChange={setPhoto} folder="profiles" />
 
             {/* BASIC */}
             <input
@@ -437,24 +499,87 @@ try {
               onChange={onBasic}
             />
 
-            {/* PASSWORD */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <input
-                name="password"
-                type="password"
-                className="w-full border rounded px-3 py-2"
-                placeholder="Password"
-                value={form.password}
-                onChange={onBasic}
-              />
-              <input
-                name="confirmPassword"
-                type="password"
-                className="w-full border rounded px-3 py-2"
-                placeholder="Confirm password"
-                value={form.confirmPassword}
-                onChange={onBasic}
-              />
+            {/* PASSWORD (enhanced UX, no backend changes) */}
+            <div className="space-y-2">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <input
+                    name="password"
+                    type="password"
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={onBasic}
+                  />
+
+                  {/* Strength meter */}
+                  {pw.length > 0 && (
+                    <div className="text-xs">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-600">
+                          Strength:{" "}
+                          <span className="font-semibold text-slate-900">
+                            {pwStrength.label}
+                          </span>
+                        </span>
+
+                        <button
+                          type="button"
+                          className="text-[#1a73e8] underline whitespace-nowrap"
+                          onClick={() => {
+                            const gen = generateStrongPassword(14);
+                            setForm((f) => ({
+                              ...f,
+                              password: gen,
+                              confirmPassword: gen,
+                            }));
+                          }}
+                          title="Generate a strong password"
+                        >
+                          Generate strong password
+                        </button>
+                      </div>
+
+                      <div className="mt-1 h-2 w-full rounded bg-slate-200 overflow-hidden">
+                        <div
+                          className="h-full rounded bg-[#1a73e8]"
+                          style={{ width: `${(pwStrength.score / 5) * 100}%` }}
+                        />
+                      </div>
+
+                      {pwStrength.tips.length > 0 && (
+                        <div className="mt-1 text-slate-600">
+                          Suggestions: {pwStrength.tips.slice(0, 2).join(" • ")}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <input
+                    name="confirmPassword"
+                    type="password"
+                    className={`w-full border rounded px-3 py-2 ${
+                      passwordsMatch ? "border-green-400" : passwordsMismatch ? "border-red-400" : ""
+                    }`}
+                    placeholder="Confirm password"
+                    value={form.confirmPassword}
+                    onChange={onBasic}
+                  />
+
+                  {/* Match indicator */}
+                  {pwTouched && cpw.length > 0 && (
+                    <div className={`text-xs ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
+                      {passwordsMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-600">
+                Use 12+ characters with upper/lowercase letters, a number, and a symbol.
+              </div>
             </div>
 
             {/* CONTINENT */}
@@ -467,7 +592,9 @@ try {
               >
                 <option value="">Select Continent</option>
                 {continents.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
                 ))}
               </select>
             </label>
@@ -537,7 +664,8 @@ try {
                   and{" "}
                   <Link to="/terms-of-use" className="text-[#1a73e8] underline">
                     Terms of Use
-                  </Link>.
+                  </Link>
+                  .
                 </span>
               </label>
 
@@ -559,12 +687,13 @@ try {
             >
               Submit
             </button>
+
             <p className="text-sm text-slate-600 text-center">
-                 Already have an account?{" "}
+              Already have an account?{" "}
               <Link to="/login?role=student" className="text-[#1a73e8] underline">
-               Log in
-             </Link>
-           </p>
+                Log in
+              </Link>
+            </p>
           </form>
         </section>
       </main>
@@ -592,7 +721,9 @@ function Select({ label, value, onChange, options, placeholder, disabled }) {
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
+          <option key={o} value={o}>
+            {o}
+          </option>
         ))}
       </select>
     </label>
@@ -638,7 +769,11 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
       >
         {selected ? (
           <span className="inline-flex items-center gap-2">
-            <img src={flagPng(selected.code)} className="w-[24px] h-[18px] border object-contain" />
+            <img
+              src={flagPng(selected.code)}
+              className="w-[24px] h-[18px] border object-contain"
+              alt=""
+            />
             <span>{selected.name}</span>
           </span>
         ) : (
@@ -647,9 +782,7 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
       </button>
 
       {open && !disabled && (
-        <ul
-          className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg"
-        >
+        <ul className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg">
           {countries.map(({ name, code }) => {
             const c = String(code || "").toUpperCase();
             return (
@@ -671,6 +804,7 @@ function CountrySelect({ label, countries, value, onSelect, disabled }) {
                 <img
                   src={flagPng(c)}
                   className="w-[24px] h-[18px] border object-contain"
+                  alt=""
                 />
                 <span>{name}</span>
               </li>

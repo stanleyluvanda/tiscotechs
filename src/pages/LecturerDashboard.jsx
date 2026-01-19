@@ -1174,14 +1174,6 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
 
 
 
-
-
-
-
-
-
-
-
     const merged = {
       ...raw,
       role: raw.role || "lecturer",
@@ -1190,11 +1182,6 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
 
       email,
       id: userStableId({ ...raw, email }) || String(rawId || `l_${Date.now()}`),
-
-
-
-
-
 
       name: raw.name || "Lecturer Name",
       title: raw.title || "",
@@ -1211,7 +1198,6 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
     return merged;
   });
   
- 
 
 
 
@@ -2194,7 +2180,7 @@ const onPickAvatar = async (e) => {
     setDocFiles((arr) => [...arr, ...mapped]);
     e.target.value = "";
   };
-  const handlePaste = (e) => {
+  /*const handlePaste = (e) => {
     e.preventDefault();
     const text = e.clipboardData?.getData("text/plain") || "";
     if (document.queryCommandSupported("insertText")) {
@@ -2205,7 +2191,56 @@ const onPickAvatar = async (e) => {
       sel.deleteFromDocument();
       sel.getRangeAt(0).insertNode(document.createTextNode(text));
     }
-  };
+  };*/
+
+  const handlePaste = (e) => {
+  e.preventDefault();
+
+  const cb = e.clipboardData || window.clipboardData;
+  const text = cb?.getData("text/plain") || "";
+
+  // Normalize line endings
+  const normalized = String(text).replace(/\r\n/g, "\n");
+
+  // Escape HTML special chars
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  // Convert:
+  // - blank lines => paragraph breaks
+  // - single newline => <br/>
+  const html = normalized
+    .split(/\n{2,}/g)
+    .map((para) => para.split("\n").map(esc).join("<br/>"))
+    .map((p) => `<p>${p || "<br/>"}</p>`)
+    .join("");
+
+  // Insert HTML at cursor (keeps paragraphs)
+  if (document.queryCommandSupported?.("insertHTML")) {
+    document.execCommand("insertHTML", false, html);
+    return;
+  }
+
+  // Fallback: manual range insert
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  sel.deleteFromDocument();
+
+  const range = sel.getRangeAt(0);
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const frag = document.createDocumentFragment();
+  while (container.firstChild) frag.appendChild(container.firstChild);
+
+  range.insertNode(frag);
+  range.collapse(false);
+};
 
   /* ---- Auth store shim (align with StudentDashboard) ---- */
   function getAuthRecord(userId) {
@@ -3193,6 +3228,7 @@ const deletePost = async (post) => {
   }
 
   const filteredRaw = posts
+  .filter((p) => !["lp1", "lp2"].includes(String(p?.id || ""))) // ✅ hide seeded posts
     .filter(isMyPost)
     .filter((p) => (showFacultyOnly ? isFacultyAudienceForMe(p.audience) : true))
     .filter((p) => (filterType === "All" ? true : p.type === filterType));
@@ -3632,7 +3668,8 @@ const deletePost = async (post) => {
               currentUser={user}
             />
           ))}
-        </section>
+          
+    </section>
 
         {/* RIGHT: Updates*/}
         <aside className="space-y-4 min-w-0 w-full max-w-full">
@@ -3852,7 +3889,8 @@ function sanitizePastedHtml(html = "") {
 }
 
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
-function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
+//function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
+function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
   const [showComments, setShowComments] = useState(true);
   const [cmt, setCmt] = useState("");
   const [cmtHtml, setCmtHtml] = useState(""); // ✅ ADD THIS LINE HERE
@@ -3867,6 +3905,7 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
     el.style.height = "0px";
     el.style.height = el.scrollHeight + "px";
   }, [cmt]);
+
 
   
 
@@ -3949,7 +3988,6 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
 
   
   {currentUser?.id === post.authorId && (
-    
     <button
       title="Delete post"
       onClick={onDelete}
@@ -3960,8 +3998,6 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
   )}
 
 </div>
-
-
 
 
       {/* NEW: Title */}

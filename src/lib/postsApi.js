@@ -1,22 +1,26 @@
 // src/lib/postsApi.js
-// Helper for global posts API (student / lecturer dashboards).
+// Universal helper for global posts API
+// Used by:
+// - StudentDashboard.jsx
+// - LecturerDashboard.jsx
+// - UniversityAcademicPlatform.jsx
+// - GlobalAcademicPlatform.jsx
+//
+// ✅ Cursor-ready + universal (non-breaking):
+// - keeps existing exports working: fetchPosts, createPost, postCommentToServer, postReplyToServer, deletePost, etc.
+// - adds: fetchPostsPage() -> { posts, cursor }
+// - adds: fetchThread() -> { comments, cursor } (for optional “load comments on expand” UX)
+// - safer JSON parsing + clearer error when API Gateway returns HTML (fixes "Unexpected token '<'")
 
-// Use a dedicated POSTS API base (set in .env as VITE_POSTS_API_BASE).
-// Fallback to localhost for local development.
 const RAW_POSTS_BASE =
   (import.meta.env.VITE_POSTS_API_BASE &&
     String(import.meta.env.VITE_POSTS_API_BASE).trim()) ||
   "http://localhost:5003";
 
-// Strip any trailing slashes so we can safely append paths.
 const POSTS_BASE = RAW_POSTS_BASE.replace(/\/+$/, "");
 
-/**
- * Build a full posts URL from a path and optional query params.
- * Example:
- *   buildPostsUrl("/api/posts", { scope: "student-dashboard" })
- *   => "https://.../api/posts?scope=student-dashboard"
- */
+/* ===================== URL / Fetch helpers ===================== */
+
 function buildPostsUrl(path, params) {
   const rel = String(path || "");
   const prefixed = rel.startsWith("/") ? rel : `/${rel}`;
@@ -32,12 +36,7 @@ function buildPostsUrl(path, params) {
   return url.toString();
 }
 
-/**
- * Minimal JSON fetch helper just for posts.
- * Throws an Error if response is not OK.
- */
 async function doJsonFetch(pathOrUrl, options = {}) {
-  // Allow either a full URL or a relative path.
   const url = /^https?:\/\//i.test(pathOrUrl)
     ? pathOrUrl
     : buildPostsUrl(pathOrUrl);
@@ -61,10 +60,9 @@ async function doJsonFetch(pathOrUrl, options = {}) {
   init.headers = headers;
 
   const res = await fetch(url, init);
-
-  let parsed = null;
   const text = await res.text().catch(() => "");
 
+  let parsed = null;
   if (text) {
     try {
       parsed = JSON.parse(text);
@@ -74,10 +72,21 @@ async function doJsonFetch(pathOrUrl, options = {}) {
   }
 
   if (!res.ok) {
+    // If API Gateway / CloudFront returns your SPA HTML, make it obvious
+    if (typeof parsed === "string" && parsed.trim().toLowerCase().startsWith("<!doctype")) {
+      const err = new Error(
+        `HTTP ${res.status} – Received HTML instead of JSON. Check VITE_POSTS_API_BASE and API Gateway route for: ${url}`
+      );
+      err.status = res.status;
+      err.data = parsed;
+      throw err;
+    }
+
     const msg =
       (parsed && typeof parsed === "object" && parsed.error) ||
       text ||
       res.statusText;
+
     const err = new Error(`HTTP ${res.status} – ${msg}`);
     err.status = res.status;
     err.data = parsed;
@@ -87,7 +96,7 @@ async function doJsonFetch(pathOrUrl, options = {}) {
   return parsed;
 }
 
-/* ========= Normalisation helpers (frontend-only) ========= */
+/* ===================== Normalisation helpers (frontend-only) ===================== */
 
 function escapeHtml(str = "") {
   return String(str)
@@ -103,7 +112,6 @@ function toNumber(v, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// Lightweight "time ago" string so server posts also have .time
 function formatTimeAgoForPost(ts) {
   const now = Date.now();
   const diff = Math.max(0, now - ts);
@@ -117,46 +125,10 @@ function formatTimeAgoForPost(ts) {
   return `${day}d`;
 }
 
-/* ---- Attachment normalisers (kept for compatibility) ---- */
-
-function normalizeImageAttachment(a) {
-  if (!a) return null;
-  const id =
-    a.id ||
-    a.key ||
-    a.url ||
-    `img_${Math.random().toString(36).slice(2)}`;
-  return {
-    id,
-    name: a.fileName || a.name || "image",
-    mime: a.mime || "image/*",
-    url: a.url || "",
-    thumb: a.thumb || null,
-    dataUrl: a.dataUrl || null,
-  };
-}
-
-function normalizeFileAttachment(a) {
-  if (!a) return null;
-  const id =
-    a.id ||
-    a.key ||
-    a.url ||
-    `file_${Math.random().toString(36).slice(2)}`;
-  return {
-    id,
-    name: a.fileName || a.name || "file",
-    mime: a.mime || "application/octet-stream",
-    url: a.url || "",
-    dataUrl: a.dataUrl || null,
-  };
-}
-
-/* ---- Comment normaliser (supports BOTH nested & flat parentId) ---- */
-
 /**
+ * Normalize one comment OR reply.
  * @param {object} raw
- * @param {string|null} inferredParentId - if provided, forces parentId for this node (used for nested replies[])
+ * @param {string|null} inferredParentId - used when reply is inside raw.replies[]
  */
 function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
   const createdAt = toNumber(
@@ -164,7 +136,6 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     Date.now()
   );
 
-  // image normalizer
   const mapImage = (a = {}) => {
     const id =
       a.id ||
@@ -183,7 +154,6 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     };
   };
 
-  // file normalizer
   const mapFile = (a = {}) => {
     const id =
       a.id ||
@@ -201,7 +171,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     };
   };
 
-  // ----- IMAGES -----
+  // Images
   let images = [];
   if (Array.isArray(raw.images) && raw.images.length) {
     images = raw.images.map(mapImage);
@@ -214,7 +184,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
       .map(mapImage);
   }
 
-  // ----- FILES -----
+  // Files
   let files = [];
   if (Array.isArray(raw.files) && raw.files.length) {
     files = raw.files.map(mapFile);
@@ -241,7 +211,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
   const authorProgram =
     raw.authorProgram || raw.programHeader || raw.programName || "";
 
-  // ✅ preserve snapshot fields (so they don't disappear after refresh)
+  // ✅ snapshot fields (important for refresh across all platforms)
   const authorUniversity =
     raw.authorUniversity ||
     raw.university ||
@@ -260,16 +230,12 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
   const authorCountry = raw.authorCountry || raw.country || raw.countryName || "";
 
   const authorCountryCode =
-    raw.authorCountryCode ||
-    raw.countryCode ||
-    raw.country_code ||
-    "";
+    raw.authorCountryCode || raw.countryCode || raw.country_code || "";
 
-  // ✅ KEY: keep parentId if server sends flat comments
-  // ✅ EXTRA SAFE: if this comment came from nested replies[], infer parentId
-  const parentIdRaw =
-    inferredParentId != null ? inferredParentId : raw.parentId;
-
+  // ✅ parentId:
+  // - if server uses flat parentId, we keep it
+  // - if server returns nested replies[], we infer it
+  const parentIdRaw = inferredParentId != null ? inferredParentId : raw.parentId;
   const parentId = parentIdRaw == null ? null : String(parentIdRaw);
 
   const thisId =
@@ -277,8 +243,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     raw.commentId ||
     `c_${createdAt}_${Math.random().toString(36).slice(2, 8)}`;
 
-  // Support nested replies too (older shape)
-  // ✅ IMPORTANT: infer parentId for nested replies so they never become "orphans"
+  // If nested replies exist, normalize them and infer parentId
   const nestedReplies = Array.isArray(raw.replies)
     ? raw.replies.map((r) => normalizeCommentFromServer(r, String(thisId)))
     : [];
@@ -286,8 +251,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
   return {
     id: thisId,
     postId: raw.postId || raw.post_id,
-
-    parentId, // ✅ used to rebuild threads (or kept for flat rendering)
+    parentId,
 
     authorId: raw.authorId || raw.userId || raw.studentId || "",
     authorName,
@@ -298,7 +262,6 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     authorTitle: raw.authorTitle || raw.title || "",
     authorRole: raw.authorRole || raw.role || "",
 
-    // ✅ NEW: keep these fields for Global/Uni platforms after refresh
     authorUniversity,
     authorFaculty,
     authorCountry,
@@ -318,8 +281,8 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
 }
 
 /**
- * ✅ Flatten a possibly-nested comment tree into ONE flat list.
- * Keeps parentId already inferred by normalizeCommentFromServer().
+ * Flatten a nested comment tree to a flat list
+ * (keeps parentId already inferred).
  */
 function flattenCommentTreeToFlat(list = []) {
   const out = [];
@@ -334,9 +297,7 @@ function flattenCommentTreeToFlat(list = []) {
 }
 
 /**
- * ✅ Rebuild a nested replies[] structure from a flat list using parentId.
- * - top-level comments: parentId == null
- * - replies: parentId == "<commentId>"
+ * Rebuild a nested replies[] structure from a flat list using parentId.
  */
 function buildThreadFromFlatComments(comments = []) {
   const list = Array.isArray(comments) ? comments : [];
@@ -366,6 +327,7 @@ function buildThreadFromFlatComments(comments = []) {
       parent.replies = Array.isArray(parent.replies) ? parent.replies : [];
       parent.replies.push(c);
     } else {
+      // parent missing => keep it visible
       roots.push(c);
     }
   }
@@ -385,6 +347,9 @@ function buildThreadFromFlatComments(comments = []) {
   return roots;
 }
 
+/**
+ * Normalize one post from server into the shape your UIs expect.
+ */
 function normalizePostFromServer(raw = {}, scopeHint = "") {
   const createdAt = toNumber(
     raw.createdAt || raw.created_at || raw.ts || raw.timestamp,
@@ -405,7 +370,7 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
   const authorProgram =
     raw.authorProgram || raw.programHeader || raw.programName || "";
 
-  // ✅ preserve post snapshot fields too (some UIs read them from post)
+  // snapshot fields (important for Uni/Global pages too)
   const authorUniversity =
     raw.authorUniversity || raw.university || raw.universityName || "";
 
@@ -440,7 +405,11 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
               a && (a.type === "image" || String(a.mime || "").startsWith("image/"))
           )
           .map((a) => ({
-            id: a.key || a.id || a.url || `img_${Math.random().toString(36).slice(2)}`,
+            id:
+              a.key ||
+              a.id ||
+              a.url ||
+              `img_${Math.random().toString(36).slice(2)}`,
             name: a.fileName || a.name || "image",
             mime: a.mime || "image/*",
             url: a.url || a.thumb || a.dataUrl || "",
@@ -456,10 +425,15 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
       ? raw.attachments
           .filter(
             (a) =>
-              a && !(a.type === "image" || String(a.mime || "").startsWith("image/"))
+              a &&
+              !(a.type === "image" || String(a.mime || "").startsWith("image/"))
           )
           .map((a) => ({
-            id: a.key || a.id || a.url || `file_${Math.random().toString(36).slice(2)}`,
+            id:
+              a.key ||
+              a.id ||
+              a.url ||
+              `file_${Math.random().toString(36).slice(2)}`,
             name: a.fileName || a.name || "file",
             mime: a.mime || "application/octet-stream",
             url: a.url || a.dataUrl || "",
@@ -467,20 +441,18 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
           }))
       : [];
 
-  // Normalize to a FLAT list first (keeping parentId, and inferring for nested replies)
+  // Normalize to flat first, then choose “flat vs nested” per platform
   const normalizedFlatComments = Array.isArray(raw.comments)
     ? raw.comments.map((c) => normalizeCommentFromServer(c))
     : [];
 
-  // Flatten any nested replies into the same flat list (so platforms that render flat parentId can work)
   const flat = flattenCommentTreeToFlat(normalizedFlatComments);
 
-  // ✅ These scopes render a FLAT parentId thread (Global/Uni platforms)
+  // Uni + Global platforms render flat parentId threads in your app
   const wantFlat =
     scopeHint === "uni-academic-platform" ||
     scopeHint === "global-academic-platform";
 
-  // Otherwise, keep existing nested thread shape for other pages
   const comments = wantFlat ? flat : buildThreadFromFlatComments(flat);
 
   const title =
@@ -505,7 +477,6 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
     authorAvatarUrl: avatar,
     authorProgram,
 
-    // ✅ keep snapshot meta for display after refresh
     authorUniversity,
     authorFaculty,
     authorCountry,
@@ -524,31 +495,95 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
   };
 }
 
+/* ===================== Feed fetchers ===================== */
+
 /**
- * Fetch posts for a given scope.
- * Always returns an array.
+ * ✅ Cursor-ready feed fetch (NEW, non-breaking)
+ * Returns: { posts, cursor }
  */
-export async function fetchPosts({ scope = "student-dashboard" } = {}) {
-  const url = buildPostsUrl("/api/posts", { scope });
+export async function fetchPostsPage({
+  scope = "student-dashboard",
+  limit = 30,
+  cursor = null,
+  withThread = true,
+} = {}) {
+  const url = buildPostsUrl("/api/posts", {
+    scope,
+    limit,
+    cursor: cursor || undefined,
+    withThread: withThread ? 1 : 0,
+  });
+
   const data = await doJsonFetch(url, { method: "GET" });
 
-  console.log("[postsApi] raw fetchPosts data:", data);
-
   let list = [];
+  let nextCursor = null;
+
   if (Array.isArray(data)) {
     list = data;
-  } else if (data && typeof data === "object" && Array.isArray(data.posts)) {
-    list = data.posts;
+  } else if (data && typeof data === "object") {
+    if (Array.isArray(data.posts)) list = data.posts;
+    if (data.cursor) nextCursor = String(data.cursor);
   }
 
-  return list.map((p) =>
+  const posts = list.map((p) =>
     p && typeof p === "object" ? normalizePostFromServer(p, scope) : p
   );
+
+  return { posts, cursor: nextCursor };
 }
 
 /**
- * Create a new post.
+ * ✅ Backward compatible
+ * Existing pages call: fetchPosts({ scope })
  */
+export async function fetchPosts({ scope = "student-dashboard" } = {}) {
+  const { posts } = await fetchPostsPage({
+    scope,
+    limit: 30,
+    withThread: true,
+  });
+  return posts;
+}
+/*export async function fetchPosts({ scope = "student-dashboard" } = {}) {
+  const { posts } = await fetchPostsPage({ scope, limit: 30, withThread: false });
+  return posts;
+}*/
+
+/* ===================== Thread fetcher (optional) ===================== */
+
+const _threadCache = new Map();
+
+/**
+ * ✅ Fetch comments+replies for ONE post (from /api/posts/thread)
+ * Returns: { comments, cursor }
+ */
+export async function fetchThread({ postId, limit = 500, cursor = null } = {}) {
+  if (!postId) throw new Error("postId is required for fetchThread");
+
+  const cacheKey = `${postId}::${cursor || ""}::${limit}`;
+  if (_threadCache.has(cacheKey)) return _threadCache.get(cacheKey);
+
+  const url = buildPostsUrl("/api/posts/thread", {
+    postId,
+    limit,
+    cursor: cursor || undefined,
+  });
+
+  const p = doJsonFetch(url, { method: "GET" }).then((res) => {
+    const commentsRaw = res && res.comments ? res.comments : [];
+    const comments = Array.isArray(commentsRaw)
+      ? commentsRaw.map((c) => normalizeCommentFromServer(c))
+      : [];
+    return { comments, cursor: res && res.cursor ? String(res.cursor) : null };
+  });
+
+  _threadCache.set(cacheKey, p);
+  return p;
+}
+
+/* ===================== Mutations ===================== */
+
 export async function createPost(payload) {
   const url = buildPostsUrl("/api/posts");
 
@@ -558,33 +593,19 @@ export async function createPost(payload) {
       body: payload,
     });
 
-    console.log("[postsApi] createPost response:", res);
-
     let serverPost = null;
-
     if (res && typeof res === "object") {
-      if (res.post && typeof res.post === "object") {
-        serverPost = res.post;
-      } else {
-        serverPost = res;
-      }
+      if (res.post && typeof res.post === "object") serverPost = res.post;
+      else serverPost = res;
     }
 
-    return {
-      ...payload,
-      ...(serverPost || {}),
-    };
+    return { ...payload, ...(serverPost || {}) };
   } catch (err) {
     console.error("[postsApi] createPost failed, using local payload only", err);
     return payload;
   }
 }
 
-
-/**
- * 🔹 Create a new comment for a post (persisted in S3).
- * Matches Lambda: POST /api/posts/comment
- */
 export async function createComment(payload = {}) {
   const {
     postId,
@@ -640,7 +661,7 @@ export async function createComment(payload = {}) {
       authorTitle: authorTitle || "",
       title: authorTitle || "",
 
-      // ✅ preserve these snapshot fields in S3 (so refresh keeps them)
+      // ✅ snapshot fields (important for refresh)
       authorUniversity: authorUniversity || "",
       authorFaculty: authorFaculty || "",
       authorCountry: authorCountry || "",
@@ -653,10 +674,6 @@ export async function createComment(payload = {}) {
   });
 }
 
-/**
- * 🔹 Create a new reply for a comment (persisted in S3).
- * Matches Lambda: POST /api/posts/reply
- */
 export async function createReply(payload = {}) {
   const {
     postId,
@@ -718,7 +735,7 @@ export async function createReply(payload = {}) {
       authorTitle: authorTitle || "",
       title: authorTitle || "",
 
-      // ✅ preserve these snapshot fields in S3 (so refresh keeps them)
+      // ✅ snapshot fields (important for refresh)
       authorUniversity: authorUniversity || "",
       authorFaculty: authorFaculty || "",
       authorCountry: authorCountry || "",
@@ -731,7 +748,8 @@ export async function createReply(payload = {}) {
   });
 }
 
-// Back-compat aliases used in your pages
+/* ---- Back-compat aliases used in your pages ---- */
+
 export async function postCommentToServer(payload) {
   return createComment(payload);
 }
@@ -740,24 +758,7 @@ export async function postReplyToServer(payload) {
   return createReply(payload);
 }
 
-/**
- * Delete a post by id.
- */
-/*export async function deletePost(id) {
-  if (!id) throw new Error("id is required to delete a post");
-
-  const url = buildPostsUrl("/api/posts", { id, postId: id });
-
-  return doJsonFetch(url, {
-    method: "DELETE",
-    body: { id, postId: id },
-  });
-}
-
-// Backwards-compatible alias so existing imports keep working.
-export async function deletePostOnServer(id) {
-  return deletePost(id);
-}*/
+/* ===================== Delete ===================== */
 
 /**
  * Delete a post by id (supports both signatures):
@@ -770,7 +771,6 @@ export async function deletePost(arg1, arg2) {
 
   if (!postId) throw new Error("postId is required to delete a post");
 
-  // scope is important in your system (student-dashboard / lecturer-dashboard etc.)
   const params = { postId };
   if (scope) params.scope = scope;
 
@@ -782,14 +782,19 @@ export async function deletePost(arg1, arg2) {
   });
 }
 
-// Backwards-compatible alias so existing imports keep working.
 export async function deletePostOnServer(arg1, arg2) {
   return deletePost(arg1, arg2);
 }
 
-/* ================= Marketplace helpers (keep using same API) ================= */
+/* ===================== Marketplace helpers (keep using same API) ===================== */
 
-export async function createPostComment({ postId, text, viewer, images = [], files = [] }) {
+export async function createPostComment({
+  postId,
+  text,
+  viewer,
+  images = [],
+  files = [],
+}) {
   if (!postId) return null;
 
   const trimmed = String(text || "").trim();
@@ -807,12 +812,12 @@ export async function createPostComment({ postId, text, viewer, images = [], fil
     authorId: viewer?.id || viewer?.uid || viewer?.userId || "",
     authorName: viewer?.name || "Student",
     authorProgram: viewer?.program || "",
-    authorPhoto: viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
+    authorPhoto:
+      viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
 
     authorRole: viewer?.role || viewer?.authorRole || "",
     authorTitle: viewer?.title || "",
 
-    // ✅ pass through snapshot fields when available
     authorUniversity: viewer?.university || viewer?.authorUniversity || "",
     authorFaculty: viewer?.faculty || viewer?.authorFaculty || "",
     authorCountry: viewer?.country || viewer?.authorCountry || "",
@@ -828,7 +833,14 @@ export async function createPostComment({ postId, text, viewer, images = [], fil
   }
 }
 
-export async function createPostReply({ postId, commentId, text, viewer, images = [], files = [] }) {
+export async function createPostReply({
+  postId,
+  commentId,
+  text,
+  viewer,
+  images = [],
+  files = [],
+}) {
   if (!postId || !commentId) return null;
 
   const trimmed = String(text || "").trim();
@@ -847,12 +859,12 @@ export async function createPostReply({ postId, commentId, text, viewer, images 
     authorId: viewer?.id || viewer?.uid || viewer?.userId || "",
     authorName: viewer?.name || "Student",
     authorProgram: viewer?.program || "",
-    authorPhoto: viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
+    authorPhoto:
+      viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
 
     authorRole: viewer?.role || viewer?.authorRole || "",
     authorTitle: viewer?.title || "",
 
-    // ✅ pass through snapshot fields when available
     authorUniversity: viewer?.university || viewer?.authorUniversity || "",
     authorFaculty: viewer?.faculty || viewer?.authorFaculty || "",
     authorCountry: viewer?.country || viewer?.authorCountry || "",

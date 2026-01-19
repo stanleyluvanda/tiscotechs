@@ -14,6 +14,52 @@ const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
 const LS_KEY = "scholarships_local";
 const IS_PROD = !!import.meta?.env?.PROD;
 
+/* =========================================================
+   ✅ NEW: Lightweight cache for instant UI
+   - Works in PROD safely (it's just caching API responses)
+   - Does NOT replace backend data, does NOT break cross-device
+   - Cache is per-status (approved/all/pending etc.)
+========================================================= */
+const CACHE_PREFIX = "sk:scholarships:cache:v1:"; // key = prefix + status
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function cacheKey(status) {
+  return `${CACHE_PREFIX}${String(status || "all").toLowerCase()}`;
+}
+
+export function readScholarshipsCache(status = "all") {
+  try {
+    const raw = localStorage.getItem(cacheKey(status));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== "object") return null;
+
+    const ts = Number(obj.ts || 0);
+    const items = Array.isArray(obj.items) ? obj.items : [];
+    const total = Number.isFinite(Number(obj.total)) ? Number(obj.total) : items.length;
+
+    // Expired? return null (so UI can still show local "instant" with stale data if you prefer)
+    if (ts && Date.now() - ts > CACHE_TTL_MS) return null;
+
+    return { items, total, ts };
+  } catch {
+    return null;
+  }
+}
+
+export function writeScholarshipsCache(status = "all", payload) {
+  try {
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const total = Number.isFinite(Number(payload?.total)) ? Number(payload.total) : items.length;
+    localStorage.setItem(
+      cacheKey(status),
+      JSON.stringify({ ts: Date.now(), items, total })
+    );
+  } catch {
+    // ignore
+  }
+}
+
 /* ---------- Local helpers ---------- */
 function readLocal() {
   try {
@@ -74,7 +120,15 @@ export async function listScholarships({
   const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
     method: "GET",
   });
-  if (apiData) return apiData; // { items, total }
+
+  if (apiData) {
+    // ✅ NEW: cache results (helps Scholarship page render instantly next time)
+    // We cache only the first page because Scholarship.jsx requests a large page anyway.
+    if (Number(page) === 1) {
+      writeScholarshipsCache(status, apiData);
+    }
+    return { ...apiData, meta: { source: "api" } }; // meta is additive (non-breaking)
+  }
 
   // Local fallback (DEV ONLY)
   let items = readLocal();
@@ -89,8 +143,7 @@ export async function listScholarships({
   }
   if (status && status !== "all") {
     items = items.filter(
-      (it) =>
-        (it.status || "pending").toLowerCase() === status.toLowerCase()
+      (it) => (it.status || "pending").toLowerCase() === status.toLowerCase()
     );
   }
 
@@ -99,7 +152,8 @@ export async function listScholarships({
   const total = items.length;
   const start = (page - 1) * pageSize;
   const paged = items.slice(start, start + pageSize);
-  return { items: paged, total };
+
+  return { items: paged, total, meta: { source: "local-dev" } };
 }
 
 export async function createScholarship(data) {

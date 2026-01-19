@@ -1,67 +1,56 @@
 // src/pages/AdminMembers.jsx
 import { useEffect, useMemo, useState } from "react";
 
-/* ---------- storage helpers (aligned with your App.jsx approach) ---------- */
-function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
-
-function readAllUsersFromStorage() {
-  const usersArr = safeParse(localStorage.getItem("users")) || [];
-  const usersById = safeParse(localStorage.getItem("usersById")) || {};
-  const currentUser =
-    safeParse(localStorage.getItem("currentUser")) ||
-    safeParse(sessionStorage.getItem("currentUser"));
-
-  const map = new Map();
-
-  // Merge byId
-  Object.values(usersById).forEach(u => {
-    const key = getKey(u);
-    if (key) map.set(key, u);
-  });
-
-  // Merge array
-  usersArr.forEach(u => {
-    if (!u) return;
-    const key = getKey(u);
-    if (!key) return;
-    map.set(key, { ...(map.get(key) || {}), ...u });
-  });
-
-  // Include current user if present
-  if (currentUser) {
-    const key = getKey(currentUser);
-    if (key) map.set(key, { ...(map.get(key) || {}), ...currentUser });
+/* ---------- storage helpers (kept as fallback) ---------- */
+function safeParse(json) {
+  try {
+    return JSON.parse(json || "");
+  } catch {
+    return null;
   }
-
-  // Normalize for table usage
-  return Array.from(map.values()).map(normalizeUser);
 }
 
 function getKey(u) {
   return u?.id || u?.uid || u?.userId || u?.email || u?.username || null;
 }
 
+function inferRole(u) {
+  const r = (u.role || u.accountType || u.userType || "").toString().toLowerCase();
+  if (r.includes("partner")) return "partner";
+  if (r.includes("lect")) return "lecturer";
+  if (r.includes("stud")) return "student";
+  // heuristics
+  if (u.program || u.year || u.studentId) return "student";
+  if (u.staffId || u.faculty || u.department) return "lecturer";
+  return "student";
+}
+
+function cryptoRandomId() {
+  return "id_" + Math.random().toString(36).slice(2, 10);
+}
+
 function normalizeUser(u) {
   const id = u.id || u.uid || u.userId || u.email || u.username || cryptoRandomId();
 
-  // Names
   const name =
     u.name ||
     u.fullName ||
     `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
     u.username ||
+    u.organization || // partners
     "—";
 
-  // Role
   const role = inferRole(u);
 
-  // Status
   const active = typeof u.active === "boolean" ? u.active : true;
 
-  // Timestamps
-  const createdAt = u.createdAt || u.registeredAt || u.created_on || u.created || new Date().toISOString();
+  const createdAt =
+    u.createdAt ||
+    u.registeredAt ||
+    u.created_on ||
+    u.created ||
+    new Date().toISOString();
 
-  // Hierarchy (support multiple key names you’ve used)
   const continent =
     u.continent ||
     u.region ||
@@ -81,6 +70,8 @@ function normalizeUser(u) {
     u.school ||
     u.institution ||
     u?.education?.university ||
+    // partners may not have university
+    u.organization ||
     "—";
 
   const college =
@@ -95,7 +86,6 @@ function normalizeUser(u) {
   const year =
     u.year || u.yearOfStudy || u?.education?.year || "—";
 
-  // Gender (new)
   const gender =
     u.gender ||
     u.sex ||
@@ -117,28 +107,99 @@ function normalizeUser(u) {
     department,
     program,
     year,
-    gender, // ← added
+    gender,
     raw: u,
   };
 }
 
-function inferRole(u) {
-  const r = (u.role || u.accountType || u.userType || "").toString().toLowerCase();
-  if (r.includes("lect")) return "lecturer";
-  if (r.includes("stud")) return "student";
-  // heuristics
-  if (u.program || u.year || u.studentId) return "student";
-  if (u.staffId || u.faculty || u.department) return "lecturer";
-  return "student";
+function readAllUsersFromStorageFallback() {
+  const usersArr = safeParse(localStorage.getItem("users")) || [];
+  const usersById = safeParse(localStorage.getItem("usersById")) || {};
+  const currentUser =
+    safeParse(localStorage.getItem("currentUser")) ||
+    safeParse(sessionStorage.getItem("currentUser"));
+
+  const map = new Map();
+
+  Object.values(usersById).forEach((u) => {
+    const key = getKey(u);
+    if (key) map.set(key, u);
+  });
+
+  usersArr.forEach((u) => {
+    if (!u) return;
+    const key = getKey(u);
+    if (!key) return;
+    map.set(key, { ...(map.get(key) || {}), ...u });
+  });
+
+  if (currentUser) {
+    const key = getKey(currentUser);
+    if (key) map.set(key, { ...(map.get(key) || {}), ...currentUser });
+  }
+
+  return Array.from(map.values()).map(normalizeUser);
 }
 
-function cryptoRandomId() {
-  return "id_" + Math.random().toString(36).slice(2, 10);
+/* ---------- API helpers ---------- */
+/*function apiBase() {
+  return (
+    import.meta.env.VITE_POSTS_API_BASE ||
+    import.meta.env.VITE_CONTACTS_API_BASE ||
+    "http://localhost:5003"
+  ).replace(/\/+$/, "");
+}*/
+
+function apiBase() {
+  return (
+    import.meta.env.VITE_AUTH_API_BASE ||
+    import.meta.env.VITE_POSTS_API_BASE ||
+    import.meta.env.VITE_CONTACTS_API_BASE ||
+    "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com"
+  ).replace(/\/+$/, "");
 }
 
-/* ---------- write-back helpers ---------- */
+
+
+// Optional admin auth token (only if you already use it)
+function getAdminAuthHeaders() {
+  // If you don’t use tokens, this returns empty headers and still works.
+  const token =
+    sessionStorage.getItem("adminToken") ||
+    localStorage.getItem("adminToken") ||
+    "";
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function fetchAllMembersFromServer() {
+  const BASE = apiBase();
+
+  // ✅ FIX: use the real DynamoDB-backed endpoint you just added and tested
+  const r = await fetch(`${BASE}/api/admin/members`, {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      ...getAdminAuthHeaders(),
+    },
+  });
+
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j || j.ok === false) {
+    const msg = j?.error || `HTTP ${r.status}`;
+    throw new Error(msg);
+  }
+
+  // ✅ supports both { users:[...] } or raw array (defensive)
+  const users = Array.isArray(j?.users) ? j.users : Array.isArray(j) ? j : [];
+
+  if (!Array.isArray(users)) return [];
+  return users.map(normalizeUser);
+}
+
+/* ---------- write-back helpers (still local-only, safe) ---------- */
 function writeUserBack(updated) {
-  // usersById
+  // This remains local-only. If you later add a server toggle endpoint,
+  // you can wire it here without changing UI.
   const usersById = safeParse(localStorage.getItem("usersById")) || {};
   const idKey = updated.id || updated.email || updated.username;
   if (idKey && usersById[idKey]) {
@@ -146,18 +207,17 @@ function writeUserBack(updated) {
     localStorage.setItem("usersById", JSON.stringify(usersById));
   }
 
-  // users array
   const usersArr = safeParse(localStorage.getItem("users")) || [];
-  const idx = usersArr.findIndex(u =>
-    (u?.id || u?.uid || u?.userId || u?.email || u?.username) ===
-    (updated.id || updated.email || updated.username)
+  const idx = usersArr.findIndex(
+    (u) =>
+      (u?.id || u?.uid || u?.userId || u?.email || u?.username) ===
+      (updated.id || updated.email || updated.username)
   );
   if (idx >= 0) {
     usersArr[idx] = { ...usersArr[idx], ...updated.raw, active: updated.active };
     localStorage.setItem("users", JSON.stringify(usersArr));
   }
 
-  // currentUser
   const cur = safeParse(localStorage.getItem("currentUser"));
   if (cur && (cur.id === updated.id || cur.email === updated.email)) {
     localStorage.setItem("currentUser", JSON.stringify({ ...cur, active: updated.active }));
@@ -166,12 +226,13 @@ function writeUserBack(updated) {
 
 /* ---------- UI ---------- */
 export default function AdminMembers() {
-  // Data
   const [rows, setRows] = useState([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Filters & search
-  const [tab, setTab] = useState("All");               // All | Students | Lecturers
-  const [query, setQuery] = useState("");              // search
+  const [tab, setTab] = useState("All"); // All | Students | Lecturers | Partners
+  const [query, setQuery] = useState("");
   const [fContinent, setFContinent] = useState("All");
   const [fCountry, setFCountry] = useState("All");
   const [fUniversity, setFUniversity] = useState("All");
@@ -180,35 +241,47 @@ export default function AdminMembers() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  async function load() {
+    setError("");
+    setLoading(true);
+    try {
+      const remote = await fetchAllMembersFromServer();
+      setRows(remote);
+    } catch (e) {
+      console.warn("[AdminMembers] remote fetch failed, falling back to localStorage:", e);
+      setError("Could not load members from server. Showing local-only data (this device/browser) as fallback.");
+      setRows(readAllUsersFromStorageFallback());
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    setRows(readAllUsersFromStorage());
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Build option lists from data (dependent)
   const options = useMemo(() => {
-    // Unique sets
     const allContinents = new Set();
     const allCountries = new Set();
     const allUniversities = new Set();
 
-    rows.forEach(r => {
+    rows.forEach((r) => {
       if (r.continent && r.continent !== "—") allContinents.add(r.continent);
       if (r.country && r.country !== "—") allCountries.add(r.country);
       if (r.university && r.university !== "—") allUniversities.add(r.university);
     });
 
-    // Dependent lists
     const countriesForContinent = new Set();
     const universitiesForCountry = new Set();
 
-    rows.forEach(r => {
+    rows.forEach((r) => {
       const continentPass = fContinent === "All" || r.continent === fContinent;
-      if (continentPass && r.country && r.country !== "—") {
-        countriesForContinent.add(r.country);
-      }
+      if (continentPass && r.country && r.country !== "—") countriesForContinent.add(r.country);
     });
 
-    rows.forEach(r => {
+    rows.forEach((r) => {
       const continentPass = fContinent === "All" || r.continent === fContinent;
       const countryPass = fCountry === "All" || r.country === fCountry;
       if (continentPass && countryPass && r.university && r.university !== "—") {
@@ -219,38 +292,38 @@ export default function AdminMembers() {
     return {
       continents: ["All", ...Array.from(allContinents).sort()],
       countries: ["All", ...Array.from((fContinent === "All" ? allCountries : countriesForContinent)).sort()],
-      universities: ["All", ...Array.from((fCountry === "All" ? (fContinent === "All" ? allUniversities : universitiesForCountry) : universitiesForCountry)).sort()],
+      universities: ["All", ...Array.from((fCountry === "All"
+        ? (fContinent === "All" ? allUniversities : universitiesForCountry)
+        : universitiesForCountry)).sort()],
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, fContinent, fCountry]);
 
   // Stats
   const stats = useMemo(() => {
     const total = rows.length;
-    const students = rows.filter(r => r.role === "student").length;
-    const lecturers = rows.filter(r => r.role === "lecturer").length;
-    const active = rows.filter(r => r.active).length;
+    const students = rows.filter((r) => r.role === "student").length;
+    const lecturers = rows.filter((r) => r.role === "lecturer").length;
+    const partners = rows.filter((r) => r.role === "partner").length;
+    const active = rows.filter((r) => r.active).length;
     const inactive = total - active;
-    return { total, students, lecturers, active, inactive };
+    return { total, students, lecturers, partners, active, inactive };
   }, [rows]);
 
   // Filtered list (role tab → location filters → search → sort)
   const filtered = useMemo(() => {
     let list = rows;
 
-    // Role tab
-    if (tab === "Students") list = list.filter(r => r.role === "student");
-    if (tab === "Lecturers") list = list.filter(r => r.role === "lecturer");
+    if (tab === "Students") list = list.filter((r) => r.role === "student");
+    if (tab === "Lecturers") list = list.filter((r) => r.role === "lecturer");
+    if (tab === "Partners") list = list.filter((r) => r.role === "partner");
 
-    // Location filters
-    if (fContinent !== "All") list = list.filter(r => r.continent === fContinent);
-    if (fCountry !== "All") list = list.filter(r => r.country === fCountry);
-    if (fUniversity !== "All") list = list.filter(r => r.university === fUniversity);
+    if (fContinent !== "All") list = list.filter((r) => r.continent === fContinent);
+    if (fCountry !== "All") list = list.filter((r) => r.country === fCountry);
+    if (fUniversity !== "All") list = list.filter((r) => r.university === fUniversity);
 
-    // Search
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter(r =>
+      list = list.filter((r) =>
         (r.name || "").toLowerCase().includes(q) ||
         (r.email || "").toLowerCase().includes(q) ||
         (r.role || "").toLowerCase().includes(q) ||
@@ -261,114 +334,141 @@ export default function AdminMembers() {
       );
     }
 
-    // Sort by createdAt desc
-    return [...list].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+    return [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [rows, tab, fContinent, fCountry, fUniversity, query]);
 
-  // Pagination derivations
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageSafe = Math.min(page, totalPages);
   const start = (pageSafe - 1) * pageSize;
   const end = start + pageSize;
   const paged = filtered.slice(start, end);
 
-  // Reset page when filters/search change
   useEffect(() => {
     setPage(1);
   }, [tab, fContinent, fCountry, fUniversity, query, pageSize]);
 
-  // Actions
   function toggleActive(id) {
-    setRows(prev => {
-      const updated = prev.map(u => {
+    setRows((prev) =>
+      prev.map((u) => {
         if (u.id === id) {
           const nu = { ...u, active: !u.active, raw: { ...u.raw, active: !u.active } };
+          // local-only mirror; server toggle can be added later
           writeUserBack(nu);
           return nu;
         }
         return u;
-      });
-      return updated;
-    });
+      })
+    );
   }
 
   function exportCSV() {
     const header = [
-      "id","name","email","role","gender","active","createdAt",
-      "continent","country","university","college","department","program","year"
+      "id", "name", "email", "role", "gender", "active", "createdAt",
+      "continent", "country", "university", "college", "department", "program", "year",
     ];
-    const body = filtered.map(u => [
+    const body = filtered.map((u) => [
       safe(u.id), safe(u.name), safe(u.email), safe(u.role), safe(u.gender),
       u.active ? "true" : "false",
       new Date(u.createdAt).toISOString(),
       safe(u.continent), safe(u.country), safe(u.university),
-      safe(u.college), safe(u.department), safe(u.program), safe(u.year)
+      safe(u.college), safe(u.department), safe(u.program), safe(u.year),
     ]);
-    const csv = [header, ...body].map(r => r.map(csvCell).join(",")).join("\n");
+    const csv = [header, ...body].map((r) => r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "members.csv";
-    document.body.appendChild(a); a.click();
-    a.remove(); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = "members.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
-  function safe(v){ return v ?? ""; }
-  function csvCell(v){
+  function safe(v) { return v ?? ""; }
+  function csvCell(v) {
     const s = String(v ?? "");
-    if (/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
-      <h1 className="text-2xl font-bold">Members</h1>
-      <p className="text-slate-600 mt-1">View and manage registered students and lecturers.</p>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold">Members</h1>
+          <p className="text-slate-600 mt-1">
+            View and manage registered students, lecturers, and partners (server-backed).
+          </p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={load}
+            className="border border-slate-300 rounded-lg px-3 py-2 hover:bg-slate-50"
+            title="Reload from server"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="mt-4 text-sm text-slate-600">
+          Loading members from server…
+        </div>
+      )}
+
+      {!!error && (
+        <div className="mt-4 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          {error}
+        </div>
+      )}
 
       {/* Stats */}
-      <div className="mt-6 grid md:grid-cols-5 gap-3">
+      <div className="mt-6 grid md:grid-cols-6 gap-3">
         <Stat label="Total" value={stats.total} />
         <Stat label="Students" value={stats.students} />
         <Stat label="Lecturers" value={stats.lecturers} />
+        <Stat label="Partners" value={stats.partners} />
         <Stat label="Active" value={stats.active} />
         <Stat label="Inactive" value={stats.inactive} />
       </div>
 
       {/* Toolbar */}
       <div className="mt-6 flex flex-wrap gap-3 items-center">
-        <Tabs value={tab} onChange={setTab} items={["All","Students","Lecturers"]} />
+        <Tabs value={tab} onChange={setTab} items={["All", "Students", "Lecturers", "Partners"]} />
 
         {/* Location filters */}
         <select
           value={fContinent}
-          onChange={(e)=>{ setFContinent(e.target.value); setFCountry("All"); setFUniversity("All"); }}
+          onChange={(e) => { setFContinent(e.target.value); setFCountry("All"); setFUniversity("All"); }}
           className="border border-slate-300 rounded-lg px-3 py-2"
           title="Filter by Continent"
         >
-          {options.continents?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          {options.continents?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
 
         <select
           value={fCountry}
-          onChange={(e)=>{ setFCountry(e.target.value); setFUniversity("All"); }}
+          onChange={(e) => { setFCountry(e.target.value); setFUniversity("All"); }}
           className="border border-slate-300 rounded-lg px-3 py-2"
           title="Filter by Country"
         >
-          {options.countries?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          {options.countries?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
 
         <select
           value={fUniversity}
-          onChange={(e)=> setFUniversity(e.target.value)}
+          onChange={(e) => setFUniversity(e.target.value)}
           className="border border-slate-300 rounded-lg px-3 py-2"
           title="Filter by University"
         >
-          {options.universities?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          {options.universities?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
 
         <div className="ml-auto flex gap-2">
           <input
             value={query}
-            onChange={(e)=>setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, email, role…"
             className="border border-slate-300 rounded-lg px-3 py-2 w-64"
           />
@@ -388,7 +488,7 @@ export default function AdminMembers() {
               <Th>Role</Th>
               <Th>Continent</Th>
               <Th>Country</Th>
-              <Th>University</Th>
+              <Th>University/Org</Th>
               <Th>Gender</Th>
               <Th>Status</Th>
               <Th>Created</Th>
@@ -396,12 +496,12 @@ export default function AdminMembers() {
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 && (
+            {paged.length === 0 && !loading && (
               <tr>
                 <td colSpan="10" className="text-center py-8 text-slate-500">No members found.</td>
               </tr>
             )}
-            {paged.map(u => (
+            {paged.map((u) => (
               <tr key={u.id} className="border-t">
                 <Td className="font-medium">{u.name}</Td>
                 <Td>{u.email}</Td>
@@ -419,14 +519,15 @@ export default function AdminMembers() {
                 <Td>
                   <div className="flex gap-2">
                     <button
-                      onClick={()=>alert(JSON.stringify(u.raw, null, 2))}
+                      onClick={() => alert(JSON.stringify(u.raw, null, 2))}
                       className="text-blue-600 hover:underline"
                     >
                       View
                     </button>
                     <button
-                      onClick={()=>toggleActive(u.id)}
+                      onClick={() => toggleActive(u.id)}
                       className="text-slate-700 hover:underline"
+                      title="Local-only toggle (server toggle can be added later)"
                     >
                       {u.active ? "Deactivate" : "Reactivate"}
                     </button>
@@ -446,21 +547,21 @@ export default function AdminMembers() {
         <div className="ml-auto flex items-center gap-2">
           <select
             value={pageSize}
-            onChange={(e)=>setPageSize(Number(e.target.value))}
+            onChange={(e) => setPageSize(Number(e.target.value))}
             className="border border-slate-300 rounded-lg px-2 py-1 text-sm"
             title="Rows per page"
           >
-            {[10,20,50,100].map(n => <option key={n} value={n}>{n} / page</option>)}
+            {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / page</option>)}
           </select>
           <button
-            onClick={()=>setPage(p => Math.max(1, p-1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={pageSafe <= 1}
             className="border border-slate-300 rounded-lg px-3 py-1 text-sm disabled:opacity-50"
           >
             Prev
           </button>
           <button
-            onClick={()=>setPage(p => Math.min(totalPages, p+1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={pageSafe >= totalPages}
             className="border border-slate-300 rounded-lg px-3 py-1 text-sm disabled:opacity-50"
           >
@@ -470,8 +571,7 @@ export default function AdminMembers() {
       </div>
 
       <p className="text-xs text-slate-500 mt-4">
-        Tip: Location filters are dependent (Continent → Country → University). When you move to a backend,
-        keep this UI and replace the storage helpers with API calls (server-side filtering & pagination).
+        This page now loads from <code>/api/admin/members</code> (server-backed). If the server is unreachable, it falls back to localStorage.
       </p>
     </div>
   );
@@ -489,11 +589,11 @@ function Stat({ label, value }) {
 function Tabs({ items, value, onChange }) {
   return (
     <div className="inline-flex rounded-full border border-slate-300 bg-white p-1">
-      {items.map(it => (
+      {items.map((it) => (
         <button
           key={it}
-          onClick={()=>onChange(it)}
-          className={`px-3 py-1.5 rounded-full text-sm ${value===it ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-50"}`}
+          onClick={() => onChange(it)}
+          className={`px-3 py-1.5 rounded-full text-sm ${value === it ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-50"}`}
         >
           {it}
         </button>
@@ -502,8 +602,12 @@ function Tabs({ items, value, onChange }) {
   );
 }
 function Th({ children }) {
-  return <th className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500 px-4 py-3">{children}</th>;
+  return (
+    <th className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500 px-4 py-3">
+      {children}
+    </th>
+  );
 }
-function Td({ children, className="" }) {
+function Td({ children, className = "" }) {
   return <td className={`px-4 py-3 text-sm text-slate-800 ${className}`}>{children}</td>;
 }
