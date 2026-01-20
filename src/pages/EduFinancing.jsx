@@ -203,9 +203,9 @@ export default function EduFinancing() {
             © {new Date().getFullYear()} ScholarsKnowledge. All rights reserved.
           </p>
           <div className="flex gap-4 text-sm">
-            <Link to="/about" className="hover:text-white">About Us</Link>
+            {/*<Link to="/about" className="hover:text-white">About Us</Link>
             <Link to="/partners" className="hover:text-white">Partners</Link>
-            <Link to="/scholarship" className="hover:text-white">Scholarships</Link>
+            <Link to="/scholarship" className="hover:text-white">Scholarships</Link>*/}
           </div>
         </div>
       </footer>

@@ -229,7 +229,7 @@ const cardsStudents = [
       tag: "Scholarship Institutions",
       title: "Submit and Manage Scholarships",
       text: "Universities,Colleges,Institutions and organizations can publish verified scholarships directly to students.",
-      image: "/public/images/Submit scholarships.png",
+      image: "/images/Submit scholarships.png",
     },
     {
       tag: "Education Loan Partners",
@@ -241,7 +241,7 @@ const cardsStudents = [
       tag: "University & Colleges Collaborations",
       title: "Expand Student Opportunities",
       text: "Universities and Colleges collaborate with ScholarsKnowledge to give students access to shared Academic resources locally and  worldwide.",
-      image: "/public/images/collaboration image.png",
+      image: "/images/collaboration image.png",
     },
   ];
 
