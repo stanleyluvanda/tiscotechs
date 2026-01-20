@@ -76,6 +76,7 @@ function corsHeaders(origin) {
 
   return {
     "access-control-allow-origin": o,
+    "access-control-allow-credentials": "true", // ✅ REQUIRED for credentials: "include"
     "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS",
     "access-control-allow-headers": "content-type,authorization,stripe-signature,verif-hash",
     "access-control-max-age": "86400",
