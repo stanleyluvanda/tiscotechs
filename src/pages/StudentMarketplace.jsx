@@ -2,8 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
-//import { fetchPosts, createPost, deletePost } from "../lib/postsApi"; // ⬅️ NEW
-//import { fetchPosts, createPost, deletePost,createComment,createReply,} from "../lib/postsApi"; // ⬅️ NEW
 import {
   fetchMarketplaceItems,
   createMarketplaceItem,
@@ -227,10 +225,6 @@ function toCloudFrontUrl(input) {
   if (!/^https?:\/\//i.test(s)) return s;
 
   // Handle common S3 URL styles by extracting path after the host
-  // Examples:
-  // https://bucket.s3.amazonaws.com/path/to/file.jpg
-  // https://s3.us-east-1.amazonaws.com/bucket/path/to/file.jpg
-  // https://bucket.s3.us-east-1.amazonaws.com/path/to/file.jpg
   try {
     const u = new URL(s);
     const host = u.hostname.toLowerCase();
@@ -371,10 +365,7 @@ function WhatsAppIcon({ className = "" }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* green outlined circle */}
       <circle cx="16" cy="16" r="14.5" stroke="currentColor" strokeWidth="3" />
-
-      {/* WhatsApp mark */}
       <path
         fill="currentColor"
         d="M16 7.2c-4.86 0-8.8 3.83-8.8 8.55 0 1.55.43 3.06 1.25 4.39L7.2 24.8l4.83-1.2c1.26.67 2.68 1.02 4.13 1.02 4.86 0 8.8-3.83 8.8-8.55S20.86 7.2 16 7.2zm5.06 12.25c-.21.59-1.05 1.05-1.7 1.19-.45.09-1.02.16-2.96-.62-2.5-1.02-4.1-3.55-4.23-3.72-.12-.17-1.02-1.33-1.02-2.54 0-1.2.64-1.79.87-2.04.23-.25.5-.31.67-.31h.49c.16 0 .38-.05.6.45.21.5.72 1.75.78 1.88.06.12.1.28.02.45-.08.17-.12.28-.25.43-.12.16-.26.35-.37.47-.12.12-.24.25-.1.49.14.25.62 1.02 1.33 1.65.92.82 1.7 1.07 1.95 1.19.25.12.39.1.54-.06.16-.16.62-.72.78-.96.16-.25.33-.21.55-.12.23.08 1.45.67 1.7.79.25.12.41.18.47.28.06.1.06.58-.14 1.17z"
@@ -576,31 +567,80 @@ export default function StudentMarketplace() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
   const uni = user?.university || "";
-  /*const STORE_KEY = `market_items__${uni}`;*/
 
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
   }, [user, navigate]);
 
   /* ---------- Seed & load items (scoped to this university) ---------- */
-// ✅ DISABLED (no seeded items)
-const seeded = useMemo(() => [], [uni]);
-
-  /*const [items, setItems] = useState(() => {
-    const ls = safeParse(localStorage.getItem(STORE_KEY));
-    return Array.isArray(ls) ? ls : seeded;
-  });*/
+  // ✅ DISABLED (no seeded items)
+  const seeded = useMemo(() => [], [uni]);
 
   const [items, setItems] = useState(seeded);
-
-  /*useEffect(() => {
-    localStorage.setItem(STORE_KEY, JSON.stringify(items));
-  }, [items, STORE_KEY]);*/
 
   /// 🔄 NEW: load & poll listings from backend (global marketplace)
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
   const firstLoadRef = useMemo(() => ({ done: false }), []);
+
+  // ✅ NEW: thread cache + loading map (lazy-loaded per item)
+  const [threadByItemId, setThreadByItemId] = useState(() => ({})); // { [itemId]: flatComments[] }
+  const [threadLoading, setThreadLoading] = useState(() => ({})); // { [itemId]: true/false }
+
+  // ✅ NEW: load a single thread on demand
+  async function ensureThreadLoaded(itemId) {
+    if (!itemId) return;
+    if (threadByItemId[itemId]) return; // already have it
+
+    setThreadLoading((m) => ({ ...m, [itemId]: true }));
+    try {
+      const res = await fetch(
+        `/api/marketplace/thread?itemId=${encodeURIComponent(itemId)}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      const nested = Array.isArray(data?.comments) ? data.comments : [];
+
+      // Flatten nested replies into your existing flat shape
+      const flat = [];
+      for (const c of nested) {
+        if (!c) continue;
+        const rootId = c.id || `c_${Math.random().toString(36).slice(2)}`;
+        flat.push({
+          id: rootId,
+          parentId: null,
+          text: c.text || "",
+          authorId: c.authorId || "",
+          author: c.authorName || c.author || "",
+          authorProgram: c.authorProgram || "",
+          authorPhoto: c.authorPhoto || "",
+          createdAt: c.createdAt || null,
+        });
+
+        if (Array.isArray(c.replies)) {
+          for (const rpl of c.replies) {
+            if (!rpl) continue;
+            flat.push({
+              id: rpl.id || `r_${Math.random().toString(36).slice(2)}`,
+              parentId: rootId,
+              text: rpl.text || "",
+              authorId: rpl.authorId || "",
+              author: rpl.authorName || rpl.author || "",
+              authorProgram: rpl.authorProgram || "",
+              authorPhoto: rpl.authorPhoto || "",
+              createdAt: rpl.createdAt || null,
+            });
+          }
+        }
+      }
+
+      setThreadByItemId((m) => ({ ...m, [itemId]: flat }));
+    } catch (e) {
+      console.error("[Marketplace] thread load failed", e);
+    } finally {
+      setThreadLoading((m) => ({ ...m, [itemId]: false }));
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -609,23 +649,17 @@ const seeded = useMemo(() => [], [uni]);
     async function loadFromApi() {
       if (cancelled) return;
 
-      /*setFeedLoading(true);*/
       if (!firstLoadRef.done) setFeedLoading(true);
       setFeedError("");
 
       try {
-        /*const remote = await fetchPosts({
-          scope: MARKETPLACE_SCOPE,
-          role: "student",
-        });*/
         const remote = await fetchMarketplaceItems();
-
         if (cancelled) return;
 
-        /*console.log("[StudentMarketplace] raw fetchPosts data:", remote);*/
         console.log("[StudentMarketplace] raw fetchMarketplaceItems data:", remote);
 
-        // 1️⃣ Normalise backend rows (seller + comments)
+        // ✅ NORMALISE backend rows (seller, images, categories, etc.)
+        // 🚫 IMPORTANT: do NOT flatten/merge comments into the feed anymore.
         const mapped = (remote || []).map((r) => {
           if (!r || typeof r !== "object") return r;
 
@@ -673,53 +707,13 @@ const seeded = useMemo(() => [], [uni]);
               "",
           };
 
-          // 🔄 Flatten backend comments (root + replies)
-          let comments = [];
-          if (Array.isArray(r.comments)) {
-            for (const c of r.comments) {
-              if (!c) continue;
-              const rootId = c.id || `c_${Math.random().toString(36).slice(2)}`;
-              comments.push({
-                id: rootId,
-                parentId: null,
-                text: c.text || "",
-                authorId: c.authorId || "",
-                author: c.author || c.authorName || "",
-                authorProgram: c.authorProgram || "",
-                authorPhoto: c.authorPhoto || c.avatarUrl || c.profileImageUrl || "",
-                createdAt: c.createdAt || c.updatedAt || null,
-              });
-
-              if (Array.isArray(c.replies)) {
-                for (const rpl of c.replies) {
-                  if (!rpl) continue;
-                  comments.push({
-                    id: rpl.id || `r_${Math.random().toString(36).slice(2)}`,
-                    parentId: rootId,
-                    text: rpl.text || "",
-                    authorId: rpl.authorId || "",
-                    author: rpl.author || rpl.authorName || "",
-                    authorProgram: rpl.authorProgram || "",
-                    authorPhoto:
-                      rpl.authorPhoto || rpl.avatarUrl || rpl.profileImageUrl || "",
-                    createdAt: rpl.createdAt || rpl.updatedAt || null,
-                  });
-                }
-              }
-            }
-          }
-
           const images = Array.isArray(r.images)
             ? r.images.map((img) => {
                 if (!img || typeof img !== "object") return img;
-
-                // Keep same fields, just ensure any url/dataUrl/thumb points to CloudFront
                 const next = { ...img };
-
                 if (next.url) next.url = toCloudFrontUrl(next.url);
                 if (next.dataUrl) next.dataUrl = toCloudFrontUrl(next.dataUrl);
                 if (next.thumb) next.thumb = toCloudFrontUrl(next.thumb);
-
                 return next;
               })
             : r.images;
@@ -730,11 +724,12 @@ const seeded = useMemo(() => [], [uni]);
             createdAt,
             seller,
             ...(images !== undefined ? { images } : {}),
-            ...(comments.length ? { comments } : {}),
+            // ✅ Feed should NOT carry comments; threads are fetched lazily per item
+            comments: [],
           };
         });
 
-        // 2️⃣ Merge backend items with existing local ones without losing likes/save state
+        // ✅ Merge backend items with existing local ones without losing likes/save state
         setItems((prev) => {
           const prevArr = Array.isArray(prev) ? prev : [];
           const byId = new Map();
@@ -755,30 +750,20 @@ const seeded = useMemo(() => [], [uni]);
             merged._liked =
               typeof existing?._liked === "boolean" ? existing._liked : !!p._liked;
 
-            // ✅ IMPORTANT: don't let an empty backend comments array erase local comments
-            if (Array.isArray(existing?.comments)) {
-              const backendHasComments =
-                Array.isArray(p.comments) && p.comments.length > 0;
+            // ✅ IMPORTANT: keep existing local seller if backend didn’t send it
+            if (!p.seller && existing?.seller) merged.seller = existing.seller;
 
-              if (!backendHasComments) {
-                // keep whatever we already had locally
-                merged.comments = existing.comments;
-              }
-            }
-
-            // If backend didn't send seller but we had one locally, keep it.
-            if (!p.seller && existing?.seller) {
-              merged.seller = existing.seller;
-            }
-
-            // Ensure createdAt exists
+            // ✅ Ensure createdAt exists
             merged.createdAt = merged.createdAt || merged.created_at || Date.now();
+
+            // ✅ Feed comments stay empty; thread cache holds real comments
+            merged.comments = [];
 
             const key = merged.id || `backend_${Math.random().toString(36).slice(2)}`;
             byId.set(key, merged);
           }
 
-          // 3️⃣ Keep purely local items (seeded / offline) that backend doesn't know yet
+          // Keep purely local items (offline) that backend doesn't know yet
           for (const p of prevArr) {
             if (!p) continue;
             const key = p.id || `local_${Math.random().toString(36).slice(2)}`;
@@ -788,18 +773,14 @@ const seeded = useMemo(() => [], [uni]);
           return Array.from(byId.values());
         });
       } catch (err) {
-        console.error("[StudentMarketplace] fetchPosts failed", err);
-        if (!cancelled) {
-          setFeedError("Could not load marketplace listings.");
-        }
+        console.error("[StudentMarketplace] fetchMarketplaceItems failed", err);
+        if (!cancelled) setFeedError("Could not load marketplace listings.");
       } finally {
-        /*if (!cancelled) setFeedLoading(false);*/
         if (!cancelled && !firstLoadRef.done) setFeedLoading(false);
         firstLoadRef.done = true;
       }
     }
 
-    // initial load + polling
     loadFromApi();
     timerId = window.setInterval(loadFromApi, 30000); // every 30s
 
@@ -807,7 +788,6 @@ const seeded = useMemo(() => [], [uni]);
       cancelled = true;
       if (timerId) window.clearInterval(timerId);
     };
-    /*}, [STORE_KEY]);*/
   }, [MARKETPLACE_SCOPE]);
 
   /* ---------- Notifications ---------- */
@@ -820,10 +800,13 @@ const seeded = useMemo(() => [], [uni]);
     saveAllNotis(notis);
   }, [notis]);
 
-  // 🔔 Derive notifications from global comments so they appear across browsers
+  // 🔔 NOTE:
+  // We no longer auto-load all comments in the feed (performance).
+  // This effect now only derives notifications for threads already loaded into cache.
   useEffect(() => {
     if (!user?.id) return;
     const userId = user.id;
+
     const seen = loadSeenCommentsForUser(userId);
     const nextSeen = new Set(seen);
     let seenChanged = false;
@@ -838,16 +821,18 @@ const seeded = useMemo(() => [], [uni]);
     };
 
     for (const item of items || []) {
-      if (!item || !Array.isArray(item.comments) || !item.comments.length) continue;
+      if (!item?.id) continue;
+
+      const flat = threadByItemId[item.id];
+      if (!Array.isArray(flat) || !flat.length) continue;
 
       const sellerId = item.seller?.id;
       if (!sellerId) continue;
 
-      const { byId, getRoot } = buildCommentIndex(item.comments);
+      const { byId, getRoot } = buildCommentIndex(flat);
 
-      for (const c of item.comments) {
+      for (const c of flat) {
         if (!c || !c.id) continue;
-        // Only handle each comment once per browser/user
         if (!markSeen(c.id)) continue;
 
         const viewerId = c.authorId;
@@ -856,22 +841,14 @@ const seeded = useMemo(() => [], [uni]);
         const root = getRoot(c);
         const rootAuthorId = root?.authorId;
 
-        // Who should receive the notification for this comment?
         let toUserId = null;
         if (viewerId === sellerId) {
-          // Seller wrote the comment → notify root commenter (if different)
-          if (rootAuthorId && rootAuthorId !== sellerId) {
-            toUserId = rootAuthorId;
-          }
+          if (rootAuthorId && rootAuthorId !== sellerId) toUserId = rootAuthorId;
         } else {
-          // Buyer/root commenter wrote the comment → notify seller
           toUserId = sellerId;
         }
 
-        // Don't notify the author themself
         if (!toUserId || toUserId === viewerId) continue;
-
-        // Only create notifications for THIS logged-in user
         if (toUserId !== userId) continue;
 
         newNotis.push({
@@ -896,10 +873,8 @@ const seeded = useMemo(() => [], [uni]);
       });
     }
 
-    if (seenChanged) {
-      saveSeenCommentsForUser(userId, nextSeen);
-    }
-  }, [items, user?.id]);
+    if (seenChanged) saveSeenCommentsForUser(userId, nextSeen);
+  }, [items, user?.id, threadByItemId]);
 
   const pushNotification = ({ toUserId, fromUserId, itemId, message, rootId }) => {
     const n = {
@@ -914,6 +889,7 @@ const seeded = useMemo(() => [], [uni]);
     };
     setNotis((all) => [n, ...all].slice(0, 200));
   };
+
   const markNotiRead = (id) =>
     setNotis((all) => all.map((n) => (n.id === id ? { ...n, read: true } : n)));
   const markAllRead = () =>
@@ -951,10 +927,6 @@ const seeded = useMemo(() => [], [uni]);
     setSubCategory(first);
   }, [mainCategory]);
 
-  /**
-   * ✅ FIXED: persist CloudFront URL into each attachment descriptor (global)
-   * - Keeps your IndexedDB local storage unchanged (no logic removed)
-   */
   async function persistAttachments(images = []) {
     const imgDescs = [];
 
@@ -963,12 +935,10 @@ const seeded = useMemo(() => [], [uni]);
       const id = `mk_img_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const blob = dataURLtoBlob(src.dataUrl);
 
-      // Local persistence for same-browser preview (unchanged)
       await idbSet(id, blob);
 
       const thumb = await makeThumb(src.dataUrl, 360, 360, 0.72);
 
-      // Upload to S3 and store a REAL global URL (CloudFront)
       let url = "";
 
       try {
@@ -985,10 +955,6 @@ const seeded = useMemo(() => [], [uni]);
           });
           if (!putRes.ok) throw new Error(`S3 PUT failed: ${putRes.status}`);
 
-          // Determine final URL:
-          // 1) If backend returns up.url, use it (rewrite to CloudFront if needed)
-          // 2) Else if backend returns up.key, build CloudFront URL from it
-          // 3) Else keep url empty (local-only fallback still works on same device)
           if (up?.url) {
             url = toCloudFrontUrl(up.url);
           } else if (up?.key) {
@@ -1040,7 +1006,6 @@ const seeded = useMemo(() => [], [uni]);
     const imgs = await persistAttachments(photos);
     const tempId = `m${Date.now()}`;
 
-    // ✅ ADD THIS BLOCK (RIGHT HERE)
     const myProgram =
       user?.program ||
       user?.academicProgram ||
@@ -1067,13 +1032,11 @@ const seeded = useMemo(() => [], [uni]);
       likes: 0,
       saved: false,
       comments: [],
-      // ✅ ADD THESE TWO LINES RIGHT HERE
+
       sellerMobile: sellerMobile.trim(),
       sellerWhatsapp: sellerWhatsapp.trim(),
-      sellerLocation: sellerLocation.trim(), // ✅ NEW
+      sellerLocation: sellerLocation.trim(),
 
-
-      // ✅ REPLACE seller: {...} WITH THIS
       seller: {
         id: user?.id || user?.uid || user?.userId || null,
         name: user?.name || user?.fullName || "Student",
@@ -1092,10 +1055,8 @@ const seeded = useMemo(() => [], [uni]);
       ...baseItem,
     };
 
-    // Optimistic local update
     setItems((prev) => [newItem, ...prev]);
 
-    // reset composer
     setOpenComposer(false);
     setTitle("");
     setPrice("");
@@ -1107,29 +1068,27 @@ const seeded = useMemo(() => [], [uni]);
     setCondition("");
     setSellerMobile("");
     setSellerWhatsapp("");
-    setSellerLocation(""); // ✅ NEW
+    setSellerLocation("");
 
-    // Persist to backend
     try {
       const saved = await createMarketplaceItem({
         title: baseItem.title,
         description: baseItem.description,
         price: baseItem.price,
-        currency: baseItem.currency, // you currently store "$" — Lambda will accept it
+        currency: baseItem.currency,
         category: `${baseItem.mainCategory}${
           baseItem.subCategory ? ` • ${baseItem.subCategory}` : ""
         }`,
         condition: baseItem.condition || "Used",
-        images: imgs, // store the attachment descriptors you already generate
+        images: imgs,
         sellerId: baseItem.seller?.id || null,
         sellerName: baseItem.seller?.name || null,
         sellerProgram: baseItem.seller?.program || "",
         sellerPhotoUrl: baseItem.seller?.photoUrl || "",
-        // optional contacts
         sellerMobile: baseItem.sellerMobile || "",
         sellerWhatsapp: baseItem.sellerWhatsapp || "",
-        sellerLocation: baseItem.sellerLocation || "", // ✅ NEW (optional extra field)
-        location: uni || null, // optional
+        sellerLocation: baseItem.sellerLocation || "",
+        location: uni || null,
       });
 
       if (saved && typeof saved === "object") {
@@ -1142,34 +1101,26 @@ const seeded = useMemo(() => [], [uni]);
             if (saved.price == null) merged.price = i.price;
             if (saved.currency == null) merged.currency = i.currency;
 
-            // MarketplaceHandler returns description + images
-            if (saved.description != null) {
-              merged.description = saved.description;
-            }
+            if (saved.description != null) merged.description = saved.description;
 
-            if (Array.isArray(saved.images)) {
-              merged.images = saved.images;
-            } else {
-              merged.images = i.images;
-            }
+            if (Array.isArray(saved.images)) merged.images = saved.images;
+            else merged.images = i.images;
 
-            if (!saved.seller) {
-              merged.seller = i.seller;
-            }
+            if (!saved.seller) merged.seller = i.seller;
 
             merged.createdAt = saved.createdAt || saved.created_at || i.createdAt;
 
-            if (saved.id && saved.id !== tempId) {
-              merged.id = saved.id;
-            }
+            if (saved.id && saved.id !== tempId) merged.id = saved.id;
+
+            // feed comments remain empty (threads loaded lazily)
+            merged.comments = [];
 
             return merged;
           })
         );
       }
     } catch (err) {
-      console.error("[StudentMarketplace] createPost failed", err);
-      // keep local listing if backend fails
+      console.error("[StudentMarketplace] createMarketplaceItem failed", err);
     }
   };
 
@@ -1221,59 +1172,55 @@ const seeded = useMemo(() => [], [uni]);
     return { byId, getRoot };
   };
 
+  // ✅ Updated: optimistic comment writes go into thread cache (NOT feed items)
   const addComment = (itemId, text, viewer, parentId = null) => {
     if (!text || !text.trim()) return;
     const trimmed = text.trim();
 
-    // 1️⃣ Optimistic local update (same shape as before)
-    setItems((prev) =>
-      prev.map((i) => {
-        if (i.id !== itemId) return i;
+    const comment = {
+      id: `c${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      parentId: parentId || null,
+      text: trimmed,
+      authorId: viewer?.id,
+      author: viewer?.name,
+      authorProgram: viewer?.program,
+      authorPhoto: viewer?.photoUrl,
+      createdAt: Date.now(),
+    };
 
-        const comment = {
-          id: `c${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          parentId: parentId || null,
-          text: trimmed,
-          authorId: viewer?.id,
-          author: viewer?.name,
-          authorProgram: viewer?.program,
-          authorPhoto: viewer?.photoUrl,
-          createdAt: Date.now(),
-        };
+    // 1️⃣ Optimistic cache update
+    setThreadByItemId((m) => {
+      const prev = Array.isArray(m[itemId]) ? m[itemId] : [];
+      const next = [...prev, comment];
 
-        const updated = {
-          ...i,
-          comments: [...(i.comments || []), comment],
-        };
+      // 🔔 keep your existing notification logic
+      const item = (items || []).find((x) => x?.id === itemId);
+      const sellerId = item?.seller?.id;
+      const title = item?.title || "this item";
 
-        // 🔔 keep your existing notification logic
-        const { byId, getRoot } = buildCommentIndex(updated.comments);
-        const root = getRoot(comment);
-        const sellerId = updated.seller?.id;
-        const rootAuthorId = root.authorId;
+      const { getRoot } = buildCommentIndex(next);
+      const root = getRoot(comment);
+      const rootAuthorId = root?.authorId;
 
-        let toUserId = null;
-        if (viewer?.id === sellerId) {
-          if (rootAuthorId && rootAuthorId !== sellerId) {
-            toUserId = rootAuthorId;
-          }
-        } else {
-          toUserId = sellerId;
-        }
+      let toUserId = null;
+      if (viewer?.id === sellerId) {
+        if (rootAuthorId && rootAuthorId !== sellerId) toUserId = rootAuthorId;
+      } else {
+        toUserId = sellerId;
+      }
 
-        if (toUserId && toUserId !== viewer?.id) {
-          pushNotification({
-            toUserId,
-            fromUserId: viewer?.id,
-            itemId: updated.id,
-            rootId: root.id,
-            message: `${viewer?.name || "Someone"} replied on "${updated.title}"`,
-          });
-        }
+      if (toUserId && toUserId !== viewer?.id) {
+        pushNotification({
+          toUserId,
+          fromUserId: viewer?.id,
+          itemId,
+          rootId: root?.id || comment.id,
+          message: `${viewer?.name || "Someone"} replied on "${title}"`,
+        });
+      }
 
-        return updated;
-      })
-    );
+      return { ...m, [itemId]: next };
+    });
 
     // 2️⃣ Persist to backend so comments are global and survive refresh
     (async () => {
@@ -1298,9 +1245,17 @@ const seeded = useMemo(() => [], [uni]);
             authorPhoto: viewer?.photoUrl,
           });
         }
+
+        // Optional: refresh thread after post to reconcile IDs
+        // (kept OFF for speed; uncomment if you want server-truth immediately)
+        // setThreadByItemId((m) => {
+        //   const copy = { ...m };
+        //   delete copy[itemId];
+        //   return copy;
+        // });
+        // await ensureThreadLoaded(itemId);
       } catch (err) {
         console.error("[StudentMarketplace] addComment backend save failed", err);
-        // keep local comment; next refresh will show it if backend saved successfully
       }
     })();
   };
@@ -1308,10 +1263,9 @@ const seeded = useMemo(() => [], [uni]);
   const deleteListing = async (id) => {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, deleted: true } : i)));
     try {
-      /*await deletePost(id, { scope: MARKETPLACE_SCOPE, role: "student" });*/
       await deleteMarketplaceItem(id);
     } catch (err) {
-      console.error("[StudentMarketplace] deletePost failed", err);
+      console.error("[StudentMarketplace] deleteMarketplaceItem failed", err);
     }
   };
 
@@ -1393,6 +1347,11 @@ const seeded = useMemo(() => [], [uni]);
                         markNotiRead(n.id);
                         setNotiOpen(false);
                         setFocusThread({ itemId: n.itemId, rootId: n.rootId });
+
+                        // ✅ Ensure thread loaded before jump highlight if user opens it
+                        // (does not auto-open comments; Comments handles open state)
+                        ensureThreadLoaded(n.itemId);
+
                         jumpToListing(n.itemId);
                       }}
                     >
@@ -1419,16 +1378,9 @@ const seeded = useMemo(() => [], [uni]);
                 Only for {uni || "your university"}.
               </p>
               {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
-              {/*{feedLoading && (
-                <p className="mt-1 text-[11px] text-slate-500 text-center">
-                  Refreshing listings…
-                </p>
-              )}*/}
               <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
-              {feedLoading ? "Refreshing listings…" : "\u00A0"}
-                </div>
-
-
+                {feedLoading ? "Refreshing listings…" : "\u00A0"}
+              </div>
             </CardBody>
           </Card>
 
@@ -1541,13 +1493,10 @@ const seeded = useMemo(() => [], [uni]);
             </CardBody>
           </Card>
 
-          {/* Normal Google Ad card */}
           <GoogleSidebarAd />
-
-          {/* Sticky Google Ad card */}
           <div
             className="sticky top-[160px] pt-2 overflow-hidden"
-            style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
+            style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
           >
             <GoogleSidebarAd />
           </div>
@@ -1555,6 +1504,7 @@ const seeded = useMemo(() => [], [uni]);
 
         {/* CENTER: Composer + Feed */}
         <section className="space-y-4">
+          {/* (Composer remains unchanged from your version below) */}
           <Card>
             <CardBody>
               {!openComposer ? (
@@ -1569,6 +1519,7 @@ const seeded = useMemo(() => [], [uni]);
                 </div>
               ) : (
                 <form onSubmit={onCreate} className="space-y-3">
+                  {/* --- your composer UI unchanged --- */}
                   <div className="flex items-center gap-3">
                     <Avatar url={user?.photoUrl} name={user?.name} />
                     <div className="min-w-0">
@@ -1674,11 +1625,11 @@ const seeded = useMemo(() => [], [uni]);
                       className="w-full border border-slate-200 rounded px-3 py-2"
                     />
                     <input
-  value={sellerLocation}
-  onChange={(e) => setSellerLocation(e.target.value)}
-  placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
-  className="w-full border border-slate-200 rounded px-3 py-2"
-/>
+                      value={sellerLocation}
+                      onChange={(e) => setSellerLocation(e.target.value)}
+                      placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
+                      className="w-full border border-slate-200 rounded px-3 py-2"
+                    />
                   </div>
 
                   {photos.length > 0 && (
@@ -1717,7 +1668,7 @@ const seeded = useMemo(() => [], [uni]);
                         setCondition("");
                         setSellerMobile("");
                         setSellerWhatsapp("");
-                        setSellerLocation(""); // ✅ NEW
+                        setSellerLocation("");
                       }}
                       className="rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
                     >
@@ -1736,7 +1687,6 @@ const seeded = useMemo(() => [], [uni]);
           </Card>
 
           {filtered.map((item) => {
-            // ---- Seller: rebuild from backend author* fields when seller is missing ----
             const sellerFromPost =
               item.seller && typeof item.seller === "object" ? item.seller : {};
 
@@ -1774,13 +1724,17 @@ const seeded = useMemo(() => [], [uni]);
 
             const mobile = (item.sellerMobile ?? item.mobile ?? "").toString().trim();
             const whatsapp = (item.sellerWhatsapp ?? item.whatsapp ?? "").toString().trim();
-            const locationText = (item.sellerLocation ??item.availabilityLocation ??item.locationText ??"").toString().trim();
-            const waDigits = whatsapp.replace(/[^\d]/g, "");
+            const locationText = (
+              item.sellerLocation ??
+              item.availabilityLocation ??
+              item.locationText ??
+              ""
+            )
+              .toString()
+              .trim();
 
-            // Make sure Comments component also "sees" a seller object
             const itemForComments = item.seller ? item : { ...item, seller };
 
-            // ---- Body text: description first, then fall back to text ----
             const bodyText =
               typeof item.description === "string" && item.description.trim().length
                 ? item.description
@@ -1788,7 +1742,6 @@ const seeded = useMemo(() => [], [uni]);
                 ? item.text
                 : "";
 
-            // ---- Price & currency: try several possible locations ----
             const rawPrice =
               item.price ??
               item.meta?.price ??
@@ -1826,7 +1779,6 @@ const seeded = useMemo(() => [], [uni]);
                       {item.subCategory ? ` • ${item.subCategory}` : ""}
                     </Badge>
 
-                    {/* Seller-only delete */}
                     {seller.id === user?.id && (
                       <button
                         onClick={() => deleteListing(item.id)}
@@ -1842,7 +1794,6 @@ const seeded = useMemo(() => [], [uni]);
                     <div className="text-lg font-semibold text-slate-900">{item.title}</div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-700">
-                      {/* Price + condition (left) */}
                       <div className="flex items-center flex-wrap gap-x-2">
                         <span>
                           {currencyLabel}
@@ -1854,9 +1805,7 @@ const seeded = useMemo(() => [], [uni]);
                         ) : null}
                       </div>
 
-                      {/* Contacts (same line, pushed a bit away) */}
                       {(mobile || whatsapp || locationText) && (
-                      /*{(mobile || whatsapp) && (*/
                         <div className="flex items-center gap-3 ml-6">
                           {whatsapp && (
                             <a
@@ -1885,14 +1834,14 @@ const seeded = useMemo(() => [], [uni]);
                       )}
 
                       {locationText && (
-                     <span
-                     className="inline-flex items-center gap-1 text-slate-700"
-                       title={`Location: ${locationText}`}
-                       >
-                      <LocationPinIcon className="h-4 w-4 text-red-600" />
-                      <span className="text-sm">{locationText}</span>
-                      </span>
-                     )}
+                        <span
+                          className="inline-flex items-center gap-1 text-slate-700"
+                          title={`Location: ${locationText}`}
+                        >
+                          <LocationPinIcon className="h-4 w-4 text-red-600" />
+                          <span className="text-sm">{locationText}</span>
+                        </span>
+                      )}
                     </div>
 
                     <div className="mt-1">
@@ -1985,12 +1934,17 @@ const seeded = useMemo(() => [], [uni]);
                     </Link>
                   </div>
 
-                  {/* Private, threaded comments (seller + root commenter) */}
+                  {/* ✅ Lazy-loaded comments: use cache + onOpen */}
                   <Comments
-                    item={itemForComments}
+                    item={{
+                      ...itemForComments,
+                      comments: threadByItemId[item.id] || [],
+                    }}
                     currentUser={user}
                     focusThread={focusThread}
                     onAdd={(txt, parentId) => addComment(item.id, txt, user, parentId)}
+                    onOpen={() => ensureThreadLoaded(item.id)}
+                    loading={!!threadLoading[item.id]}
                   />
                 </CardBody>
               </Card>
@@ -2019,13 +1973,10 @@ const seeded = useMemo(() => [], [uni]);
             </CardBody>
           </Card>
 
-          {/* Normal Google Ad card */}
           <GoogleSidebarAd />
-
-          {/* Sticky Google Ad card */}
           <div
             className="sticky top-[160px] pt-2 overflow-hidden"
-            style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
+            style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
           >
             <GoogleSidebarAd />
           </div>
@@ -2041,7 +1992,8 @@ function autoGrow(e) {
   e.target.style.height = `${e.target.scrollHeight}px`;
 }
 
-function Comments({ item, onAdd, currentUser, focusThread }) {
+// ✅ UPDATED SIGNATURE: onOpen + loading
+function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
   const [open, setOpen] = useState(true);
   const [text, setText] = useState("");
   const [replyForId, setReplyForId] = useState(null);
@@ -2075,6 +2027,10 @@ function Comments({ item, onAdd, currentUser, focusThread }) {
   useEffect(() => {
     if (!focusThread) return;
     if (focusThread.itemId !== item.id) return;
+
+    // ✅ Ensure thread exists before trying to scroll to a comment
+    onOpen?.();
+
     setOpen(true);
     const id = `comment-${focusThread.rootId}`;
     setTimeout(() => {
@@ -2088,7 +2044,8 @@ function Comments({ item, onAdd, currentUser, focusThread }) {
         );
         setReplyForId(null);
       }
-    }, 60);
+    }, 80);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusThread, item.id]);
 
   const privacyNote = isSeller
@@ -2112,13 +2069,23 @@ function Comments({ item, onAdd, currentUser, focusThread }) {
     <div className="mt-3">
       <div className="flex items-center gap-2">
         <button
-          onClick={() => setOpen((o) => !o)}
+          onClick={() => {
+            setOpen((o) => {
+              const next = !o;
+              if (next) onOpen?.(); // ✅ lazy load on open
+              return next;
+            });
+          }}
           className="text-sm text-slate-600 hover:underline"
         >
           💬 Comments {visible.length ? `(${visible.length})` : ""}
         </button>
+
+        {loading && <span className="text-[11px] text-slate-500">Loading…</span>}
+
         <span className="text-[11px] text-slate-500">{privacyNote}</span>
       </div>
+
       {open && (
         <div className="mt-2 space-y-3">
           {parents.map((c) => (
@@ -2156,7 +2123,6 @@ function Comments({ item, onAdd, currentUser, focusThread }) {
                     </div>
                   ))}
 
-                  {/* ✅ Bottom Reply button */}
                   <div className="mt-2 pl-4">
                     <button
                       type="button"

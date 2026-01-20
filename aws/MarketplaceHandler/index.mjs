@@ -3,6 +3,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   ScanCommand,
+  QueryCommand, // ✅ ADD
   PutCommand,
   UpdateCommand,
   DeleteCommand,
@@ -17,8 +18,8 @@ const TABLE = process.env.MARKETPLACE_TABLE || "sk_marketplace";
 
 // Uploads (for presigned PUT)
 const UPLOADS_BUCKET = process.env.MARKETPLACE_UPLOADS_BUCKET || "";
-const UPLOADS_PREFIX = (process.env.MARKETPLACE_UPLOADS_PREFIX || "marketplace/attachments/")
-  .replace(/^\/+/, "");
+const UPLOADS_PREFIX = (process.env.MARKETPLACE_UPLOADS_PREFIX ||
+  "marketplace/attachments/").replace(/^\/+/, "");
 
 // CloudFront domain (response-only rewriting)
 const CLOUDFRONT_DOMAIN = (process.env.CLOUDFRONT_DOMAIN || "").trim();
@@ -79,6 +80,27 @@ function makeId(prefix = "mkt") {
 
 const PK = "MARKETPLACE#ITEM";
 
+// ✅ Cursor helpers (safe, simple)
+function encodeCursor(lek) {
+  if (!lek) return null;
+  return Buffer.from(JSON.stringify(lek)).toString("base64url");
+}
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+  try {
+    return JSON.parse(
+      Buffer.from(String(cursor), "base64url").toString("utf8")
+    );
+  } catch {
+    return null;
+  }
+}
+function pickLimit(qs, def = 30, max = 60) {
+  const n = Number(qs?.limit);
+  if (!Number.isFinite(n) || n <= 0) return def;
+  return Math.min(max, Math.floor(n));
+}
+
 // Split "Main • Sub" safely (works with "•" and also with plain "-"/"|")
 function splitCategory(cat) {
   const raw = String(cat || "").trim();
@@ -107,7 +129,9 @@ function splitCategory(cat) {
 
 function publicUrlForKey(key) {
   if (CLOUDFRONT_DOMAIN) return `https://${CLOUDFRONT_DOMAIN}/${key}`;
-  return UPLOADS_BUCKET ? `https://${UPLOADS_BUCKET}.s3.${REGION}.amazonaws.com/${key}` : "";
+  return UPLOADS_BUCKET
+    ? `https://${UPLOADS_BUCKET}.s3.${REGION}.amazonaws.com/${key}`
+    : "";
 }
 
 // Safer rewrite (no regex footguns). Only rewrites real http(s) URLs.
@@ -196,7 +220,8 @@ export const handler = async (event) => {
 
     /* ---------- POST /api/marketplace/upload-url ---------- */
     if (method === "POST" && path === "/api/marketplace/upload-url") {
-      if (!UPLOADS_BUCKET) return badRequest("MARKETPLACE_UPLOADS_BUCKET is missing", origin);
+      if (!UPLOADS_BUCKET)
+        return badRequest("MARKETPLACE_UPLOADS_BUCKET is missing", origin);
 
       const parsed = safeJsonParse(event.body);
       const fileName = String(parsed?.fileName || "image.jpg");
@@ -215,52 +240,96 @@ export const handler = async (event) => {
 
       const uploadUrl = await getSignedUrl(s3, cmd, { expiresIn: 60 });
 
-      return json(200, { ok: true, key, uploadUrl, url: publicUrlForKey(key) }, origin);
+      return json(
+        200,
+        { ok: true, key, uploadUrl, url: publicUrlForKey(key) },
+        origin
+      );
     }
 
     /* ---------- GET /api/marketplace ---------- */
     if (method === "GET" && path === "/api/marketplace") {
-      const out = await doc.send(
-        new ScanCommand({
+      const qs = event?.queryStringParameters || {};
+      const limit = pickLimit(qs, 30, 60);
+      const cursor = decodeCursor(qs.cursor);
+      const includeComments = String(qs.includeComments || "0") === "1";
+
+      // Optional university filter (still a FilterExpression, but Query is MUCH cheaper than Scan)
+      const uni = String(qs.university || "").trim();
+
+      const params = {
+        TableName: TABLE,
+        KeyConditionExpression: "pk = :pk",
+        ExpressionAttributeValues: { ":pk": PK },
+        Limit: limit,
+        ScanIndexForward: false, // newest first (by sk)
+        ...(cursor ? { ExclusiveStartKey: cursor } : {}),
+        ...(uni
+          ? {
+              FilterExpression: "location = :u OR university = :u",
+              ExpressionAttributeValues: { ":pk": PK, ":u": uni },
+            }
+          : {}),
+      };
+
+      const out = await doc.send(new QueryCommand(params));
+      const nextCursor = encodeCursor(out.LastEvaluatedKey);
+
+      const items = (out.Items || []).map((x) => {
+        const item = x || {};
+
+        const mainCategory =
+          String(item.mainCategory || "").trim() ||
+          splitCategory(item.category).mainCategory ||
+          "General";
+
+        const subCategory =
+          String(item.subCategory || "").trim() ||
+          splitCategory(item.category).subCategory ||
+          "";
+
+        const category =
+          String(item.category || "").trim() ||
+          (subCategory ? `${mainCategory} • ${subCategory}` : mainCategory);
+
+        return {
+          ...item,
+          mainCategory,
+          subCategory,
+          category,
+          // ✅ Do NOT ship comments unless requested
+          ...(includeComments
+            ? { comments: Array.isArray(item.comments) ? item.comments : [] }
+            : { comments: [] }),
+          images: rewriteImagesToCloudFront(item.images),
+        };
+      });
+
+      return json(200, { ok: true, items, cursor: nextCursor }, origin);
+    }
+
+    /* ---------- GET /api/marketplace/thread?itemId=... ---------- */
+    if (method === "GET" && path === "/api/marketplace/thread") {
+      const qs = event?.queryStringParameters || {};
+      const itemId = String(qs.itemId || "").trim();
+      if (!itemId) return badRequest("itemId is required", origin);
+
+      const got = await doc.send(
+        new GetCommand({
           TableName: TABLE,
-          FilterExpression: "pk = :pk",
-          ExpressionAttributeValues: { ":pk": PK },
-          Limit: 200,
+          Key: { pk: PK, sk: itemId },
+          ProjectionExpression: "pk, sk, id, comments, updatedAt",
         })
       );
 
-      const items = (out.Items || [])
-        .map((x) => {
-          const item = x || {};
+      if (!got.Item) return json(404, { ok: false, error: "Not found" }, origin);
 
-          const mainCategory =
-            String(item.mainCategory || "").trim() ||
-            splitCategory(item.category).mainCategory ||
-            "General";
-
-          const subCategory =
-            String(item.subCategory || "").trim() ||
-            splitCategory(item.category).subCategory ||
-            "";
-
-          const category =
-            String(item.category || "").trim() ||
-            (subCategory ? `${mainCategory} • ${subCategory}` : mainCategory);
-
-          return {
-            ...item,
-            mainCategory,
-            subCategory,
-            category,
-            comments: Array.isArray(item.comments) ? item.comments : [],
-            images: rewriteImagesToCloudFront(item.images),
-          };
-        })
-        .sort((a, b) =>
-          String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
-        );
-
-      return json(200, { ok: true, items }, origin);
+      const comments = Array.isArray(got.Item.comments) ? got.Item.comments : [];
+      return json(
+        200,
+        { ok: true, itemId, comments, updatedAt: got.Item.updatedAt || null },
+        origin
+      );
     }
 
     /* ---------- POST /api/marketplace ---------- */
@@ -310,7 +379,9 @@ export const handler = async (event) => {
         sellerName: parsed.sellerName ? String(parsed.sellerName) : null,
 
         sellerProgram: parsed.sellerProgram ? String(parsed.sellerProgram) : "",
-        sellerPhotoUrl: parsed.sellerPhotoUrl ? String(parsed.sellerPhotoUrl) : "",
+        sellerPhotoUrl: parsed.sellerPhotoUrl
+          ? String(parsed.sellerPhotoUrl)
+          : "",
 
         sellerMobile: parsed.sellerMobile ? String(parsed.sellerMobile) : "",
         sellerWhatsapp: parsed.sellerWhatsapp ? String(parsed.sellerWhatsapp) : "",
