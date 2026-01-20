@@ -146,13 +146,13 @@ function SectionTabs() {
     tag: "Lectures",
     title: "Notes,Assignments & Questions",
     text: "Share academics,Engage your students, and Boost academic productivity",
-    image: "/public/images/Lectures..png",
+    image: "/images/Lectures.png",
   },
   {
     tag: "Global & University Academic Platforms",
     title: "Student-Lecturer Academic Interaction",
     text: "Interact locally and globally,initiate Topics,Comment and Reply academic Interactive threads.",
-    image: "/public/images/studentimage.png",
+    image: "/images/studentimage.png",
   },
   {
     tag: "Lecturers Management",
