@@ -1,1 +1,24 @@
-@import "tailwindcss"; html, body, #root { height: 100%%; } body { font-family: "Open Sans", Arial, sans-serif; background-color: #f3f6fb; color: #334155; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/*@import "tailwindcss"; html, body, #root { height: 100%%; } body { font-family: "Open Sans", Arial, sans-serif; background-color: #f3f6fb; color: #334155; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+*/
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Open Sans", Arial, sans-serif;
+  background-color: #f3f6fb;
+  color: #334155;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Force placeholders to be visible across browsers */
+input::placeholder,
+textarea::placeholder {
+  opacity: 1;          /* important: some browsers default to < 1 */
+  color: #94a3b8;      /* slate-400-ish */
+}
