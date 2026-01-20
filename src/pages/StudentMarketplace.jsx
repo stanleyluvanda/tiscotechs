@@ -9,6 +9,8 @@ import {
   createMarketplaceComment,
   createMarketplaceReply,
   getMarketplaceUploadUrl,
+  startMarketplaceCheckout,
+  getMarketplaceEntitlement,
 } from "../lib/marketplaceApi";
 
 /* ============ Utils ============ */
@@ -253,6 +255,8 @@ function toCloudFrontUrl(input) {
     return s;
   }
 }
+
+
 
 /**
  * ✅ FIXED: prefer CloudFront URL FIRST (global), then fallback to local-only storage.
@@ -567,6 +571,10 @@ export default function StudentMarketplace() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
   const uni = user?.university || "";
+// ✅ ADD HERE
+  const [payOpen, setPayOpen] = useState(false);
+  const [payBusy, setPayBusy] = useState(false);
+  const [payInfo, setPayInfo] = useState(null); // entitlement payload
 
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
@@ -639,6 +647,35 @@ export default function StudentMarketplace() {
       console.error("[Marketplace] thread load failed", e);
     } finally {
       setThreadLoading((m) => ({ ...m, [itemId]: false }));
+    }
+  }
+
+  // ✅ ADD THESE TWO FUNCTIONS RIGHT HERE (directly below ensureThreadLoaded)
+
+  async function openPaywall() {
+    try {
+      const ent = await getMarketplaceEntitlement(user?.id);
+      setPayInfo(ent);
+    } catch {
+      setPayInfo(null);
+    }
+    setPayOpen(true);
+  }
+
+  async function beginCheckout(provider) {
+    setPayBusy(true);
+    try {
+      const out = await startMarketplaceCheckout({
+        userId: user?.id,
+        provider, // "stripe" or "flutterwave"
+        email: user?.email || "",
+        name: user?.name || user?.fullName || "Student",
+      });
+      if (out?.url) window.location.href = out.url;
+    } catch (e) {
+      alert(e?.message || "Payment start failed");
+    } finally {
+      setPayBusy(false);
     }
   }
 
@@ -1120,6 +1157,17 @@ export default function StudentMarketplace() {
         );
       }
     } catch (err) {
+      // ✅ If backend blocks (402) show paywall
+      const isPaywall =
+        err?.status === 402 ||
+        err?.data?.error === "PAYMENT_REQUIRED" ||
+        String(err?.message || "").includes("PAYMENT_REQUIRED");
+
+      if (isPaywall) {
+        await openPaywall();
+        return;
+      }
+
       console.error("[StudentMarketplace] createMarketplaceItem failed", err);
     }
   };
@@ -1983,6 +2031,53 @@ export default function StudentMarketplace() {
           </div>
         </aside>
       </main>
+      {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
+      {payOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center px-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
+            <div className="text-lg font-semibold text-slate-900">
+              Unlock unlimited listings
+            </div>
+            <div className="mt-2 text-sm text-slate-700">
+              You’ve used your 1 free listing. Pay <b>$99.99</b> to post unlimited listings for{" "}
+              <b>120 days</b>.
+            </div>
+
+            <div className="mt-3 text-xs text-slate-500">
+              {payInfo?.paidUntil
+                ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}`
+                : ""}
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-2">
+              <button
+                disabled={payBusy}
+                onClick={() => beginCheckout("stripe")}
+                className="w-full rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-60"
+              >
+                Pay by Card (Stripe)
+              </button>
+
+              <button
+                disabled={payBusy}
+                onClick={() => beginCheckout("flutterwave")}
+                className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
+              >
+                Pay by Mobile Money (Flutterwave)
+              </button>
+
+              <button
+                disabled={payBusy}
+                onClick={() => setPayOpen(false)}
+                className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }
