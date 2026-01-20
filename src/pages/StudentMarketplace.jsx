@@ -1959,8 +1959,9 @@ export default function StudentMarketplace() {
             <CardBody>
               <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
                 <li>Meet on campus in public places.</li>
-                <li>Cash or trusted digital payments only.</li>
+                <li>Do not pay or send any money to anybody.</li>
                 <li>Check items before you pay.</li>
+                <li>Avoid scam or suspecious conversation.</li>
               </ul>
             </CardBody>
           </Card>
