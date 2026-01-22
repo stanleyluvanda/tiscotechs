@@ -1,9 +1,11 @@
 // src/pages/StudentMarketplace.jsx
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+//import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import {
-  fetchMarketplaceItems,
+  // fetchMarketplaceItems,   // ❌ no longer needed for initial load
+  fetchMarketplacePage, // ✅ NEW (pagination)
   createMarketplaceItem,
   deleteMarketplaceItem,
   createMarketplaceComment,
@@ -30,9 +32,7 @@ function loadActiveUser() {
         const byId = safeParse(localStorage.getItem("usersById")) || {};
         if (byId[id]) return byId[id];
         const arr = safeParse(localStorage.getItem("users")) || [];
-        const found = arr.find(
-          (u) => u.id === id || u.uid === id || u.userId === id
-        );
+        const found = arr.find((u) => u.id === id || u.uid === id || u.userId === id);
         if (found) return found;
       }
     }
@@ -42,6 +42,15 @@ function loadActiveUser() {
     safeParse(localStorage.getItem("currentUser"))
   );
 }
+
+// ✅ NEW: one canonical userId used everywhere in this page
+function getCanonicalUserId(u) {
+  if (!u) return null;
+  const id = u.id || u.userId || u.uid || null;
+  if (!id) return null;
+  return String(id);
+}
+
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] || "S") + (parts[1]?.[0] || "K")).toUpperCase();
@@ -116,13 +125,7 @@ async function makeThumb(dataUrl, maxW = 360, maxH = 360, quality = 0.72) {
     img.src = dataUrl;
   });
 }
-async function fileToDownscaledDataURL(
-  file,
-  maxW,
-  maxH,
-  quality = 0.84,
-  targetKB = 480
-) {
+async function fileToDownscaledDataURL(file, maxW, maxH, quality = 0.84, targetKB = 480) {
   const blobUrl = URL.createObjectURL(file);
   try {
     const img = await new Promise((res, rej) => {
@@ -156,7 +159,9 @@ async function fileToDownscaledDataURL(
 function Card({ className = "", children, square = false }) {
   return (
     <div
-      className={`${square ? "rounded-none" : "rounded-2xl"} border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
+      className={`${
+        square ? "rounded-none" : "rounded-2xl"
+      } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
     >
       {children}
     </div>
@@ -256,8 +261,6 @@ function toCloudFrontUrl(input) {
   }
 }
 
-
-
 /**
  * ✅ FIXED: prefer CloudFront URL FIRST (global), then fallback to local-only storage.
  */
@@ -267,9 +270,7 @@ function useAttachmentUrl(att, preferFull = true) {
       toCloudFrontUrl(att?.dataUrl) ||
       (preferFull
         ? null
-        : toCloudFrontUrl(att?.thumbUrl) ||
-          toCloudFrontUrl(att?.thumb) ||
-          null)
+        : toCloudFrontUrl(att?.thumbUrl) || toCloudFrontUrl(att?.thumb) || null)
   );
 
   useEffect(() => {
@@ -379,12 +380,7 @@ function WhatsAppIcon({ className = "" }) {
 }
 function LocationPinIcon({ className = "" }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
       <path d="M12 2c-3.87 0-7 3.13-7 7 0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
     </svg>
   );
@@ -488,7 +484,6 @@ const CATEGORY_MAP = {
     "Selfie sticks",
     "Other",
   ],
-
   "Camera Brands": [
     "Canon",
     "Nikon",
@@ -514,7 +509,6 @@ const CATEGORY_MAP = {
     "A4Tech",
     "Other",
   ],
-
   "Men's shoes": ["Athletic", "Loafers", "Slip-ons", "Sandals", "Slippers", "Other"],
   "Women shoes": [
     "Women sneakers",
@@ -550,9 +544,7 @@ const SEEN_COMMENTS_KEY_PREFIX = "market_seen_comments__";
 
 function loadSeenCommentsForUser(userId) {
   if (!userId) return new Set();
-  const raw = safeParse(
-    localStorage.getItem(`${SEEN_COMMENTS_KEY_PREFIX}${userId}`)
-  );
+  const raw = safeParse(localStorage.getItem(`${SEEN_COMMENTS_KEY_PREFIX}${userId}`));
   if (!Array.isArray(raw)) return new Set();
   return new Set(raw);
 }
@@ -560,18 +552,19 @@ function loadSeenCommentsForUser(userId) {
 function saveSeenCommentsForUser(userId, set) {
   if (!userId || !set) return;
   const arr = Array.from(set);
-  localStorage.setItem(
-    `${SEEN_COMMENTS_KEY_PREFIX}${userId}`,
-    JSON.stringify(arr)
-  );
+  localStorage.setItem(`${SEEN_COMMENTS_KEY_PREFIX}${userId}`, JSON.stringify(arr));
 }
 
 /* ============ Page ============ */
 export default function StudentMarketplace() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user] = useState(() => loadActiveUser());
+  const userId = useMemo(() => getCanonicalUserId(user), [user]); // ✅ NEW
+  const me = useMemo(() => (user ? { ...user, id: userId } : null), [user, userId]); // ✅ NEW
   const uni = user?.university || "";
-// ✅ ADD HERE
+
+  // ✅ ADD HERE
   const [payOpen, setPayOpen] = useState(false);
   const [payBusy, setPayBusy] = useState(false);
   const [payInfo, setPayInfo] = useState(null); // entitlement payload
@@ -580,11 +573,95 @@ export default function StudentMarketplace() {
     if (!user) navigate("/login?role=student", { replace: true });
   }, [user, navigate]);
 
+  // ✅ Stripe/Flutterwave return handler:
+  // - detects ?paid=1 or ?canceled=1
+  // - refreshes entitlement instantly (with retry in case webhook is slightly delayed)
+  // - auto-closes paywall on success
+  // - cleans URL (removes params) so refresh doesn't re-run
+  useEffect(() => {
+    if (!userId) return;
+
+    const params = new URLSearchParams(location.search || "");
+    const paid = params.get("paid") === "1";
+    const canceled = params.get("canceled") === "1";
+
+    if (!paid && !canceled) return;
+
+    let cancelled = false;
+
+    const cleanUrl = () => {
+      params.delete("paid");
+      params.delete("canceled");
+      const nextSearch = params.toString();
+      navigate(
+        { pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : "" },
+        { replace: true }
+      );
+    };
+
+    const run = async () => {
+      // If canceled, just show paywall again and clean the URL
+      if (canceled) {
+        setPayBusy(false);
+        setPayOpen(true);
+        cleanUrl();
+        return;
+      }
+
+      // paid=1 path: refresh entitlement with a short retry loop
+      setPayBusy(true);
+
+      let lastEnt = null;
+      const start = Date.now();
+      const timeoutMs = 15000; // 15s
+      const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      while (!cancelled && Date.now() - start < timeoutMs) {
+        try {
+          const ent = await getMarketplaceEntitlement(userId);
+          lastEnt = ent;
+
+          // ✅ consider it "active" if backend returns paidUntil in the future
+          const paidUntil = ent?.paidUntil ? new Date(ent.paidUntil).getTime() : 0;
+          if (paidUntil && paidUntil > Date.now()) {
+            setPayInfo(ent);
+            setPayOpen(false); // ✅ close paywall automatically
+            break;
+          }
+        } catch (e) {
+          // ignore and retry
+        }
+
+        // retry every ~1.2s
+        await delay(1200);
+      }
+
+      // Always store whatever we got (helps UI message)
+      if (!cancelled && lastEnt) setPayInfo(lastEnt);
+
+      setPayBusy(false);
+      cleanUrl();
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search, location.pathname, navigate, userId]);
+
+
+
+
+
   /* ---------- Seed & load items (scoped to this university) ---------- */
   // ✅ DISABLED (no seeded items)
   const seeded = useMemo(() => [], [uni]);
 
   const [items, setItems] = useState(seeded);
+  // ✅ Pagination state
+  const [cursor, setCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   /// 🔄 NEW: load & poll listings from backend (global marketplace)
   const [feedLoading, setFeedLoading] = useState(false);
@@ -602,10 +679,9 @@ export default function StudentMarketplace() {
 
     setThreadLoading((m) => ({ ...m, [itemId]: true }));
     try {
-      const res = await fetch(
-        `/api/marketplace/thread?itemId=${encodeURIComponent(itemId)}`,
-        { credentials: "include" }
-      );
+      const res = await fetch(`/api/marketplace/thread?itemId=${encodeURIComponent(itemId)}`, {
+        credentials: "include",
+      });
       const data = await res.json();
       const nested = Array.isArray(data?.comments) ? data.comments : [];
 
@@ -651,10 +727,9 @@ export default function StudentMarketplace() {
   }
 
   // ✅ ADD THESE TWO FUNCTIONS RIGHT HERE (directly below ensureThreadLoaded)
-
   async function openPaywall() {
     try {
-      const ent = await getMarketplaceEntitlement(user?.id);
+      const ent = await getMarketplaceEntitlement(userId); // ✅ canonical
       setPayInfo(ent);
     } catch {
       setPayInfo(null);
@@ -666,7 +741,7 @@ export default function StudentMarketplace() {
     setPayBusy(true);
     try {
       const out = await startMarketplaceCheckout({
-        userId: user?.id,
+        userId, // ✅ canonical
         provider, // "stripe" or "flutterwave"
         email: user?.email || "",
         name: user?.name || user?.fullName || "Student",
@@ -677,6 +752,69 @@ export default function StudentMarketplace() {
     } finally {
       setPayBusy(false);
     }
+  }
+
+  // ✅ Normalize backend rows into your UI shape (same mapping rules as your current loadFromApi)
+  function normalizeMarketplaceRows(remote = []) {
+    return (remote || []).map((r) => {
+      if (!r || typeof r !== "object") return r;
+
+      const createdAt =
+        r.createdAt ||
+        r.created_at ||
+        r.timestamp ||
+        (typeof r.time === "number" ? r.time : Date.now());
+
+      const rawSeller =
+        r.seller && typeof r.seller === "object"
+          ? r.seller
+          : {
+              id: r.sellerId ?? null,
+              name: r.sellerName ?? null,
+              program: r.sellerProgram ?? "",
+              photoUrl: r.sellerPhotoUrl ?? "",
+            };
+
+      const seller = {
+        id:
+          rawSeller?.id ??
+          rawSeller?.uid ??
+          rawSeller?.userId ??
+          rawSeller?.ownerId ??
+          rawSeller?.authorId ??
+          r.sellerId ??
+          null,
+        name:
+          rawSeller?.name ??
+          rawSeller?.fullName ??
+          rawSeller?.author ??
+          r.sellerName ??
+          "Student",
+        program: rawSeller?.program ?? rawSeller?.authorProgram ?? r.sellerProgram ?? "",
+        photoUrl: rawSeller?.photoUrl ?? rawSeller?.avatarUrl ?? r.sellerPhotoUrl ?? "",
+      };
+
+      const images = Array.isArray(r.images)
+        ? r.images.map((img) => {
+            if (!img || typeof img !== "object") return img;
+            const next = { ...img };
+            if (next.url) next.url = toCloudFrontUrl(next.url);
+            if (next.dataUrl) next.dataUrl = toCloudFrontUrl(next.dataUrl);
+            if (next.thumb) next.thumb = toCloudFrontUrl(next.thumb);
+            return next;
+          })
+        : r.images;
+
+      return {
+        ...r,
+        university: r.university || r.location || "",
+        createdAt,
+        seller,
+        ...(images !== undefined ? { images } : {}),
+        // ✅ Feed should NOT carry comments; threads are fetched lazily per item
+        comments: [],
+      };
+    });
   }
 
   useEffect(() => {
@@ -690,81 +828,22 @@ export default function StudentMarketplace() {
       setFeedError("");
 
       try {
-        const remote = await fetchMarketplaceItems();
+        // ✅ Page 1 only (fast) + scoped to this university for correct cursor
+        const page = await fetchMarketplacePage({
+          limit: 30,
+          cursor: null,
+          university: uni || "",
+          includeComments: false,
+        });
+
         if (cancelled) return;
 
-        console.log("[StudentMarketplace] raw fetchMarketplaceItems data:", remote);
+        console.log("[StudentMarketplace] raw fetchMarketplacePage p1:", page);
 
-        // ✅ NORMALISE backend rows (seller, images, categories, etc.)
-        // 🚫 IMPORTANT: do NOT flatten/merge comments into the feed anymore.
-        const mapped = (remote || []).map((r) => {
-          if (!r || typeof r !== "object") return r;
+        const mapped = normalizeMarketplaceRows(page.items || []);
 
-          const createdAt =
-            r.createdAt ||
-            r.created_at ||
-            r.timestamp ||
-            (typeof r.time === "number" ? r.time : Date.now());
-
-          // ✅ Prefer nested seller (new backend), fallback to flat seller fields (older rows)
-          const rawSeller =
-            r.seller && typeof r.seller === "object"
-              ? r.seller
-              : {
-                  id: r.sellerId ?? null,
-                  name: r.sellerName ?? null,
-                  program: r.sellerProgram ?? "",
-                  photoUrl: r.sellerPhotoUrl ?? "",
-                };
-
-          const seller = {
-            id:
-              rawSeller?.id ??
-              rawSeller?.uid ??
-              rawSeller?.userId ??
-              rawSeller?.ownerId ??
-              rawSeller?.authorId ??
-              r.sellerId ??
-              null,
-            name:
-              rawSeller?.name ??
-              rawSeller?.fullName ??
-              rawSeller?.author ??
-              r.sellerName ??
-              "Student",
-            program:
-              rawSeller?.program ??
-              rawSeller?.authorProgram ??
-              r.sellerProgram ??
-              "",
-            photoUrl:
-              rawSeller?.photoUrl ??
-              rawSeller?.avatarUrl ??
-              r.sellerPhotoUrl ??
-              "",
-          };
-
-          const images = Array.isArray(r.images)
-            ? r.images.map((img) => {
-                if (!img || typeof img !== "object") return img;
-                const next = { ...img };
-                if (next.url) next.url = toCloudFrontUrl(next.url);
-                if (next.dataUrl) next.dataUrl = toCloudFrontUrl(next.dataUrl);
-                if (next.thumb) next.thumb = toCloudFrontUrl(next.thumb);
-                return next;
-              })
-            : r.images;
-
-          return {
-            ...r,
-            university: r.university || r.location || "",
-            createdAt,
-            seller,
-            ...(images !== undefined ? { images } : {}),
-            // ✅ Feed should NOT carry comments; threads are fetched lazily per item
-            comments: [],
-          };
-        });
+        // ✅ Update cursor for "Load more"
+        setCursor(page.cursor ?? null);
 
         // ✅ Merge backend items with existing local ones without losing likes/save state
         setItems((prev) => {
@@ -780,14 +859,11 @@ export default function StudentMarketplace() {
             let merged = { ...(existing || {}), ...p };
 
             // Preserve like/save state when present locally
-            merged.likes =
-              typeof existing?.likes === "number" ? existing.likes : p.likes || 0;
-            merged.saved =
-              typeof existing?.saved === "boolean" ? existing.saved : !!p.saved;
-            merged._liked =
-              typeof existing?._liked === "boolean" ? existing._liked : !!p._liked;
+            merged.likes = typeof existing?.likes === "number" ? existing.likes : p.likes || 0;
+            merged.saved = typeof existing?.saved === "boolean" ? existing.saved : !!p.saved;
+            merged._liked = typeof existing?._liked === "boolean" ? existing._liked : !!p._liked;
 
-            // ✅ IMPORTANT: keep existing local seller if backend didn’t send it
+            // ✅ Keep existing local seller if backend didn’t send it
             if (!p.seller && existing?.seller) merged.seller = existing.seller;
 
             // ✅ Ensure createdAt exists
@@ -810,7 +886,7 @@ export default function StudentMarketplace() {
           return Array.from(byId.values());
         });
       } catch (err) {
-        console.error("[StudentMarketplace] fetchMarketplaceItems failed", err);
+        console.error("[StudentMarketplace] fetchMarketplacePage failed", err);
         if (!cancelled) setFeedError("Could not load marketplace listings.");
       } finally {
         if (!cancelled && !firstLoadRef.done) setFeedLoading(false);
@@ -825,12 +901,44 @@ export default function StudentMarketplace() {
       cancelled = true;
       if (timerId) window.clearInterval(timerId);
     };
-  }, [MARKETPLACE_SCOPE]);
+    // ✅ IMPORTANT: include uni so the feed refresh + cursor are per-university
+  }, [MARKETPLACE_SCOPE, uni]);
+
+  // ✅ Load more (pagination)
+  async function loadMore() {
+    if (!cursor || loadingMore) return;
+
+    setLoadingMore(true);
+    try {
+      const page = await fetchMarketplacePage({
+        limit: 30,
+        cursor,
+        university: uni || "",
+        includeComments: false,
+      });
+
+      const mapped = normalizeMarketplaceRows(page.items || []);
+      const nextCursor = page.cursor ?? null;
+
+      setItems((prev) => {
+        const prevArr = Array.isArray(prev) ? prev : [];
+        const seen = new Set(prevArr.map((x) => x?.id).filter(Boolean));
+        const deduped = mapped.filter((x) => x?.id && !seen.has(x.id));
+        return [...prevArr, ...deduped];
+      });
+
+      setCursor(nextCursor);
+    } catch (err) {
+      console.error("[StudentMarketplace] loadMore failed", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   /* ---------- Notifications ---------- */
   const [notiOpen, setNotiOpen] = useState(false);
   const [notis, setNotis] = useState(() => loadAllNotis());
-  const myUnread = notis.filter((n) => n.toUserId === user?.id && !n.read).length;
+  const myUnread = notis.filter((n) => n.toUserId === userId && !n.read).length; // ✅ canonical
   const [focusThread, setFocusThread] = useState(null); // { itemId, rootId }
 
   useEffect(() => {
@@ -841,8 +949,7 @@ export default function StudentMarketplace() {
   // We no longer auto-load all comments in the feed (performance).
   // This effect now only derives notifications for threads already loaded into cache.
   useEffect(() => {
-    if (!user?.id) return;
-    const userId = user.id;
+    if (!userId) return;
 
     const seen = loadSeenCommentsForUser(userId);
     const nextSeen = new Set(seen);
@@ -866,7 +973,7 @@ export default function StudentMarketplace() {
       const sellerId = item.seller?.id;
       if (!sellerId) continue;
 
-      const { byId, getRoot } = buildCommentIndex(flat);
+      const { getRoot } = buildCommentIndex(flat);
 
       for (const c of flat) {
         if (!c || !c.id) continue;
@@ -911,7 +1018,7 @@ export default function StudentMarketplace() {
     }
 
     if (seenChanged) saveSeenCommentsForUser(userId, nextSeen);
-  }, [items, user?.id, threadByItemId]);
+  }, [items, userId, threadByItemId]);
 
   const pushNotification = ({ toUserId, fromUserId, itemId, message, rootId }) => {
     const n = {
@@ -930,9 +1037,7 @@ export default function StudentMarketplace() {
   const markNotiRead = (id) =>
     setNotis((all) => all.map((n) => (n.id === id ? { ...n, read: true } : n)));
   const markAllRead = () =>
-    setNotis((all) =>
-      all.map((n) => (n.toUserId === user?.id ? { ...n, read: true } : n))
-    );
+    setNotis((all) => all.map((n) => (n.toUserId === userId ? { ...n, read: true } : n)));
 
   const jumpToListing = (itemId) => {
     const el = document.getElementById(`listing-${itemId}`);
@@ -949,9 +1054,7 @@ export default function StudentMarketplace() {
   const [price, setPrice] = useState("");
   const [currency, setCurrency] = useState("$");
   const [mainCategory, setMainCategory] = useState(MAIN_CATEGORIES[0]);
-  const [subCategory, setSubCategory] = useState(
-    CATEGORY_MAP[MAIN_CATEGORIES[0]][0] || ""
-  );
+  const [subCategory, setSubCategory] = useState(CATEGORY_MAP[MAIN_CATEGORIES[0]][0] || "");
   const [condition, setCondition] = useState("");
   const [desc, setDesc] = useState("");
   const [photos, setPhotos] = useState([]);
@@ -1018,9 +1121,7 @@ export default function StudentMarketplace() {
   }
 
   const onPickPhotos = async (e) => {
-    const files = Array.from(e.target.files || []).filter((f) =>
-      f.type.startsWith("image/")
-    );
+    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith("image/"));
     const slots = Math.max(0, 6 - photos.length);
     const chosen = files.slice(0, slots);
 
@@ -1044,11 +1145,7 @@ export default function StudentMarketplace() {
     const tempId = `m${Date.now()}`;
 
     const myProgram =
-      user?.program ||
-      user?.academicProgram ||
-      user?.programName ||
-      user?.selectedProgram ||
-      "";
+      user?.program || user?.academicProgram || user?.programName || user?.selectedProgram || "";
 
     const myPhoto =
       user?.photoUrl ||
@@ -1075,7 +1172,7 @@ export default function StudentMarketplace() {
       sellerLocation: sellerLocation.trim(),
 
       seller: {
-        id: user?.id || user?.uid || user?.userId || null,
+        id: userId, // ✅ canonical
         name: user?.name || user?.fullName || "Student",
         program: myProgram,
         photoUrl: myPhoto,
@@ -1113,9 +1210,7 @@ export default function StudentMarketplace() {
         description: baseItem.description,
         price: baseItem.price,
         currency: baseItem.currency,
-        category: `${baseItem.mainCategory}${
-          baseItem.subCategory ? ` • ${baseItem.subCategory}` : ""
-        }`,
+        category: `${baseItem.mainCategory}${baseItem.subCategory ? ` • ${baseItem.subCategory}` : ""}`,
         condition: baseItem.condition || "Used",
         images: imgs,
         sellerId: baseItem.seller?.id || null,
@@ -1178,14 +1273,12 @@ export default function StudentMarketplace() {
   const [subFilter, setSubFilter] = useState("All");
   const [showMine, setShowMine] = useState(false);
 
-  const visibleItems = items
-    .filter((i) => !i.deleted)
-    .filter((i) => i.university === uni);
+  const visibleItems = items.filter((i) => !i.deleted).filter((i) => i.university === uni);
 
   const filtered = visibleItems
     .filter((i) => (catFilter === "All" ? true : i.mainCategory === catFilter))
     .filter((i) => (subFilter === "All" ? true : (i.subCategory || "") === subFilter))
-    .filter((i) => (showMine ? i.seller && i.seller.id === user?.id : true))
+    .filter((i) => (showMine ? i.seller && i.seller.id === userId : true)) // ✅ canonical
     .filter((i) =>
       q
         ? i.title.toLowerCase().includes(q.toLowerCase()) ||
@@ -1293,15 +1386,6 @@ export default function StudentMarketplace() {
             authorPhoto: viewer?.photoUrl,
           });
         }
-
-        // Optional: refresh thread after post to reconcile IDs
-        // (kept OFF for speed; uncomment if you want server-truth immediately)
-        // setThreadByItemId((m) => {
-        //   const copy = { ...m };
-        //   delete copy[itemId];
-        //   return copy;
-        // });
-        // await ensureThreadLoaded(itemId);
       } catch (err) {
         console.error("[StudentMarketplace] addComment backend save failed", err);
       }
@@ -1379,11 +1463,11 @@ export default function StudentMarketplace() {
               </button>
             </div>
             <ul className="divide-y divide-slate-100">
-              {notis.filter((n) => n.toUserId === user?.id).length === 0 && (
+              {notis.filter((n) => n.toUserId === userId).length === 0 && (
                 <li className="px-3 py-3 text-sm text-slate-500">No notifications yet.</li>
               )}
               {notis
-                .filter((n) => n.toUserId === user?.id)
+                .filter((n) => n.toUserId === userId)
                 .map((n) => (
                   <li
                     key={n.id}
@@ -1397,7 +1481,6 @@ export default function StudentMarketplace() {
                         setFocusThread({ itemId: n.itemId, rootId: n.rootId });
 
                         // ✅ Ensure thread loaded before jump highlight if user opens it
-                        // (does not auto-open comments; Comments handles open state)
                         ensureThreadLoaded(n.itemId);
 
                         jumpToListing(n.itemId);
@@ -1422,9 +1505,7 @@ export default function StudentMarketplace() {
           <Card square>
             <CardHeader title="Student Marketplace" square />
             <CardBody>
-              <p className="text-xs text-slate-700 text-center">
-                Only for {uni || "your university"}.
-              </p>
+              <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
               {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
               <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
                 {feedLoading ? "Refreshing listings…" : "\u00A0"}
@@ -1445,10 +1526,11 @@ export default function StudentMarketplace() {
               </button>
               {showMine && (
                 <ul className="mt-3 space-y-2 text-sm">
-                  {visibleItems.filter((i) => i.seller && i.seller.id === user?.id).length ===
-                    0 && <li className="text-slate-500">No listings yet.</li>}
+                  {visibleItems.filter((i) => i.seller && i.seller.id === userId).length === 0 && (
+                    <li className="text-slate-500">No listings yet.</li>
+                  )}
                   {visibleItems
-                    .filter((i) => i.seller && i.seller.id === user?.id)
+                    .filter((i) => i.seller && i.seller.id === userId)
                     .map((i) => (
                       <li key={i.id} className="flex items-center gap-2">
                         <span className="truncate">{i.title}</span>
@@ -1542,17 +1624,13 @@ export default function StudentMarketplace() {
           </Card>
 
           <GoogleSidebarAd />
-          <div
-            className="sticky top-[160px] pt-2 overflow-hidden"
-            style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
-          >
+          <div className="sticky top-[160px] pt-2 overflow-hidden" style={{ maxHeight: "calc(100vh - 160px - 24px)" }}>
             <GoogleSidebarAd />
           </div>
         </aside>
 
         {/* CENTER: Composer + Feed */}
         <section className="space-y-4">
-          {/* (Composer remains unchanged from your version below) */}
           <Card>
             <CardBody>
               {!openComposer ? (
@@ -1567,7 +1645,6 @@ export default function StudentMarketplace() {
                 </div>
               ) : (
                 <form onSubmit={onCreate} className="space-y-3">
-                  {/* --- your composer UI unchanged --- */}
                   <div className="flex items-center gap-3">
                     <Avatar url={user?.photoUrl} name={user?.name} />
                     <div className="min-w-0">
@@ -1641,13 +1718,7 @@ export default function StudentMarketplace() {
 
                     <label className="text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2">
                       📷 Photos (max 6)
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={onPickPhotos}
-                      />
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={onPickPhotos} />
                     </label>
                   </div>
 
@@ -1684,11 +1755,7 @@ export default function StudentMarketplace() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {photos.map((img, idx) => (
                         <div key={idx} className="relative">
-                          <img
-                            src={img.dataUrl}
-                            alt={img.name}
-                            className="w-full h-32 object-cover rounded"
-                          />
+                          <img src={img.dataUrl} alt={img.name} className="w-full h-32 object-cover rounded" />
                           <button
                             type="button"
                             onClick={() => setPhotos((arr) => arr.filter((_, i) => i !== idx))}
@@ -1735,17 +1802,10 @@ export default function StudentMarketplace() {
           </Card>
 
           {filtered.map((item) => {
-            const sellerFromPost =
-              item.seller && typeof item.seller === "object" ? item.seller : {};
+            const sellerFromPost = item.seller && typeof item.seller === "object" ? item.seller : {};
 
             const seller = {
-              id:
-                sellerFromPost.id ??
-                sellerFromPost.uid ??
-                item.sellerId ??
-                item.authorId ??
-                item.ownerId ??
-                null,
+              id: sellerFromPost.id ?? sellerFromPost.uid ?? item.sellerId ?? item.authorId ?? item.ownerId ?? null,
               name:
                 sellerFromPost.name ??
                 sellerFromPost.fullName ??
@@ -1754,12 +1814,7 @@ export default function StudentMarketplace() {
                 item.author ??
                 item.userName ??
                 "Student",
-              program:
-                sellerFromPost.program ??
-                item.sellerProgram ??
-                item.authorProgram ??
-                item.program ??
-                "",
+              program: sellerFromPost.program ?? item.sellerProgram ?? item.authorProgram ?? item.program ?? "",
               photoUrl:
                 sellerFromPost.photoUrl ??
                 sellerFromPost.avatarUrl ??
@@ -1772,12 +1827,7 @@ export default function StudentMarketplace() {
 
             const mobile = (item.sellerMobile ?? item.mobile ?? "").toString().trim();
             const whatsapp = (item.sellerWhatsapp ?? item.whatsapp ?? "").toString().trim();
-            const locationText = (
-              item.sellerLocation ??
-              item.availabilityLocation ??
-              item.locationText ??
-              ""
-            )
+            const locationText = (item.sellerLocation ?? item.availabilityLocation ?? item.locationText ?? "")
               .toString()
               .trim();
 
@@ -1790,12 +1840,7 @@ export default function StudentMarketplace() {
                 ? item.text
                 : "";
 
-            const rawPrice =
-              item.price ??
-              item.meta?.price ??
-              item.meta?.marketplace?.price ??
-              item.details?.price ??
-              item.extra?.price;
+            const rawPrice = item.price ?? item.meta?.price ?? item.meta?.marketplace?.price ?? item.details?.price ?? item.extra?.price;
 
             const priceNum = Number(rawPrice);
             const hasPrice = Number.isFinite(priceNum);
@@ -1818,8 +1863,7 @@ export default function StudentMarketplace() {
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-900">{seller.name}</div>
                       <div className="text-xs text-slate-500">
-                        {seller.program}{" "}
-                        {item.createdAt ? `• ${new Date(item.createdAt).toLocaleString()}` : ""}
+                        {seller.program} {item.createdAt ? `• ${new Date(item.createdAt).toLocaleString()}` : ""}
                       </div>
                     </div>
                     <Badge>
@@ -1827,7 +1871,7 @@ export default function StudentMarketplace() {
                       {item.subCategory ? ` • ${item.subCategory}` : ""}
                     </Badge>
 
-                    {seller.id === user?.id && (
+                    {seller.id === userId && ( // ✅ canonical
                       <button
                         onClick={() => deleteListing(item.id)}
                         className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
@@ -1848,9 +1892,7 @@ export default function StudentMarketplace() {
                           {hasPrice ? priceNum.toFixed(2) : ""}
                         </span>
 
-                        {item.condition ? (
-                          <span className="text-xs text-slate-500">• {item.condition}</span>
-                        ) : null}
+                        {item.condition ? <span className="text-xs text-slate-500">• {item.condition}</span> : null}
                       </div>
 
                       {(mobile || whatsapp || locationText) && (
@@ -1882,10 +1924,7 @@ export default function StudentMarketplace() {
                       )}
 
                       {locationText && (
-                        <span
-                          className="inline-flex items-center gap-1 text-slate-700"
-                          title={`Location: ${locationText}`}
-                        >
+                        <span className="inline-flex items-center gap-1 text-slate-700" title={`Location: ${locationText}`}>
                           <LocationPinIcon className="h-4 w-4 text-red-600" />
                           <span className="text-sm">{locationText}</span>
                         </span>
@@ -1899,12 +1938,7 @@ export default function StudentMarketplace() {
 
                   {item.images?.length > 0 && (
                     <div className="mt-3">
-                      <ImageGrid
-                        images={item.images}
-                        onOpen={(idx) => openLightbox(item.images, idx)}
-                        max={4}
-                        tileClass="h-44"
-                      />
+                      <ImageGrid images={item.images} onOpen={(idx) => openLightbox(item.images, idx)} max={4} tileClass="h-44" />
                     </div>
                   )}
 
@@ -1962,19 +1996,10 @@ export default function StudentMarketplace() {
                   )}
 
                   <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
-                    <button
-                      onClick={() => toggleLike(item.id)}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      👍 Like{" "}
-                      {item.likes > 0 && (
-                        <span className="text-slate-500">({item.likes})</span>
-                      )}
+                    <button onClick={() => toggleLike(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+                      👍 Like {item.likes > 0 && <span className="text-slate-500">({item.likes})</span>}
                     </button>
-                    <button
-                      onClick={() => toggleSave(item.id)}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
+                    <button onClick={() => toggleSave(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
                       {item.saved ? "★ Saved" : "☆ Save"}
                     </button>
                     <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">
@@ -1984,13 +2009,10 @@ export default function StudentMarketplace() {
 
                   {/* ✅ Lazy-loaded comments: use cache + onOpen */}
                   <Comments
-                    item={{
-                      ...itemForComments,
-                      comments: threadByItemId[item.id] || [],
-                    }}
-                    currentUser={user}
+                    item={{ ...itemForComments, comments: threadByItemId[item.id] || [] }}
+                    currentUser={me} // ✅ canonical user injected here
                     focusThread={focusThread}
-                    onAdd={(txt, parentId) => addComment(item.id, txt, user, parentId)}
+                    onAdd={(txt, parentId) => addComment(item.id, txt, me, parentId)} // ✅ canonical viewer
                     onOpen={() => ensureThreadLoaded(item.id)}
                     loading={!!threadLoading[item.id]}
                   />
@@ -1998,6 +2020,18 @@ export default function StudentMarketplace() {
               </Card>
             );
           })}
+
+          {/* ✅ Pagination: Load more */}
+          {cursor && (
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="mt-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            >
+              {loadingMore ? "Loading…" : "Load more"}
+            </button>
+          )}
         </section>
 
         {/* RIGHT: Tips / rules */}
@@ -2023,30 +2057,23 @@ export default function StudentMarketplace() {
           </Card>
 
           <GoogleSidebarAd />
-          <div
-            className="sticky top-[160px] pt-2 overflow-hidden"
-            style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
-          >
+          <div className="sticky top-[160px] pt-2 overflow-hidden" style={{ maxHeight: "calc(100vh - 160px - 24px)" }}>
             <GoogleSidebarAd />
           </div>
         </aside>
       </main>
+
       {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
       {payOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center px-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
-            <div className="text-lg font-semibold text-slate-900">
-              Unlock unlimited listings
-            </div>
+            <div className="text-lg font-semibold text-slate-900">Unlock unlimited listings</div>
             <div className="mt-2 text-sm text-slate-700">
-              You’ve used your 1 free listing. Pay <b>$99.99</b> to post unlimited listings for{" "}
-              <b>120 days</b>.
+              You’ve used your 1 free listing. Pay <b>$99.99</b> to post unlimited listings for <b>120 days</b>.
             </div>
 
             <div className="mt-3 text-xs text-slate-500">
-              {payInfo?.paidUntil
-                ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}`
-                : ""}
+              {payInfo?.paidUntil ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}` : ""}
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-2">
@@ -2077,7 +2104,6 @@ export default function StudentMarketplace() {
           </div>
         </div>
       )}
-      
     </div>
   );
 }
@@ -2134,19 +2160,14 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         el.classList.add("ring-2", "ring-emerald-400", "rounded-xl");
-        setTimeout(
-          () => el.classList.remove("ring-2", "ring-emerald-400", "rounded-xl"),
-          1800
-        );
+        setTimeout(() => el.classList.remove("ring-2", "ring-emerald-400", "rounded-xl"), 1800);
         setReplyForId(null);
       }
     }, 80);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusThread, item.id]);
 
-  const privacyNote = isSeller
-    ? "Only you and the commenter see each thread."
-    : "Only you and the seller see this thread.";
+  const privacyNote = isSeller ? "Only you and the commenter see each thread." : "Only you and the seller see this thread.";
 
   const submitTopLevel = (e) => {
     e.preventDefault();
@@ -2195,10 +2216,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                   <div className="text-xs text-slate-500">{c.authorProgram || ""}</div>
                   <div className="text-sm text-slate-800 mt-1 whitespace-pre-wrap">{c.text}</div>
 
-                  <button
-                    onClick={() => setReplyForId(replyForId === c.id ? null : c.id)}
-                    className="mt-2 text-xs text-blue-600 underline"
-                  >
+                  <button onClick={() => setReplyForId(replyForId === c.id ? null : c.id)} className="mt-2 text-xs text-blue-600 underline">
                     {replyForId === c.id ? "Cancel reply" : "Reply"}
                   </button>
 
@@ -2211,9 +2229,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                         <div className="min-w-0 bg-white rounded-2xl px-3 py-2 border border-slate-100">
                           <div className="text-sm font-medium text-slate-900">{r.author}</div>
                           <div className="text-xs text-slate-500">{r.authorProgram || ""}</div>
-                          <div className="text-sm text-slate-800 mt-1 whitespace-pre-wrap">
-                            {r.text}
-                          </div>
+                          <div className="text-sm text-slate-800 mt-1 whitespace-pre-wrap">{r.text}</div>
                         </div>
                       </div>
                     </div>
@@ -2234,9 +2250,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                       <div className="flex items-start gap-2">
                         {(() => {
                           const threadReplies = repliesByParent[c.id] || [];
-                          const lastMsg = threadReplies.length
-                            ? threadReplies[threadReplies.length - 1]
-                            : c;
+                          const lastMsg = threadReplies.length ? threadReplies[threadReplies.length - 1] : c;
 
                           const replyToName =
                             lastMsg?.authorId && lastMsg.authorId === currentUser?.id
@@ -2256,10 +2270,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                                 rows={1}
                                 className="flex-1 border border-slate-200 rounded-2xl px-3 py-2 resize-none overflow-hidden leading-5"
                               />
-                              <button
-                                type="submit"
-                                className="rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50"
-                              >
+                              <button type="submit" className="rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50">
                                 Reply
                               </button>
                             </>
@@ -2273,6 +2284,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
             </div>
           ))}
 
+          {/* Top-level composer intentionally kept disabled exactly like your current file */}
           {/*<form onSubmit={submitTopLevel}>
             <div className="flex items-start gap-2">
               <textarea

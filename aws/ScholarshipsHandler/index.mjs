@@ -76,10 +76,12 @@ function corsHeaders(origin) {
 
   return {
     "access-control-allow-origin": o,
-    "access-control-allow-credentials": "true", // ✅ REQUIRED for credentials: "include"
+    "access-control-allow-credentials": "true", // ✅ REQUIRED
     "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS",
-    "access-control-allow-headers": "content-type,authorization,stripe-signature,verif-hash",
+    "access-control-allow-headers":
+      "content-type,authorization,stripe-signature,verif-hash",
     "access-control-max-age": "86400",
+    "vary": "Origin", // ✅ avoid caching wrong origin
   };
 }
 
@@ -248,6 +250,48 @@ function rewriteImagesToCloudFront(images) {
   });
 }
 
+/* ------------------ ✅ NEW: return-url sanitization helpers ------------------ */
+
+// keep origin only, else fallback
+function originOnly(u, fallback = "https://scholarsknowledge.com") {
+  const s = String(u || "").trim();
+  if (!s) return fallback;
+  try {
+    return new URL(s).origin;
+  } catch {
+    return fallback;
+  }
+}
+
+// only allow known origins (prevents open-redirect abuse)
+function normalizeAllowedOrigin(candidateOrigin) {
+  const allow = new Set([
+    "https://scholarsknowledge.com",
+    "https://www.scholarsknowledge.com",
+    "http://localhost:5176",
+  ]);
+  const o = String(candidateOrigin || "").trim();
+  return allow.has(o) ? o : "https://scholarsknowledge.com";
+}
+
+function buildMarketplaceReturnUrls(parsed, requestOrigin) {
+  // Prefer frontend-provided URLs, but sanitize to origin-only + allowlist.
+  const rawSuccess =
+    parsed?.successUrl || parsed?.success_url || parsed?.redirectUrl || parsed?.redirect_url || "";
+  const rawCancel = parsed?.cancelUrl || parsed?.cancel_url || "";
+
+  const envFallbackOrigin = originOnly(STRIPE_SUCCESS_URL || STRIPE_CANCEL_URL || FLW_REDIRECT_URL);
+
+  const baseOrigin = normalizeAllowedOrigin(
+    originOnly(rawSuccess || rawCancel || requestOrigin || envFallbackOrigin, envFallbackOrigin)
+  );
+
+  const successUrl = `${baseOrigin}/student-marketplace?paid=1`;
+  const cancelUrl = `${baseOrigin}/student-marketplace?canceled=1`;
+
+  return { baseOrigin, successUrl, cancelUrl };
+}
+
 /* ------------------ billing helpers ------------------ */
 
 function billingKey(userId) {
@@ -351,19 +395,15 @@ async function consumeFreeIfAvailable(userId) {
 
 /* ------------------ Stripe helpers (no SDK; direct API) ------------------ */
 
-async function stripeCreateCheckoutSession({ userId, email, name }) {
+async function stripeCreateCheckoutSession({ userId, email, name, successUrl, cancelUrl }) {
   if (!STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY is missing");
 
   const params = new URLSearchParams();
   params.append("mode", "payment");
-  params.append(
-    "success_url",
-    `${STRIPE_SUCCESS_URL.replace(/\/+$/, "")}/student-marketplace?paid=1`
-  );
-  params.append(
-    "cancel_url",
-    `${STRIPE_CANCEL_URL.replace(/\/+$/, "")}/student-marketplace?canceled=1`
-  );
+
+  // ✅ Use computed return URLs (already forced to /student-marketplace?...).
+  params.append("success_url", String(successUrl));
+  params.append("cancel_url", String(cancelUrl));
 
   if (email) params.append("customer_email", email);
 
@@ -427,7 +467,7 @@ function stripeVerifySignature(rawBody, signatureHeader) {
 
 /* ------------------ Flutterwave helpers ------------------ */
 
-async function flutterwaveCreatePaymentLink({ userId, email, name }) {
+async function flutterwaveCreatePaymentLink({ userId, email, name, redirectUrl }) {
   if (!FLW_SECRET_KEY) throw new Error("FLW_SECRET_KEY is missing");
 
   const tx_ref = `flw_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -436,7 +476,10 @@ async function flutterwaveCreatePaymentLink({ userId, email, name }) {
     tx_ref,
     amount: 99.99,
     currency: "USD",
-    redirect_url: `${FLW_REDIRECT_URL.replace(/\/+$/, "")}/student-marketplace?paid=1`,
+
+    // ✅ Use computed redirect (already forced to /student-marketplace?paid=1)
+    redirect_url: String(redirectUrl),
+
     payment_options: "card,mobilemoney,ussd,banktransfer",
     customer: {
       email: email || "unknown@scholarsknowledge.com",
@@ -564,11 +607,25 @@ export const handler = async (event) => {
         return badRequest("provider must be stripe or flutterwave", origin);
       }
 
+      // ✅ NEW: compute safe return URLs (supports successUrl/cancelUrl/redirectUrl, etc.)
+      const { successUrl, cancelUrl } = buildMarketplaceReturnUrls(parsed, origin);
+
       if (provider === "stripe") {
-        const session = await stripeCreateCheckoutSession({ userId, email, name });
+        const session = await stripeCreateCheckoutSession({
+          userId,
+          email,
+          name,
+          successUrl,
+          cancelUrl,
+        });
         return json(200, { ok: true, provider: "stripe", url: session?.url || null }, origin);
       } else {
-        const out = await flutterwaveCreatePaymentLink({ userId, email, name });
+        const out = await flutterwaveCreatePaymentLink({
+          userId,
+          email,
+          name,
+          redirectUrl: successUrl, // Flutterwave only takes one redirect; use "paid" URL
+        });
         return json(200, { ok: true, provider: "flutterwave", url: out.link, tx_ref: out.tx_ref }, origin);
       }
     }

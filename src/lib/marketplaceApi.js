@@ -1,5 +1,6 @@
 // src/lib/marketplaceApi.js
 // Helper for Marketplace API (StudentMarketplace).
+// ✅ Pagination support + backward compatibility + consistent fetch behavior.
 
 const RAW_BASE =
   (import.meta.env.VITE_MARKETPLACE_API_BASE &&
@@ -9,6 +10,7 @@ const RAW_BASE =
 // Strip any trailing slashes so we can safely append paths.
 const BASE = RAW_BASE.replace(/\/+$/, "");
 
+/** Build a full marketplace URL from a path. */
 function buildUrl(path) {
   const rel = String(path || "");
   return `${BASE}${rel.startsWith("/") ? rel : `/${rel}`}`;
@@ -22,6 +24,7 @@ async function readJson(res) {
   } catch {
     data = { raw: text };
   }
+
   if (!res.ok) {
     const msg = data?.error || data?.message || `HTTP ${res.status} ${res.statusText}`;
     const err = new Error(msg);
@@ -32,21 +35,47 @@ async function readJson(res) {
   return data;
 }
 
+// One fetch wrapper so headers/credentials stay consistent everywhere.
+async function apiFetch(path, { method = "GET", headers, body } = {}) {
+  const res = await fetch(buildUrl(path), {
+    method,
+    credentials: "include",
+    headers: {
+      "content-type": "application/json",
+      ...(headers || {}),
+    },
+    ...(body !== undefined
+      ? { body: typeof body === "string" ? body : JSON.stringify(body) }
+      : {}),
+  });
+  return readJson(res);
+}
+
+/* ------------------ NEW: URL origin helper (place near helpers) ------------------ */
+function originOnly(u, fallback = "https://scholarsknowledge.com") {
+  const s = String(u || "").trim();
+  if (!s) return fallback;
+  try {
+    return new URL(s).origin;
+  } catch {
+    // If it's not a valid URL, fallback
+    return fallback;
+  }
+}
+
 /**
- * ✅ Backward-compatible:
- * - Old code: fetchMarketplaceItems() returns array of items.
- * - New pagination: use fetchMarketplaceItemsPage({ limit, cursor, includeComments, university })
+ * ✅ Backward compatible:
+ * Old code expects `fetchMarketplaceItems()` to return an array of items.
  */
 export async function fetchMarketplaceItems() {
-  const res = await fetch(buildUrl("/api/marketplace"), {
-    method: "GET",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-  });
-  const data = await readJson(res);
+  const data = await apiFetch("/api/marketplace", { method: "GET" });
   return Array.isArray(data?.items) ? data.items : [];
 }
 
+/**
+ * ✅ Existing pagination function (keep, so your UI does NOT break).
+ * Returns { items, cursor }
+ */
 export async function fetchMarketplaceItemsPage({
   limit = 30,
   cursor = null,
@@ -59,29 +88,51 @@ export async function fetchMarketplaceItemsPage({
   qs.set("includeComments", includeComments ? "1" : "0");
   if (university) qs.set("university", String(university));
 
-  const res = await fetch(buildUrl(`/api/marketplace?${qs.toString()}`), {
-    method: "GET",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-  });
-  const data = await readJson(res);
+  const data = await apiFetch(`/api/marketplace?${qs.toString()}`, { method: "GET" });
+
   return {
     items: Array.isArray(data?.items) ? data.items : [],
-    cursor: data?.cursor || null,
+    cursor: data?.cursor ?? null,
+  };
+}
+
+/**
+ * ✅ NEW clean helper: Fetch one page (returns { ok, items, cursor }).
+ * Use this for your new "Load more" implementation.
+ */
+export async function fetchMarketplacePage(opts = {}) {
+  const {
+    limit = 30,
+    cursor = null,
+    university = "",
+    includeComments = false,
+  } = opts || {};
+
+  const qs = new URLSearchParams();
+  if (limit) qs.set("limit", String(limit));
+  if (cursor) qs.set("cursor", String(cursor));
+  if (university) qs.set("university", String(university));
+  if (includeComments) qs.set("includeComments", "1");
+
+  const data = await apiFetch(`/api/marketplace?${qs.toString()}`, { method: "GET" });
+
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return {
+    // ✅ Some GET endpoints may not return {ok:true}; treat "items present" as OK.
+    ok: typeof data?.ok === "boolean" ? data.ok : items.length > 0,
+    items,
+    cursor: data?.cursor ?? null,
   };
 }
 
 export async function fetchMarketplaceThread(itemId) {
   if (!itemId) throw new Error("Missing itemId");
-  const res = await fetch(
-    buildUrl(`/api/marketplace/thread?itemId=${encodeURIComponent(itemId)}`),
-    {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-    }
+
+  const data = await apiFetch(
+    `/api/marketplace/thread?itemId=${encodeURIComponent(itemId)}`,
+    { method: "GET" }
   );
-  const data = await readJson(res);
+
   return {
     itemId: data?.itemId || itemId,
     comments: Array.isArray(data?.comments) ? data.comments : [],
@@ -90,24 +141,18 @@ export async function fetchMarketplaceThread(itemId) {
 }
 
 export async function createMarketplaceItem(payload) {
-  const res = await fetch(buildUrl("/api/marketplace"), {
+  const data = await apiFetch("/api/marketplace", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(payload || {}),
+    body: payload || {},
   });
-  const data = await readJson(res);
   return data?.item || null;
 }
 
 export async function deleteMarketplaceItem(id) {
   if (!id) throw new Error("Missing id");
-  const res = await fetch(buildUrl(`/api/marketplace/${encodeURIComponent(id)}`), {
+  const data = await apiFetch(`/api/marketplace/${encodeURIComponent(id)}`, {
     method: "DELETE",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
   });
-  const data = await readJson(res);
   return data || { ok: true, deletedId: id };
 }
 
@@ -119,14 +164,14 @@ export async function createMarketplaceComment({
   authorProgram,
   authorPhoto,
 }) {
-  const res = await fetch(`${BASE}/api/marketplace/${encodeURIComponent(itemId)}/comments`, {
+  if (!itemId) throw new Error("Missing itemId");
+
+  const data = await apiFetch(`/api/marketplace/${encodeURIComponent(itemId)}/comments`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ text, authorId, authorName, authorProgram, authorPhoto }),
+    body: { text, authorId, authorName, authorProgram, authorPhoto },
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data?.ok) throw new Error(data?.error || "createMarketplaceComment failed");
+
+  if (!data?.ok) throw new Error(data?.error || "createMarketplaceComment failed");
   return data;
 }
 
@@ -139,55 +184,92 @@ export async function createMarketplaceReply({
   authorProgram,
   authorPhoto,
 }) {
-  const res = await fetch(
-    `${BASE}/api/marketplace/${encodeURIComponent(itemId)}/comments/${encodeURIComponent(
+  if (!itemId) throw new Error("Missing itemId");
+  if (!commentId) throw new Error("Missing commentId");
+
+  const data = await apiFetch(
+    `/api/marketplace/${encodeURIComponent(itemId)}/comments/${encodeURIComponent(
       commentId
     )}/replies`,
     {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ text, authorId, authorName, authorProgram, authorPhoto }),
+      body: { text, authorId, authorName, authorProgram, authorPhoto },
     }
   );
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data?.ok) throw new Error(data?.error || "createMarketplaceReply failed");
+
+  if (!data?.ok) throw new Error(data?.error || "createMarketplaceReply failed");
   return data;
 }
 
 export async function getMarketplaceUploadUrl({ fileName, contentType } = {}) {
-  const res = await fetch(buildUrl("/api/marketplace/upload-url"), {
+  return apiFetch("/api/marketplace/upload-url", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ fileName, contentType }),
+    body: { fileName, contentType },
   });
-  const data = await readJson(res);
-  return data;
 }
 
 /* ------------------ Billing / Entitlement ------------------ */
 
-export async function getMarketplaceEntitlement(userId) {
+// ✅ Backward compatible: supports getMarketplaceEntitlement(userId) and getMarketplaceEntitlement({userId})
+// ✅ Also accepts {id} or {uid} (alias) to avoid cross-page mismatches.
+export async function getMarketplaceEntitlement(arg) {
+  const userId =
+    typeof arg === "string"
+      ? arg
+      : String(arg?.userId || arg?.id || arg?.uid || "").trim();
+
   if (!userId) throw new Error("Missing userId");
-  const res = await fetch(
-    buildUrl(`/api/marketplace/entitlement?userId=${encodeURIComponent(userId)}`),
-    {
-      method: "GET",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-    }
+
+  return apiFetch(
+    `/api/marketplace/entitlement?userId=${encodeURIComponent(userId)}`,
+    { method: "GET" }
   );
-  return readJson(res);
 }
 
-export async function startMarketplaceCheckout({ userId, provider = "stripe", email = "", name = "" }) {
-  if (!userId) throw new Error("Missing userId");
-  const res = await fetch(buildUrl("/api/marketplace/checkout/start"), {
+// ✅ Accepts userId plus optional aliases in case older callers pass id/uid.
+export async function startMarketplaceCheckout({
+  userId,
+  id,
+  uid,
+  provider = "stripe",
+  email = "",
+  name = "",
+} = {}) {
+  const finalUserId = String(userId || id || uid || "").trim();
+  if (!finalUserId) throw new Error("Missing userId");
+
+  // ✅ NEW: force return URLs back to StudentMarketplace route
+  // Works on localhost and production automatically.
+  const origin = originOnly(
+    (typeof window !== "undefined" && window.location && window.location.href) || "",
+    "https://scholarsknowledge.com"
+  );
+
+  // IMPORTANT: must match your actual route path in React Router
+  const successUrl = `${origin}/student-marketplace?paid=1`;
+  const cancelUrl = `${origin}/student-marketplace?canceled=1`;
+
+  // ✅ Send both styles so backend can use what it expects without breaking anything:
+  // - successUrl/cancelUrl (common)
+  // - success_url/cancel_url (some backends)
+  // - redirectUrl (Flutterwave-style single return)
+  const body = {
+    userId: finalUserId,
+    provider,
+    email,
+    name,
+
+    successUrl,
+    cancelUrl,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    redirectUrl: successUrl,
+  };
+
+  return apiFetch("/api/marketplace/checkout", {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ userId, provider, email, name }),
-  });
-  return readJson(res); // { ok:true, url }
+    body,
+  }); // { ok:true, url }
 }
+
+export { buildUrl };
