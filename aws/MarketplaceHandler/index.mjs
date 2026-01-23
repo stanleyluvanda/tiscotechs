@@ -404,10 +404,12 @@ async function consumeFreeIfAvailable(userId) {
   params.append(
     "success_url",
     `${STRIPE_SUCCESS_URL.replace(/\/+$/, "")}/student-marketplace?paid=1`
+    
   );
   params.append(
     "cancel_url",
     `${STRIPE_CANCEL_URL.replace(/\/+$/, "")}/student-marketplace?canceled=1`
+    
   );
 
   if (email) params.append("customer_email", email);

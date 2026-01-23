@@ -455,6 +455,7 @@ const POST_TYPES = [
   "Scholarships",
   "Academic Books",
   "Researches/Thesis",
+  "Academic Essay",
   "Students' jokes",  // NEW
   "Video"             // visible in filter; only lecturers can create
 ];
@@ -4043,7 +4044,7 @@ const feedCombined = useMemo(() => {
                   onClick={()=>setComposerOpen(true)}
                   className="flex-1 text-left border border-slate-100 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"
                 >
-                  Start a post
+                  Start a post (Post academics ,e.g., FN 101-Introduction to Finance)
                 </button>
               </div>
             ) : (
@@ -4082,7 +4083,7 @@ const feedCombined = useMemo(() => {
                   <input
                     value={composerTitle}
                     onChange={(e)=>setComposerTitle(e.target.value)}
-                    placeholder="Add a descriptive title…"
+                    placeholder="Add a descriptive title…e.g,FN 101-Introduction to Finance,etc"
                     className="mt-1 w-full border border-slate-100 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     maxLength={140}
                   />

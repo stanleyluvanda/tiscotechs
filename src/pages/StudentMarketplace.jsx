@@ -568,6 +568,40 @@ export default function StudentMarketplace() {
   const [payOpen, setPayOpen] = useState(false);
   const [payBusy, setPayBusy] = useState(false);
   const [payInfo, setPayInfo] = useState(null); // entitlement payload
+  // ✅ NEW: subscription toast popup
+  /*const [subToast, setSubToast] = useState({ open: false, type: "success", msg: "" });*/
+  const [subToast, setSubToast] = useState({
+  open: false,
+  type: "success",
+  msg: "",
+  id: 0,
+  });
+
+  // ✅ ADD THIS PERSIST/RESTORE BLOCK HERE (right after toast state)
+  useEffect(() => {
+    try {
+      if (subToast?.open) {
+        sessionStorage.setItem("mk_sub_toast", JSON.stringify(subToast));
+      } else {
+        sessionStorage.removeItem("mk_sub_toast");
+      }
+    } catch {}
+  }, [subToast]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("mk_sub_toast");
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved?.open) setSubToast(saved);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+
+
 
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
@@ -601,9 +635,27 @@ export default function StudentMarketplace() {
 
     const run = async () => {
       // If canceled, just show paywall again and clean the URL
+      /*if (canceled) {
+        setPayBusy(false);
+        setPayOpen(true);
+        cleanUrl();
+        return;
+      }*/
       if (canceled) {
         setPayBusy(false);
         setPayOpen(true);
+
+        // ✅ Optional: show cancel toast
+        setSubToast({
+          open: true,
+          type: "info",
+          msg: "Payment canceled. You can subscribe anytime to unlock unlimited listings.",
+           id: Date.now(),
+         })
+        /*setTimeout(() => {
+          setSubToast((t) => ({ ...t, open: false }));
+        }, 4500);*/
+
         cleanUrl();
         return;
       }
@@ -623,11 +675,32 @@ export default function StudentMarketplace() {
 
           // ✅ consider it "active" if backend returns paidUntil in the future
           const paidUntil = ent?.paidUntil ? new Date(ent.paidUntil).getTime() : 0;
-          if (paidUntil && paidUntil > Date.now()) {
+          /*if (paidUntil && paidUntil > Date.now()) {
             setPayInfo(ent);
             setPayOpen(false); // ✅ close paywall automatically
             break;
+          }*/
+          if (paidUntil && paidUntil > Date.now()) {
+            setPayInfo(ent);
+            setPayOpen(false); // ✅ close paywall automatically
+
+            // ✅ Success toast
+            setSubToast({
+              open: true,
+              type: "success",
+              msg: "Subscription successful. Marketplace Unlimited is now active.",
+               id: Date.now(),
+            });
+            /*setTimeout(() => {
+              setSubToast((t) => ({ ...t, open: false }));
+            }, 4500);*/
+
+            break;
           }
+
+
+
+
         } catch (e) {
           // ignore and retry
         }
@@ -2063,50 +2136,210 @@ export default function StudentMarketplace() {
         </aside>
       </main>
 
-      {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
-      {payOpen && (
-        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center px-4">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-5">
-            <div className="text-lg font-semibold text-slate-900">Unlock unlimited listings</div>
-            <div className="mt-2 text-sm text-slate-700">
-              You’ve used your 1 free listing. Pay <b>$99.99</b> to post unlimited listings for <b>120 days</b>.
-            </div>
 
-            <div className="mt-3 text-xs text-slate-500">
-              {payInfo?.paidUntil ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}` : ""}
-            </div>
+      {/* ✅ Subscription toast popup (add here) */}
+      {subToast.open && (
+        <div className="fixed top-[88px] left-1/2 -translate-x-1/2 z-[99999] px-4 w-full">
+          <div className="mx-auto max-w-xl">
+            <div
+              className={`rounded-2xl border shadow-xl overflow-hidden ${
+                subToast.type === "success"
+                  ? "border-emerald-200 bg-white"
+                  : "border-slate-200 bg-white"
+              }`}
+            >
+              <div className="flex items-start gap-3 p-4">
+                <div
+                  className={`h-10 w-10 rounded-2xl border flex items-center justify-center text-xl ${
+                    subToast.type === "success"
+                      ? "bg-emerald-50 border-emerald-100"
+                      : "bg-slate-50 border-slate-100"
+                  }`}
+                >
+                  {subToast.type === "success" ? "✅" : "ℹ️"}
+                </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2">
-              <button
-                disabled={payBusy}
-                onClick={() => beginCheckout("stripe")}
-                className="w-full rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-60"
-              >
-                Pay by Card (Stripe)
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-900">
+                    {subToast.type === "success" ? "Subscription successful" : "Payment canceled"}
+                  </div>
+                  <div className="mt-0.5 text-xs text-slate-600">
+                    {subToast.msg}
+                  </div>
+                </div>
+
+                {/*<button
+                  type="button"
+                  onClick={() => setSubToast((t) => ({ ...t, open: false }))}
+                  className="ml-auto rounded-full border border-slate-200 px-3 py-1 text-xs hover:bg-slate-50"
+                >
+                  Close
+                </button>*/}
+                <button
+                 type="button"
+                  onClick={() => setSubToast((t) => ({ ...t, open: false }))}
+                className="ml-auto inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700"
+                aria-label="Close"
+                 title="Close"
+               >
+                  ✕
               </button>
+              </div>
 
-              <button
-                disabled={payBusy}
-                onClick={() => beginCheckout("flutterwave")}
-                className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
-              >
-                Pay by Mobile Money (Flutterwave)
-              </button>
-
-              <button
-                disabled={payBusy}
-                onClick={() => setPayOpen(false)}
-                className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
-              >
-                Not now
-              </button>
+              <div className={`${subToast.type === "success" ? "bg-emerald-500" : "bg-slate-400"} h-1`} />
             </div>
           </div>
         </div>
       )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+{/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
+{payOpen && (
+  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] flex items-center justify-center px-4">
+    <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center text-2xl">
+            🛍️
+          </div>
+
+          <div className="min-w-0">
+            <div className="text-sm uppercase tracking-wide text-white/85">
+              Welcome to Student Marketplace
+            </div>
+            <div className="text-2xl font-bold leading-tight">
+              Subscribe to Marketplace Unlimited
+            </div>
+            <div className="mt-1 text-sm text-white/90">
+              Reach your fellow students as your immediate market — faster, easier, and trusted.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-6">
+        {/* Value cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              📣 Visibility
+            </div>
+            <div className="mt-1 text-xs text-slate-600">
+              Put your listings in front of students at your university.
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              ⚡ Speed
+            </div>
+            <div className="mt-1 text-xs text-slate-600">
+              Post without limits and respond to buyers instantly.
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              🎓 Semester Access
+            </div>
+            <div className="mt-1 text-xs text-slate-600">
+              Unlimited listings for one semester.
+            </div>
+          </div>
+        </div>
+
+        {/* Pricing */}
+        <div className="mt-5 rounded-2xl border border-slate-200 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xl">
+                ✅
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-slate-900">
+                  Unlimited Listings Subscription
+                </div>
+                <div className="text-xs text-slate-600">
+                  You’ve used your 1 free listing. Unlock unlimited listings for <b>one semester</b>.
+                </div>
+              </div>
+            </div>
+
+            <div className="sm:ml-auto">
+              <div className="text-xs text-slate-500">Subscription</div>
+              <div className="text-2xl font-extrabold text-slate-900">$99.99</div>
+            </div>
+          </div>
+
+          <div className="mt-3 text-xs text-slate-500">
+            {payInfo?.paidUntil
+              ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}`
+              : "🔒 Secure checkout. Subscription activates instantly after payment."}
+          </div>
+        </div>
+
+        {/* Actions (logic unchanged) */}
+        <div className="mt-5 grid grid-cols-1 gap-2">
+          <button
+            disabled={payBusy}
+            onClick={() => beginCheckout("stripe")}
+            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 text-sm font-semibold shadow hover:opacity-95 disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            <span className="text-base">💳</span>
+            Subscribe with Card (Stripe)
+          </button>
+
+          <button
+            disabled={payBusy}
+            onClick={() => beginCheckout("flutterwave")}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            <span className="text-base">📱</span>
+            Subscribe with Mobile Money (Flutterwave)
+          </button>
+
+          <button
+            disabled={payBusy}
+            onClick={() => setPayOpen(false)}
+            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50 flex items-center justify-center gap-2"
+          >
+            <span className="text-base">⏸️</span>
+            Not now
+          </button>
+        </div>
+
+        <div className="mt-4 text-[11px] text-slate-500 text-center">
+          By subscribing, you agree to the marketplace rules and safety guidelines.
+        </div>
+      </div>
     </div>
+  </div>
+)}
+
+</div>
   );
 }
+
 
 /* ============ Comments component (two-way threads + focus-from-notification) ============ */
 function autoGrow(e) {
@@ -2285,7 +2518,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
           ))}
 
           {/* Top-level composer intentionally kept disabled exactly like your current file */}
-          {/*<form onSubmit={submitTopLevel}>
+          <form onSubmit={submitTopLevel}>
             <div className="flex items-start gap-2">
               <textarea
                 value={text}
@@ -2309,7 +2542,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                 Post
               </button>
             </div>
-          </form>*/}
+          </form>
         </div>
       )}
     </div>
