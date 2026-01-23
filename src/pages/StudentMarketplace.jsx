@@ -2518,7 +2518,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
           ))}
 
           {/* Top-level composer intentionally kept disabled exactly like your current file */}
-          <form onSubmit={submitTopLevel}>
+          {/*<form onSubmit={submitTopLevel}>
             <div className="flex items-start gap-2">
               <textarea
                 value={text}
@@ -2542,7 +2542,7 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
                 Post
               </button>
             </div>
-          </form>
+          </form>*/}
         </div>
       )}
     </div>
