@@ -1027,7 +1027,7 @@ function facultyTermFromValue(v = "") {
 const TITLE_OPTIONS = ["Mr.", "Miss", "Madam", "Dr.", "Ass. Prof", "Prof."];
 
 /* Post types (added "Video") */
-const POST_TYPES = ["Notes","Announcement", "Assignments", "Scholarships", "Academic Books", "Researches/Thesis","Video"];
+const POST_TYPES = ["Notes","Announcement", "Assignments", "Scholarships", "Academic Books", "Researches/Thesis","Academic Essay","Video"];
 
 /* --- Notify students: bump "new" signals for audience scopes --- */
 function markNewSignal(audience, who = "lecturer") {
