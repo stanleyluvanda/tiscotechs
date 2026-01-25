@@ -1,6 +1,3 @@
-
-
-
 // src/components/StudentAlertsCTA.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getMyConsents, putMyConsents } from "../lib/consentsApi.js";
@@ -16,7 +13,7 @@ function safeParse(json) {
 
 const STORAGE_KEY = "userConsentsById_v1";
 
-// ✅ Keys must match backend/Admin view
+// ✅ Canonical keys (match Admin + backend)
 const CONSENT_SCOPES = [
   { key: "scholarshipAlerts", label: "Scholarship Alerts" },
   { key: "applicationTips", label: "University Application Tips" },
@@ -32,7 +29,7 @@ function getUserConsents(userId) {
   const all = loadAllConsents();
   const u = all[userId] || {};
 
-  // Backward compatibility: old plural -> new singular
+  // Backward compatibility: plural -> singular
   if (u.applicationInvitations && !u.applicationInvitation) {
     u.applicationInvitation = u.applicationInvitations;
   }
@@ -56,6 +53,36 @@ function setAllLocal(userId, nextObj) {
   window.dispatchEvent(new Event("consents:updated"));
 }
 
+function toBooleans(localConsents) {
+  const booleans = {};
+  CONSENT_SCOPES.forEach((s) => {
+    booleans[s.key] = !!localConsents?.[s.key]?.granted;
+  });
+  return booleans;
+}
+
+/* ---------- normalize server item -> local shape ---------- */
+function serverItemToLocal(item) {
+  if (!item) return null;
+
+  const src = item?.consents || item?.consent || item?.choices || item || {};
+  const next = {};
+
+  CONSENT_SCOPES.forEach((s) => {
+    const v = src?.[s.key];
+    if (typeof v === "boolean") {
+      next[s.key] = { granted: v, updatedAt: item?.updatedAt || new Date().toISOString() };
+    } else if (v && typeof v === "object" && "granted" in v) {
+      next[s.key] = {
+        granted: !!v.granted,
+        updatedAt: v.updatedAt || item?.updatedAt || "",
+      };
+    }
+  });
+
+  return next;
+}
+
 /* ---------- main CTA + modal ---------- */
 export default function StudentAlertsCTA({ className = "" }) {
   const currentUser = useMemo(() => {
@@ -70,14 +97,18 @@ export default function StudentAlertsCTA({ className = "" }) {
   const isStudent = (currentUser?.role || "student").toLowerCase() === "student";
 
   const [open, setOpen] = useState(false);
+
+  // Start from local cache so UI is instant
   const [consents, setConsents] = useState(() => (userId ? getUserConsents(userId) : {}));
   const [saving, setSaving] = useState(false);
   const [serverStatus, setServerStatus] = useState("");
+  const [hydrated, setHydrated] = useState(false); // did we load from Dynamo yet?
 
-  // debounce
+  // Debounce server writes
   const saveTimer = useRef(null);
-  const latestRef = useRef({}); // latest local consents snapshot
+  const latestRef = useRef({ consents: null });
 
+  // Keep in sync with local updates (if other parts update localStorage)
   useEffect(() => {
     const onUpdate = () => {
       if (!userId) return;
@@ -87,112 +118,127 @@ export default function StudentAlertsCTA({ className = "" }) {
     return () => window.removeEventListener("consents:updated", onUpdate);
   }, [userId]);
 
-  const toBooleans = (localConsents) => {
-    const booleans = {};
-    CONSENT_SCOPES.forEach((s) => {
-      booleans[s.key] = !!localConsents?.[s.key]?.granted;
-    });
-    return booleans;
-  };
+  // ✅ IMPORTANT: hydrate from DynamoDB on mount (so purple card matches across browsers/devices)
+  useEffect(() => {
+    let alive = true;
 
-  // ✅ ALWAYS save to server (debounced) on any change
+    async function hydrateFromServer() {
+      if (!userId || !isStudent) return;
+
+      try {
+        setServerStatus("Loading from server…");
+        const data = await getMyConsents(userId); // your helper hits GET /api/consents?userId=...
+        const item = data?.item || data?.consent || data || null;
+
+        const nextLocal = serverItemToLocal(item);
+        if (!nextLocal) {
+          if (alive) {
+            setHydrated(true);
+            setServerStatus("");
+          }
+          return;
+        }
+
+        // Server wins: store into local cache + state
+        setAllLocal(userId, nextLocal);
+
+        if (alive) {
+          setConsents({ ...getUserConsents(userId), ...nextLocal });
+          setHydrated(true);
+          setServerStatus("");
+        }
+      } catch (e) {
+        if (alive) {
+          // Don’t block UI; we’ll still show local cache
+          setHydrated(true);
+          setServerStatus("");
+        }
+      }
+    }
+
+    hydrateFromServer();
+    return () => {
+      alive = false;
+    };
+  }, [userId, isStudent]);
+
+  // Also refresh from server when popup opens (so user sees freshest)
+  useEffect(() => {
+    let alive = true;
+
+    async function refreshOnOpen() {
+      if (!open || !userId || !isStudent) return;
+
+      try {
+        setServerStatus("Loading from server…");
+        const data = await getMyConsents(userId);
+        const item = data?.item || data?.consent || data || null;
+
+        const nextLocal = serverItemToLocal(item);
+        if (!nextLocal) {
+          if (alive) setServerStatus("");
+          return;
+        }
+
+        setAllLocal(userId, nextLocal);
+
+        if (alive) {
+          setConsents({ ...getUserConsents(userId), ...nextLocal });
+          setServerStatus("");
+        }
+      } catch {
+        if (alive) setServerStatus("");
+      }
+    }
+
+    refreshOnOpen();
+    return () => {
+      alive = false;
+    };
+  }, [open, userId, isStudent]);
+
+  if (!userId || !isStudent) return null;
+
+  const grantedCount = CONSENT_SCOPES.reduce((n, s) => n + (consents[s.key]?.granted ? 1 : 0), 0);
+
+  // ✅ Always save to Dynamo on any change (debounced)
   const scheduleServerSave = (nextConsents) => {
     if (!userId) return;
+    latestRef.current = { consents: nextConsents };
 
-    latestRef.current = nextConsents || {};
     if (saveTimer.current) clearTimeout(saveTimer.current);
-
     saveTimer.current = setTimeout(async () => {
       const snapshot = latestRef.current;
       try {
         setSaving(true);
-        setServerStatus("Saving…");
+        setServerStatus("Saving to server…");
 
         await putMyConsents({
           userId,
-          // helpful profile fields so Admin table has name/email/etc
+          // Helpful fields for admin list (safe if backend ignores)
           profile: {
             email: currentUser?.email || currentUser?.username || "",
             name: currentUser?.name || "",
             university: currentUser?.university || "",
             faculty: currentUser?.faculty || "",
           },
-          // ✅ since you want cross-device always, store this as TRUE
-          visibleAcrossDevices: true,
-          // ✅ canonical booleans
-          consents: toBooleans(snapshot),
-          consent: toBooleans(snapshot), // legacy alias
+          visibleAcrossDevices: true, // always true now
+          consents: toBooleans(snapshot.consents),
+          consent: toBooleans(snapshot.consents), // legacy alias
           updatedAt: new Date().toISOString(),
         });
 
         setServerStatus("Saved.");
         setTimeout(() => setServerStatus(""), 900);
       } catch (e) {
-        setServerStatus("Save failed (still saved locally).");
-        setTimeout(() => setServerStatus(""), 1400);
+        setServerStatus("Save failed (still saved on this device).");
       } finally {
         setSaving(false);
       }
     }, 350);
   };
 
-  // ✅ On open: load latest from server and merge into local (server wins)
-  useEffect(() => {
-    let alive = true;
-
-    async function syncFromServerOnOpen() {
-      if (!open || !userId) return;
-
-      try {
-        setServerStatus("Loading…");
-        const data = await getMyConsents(userId);
-        const item = data?.item || null;
-
-        if (!item) {
-          if (alive) setServerStatus("");
-          return;
-        }
-
-        const src = item?.consents || item?.consent || item || {};
-        const next = {};
-        CONSENT_SCOPES.forEach((s) => {
-          const v = src?.[s.key];
-          if (typeof v === "boolean") {
-            next[s.key] = { granted: v, updatedAt: item?.updatedAt || new Date().toISOString() };
-          } else if (v && typeof v === "object" && "granted" in v) {
-            next[s.key] = {
-              granted: !!v.granted,
-              updatedAt: v.updatedAt || item?.updatedAt || "",
-            };
-          }
-        });
-
-        const merged = { ...getUserConsents(userId), ...next };
-
-        setAllLocal(userId, merged);
-
-        if (alive) {
-          setConsents(merged);
-          setServerStatus("");
-        }
-      } catch {
-        if (alive) setServerStatus("Could not load from server.");
-        setTimeout(() => alive && setServerStatus(""), 1200);
-      }
-    }
-
-    syncFromServerOnOpen();
-    return () => {
-      alive = false;
-    };
-  }, [open, userId]);
-
-  if (!userId || !isStudent) return null;
-
-  const grantedCount = CONSENT_SCOPES.reduce((n, s) => n + (consents[s.key]?.granted ? 1 : 0), 0);
-
   const toggle = (key, next) => {
-    // local first (instant)
     setConsentLocal(userId, key, next);
 
     const nextConsents = {
@@ -201,7 +247,6 @@ export default function StudentAlertsCTA({ className = "" }) {
     };
     setConsents(nextConsents);
 
-    // always write to server
     scheduleServerSave(nextConsents);
   };
 
@@ -239,8 +284,12 @@ export default function StudentAlertsCTA({ className = "" }) {
           <div className="flex-1 min-w-0">
             <div className="font-semibold">Click here for alerts</div>
             <div className="mt-2 text-xs opacity-90">
-              {grantedCount > 0 ? `${grantedCount}/${CONSENT_SCOPES.length} selected` : "No alerts selected"} •
-              Saved to account
+              {!hydrated
+                ? "Loading…"
+                : grantedCount > 0
+                ? `${grantedCount}/${CONSENT_SCOPES.length} selected`
+                : "No alerts selected"}
+              {" • Saved to account"}
             </div>
           </div>
         </div>
@@ -265,7 +314,7 @@ export default function StudentAlertsCTA({ className = "" }) {
               <div className="flex-1">
                 <div className="font-semibold text-slate-900">Email Alerts</div>
                 <p className="text-sm text-slate-600">
-                  Tick what you want to receive. Your choices are saved to your account (cross-device).
+                  Tick what you want to receive. You can uncheck anytime to opt out.
                 </p>
               </div>
               <button
@@ -323,7 +372,9 @@ export default function StudentAlertsCTA({ className = "" }) {
             </div>
 
             {(saving || serverStatus) && (
-              <div className="mt-2 text-xs text-slate-500">{saving ? "Saving…" : serverStatus}</div>
+              <div className="mt-2 text-xs text-slate-500">
+                {saving ? "Saving…" : serverStatus}
+              </div>
             )}
 
             <p className="mt-3 text-xs text-slate-500">
