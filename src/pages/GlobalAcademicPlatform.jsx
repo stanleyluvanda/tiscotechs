@@ -2306,31 +2306,45 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 }
 
   function AnswerThread({ post }) {
-    const [open, setOpen] = useState(true);
-    const [commentOpen, setCommentOpen] = useState(false);
-    const [replyOpenById, setReplyOpenById] = useState({});
-    const answers = (post.comments || []).filter((c) => !c.parentId);
-    const byParent = (post.comments || []).reduce((acc, c) => {
-      if (c.parentId) (acc[c.parentId] ||= []).push(c);
-      return acc;
-    }, {});
-    const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
-    return (
-      <div className="mt-3">
-        <button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
-          Comments ({answers.length}) {open ? "▾" : "▸"}
-        </button>
-        {open && (
-          <div className="mt-2">
-            {answers.map((a) => (
-              <div key={a.id} className="mt-3">
-                <div className="flex items-start gap-2">
-                  <Avatar url={a.authorPhoto} name={nameWithTitle(a.author, a.authorTitle)} size="sm" online={isOnline(a.authorId)} />
-                  <div className="bg-slate-50 rounded-2xl px-3 py-2 w-full">
-                    {/*<div className="text-sm font-medium text-slate-900">{nameWithTitle(a.author, a.authorTitle)}</div>*/}
-                    {/*<div className="text-sm font-medium text-slate-900">{nameWithTitle(a.author, a.authorTitle)}<RolePill role={a.role} /></div>*/}
-                    <div className="text-sm font-semibold text-slate-900">{nameWithTitle(a.author, a.authorTitle)}<RolePill role={a.role} /></div>
-                    <div className="text-[11px] text-slate-500">
+  const [open, setOpen] = useState(true);
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [replyOpenById, setReplyOpenById] = useState({});
+
+  const answers = (post.comments || []).filter((c) => !c.parentId);
+  const byParent = (post.comments || []).reduce((acc, c) => {
+    if (c.parentId) (acc[c.parentId] ||= []).push(c);
+    return acc;
+  }, {});
+
+  const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
+
+  return (
+    <div className="mt-3">
+      <button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
+        Comments ({answers.length}) {open ? "▾" : "▸"}
+      </button>
+
+      {open && (
+        <div className="mt-2">
+          {answers.map((a) => (
+            <div key={a.id} className="mt-3">
+              <div className="flex items-start gap-2">
+                <Avatar
+                  url={a.authorPhoto}
+                  name={nameWithTitle(a.author, a.authorTitle)}
+                  size="sm"
+                  online={isOnline(a.authorId)}
+                />
+
+                {/* ✅ Header next to avatar; bubble is content only */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-sm font-semibold text-slate-900">
+                      {nameWithTitle(a.author, a.authorTitle)}
+                    </span>
+                    <RolePill role={a.role} />
+
+                    <span className="text-[11px] text-slate-500">
                       <AuthorMeta
                         program={a.authorProgram}
                         university={a.authorUniversity}
@@ -2339,19 +2353,34 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         countryCode={a.authorCountryCode}
                         createdAt={a.createdAt}
                       />
-                    </div>
+                    </span>
+                  </div>
+
+                  <div className="mt-1 bg-slate-50 rounded-2xl px-3 py-2 w-full">
                     <HTMLReadMore html={a.html} lines={3} />
                     <AttachmentStrip atts={a.attachments} onPreview={setPreview} />
+                  </div>
 
-                    {(byParent[a.id] || []).map((r) => (
-                      <div key={r.id} className="mt-3 pl-4 border-l border-slate-200">
-                        <div className="flex items-start gap-2">
-                          <Avatar url={r.authorPhoto} name={nameWithTitle(r.author, r.authorTitle)} size="sm" online={isOnline(r.authorId)} />
-                          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full">
-                            {/*<div className="text-sm font-medium text-slate-900">{nameWithTitle(r.author, r.authorTitle)}</div>*/}
-                            {/*<div className="text-sm font-medium text-slate-900">{nameWithTitle(r.author, r.authorTitle)}<RolePill role={r.role} /></div>*/}
-                            <div className="text-sm font-semibold text-slate-900">{nameWithTitle(r.author, r.authorTitle)}<RolePill role={r.role} /></div>
-                            <div className="text-[11px] text-slate-500">
+                  {/* Replies */}
+                  {(byParent[a.id] || []).map((r) => (
+                    <div key={r.id} className="mt-3 pl-4 border-l border-slate-200">
+                      <div className="flex items-start gap-2">
+                        <Avatar
+                          url={r.authorPhoto}
+                          name={nameWithTitle(r.author, r.authorTitle)}
+                          size="sm"
+                          online={isOnline(r.authorId)}
+                        />
+
+                        {/* ✅ Reply header next to avatar; bubble is content only */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="text-sm font-semibold text-slate-900">
+                              {nameWithTitle(r.author, r.authorTitle)}
+                            </span>
+                            <RolePill role={r.role} />
+
+                            <span className="text-[11px] text-slate-500">
                               <AuthorMeta
                                 program={r.authorProgram}
                                 university={r.authorUniversity}
@@ -2360,48 +2389,52 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                                 countryCode={r.authorCountryCode}
                                 createdAt={r.createdAt}
                               />
-                            </div>
+                            </span>
+                          </div>
+
+                          <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full">
                             <HTMLReadMore html={r.html} lines={3} />
                             <AttachmentStrip atts={r.attachments} onPreview={setPreview} />
                           </div>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
 
-                    {/* Reply toggle for each comment */}
-                    <div className="mt-2 pl-8 flex items-start gap-2">
-                      <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
-                      <div className="flex-1">
-                        <InlineComposer
-                          placeholder="Reply…"
-                          onSubmit={(v, ra) => addReply(post.id, a.id, v, ra)}
-                          isOpen={!!replyOpenById[a.id]}
-                          setIsOpen={(v) => setReplyOpen(a.id, v)}
-                        />
-                      </div>
+                  {/* Reply composer */}
+                  <div className="mt-2 pl-8 flex items-start gap-2">
+                    <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
+                    <div className="flex-1">
+                      <InlineComposer
+                        placeholder="Reply…"
+                        onSubmit={(v, ra) => addReply(post.id, a.id, v, ra)}
+                        isOpen={!!replyOpenById[a.id]}
+                        setIsOpen={(v) => setReplyOpen(a.id, v)}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
 
-            {/* New top-level comment */}
-            <div className="mt-3 flex items-start gap-2">
-              <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
-              <div className="flex-1">
-                <InlineComposer
-                  placeholder="Write a comment…"
-                  onSubmit={(v, atts) => addAnswer(post.id, v, atts)}
-                  isOpen={commentOpen}
-                  setIsOpen={setCommentOpen}
-                />
-              </div>
+          {/* New top-level comment */}
+          <div className="mt-3 flex items-start gap-2">
+            <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
+            <div className="flex-1">
+              <InlineComposer
+                placeholder="Write a comment…"
+                onSubmit={(v, atts) => addAnswer(post.id, v, atts)}
+                isOpen={commentOpen}
+                setIsOpen={setCommentOpen}
+              />
             </div>
           </div>
-        )}
-      </div>
-    );
-  }
+        </div>
+      )}
+    </div>
+  );
+}
 
   const scrollToPost = (postId) => {
     const el = postRefs.current[postId];
