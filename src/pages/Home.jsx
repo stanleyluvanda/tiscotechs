@@ -9,11 +9,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
           {/* Left: text */}
           <div>
+            
             <p className="text-[#1a73e8] text-lg md:text-xl font-semibold">
               The global academic platform for students, lecturers, and knowledge sharing.
             </p>
-            <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
-              Connecting students, lecturers, and partners for seamless academic progress.
+            <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-1000">
+              Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
             </h1>
             <p className="mt-4 text-slate-700 text-lg md:text-xl max-w-xl">
               One platform to organize,manage and share academic materials, and boost your learning experience—so students, lecturers, and partners move forward together.
