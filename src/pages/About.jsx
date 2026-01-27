@@ -235,15 +235,17 @@ export default function About() {
             </div>
           </div>
 
-          <div className="mt-6 text-xs text-slate-500 text-center">
+          {/*div className="mt-6 text-xs text-slate-500 text-center">
             Tip: Put the image at{" "}
             <span className="font-mono">public/images/founder.jpg</span> (or
             update the path above).
-          </div>
+          </div>*/}
         </section>
+      </div>
 
-        {/* Call to Action (KEEP AS-IS) */}
-        <section className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white rounded-2xl p-10 shadow-md">
+      {/* ✅ FULL-WIDTH CTA (edge-to-edge) */}
+      <section className="w-full">
+        <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
           <h2 className="text-3xl font-extrabold">
             Join the Global Learning Community
           </h2>
@@ -276,8 +278,8 @@ export default function About() {
               Partner with Us
             </Link>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-blue-900 text-white py-6 text-center text-sm mt-12">

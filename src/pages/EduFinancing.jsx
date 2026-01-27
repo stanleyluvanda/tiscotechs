@@ -270,7 +270,6 @@ export default function EduFinancing() {
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://images.pexels.com/photos/6147161/pexels-photo-6147161.jpeg?cs=srgb&dl=pexels-keira-burton-6147161.jpg&fm=jpg";
-                      
                   }}
                 />
                 <p className="mt-3 text-sm text-slate-600">{/* optional */}</p>
@@ -290,6 +289,44 @@ export default function EduFinancing() {
           </aside>
         </div>
       </div>
+
+      {/* ✅ FULL-WIDTH CTA (edge-to-edge, like About page) */}
+      <section className="w-full mt-6">
+        <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
+          <h2 className="text-3xl font-extrabold">
+            Join the Global Learning Community
+          </h2>
+          <p className="mt-3 text-white/90 max-w-2xl mx-auto">
+            Whether you are a student striving for academic success, a lecturer
+            shaping future leaders, or a partner empowering opportunities,
+            ScholarsKnowledge is your platform to grow, share, and achieve
+            together.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <Link
+              to="/student-sign-up"
+              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+            >
+              Student Sign Up
+            </Link>
+
+            <Link
+              to="/lecturer-sign-up"
+              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+            >
+              Lecturer Sign Up
+            </Link>
+
+            <Link
+              to="/partner"
+              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+            >
+              Partner with Us
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-300 py-6 mt-10">
