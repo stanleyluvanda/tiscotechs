@@ -1,10 +1,8 @@
 // src/pages/EduInfo.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function EduFinancing() {
-  const [heroSrc, setHeroSrc] = useState("/images/edufinancing-hero.jpg");
-
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "EduFinancing | ScholarsKnowledge";
@@ -23,71 +21,57 @@ export default function EduFinancing() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#f9fbff] via-white to-[#f2f6ff]">
-      {/* ✅ HERO with REAL background image */}
+      {/* ✅ FULL-WIDTH HERO (sharp background + clear text) */}
       <header className="relative w-full overflow-hidden min-h-[50vh] md:min-h-[62vh] flex items-center">
-        {/* ✅ Background image (local first, then fallback) */}
+        {/* ✅ Background image (local first; if it’s low-res/missing, use a sharp U.S. campus fallback) */}
         <img
-          src={heroSrc}
+          src="/images/edufinancing-hero.jpg"
           alt="United States university campus"
           className="absolute inset-0 h-full w-full object-cover"
           loading="eager"
           decoding="async"
-          style={{
-            // Make the image feel crisp + bright
-            filter: "contrast(1.08) saturate(1.08) brightness(1.06)",
-            transform: "translateZ(0)",
-            imageRendering: "auto",
-          }}
-          onError={() => {
-            // ✅ Reliable US-campus fallback (sharp + bright)
-            setHeroSrc(
-              "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=2600&q=92"
-            );
+          fetchpriority="high"
+          onError={(e) => {
+            // ✅ HIGH-RES fallback (sharp, professional, U.S. campus)
+            e.currentTarget.src =
+              "https://images.pexels.com/photos/28412565/pexels-photo-28412565.jpeg?cs=srgb&dl=pexels-mingyang-liu-301813241-28412565.jpg&fm=jpg";
           }}
         />
 
-        {/* ✅ Overlay tuned to keep image visible but text readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-white/15 to-white/45" />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 via-transparent to-slate-900/10" />
+        {/* ✅ Contrast overlay (makes text pop while keeping image visible) */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/55 via-slate-900/45 to-slate-900/30" />
 
         {/* Content */}
-        <div className="relative w-full max-w-6xl mx-auto px-4 py-12 text-center text-slate-900">
-          <h1
-            className="text-4xl md:text-5xl font-extrabold tracking-tight"
-            style={{ textShadow: "0 2px 18px rgba(255,255,255,.75)" }}
-          >
+        <div className="relative w-full max-w-6xl mx-auto px-4 py-12 text-center text-white">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
             EduFinancing
           </h1>
 
-          <p
-            className="mt-5 text-base md:text-lg max-w-4xl mx-auto leading-relaxed text-slate-800"
-            style={{ textShadow: "0 2px 14px rgba(255,255,255,.7)" }}
-          >
+          <p className="mt-5 text-base md:text-lg text-white/95 max-w-4xl mx-auto leading-relaxed drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]">
             International students can finance education in destinations like the{" "}
             <span className="font-semibold">United States</span> through a smart
             mix of{" "}
-            <span className="font-extrabold text-[#0A5BD3]">
+            <span className="font-semibold text-white">
               MPOWER Financing educational loans
             </span>
-            , <span className="font-semibold">scholarships</span>,{" "}
-            <span className="font-semibold">low-cost universities</span>, and{" "}
-            <span className="font-semibold">personal savings</span>. This page
-            explains your options and how to combine them for the strongest
-            outcome.
+            , <span className="font-semibold text-white">scholarships</span>,{" "}
+            <span className="font-semibold text-white">low-cost universities</span>, and{" "}
+            <span className="font-semibold text-white">personal savings</span>. This page
+            explains your options and how to combine them for the strongest outcome.
           </p>
 
           {/* badges */}
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-extrabold text-[#0A5BD3] ring-1 ring-slate-900/10 shadow-sm">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
               Loans
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-extrabold text-emerald-700 ring-1 ring-slate-900/10 shadow-sm">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
               Scholarships
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-extrabold text-indigo-700 ring-1 ring-slate-900/10 shadow-sm">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
               Low-cost Schools
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/85 px-3 py-1 text-xs font-extrabold text-amber-700 ring-1 ring-slate-900/10 shadow-sm">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
               Savings Strategy
             </span>
           </div>
@@ -285,7 +269,8 @@ export default function EduFinancing() {
                   className="w-full h-48 object-cover rounded-xl"
                   onError={(e) => {
                     e.currentTarget.src =
-                      "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1400&q=80";
+                      "https://images.pexels.com/photos/6147161/pexels-photo-6147161.jpeg?cs=srgb&dl=pexels-keira-burton-6147161.jpg&fm=jpg";
+                      
                   }}
                 />
                 <p className="mt-3 text-sm text-slate-600">{/* optional */}</p>
