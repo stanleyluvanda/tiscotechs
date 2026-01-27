@@ -1014,6 +1014,44 @@ const TOPIC_MAP = {
     "Speech / Rehabilitation / Physio",
   ],
 };
+// ✅ Category → icon (no deps, safe)
+const TOPIC_ICON_MAP = {
+  Law: "⚖️",
+  Engineering: "🛠️",
+  Research_Topics: "🔬",
+  "Natural sciences": "🧪",
+  Sports: "🏅",
+  "Business Studies": "💼",
+  "Social Sciences": "🌍",
+  Agriculture: "🌾",
+  Economics: "📈",
+  "Arts & Humanities": "🎭",
+  "Current & Trending Topics": "🔥",
+  "Medicine & Health": "🩺",
+};
+
+function getTopicIcon(category) {
+  return TOPIC_ICON_MAP[String(category || "").trim()] || "📚";
+}
+
+function TopicChip({ category, onClick }) {
+  if (!category) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      /*className="inline-flex items-center gap-1 text-xs text-blue-700 hover:underline"*/
+      /*className="inline-flex items-center gap-1 text-xs font-semibold text-purple-800 hover:text-purple-900 hover:underline"*/
+      className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:underline"
+      title={`Filter by ${category}`}
+    >
+      <span aria-hidden="true">{getTopicIcon(category)}</span>
+      <span>{category}</span>
+    </button>
+  );
+}
+
+
 const CATEGORIES = ["All", ...Object.keys(TOPIC_MAP)];
 
 /* ============ LTR-SAFE PLAIN TEXT EDITOR (Markdown-lite) ============ */
@@ -2353,6 +2391,17 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         countryCode={a.authorCountryCode}
                         createdAt={a.createdAt}
                       />
+                      <span className="text-slate-300">•</span>
+
+                       <TopicChip
+                      category={post.category}
+                      onClick={() => {
+                       setMyOnly(false);
+                      setSelectedCategory(post.category || "All");
+                       setSelectedTopic("All");
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                     />
                     </span>
                   </div>
 
@@ -2717,9 +2766,31 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                           createdAt={post.createdAt}
                         />
                       </div>
-                      <div className="text-xs text-slate-500">
+                      {/*<div className="text-xs text-slate-500">
                         {post.category} • {post.topic}
-                      </div>
+                      </div>*/}
+
+                      <div className="text-xs text-slate-500 flex flex-wrap items-center gap-1">
+  <span>{post.category}</span>
+  <span className="text-slate-300">•</span>
+  <span>{post.topic}</span>
+
+  <span className="text-slate-300">•</span>
+
+  <TopicChip
+    category={post.category}
+    onClick={() => {
+      setMyOnly(false);
+      setSelectedCategory(post.category || "All");
+      setSelectedTopic("All");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+  />
+</div>
+
+
+
+
                     </div>
                     {/*{post.author?.id === user?.id && (*/}
                       {(

@@ -1125,7 +1125,52 @@ const TOPIC_MAP = {
     "Speech / Rehabilitation / Physio",
   ],
 };
+/* ✅ PASTE THIS WHOLE BLOCK RIGHT HERE (between TOPIC_MAP and CATEGORIES) */
+const TOPIC_ICON_MAP = {
+  Law: "⚖️",
+  Engineering: "🛠️",
+  Research_Topics: "🔬",
+  "Natural sciences": "🧪",
+  Sports: "🏅",
+  "Business Studies": "💼 ",
+  "Social Sciences": "🌍",
+  Agriculture: "🌾",
+  Economics: "📈",
+  "Arts & Humanities": "🎭",
+  "Current & Trending Topics": "🔥",
+  "Medicine & Health": "🩺",
+};
+
+function getTopicIcon(category) {
+  return TOPIC_ICON_MAP[String(category || "").trim()] || "📚";
+}
+/* ✅ END PASTE BLOCK */
+
+/* ✅ ADD TopicChip RIGHT HERE (directly under getTopicIcon) */
+function TopicChip({ category, onClick }) {
+  if (!category) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1 text-xs text-blue-700 hover:underline"
+      title={`Filter by ${category}`}
+    >
+      <span aria-hidden="true">{getTopicIcon(category)}</span>
+      <span>{category}</span>
+    </button>
+  );
+}
+/* ✅ END TopicChip */
+
 const CATEGORIES = ["All", ...Object.keys(TOPIC_MAP)];
+
+
+
+
+
+
+
 
 /* ============ Simple textarea-based HTML editor ============ */
 function ToolbarButton({ onAction, children, title }) {
@@ -2671,9 +2716,27 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
       <span className="text-slate-300">•</span>
 
-      <span className="text-xs text-slate-600">
+      {/*<span className="text-xs text-slate-600">
         {timeAgo(post.createdAt)} ago
-      </span>
+      </span>*/}
+      
+
+<span className="text-xs text-slate-600">
+  {timeAgo(post.createdAt)} ago
+</span>
+
+<span className="text-slate-300">•</span>
+
+<TopicChip
+  category={post.category}
+  onClick={() => {
+    setSelectedCategory(post.category || "All");
+    setSelectedTopic("All");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+/>
+
+
     </div>
 
     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
