@@ -13,7 +13,7 @@ function Section({ title, children }) {
 }
 function Pill({ children }) {
   return (
-    <span className="inline-flex items-center rounded-full border border-slate-100 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/25 drop-shadow">
       {children}
     </span>
   );
@@ -31,20 +31,43 @@ export default function StudyInUS() {
 
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
-      <main className="max-w-[1200px] mx-auto px-4 lg:px-8 py-8 space-y-6">
-        {/* HERO (soft blue -> soft red gradient + faint border) */}
-        <header
-          className="
-            rounded-2xl border border-slate-100 p-5 shadow-sm
-            bg-[linear-gradient(180deg,#eef6ff_0%,#fdfbff_55%,#fff5f5_100%)]
-          "
-        >
-          <h1 className="text-2xl font-bold text-slate-900">Study in The U.S</h1>
-          <p className="mt-1 text-slate-700">
-            Are you in <b>Africa</b>, <b>Asia</b>, <b>Europe</b>, and want to study in the U.S.? We’ve
-            got you covered with important information about U.S. higher learning education—
-            admissions, funding, visas, campus life, and more.
+      {/* ✅ FULL-WIDTH HERO (edge-to-edge like About/EduFinancing) */}
+      <header className="relative w-full overflow-hidden">
+        {/* Background image (LOCAL first; best quality + no blur) */}
+        <img
+          src="/images/studyinus-hero.png"
+          alt="Travel to the United States for university"
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src =
+              "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=2400&q=80";
+          }}
+        />
+
+        {/* Overlay to keep image visible but text SUPER clear */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/55 to-slate-950/35" />
+        <div className="absolute inset-0 bg-white/5" />
+
+        {/* ✅ Keep SAME inner width as before (only background is edge-to-edge) */}
+        <div className="relative max-w-[1200px] mx-auto px-4 lg:px-8 py-8">
+          {/* ✅ NO CARD: just the content directly on the image */}
+          <h1 className="text-2xl font-bold text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)]">
+            Study in The U.S
+          </h1>
+
+          <p className="mt-1 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+            Are you in <b>Africa</b>, <b>Asia</b>, <b>Europe</b>, and want to study
+            in the U.S.? We’ve got you covered with important information about
+            U.S. higher learning education— admissions, funding, visas, campus
+            life, and more.
           </p>
+
+          {/* Pills row (same layout) */}
           <div className="mt-3 flex flex-wrap gap-2">
             <Pill>Admissions</Pill>
             <Pill>Funding</Pill>
@@ -53,17 +76,23 @@ export default function StudyInUS() {
             <Pill>STEM &amp; OPT</Pill>
           </div>
 
-          {/* Small booking link right after the pill row (light green) */}
+          {/* Booking button (same position) */}
           <div className="mt-3">
             <button
               onClick={openCalendly}
-              className="inline-flex items-center rounded-md border border-green-200 bg-green-100 px-3 py-2 text-xs font-medium text-green-800 hover:bg-green-200"
+              className="inline-flex items-center rounded-md bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-white shadow-sm ring-1 ring-white/60"
             >
               Book consultation appointment
             </button>
           </div>
-        </header>
+        </div>
 
+        {/* stable hero height */}
+        <div className="h-[44vh] md:h-[56vh]" />
+      </header>
+
+      {/* ✅ Everything else remains as-is */}
+      <main className="max-w-[1200px] mx-auto px-4 lg:px-8 py-8 space-y-6">
         {/* LAYOUT: main content + right sidebar images */}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* LEFT — content */}
@@ -93,8 +122,14 @@ export default function StudyInUS() {
             <Section title="How to prepare before coming to the U.S.">
               <ul className="list-disc pl-5 space-y-1">
                 <li>Collect transcripts, degree certificates, and certified translations.</li>
-                <li>Budget for tuition + living + insurance; plan housing early (on-campus vs. off-campus).</li>
-                <li>Complete required vaccinations; consider travel insurance; bring an international debit/credit card.</li>
+                <li>
+                  Budget for tuition + living + insurance; plan housing early (on-campus vs.
+                  off-campus).
+                </li>
+                <li>
+                  Complete required vaccinations; consider travel insurance; bring an international
+                  debit/credit card.
+                </li>
                 <li>Learn campus basics: LMS (Canvas/Blackboard), email, ID card, library, and banking setup.</li>
               </ul>
             </Section>
@@ -183,17 +218,16 @@ export default function StudyInUS() {
             </Section>
 
             <div className="pt-2">
-              <Link to="/" className="text-blue-600 underline">Back to Home</Link>
+              <Link to="/" className="text-blue-600 underline">
+                Back to Home
+              </Link>
             </div>
           </div>
 
-          {/* RIGHT — image card (faint border). 
-              We guarantee “campus + U.S. flag” by overlaying a small flag on a campus photo. */}
+          {/* RIGHT — image card */}
           <aside className="space-y-6">
             <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
-              {/* First image: campus building + visible U.S. flag (overlay) */}
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-                {/* Campus building */}
                 <img
                   className="h-full w-full object-cover"
                   src="https://images.unsplash.com/photo-1460518451285-97b6aa326961?auto=format&fit=crop&w=1600&q=80"
@@ -206,12 +240,7 @@ export default function StudyInUS() {
                       "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1400&q=80";
                   }}
                 />
-                {/* U.S. flag overlay (always visible) */}
-                <div
-                  className="absolute bottom-3 right-3 flex items-center"
-                  aria-label="U.S. flag"
-                >
-                  {/* simple “pole” */}
+                <div className="absolute bottom-3 right-3 flex items-center" aria-label="U.S. flag">
                   <div className="h-16 w-[3px] bg-neutral-700/80 shadow-sm md:h-20"></div>
                   <img
                     src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg"
@@ -222,7 +251,6 @@ export default function StudyInUS() {
                 </div>
               </div>
 
-              {/* Second image: students */}
               <div className="mt-3 aspect-[4/3] w-full overflow-hidden rounded-xl">
                 <img
                   className="h-full w-full object-cover"
@@ -241,6 +269,44 @@ export default function StudyInUS() {
           </aside>
         </div>
       </main>
+
+      {/* ✅ MOVE CTA OUTSIDE <main> so it can touch both edges */}
+      <section className="w-full bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white shadow-md mt-10">
+        {/* keep inner content aligned with the site */}
+        <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-12 text-center">
+          <h2 className="text-3xl font-extrabold">
+            Join the Global Learning Community
+          </h2>
+          <p className="mt-3 text-white/90 max-w-2xl mx-auto">
+            Whether you are a student striving for academic success, a lecturer
+            shaping future leaders, or a partner empowering opportunities,
+            ScholarsKnowledge is your platform to grow, share, and achieve together.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <Link
+              to="/student-sign-up"
+              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+            >
+              Student Sign Up
+            </Link>
+
+            <Link
+              to="/lecturer-sign-up"
+              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+            >
+              Lecturer Sign Up
+            </Link>
+
+            <Link
+              to="/partner"
+              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+            >
+              Partner with Us
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
