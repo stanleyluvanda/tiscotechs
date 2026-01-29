@@ -1,6 +1,7 @@
 // src/pages/Scholarship.jsx
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+//import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import {
@@ -180,6 +181,7 @@ export default function Scholarship() {
   const [country, setCountry] = useState("All");
   const [field, setField] = useState("All");
   const [funding, setFunding] = useState("All");
+  const [searchParams] = useSearchParams();
 
   // ⭐ Level as multi-select stored in array, shown via compact dropdown
   const [levels, setLevels] = useState([]);
@@ -200,6 +202,86 @@ export default function Scholarship() {
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
+
+
+
+
+
+
+
+  // ✅ AUTO-APPLY filters from URL query params (country/continent/etc.)
+  useEffect(() => {
+    // Read params
+    const qpQ = (searchParams.get("q") || "").trim();
+    const qpContinent = (searchParams.get("continent") || "").trim();
+    const qpCountry = (searchParams.get("country") || "").trim();
+    const qpField = (searchParams.get("field") || "").trim();
+    const qpFunding = (searchParams.get("funding") || "").trim();
+    const qpSort = (searchParams.get("sort") || "").trim();
+
+    // Apply ONLY when present (don’t override normal usage)
+    let changed = false;
+
+    if (qpQ) {
+      setQ(qpQ);
+      changed = true;
+    }
+
+    if (qpContinent) {
+      setContinent(qpContinent);
+      setCountry("All"); // reset so countryOptions can update cleanly
+      changed = true;
+    }
+
+    if (qpCountry) {
+      // If they provide country, infer continent too (best UX)
+      const inferred = COUNTRY_TO_CONTINENT[qpCountry.toLowerCase()];
+      if (inferred) setContinent(inferred);
+      setCountry(qpCountry);
+      changed = true;
+    }
+
+    if (qpField) {
+      setField(qpField);
+      changed = true;
+    }
+
+    if (qpFunding) {
+      setFunding(qpFunding);
+      changed = true;
+    }
+
+    if (qpSort) {
+      setSort(qpSort);
+      changed = true;
+    }
+
+    if (changed) setPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Country options depend on continent
   const countryOptions = useMemo(() => {
