@@ -15,7 +15,7 @@ const FALLBACK_UPLOAD_LAMBDA =
   /*"https://tepyhcsaf6ttzmbtigyuun1573u0jmhuj.lambda-url.us-east-1.on.aws";*/
   "https://tepyhcsa6ttzmtbiqvuunj573u0jmuhj.lambda-url.us-east-1.on.aws";
 
-  // ✅ ADD HELPERS RIGHT HERE (top-level, outside the component)
+// ✅ ADD HELPERS RIGHT HERE (top-level, outside the component)
 function looksPresigned(url = "") {
   const u = String(url || "");
   return /X-Amz-Signature=|X-Amz-Algorithm=|X-Amz-Credential=|X-Amz-Date=/.test(u);
@@ -48,7 +48,7 @@ export default function SingleImageUploader({
   const UPLOAD_LAMBDA =
     import.meta.env.VITE_UPLOAD_LAMBDA_URL || FALLBACK_UPLOAD_LAMBDA;
 
-  /*async function handleFile(file) {
+  async function handleFile(file) {
     setError("");
     if (!file) return;
 
@@ -66,13 +66,17 @@ export default function SingleImageUploader({
     try {
       setUploading(true);
 
+      // ✅ Make filename unique (prevents CloudFront stale-cache on overwrite)
+      const uniqueName = makeUniqueFilename(file.name);
+
       // 1) Ask Lambda for a signed URL + final public URL
       const res = await fetch(UPLOAD_LAMBDA, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           folder,
-          filename: file.name,
+          filename: uniqueName, // ✅ unique filename
+          originalName: file.name, // ✅ optional (won’t break anything)
           type: file.type,
           contentType: file.type || "application/octet-stream",
           size: file.size,
@@ -82,38 +86,67 @@ export default function SingleImageUploader({
       if (!res.ok) {
         console.error("[SingleImageUploader] meta error", res.status);
         setError("Failed to request upload URL");
-        setUploading(false);
         return;
       }
 
-      // 1) Ask Lambda for a signed URL + final public URL
       const meta = await res.json();
       console.log("[SingleImageUploader] upload meta:", meta);
 
-      // 🌟 Be flexible with field names returned by Lambda
-      const uploadUrl =
+      // ---- Determine uploadUrl safely ----
+      let uploadUrl =
         meta.uploadUrl ||
         meta.uploadURL ||
         meta.signedUrl ||
-        meta.url;
+        meta.signedURL;
 
-      // ✅ Prefer CloudFront URL if Lambda provides it
-      const fileUrl =
+      // Only treat meta.url as uploadUrl if it looks presigned
+      if (!uploadUrl && meta.url && looksPresigned(meta.url)) {
+        uploadUrl = meta.url;
+      }
+
+      // ---- Determine fileUrl safely ----
+      let fileUrl =
         meta.cloudfrontUrl ||
         meta.cloudFrontUrl ||
         meta.cdnUrl ||
         meta.publicUrl ||
         meta.fileUrl ||
-        meta.finalUrl ||
-        meta.url;
+        meta.finalUrl;
+
+      // Only treat meta.url as fileUrl if it's NOT presigned
+      if (!fileUrl && meta.url && !looksPresigned(meta.url)) {
+        fileUrl = meta.url;
+      }
+
+      // Optional: construct if Lambda returns key + cdnDomain/base
+      if (
+        !fileUrl &&
+        meta.key &&
+        (meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase)
+      ) {
+        const base = String(
+          meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase
+        ).replace(/\/+$/, "");
+        const key = String(meta.key).replace(/^\/+/, "");
+        fileUrl = `${base}/${key}`;
+      }
+
+      // ✅ Safety check: never store a presigned URL as the public file URL
+      if (looksPresigned(fileUrl)) {
+        console.error("[SingleImageUploader] fileUrl is presigned (bad):", fileUrl, meta);
+        setError("Upload service returned a temporary URL. Expected a CloudFront/public URL.");
+        return;
+      }
 
       if (!uploadUrl || !fileUrl) {
+        console.error("[SingleImageUploader] invalid meta:", meta);
         setError("Upload service returned an invalid response");
-        setUploading(false);
         return;
       }
 
       // 2) PUT file to S3 using the presigned URL
+      // ⚠️ Do NOT add Cache-Control header here unless your Lambda signs it,
+      // or the signature can fail. Cache-Control must be set in Lambda.
       const putRes = await fetch(uploadUrl, {
         method: "PUT",
         headers: {
@@ -125,11 +158,10 @@ export default function SingleImageUploader({
       if (!putRes.ok) {
         console.error("[SingleImageUploader] PUT failed", putRes.status);
         setError("Upload failed. Try again.");
-        setUploading(false);
         return;
       }
 
-      // 3) Success → tell parent the final public URL
+      // 3) Success → tell parent the final public URL (prefer CloudFront URL)
       onChange && onChange(fileUrl);
     } catch (err) {
       console.error("[SingleImageUploader] upload failed", err);
@@ -137,124 +169,7 @@ export default function SingleImageUploader({
     } finally {
       setUploading(false);
     }
-  }*/
-
-    async function handleFile(file) {
-  setError("");
-  if (!file) return;
-
-  const maxBytes = maxSizeMB * 1024 * 1024;
-  if (file.size > maxBytes) {
-    setError(`Max file size is ${maxSizeMB}MB`);
-    return;
   }
-
-  if (!UPLOAD_LAMBDA) {
-    setError("Upload endpoint not configured");
-    return;
-  }
-
-  try {
-    setUploading(true);
-
-    // ✅ Make filename unique (prevents CloudFront stale-cache on overwrite)
-    const uniqueName = makeUniqueFilename(file.name);
-
-    // 1) Ask Lambda for a signed URL + final public URL
-    const res = await fetch(UPLOAD_LAMBDA, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        folder,
-        filename: uniqueName,          // ✅ unique filename
-        originalName: file.name,       // ✅ optional (won’t break anything)
-        type: file.type,
-        contentType: file.type || "application/octet-stream",
-        size: file.size,
-      }),
-    });
-
-    if (!res.ok) {
-      console.error("[SingleImageUploader] meta error", res.status);
-      setError("Failed to request upload URL");
-      return;
-    }
-
-    const meta = await res.json();
-    console.log("[SingleImageUploader] upload meta:", meta);
-
-    // ---- Determine uploadUrl safely ----
-    let uploadUrl =
-      meta.uploadUrl ||
-      meta.uploadURL ||
-      meta.signedUrl ||
-      meta.signedURL;
-
-    // Only treat meta.url as uploadUrl if it looks presigned
-    if (!uploadUrl && meta.url && looksPresigned(meta.url)) {
-      uploadUrl = meta.url;
-    }
-
-    // ---- Determine fileUrl safely ----
-    let fileUrl =
-      meta.cloudfrontUrl ||
-      meta.cloudFrontUrl ||
-      meta.cdnUrl ||
-      meta.publicUrl ||
-      meta.fileUrl ||
-      meta.finalUrl;
-
-    // Only treat meta.url as fileUrl if it's NOT presigned
-    if (!fileUrl && meta.url && !looksPresigned(meta.url)) {
-      fileUrl = meta.url;
-    }
-
-    // Optional: construct if Lambda returns key + cdnDomain/base
-    if (!fileUrl && meta.key && (meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase)) {
-      const base = String(meta.cdnBaseUrl || meta.cloudfrontBaseUrl || meta.cdnBase).replace(/\/+$/, "");
-      const key = String(meta.key).replace(/^\/+/, "");
-      fileUrl = `${base}/${key}`;
-    }
-
-    // ✅ Safety check: never store a presigned URL as the public file URL
-if (looksPresigned(fileUrl)) {
-  console.error("[SingleImageUploader] fileUrl is presigned (bad):", fileUrl, meta);
-  setError("Upload service returned a temporary URL. Expected a CloudFront/public URL.");
-  return;
-}
-
-    if (!uploadUrl || !fileUrl) {
-      console.error("[SingleImageUploader] invalid meta:", meta);
-      setError("Upload service returned an invalid response");
-      return;
-    }
-
-    // 2) PUT file to S3 using the presigned URL
-    // ⚠️ Do NOT add Cache-Control header here unless your Lambda signs it,
-    // or the signature can fail. Cache-Control must be set in Lambda.
-    const putRes = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type || "application/octet-stream",
-      },
-      body: file,
-    });
-
-    if (!putRes.ok) {
-      console.error("[SingleImageUploader] PUT failed", putRes.status);
-      setError("Upload failed. Try again.");
-      return;
-    }
-
-    // 3) Success → tell parent the final public URL (prefer CloudFront URL)
-    onChange && onChange(fileUrl);
-  } catch (err) {
-    console.error("[SingleImageUploader] upload failed", err);
-    setError("Upload failed");
-  } finally {
-    setUploading(false);
-  }
-}
 
   function onSelect(e) {
     const file = e.target.files?.[0];
@@ -268,12 +183,37 @@ if (looksPresigned(fileUrl)) {
       </label>
 
       <div className="flex items-center gap-4">
-        {/* Left: Image preview */}
-        <img
-          src={value || "/placeholder-avatar.png"}
-          alt="Preview"
-          className="w-20 h-20 rounded-full object-cover border"
-        />
+        {/* Left: Image preview (icon when empty) */}
+        <div className="w-20 h-20 rounded-full overflow-hidden border bg-blue-900 flex items-center justify-center">
+          {value ? (
+            <img
+              src={value}
+              alt="Profile"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              className="h-12 w-12 text-white"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M20 21a8 8 0 0 0-16 0"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M12 13a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
 
         {/* Right: Button */}
         <div>
