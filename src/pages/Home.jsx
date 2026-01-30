@@ -210,7 +210,7 @@ export default function Home() {
             to="/contact"
             className="rounded-full bg-[#1a73e8] text-white px-5 py-3 font-semibold hover:opacity-90"
           >
-            Get in touch
+            Contact Us
           </Link>
         </div>
       </section>
