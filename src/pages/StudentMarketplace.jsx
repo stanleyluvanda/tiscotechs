@@ -65,6 +65,70 @@ const timeAgo = (ts) => {
   const d = Math.floor(h / 24);
   return `${d}d`;
 };
+/* ============ NEW post badge (7 days) ============ */
+const NEW_POST_MS = 7 * 24 * 60 * 60 * 1000;
+
+function toMs(ts) {
+  if (!ts) return 0;
+  if (typeof ts === "number") return ts;
+  const n = Number(ts);
+  if (Number.isFinite(n)) return n;
+  const d = new Date(ts);
+  const ms = d.getTime();
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+function isNewPost(createdAt) {
+  const ms = toMs(createdAt);
+  if (!ms) return false;
+  return Date.now() - ms < NEW_POST_MS;
+}
+
+
+function conditionClass(cond = "") {
+  const c = String(cond || "").trim();
+  if (c === "New Arrivals") return "text-green-600 font-semibold";
+  if (c === "Brand New") return "text-purple-600 font-semibold";
+  if (c === "Used-like New") return "text-blue-600 font-semibold";
+  if (c === "Used-Good") return "text-blue-900 font-semibold";
+  if (c === "Used-Fair") return "text-black font-semibold";
+  return "text-slate-500";
+}
+
+/* ============ Condition display styling ============ */
+const NEW_ARRIVALS_COLOR = "#FF9900";
+
+function getConditionMeta(cond = "") {
+  const c = String(cond || "").trim();
+
+  if (!c) return { text: "", className: "", style: {} };
+
+  if (c === "New Arrivals") {
+    return {
+      text: c,
+      className: "mk-cond mk-blink",
+      style: { color: NEW_ARRIVALS_COLOR },
+    };
+  }
+
+  if (c === "Brand New") {
+    return { text: c, className: "mk-cond", style: { color: "#7C3AED" } };
+  }
+
+  if (c === "Used-like New") {
+    return { text: c, className: "mk-cond", style: { color: "#2563EB" } };
+  }
+
+  if (c === "Used-Good") {
+    return { text: c, className: "mk-cond", style: { color: "#1E3A8A" } };
+  }
+
+  if (c === "Used-Fair") {
+    return { text: c, className: "mk-cond", style: { color: "#000000" } };
+  }
+
+  return { text: c, className: "mk-cond", style: { color: "#334155" } };
+}
 
 /* ============ IndexedDB for attachments ============ */
 const DB_NAME = "sk_attachments";
@@ -182,9 +246,9 @@ function CardBody({ className = "", children }) {
   return <div className={`p-4 ${className}`}>{children}</div>;
 }
 function Badge({ children }) {
-  return (
-    <span className="ml-auto text-xs rounded-full border border-slate-200 px-2 py-0.5">
-      {children}
+  return (  
+    <span className="ml-auto -mr-3 text-xs rounded-full border border-slate-200 px-2 py-0.5">
+          {children}
     </span>
   );
 }
@@ -385,6 +449,65 @@ function LocationPinIcon({ className = "" }) {
     </svg>
   );
 }
+
+
+function NewPostBadge() {
+  return (
+    <>
+      <style>{`
+        @keyframes skNewBlink {
+          0%, 49% { opacity: 1; transform: scale(1); }
+          50%, 100% { opacity: .15; transform: scale(.98); }
+        }
+      `}</style>
+
+      <span
+        className="inline-flex items-center"
+        style={{ animation: "skNewBlink 1s infinite" }}
+        title="New post"
+      >
+        {/* Starburst + NEW text (looks like your sample image) */}
+        <svg
+          viewBox="0 0 220 90"
+          className="h-6 w-auto"
+          aria-hidden="true"
+        >
+          <path
+            d="M110 2
+               L125 12 L145 6 L150 22 L170 18 L168 35
+               L188 40 L176 52 L192 66 L170 68 L173 86
+               L150 78 L145 90 L125 80 L110 88 L95 80
+               L75 90 L70 78 L47 86 L50 68 L28 66
+               L44 52 L32 40 L52 35 L50 18 L70 22
+               L75 6 L95 12 Z"
+            fill="#e11d48"
+          />
+          <text
+            x="110"
+            y="58"
+            textAnchor="middle"
+            fontSize="44"
+            fontWeight="800"
+            fill="white"
+            fontFamily="Arial, sans-serif"
+          >
+            NEW
+          </text>
+        </svg>
+      </span>
+    </>
+  );
+}
+
+
+
+
+
+
+
+
+
+
 
 /* ============ Categories ============ */
 const CATEGORY_MAP = {
@@ -1513,6 +1636,21 @@ export default function StudentMarketplace() {
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] relative">
+      <style>{`
+  .mk-cond{
+    font-weight: 700;
+    font-size: 0.95rem; /* slightly bigger than your old text-xs */
+    line-height: 1.1;
+  }
+  .mk-blink{
+    animation: mkBlink 1s infinite;
+  }
+  @keyframes mkBlink{
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+`}</style>
+
       {/* Notifications bell */}
       <div className="fixed right-4 bottom-6 z-40">
         <button
@@ -1777,17 +1915,49 @@ export default function StudentMarketplace() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <select
+                    {/*<select
                       value={condition}
                       onChange={(e) => setCondition(e.target.value)}
                       className="border border-slate-200 rounded px-3 py-2"
                     >
                       <option value="">Condition (optional)</option>
-                      <option>New</option>
+                      <option>New Arrivals</option>
+                      <option>Brand New</option>
                       <option>Used-like New</option>
                       <option>Used-Good</option>
                       <option>Used-Fair</option>
-                    </select>
+                    </select>*/}
+
+                    <select
+  value={condition}
+  onChange={(e) => setCondition(e.target.value)}
+  className={`border border-slate-200 rounded px-3 py-2 font-semibold ${
+    condition === "New Arrivals"
+      ? "text-green-600"
+      : condition === "Brand New"
+      ? "text-purple-600"
+      : condition === "Used-like New"
+      ? "text-blue-600"
+      : condition === "Used-Good"
+      ? "text-blue-900"
+      : condition === "Used-Fair"
+      ? "text-black"
+      : "text-slate-700"
+  }`}
+>
+  <option value="" className="font-semibold text-slate-700">
+    Condition (optional)
+  </option>
+
+  <option className="font-semibold text-green-600">New Arrivals</option>
+  <option className="font-semibold text-purple-600">Brand New</option>
+  <option className="font-semibold text-blue-600">Used-like New</option>
+  <option className="font-semibold text-blue-900">Used-Good</option>
+  <option className="font-semibold text-black">Used-Fair</option>
+</select>
+
+
+
 
                     <label className="text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2">
                       📷 Photos (max 6)
@@ -1965,8 +2135,20 @@ export default function StudentMarketplace() {
                           {hasPrice ? priceNum.toFixed(2) : ""}
                         </span>
 
-                        {item.condition ? <span className="text-xs text-slate-500">• {item.condition}</span> : null}
-                      </div>
+                        {/*{item.condition ? <span className="text-xs text-slate-500">• {item.condition}</span> : null}*/}
+
+                        {item.condition ? (
+  (() => {
+    const meta = getConditionMeta(item.condition);
+    return (
+      <span className={`ml-2 ${meta.className}`} style={meta.style}>
+        • {meta.text}
+      </span>
+    );
+  })()
+) : null}
+
+      </div>
 
                       {(mobile || whatsapp || locationText) && (
                         <div className="flex items-center gap-3 ml-6">
@@ -1996,12 +2178,29 @@ export default function StudentMarketplace() {
                         </div>
                       )}
 
-                      {locationText && (
+                      {/*{locationText && (
                         <span className="inline-flex items-center gap-1 text-slate-700" title={`Location: ${locationText}`}>
                           <LocationPinIcon className="h-4 w-4 text-red-600" />
                           <span className="text-sm">{locationText}</span>
                         </span>
-                      )}
+                      )}*/}
+
+
+                      {locationText && (
+  <span
+    className="inline-flex items-center gap-2 text-slate-700"
+    title={`Location: ${locationText}`}
+  >
+    <span className="inline-flex items-center gap-1">
+      <LocationPinIcon className="h-4 w-4 text-red-600" />
+      <span className="text-sm">{locationText}</span>
+    </span>
+
+    {/* ✅ NEW badge appears after location and blinks for 7 days */}
+    {isNewPost(item.createdAt) && <NewPostBadge />}
+  </span>
+)}
+
                     </div>
 
                     <div className="mt-1">
