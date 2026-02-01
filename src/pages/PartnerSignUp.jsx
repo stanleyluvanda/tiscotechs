@@ -182,10 +182,40 @@ export default function PartnerSignUp() {
 
   const strength = pwStrengthLabel(form.password);
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
-        <section className="max-w-xl mx-auto px-4 py-12">
+  
+   return (
+  <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50">
+    {/* Soft background blobs (variant colors for Partner) */}
+    <div
+      className="pointer-events-none absolute -left-[420px] -top-[260px] h-[900px] w-[900px] rounded-full blur-[60px] opacity-80"
+      style={{
+        background:
+          "radial-gradient(circle at 35% 35%, rgba(160,220,255,.92), rgba(180,255,220,.55), rgba(180,255,220,0))",
+      }}
+    />
+    <div
+      className="pointer-events-none absolute -right-[380px] -top-[420px] h-[900px] w-[900px] rounded-full blur-[60px] opacity-75"
+      style={{
+        background:
+          "radial-gradient(circle at 30% 30%, rgba(255,210,140,.92), rgba(255,170,200,.50), rgba(255,170,200,0))",
+      }}
+    />
+    <div
+      className="pointer-events-none absolute right-[-140px] top-[-80px] h-[780px] w-[780px] rounded-full blur-[75px] opacity-45"
+      style={{
+        background:
+          "radial-gradient(circle at 40% 40%, rgba(200,170,255,.85), rgba(200,170,255,0))",
+      }}
+    />
+
+    {/* Keep your existing layout above the background */}
+    <main className="relative z-10 flex-1">
+      <section className="max-w-xl mx-auto px-4 py-12">       
+
+
+
+
+
           <h1 className="text-3xl font-bold">Partner Sign Up</h1>
           <p className="text-slate-600 mt-1">Create an account to list scholarships on ScholarsKnowledge.</p>
 

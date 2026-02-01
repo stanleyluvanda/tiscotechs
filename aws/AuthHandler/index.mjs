@@ -31,6 +31,14 @@ import {
   ScanCommand,
 } from "@aws-sdk/client-dynamodb";
 import crypto from "crypto";
+import {
+  CognitoIdentityProviderClient,
+  InitiateAuthCommand,
+  AdminCreateUserCommand,
+  AdminSetUserPasswordCommand,
+  AdminGetUserCommand,
+  AdminDeleteUserCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 
 const TABLE_NAME =
   process.env.USERS_TABLE ||
@@ -39,6 +47,141 @@ const TABLE_NAME =
   "ScholarsUsers";
 
 const ddb = new DynamoDBClient({});
+
+/* =======================================================================
+   COGNITO (optional, non-breaking)
+   - Enabled ONLY when env vars exist
+   ======================================================================= */
+
+   const COGNITO_USER_POOL_ID = (process.env.COGNITO_USER_POOL_ID || "").trim();
+   const COGNITO_APP_CLIENT_ID = (process.env.COGNITO_APP_CLIENT_ID || "").trim();
+   
+   const COGNITO_ENABLED = !!(COGNITO_USER_POOL_ID && COGNITO_APP_CLIENT_ID);
+   
+   const cognito = COGNITO_ENABLED
+     ? new CognitoIdentityProviderClient({})
+     : null;
+   
+   function isCognitoUserNotFound(err) {
+     const name = String(err?.name || "");
+     const msg = String(err?.message || "");
+     return (
+       name === "UserNotFoundException" ||
+       msg.toLowerCase().includes("user does not exist")
+     );
+   }
+   
+   function isCognitoBadPassword(err) {
+     const name = String(err?.name || "");
+     const msg = String(err?.message || "").toLowerCase();
+     return (
+       name === "NotAuthorizedException" ||
+       msg.includes("incorrect username or password") ||
+       msg.includes("not authorized")
+     );
+   }
+   
+   async function cognitoEnsureUser(email) {
+     if (!COGNITO_ENABLED) return { ok: false, reason: "disabled" };
+   
+     try {
+       await cognito.send(
+         new AdminGetUserCommand({
+           UserPoolId: COGNITO_USER_POOL_ID,
+           Username: email,
+         })
+       );
+       return { ok: true, exists: true };
+     } catch (e) {
+       if (isCognitoUserNotFound(e)) return { ok: true, exists: false };
+       return { ok: false, error: e };
+     }
+   }
+   
+   /*async function cognitoCreateUserSilent(email) {*/
+   async function cognitoCreateUserSilent(email, name) {
+     if (!COGNITO_ENABLED) return { ok: false, reason: "disabled" };
+   
+     try {
+       await cognito.send(
+         new AdminCreateUserCommand({
+           UserPoolId: COGNITO_USER_POOL_ID,
+           Username: email,
+           MessageAction: "SUPPRESS", // ✅ no Cognito email
+           UserAttributes: [
+             { Name: "email", Value: email },
+             { Name: "email_verified", Value: "true" }, // you already handle VerifyGate separately
+             { Name: "name", Value: String(name || "") },
+           ],
+         })
+       );
+       return { ok: true };
+     } catch (e) {
+       // If user already exists, treat as ok
+       const name = String(e?.name || "");
+       if (name === "UsernameExistsException") return { ok: true, exists: true };
+       return { ok: false, error: e };
+     }
+   }
+   
+   async function cognitoSetPermanentPassword(email, password) {
+     if (!COGNITO_ENABLED) return { ok: false, reason: "disabled" };
+   
+     try {
+       await cognito.send(
+         new AdminSetUserPasswordCommand({
+           UserPoolId: COGNITO_USER_POOL_ID,
+           Username: email,
+           Password: String(password || ""),
+           Permanent: true,
+         })
+       );
+       return { ok: true };
+     } catch (e) {
+       return { ok: false, error: e };
+     }
+   }
+   
+   async function cognitoAuthPassword(email, password) {
+     if (!COGNITO_ENABLED) return { ok: false, reason: "disabled" };
+   
+     try {
+       const out = await cognito.send(
+         new InitiateAuthCommand({
+           AuthFlow: "USER_PASSWORD_AUTH",
+           ClientId: COGNITO_APP_CLIENT_ID,
+           AuthParameters: {
+             USERNAME: email,
+             PASSWORD: String(password || ""),
+           },
+         })
+       );
+   
+       return {
+         ok: true,
+         auth: out?.AuthenticationResult || null,
+       };
+     } catch (e) {
+       return { ok: false, error: e };
+     }
+   }
+   
+   async function cognitoDeleteUser(email) {
+     if (!COGNITO_ENABLED) return { ok: false, reason: "disabled" };
+     try {
+       await cognito.send(
+         new AdminDeleteUserCommand({
+           UserPoolId: COGNITO_USER_POOL_ID,
+           Username: email,
+         })
+       );
+       return { ok: true };
+     } catch (e) {
+       if (isCognitoUserNotFound(e)) return { ok: true };
+       return { ok: false, error: e };
+     }
+   }
+
 
 /* ---------- Helpers ---------- */
 
@@ -362,7 +505,7 @@ async function handleUpdateProfile(event, baseHeaders) {
    LOGIN
    ======================================================================= */
 
-async function handleLogin(event, baseHeaders) {
+{/*async function handleLogin(event, baseHeaders) {
   const body = parseBody(event);
 
   const rawEmail = normalizeEmail(body.email || body.oldEmail || "");
@@ -428,6 +571,125 @@ async function handleLogin(event, baseHeaders) {
       baseHeaders
     );
   }
+}*/}
+
+async function handleLogin(event, baseHeaders) {
+  const body = parseBody(event);
+
+  const rawEmail = normalizeEmail(body.email || body.oldEmail || "");
+  const plainPassword = body.password || ""; // ✅ NEW for Cognito path
+  const legacyCandidate = body.passwordHash || ""; // legacy (hash or plain)
+  const roleFromBody = String(body.role || "").trim().toLowerCase(); // optional
+
+  if (!rawEmail || !(plainPassword || legacyCandidate)) {
+    return jsonResponse(400, { ok: false, error: "MISSING_FIELDS" }, baseHeaders);
+  }
+
+  // 1) Read DynamoDB profile first (we always need it for response)
+  let ddbItem = null;
+  try {
+    const res = await ddb.send(
+      new GetItemCommand({
+        TableName: TABLE_NAME,
+        Key: { email: { S: rawEmail } },
+      })
+    );
+
+    if (!res.Item) {
+      return jsonResponse(404, { ok: false, error: "NO_ACCOUNT" }, baseHeaders);
+    }
+    ddbItem = res.Item;
+  } catch (err) {
+    console.error("AuthHandler login ddb error:", err);
+    return jsonResponse(
+      500,
+      { ok: false, error: "SERVER_ERROR", detail: String(err?.message || err) },
+      baseHeaders
+    );
+  }
+
+  const storedRole = (ddbItem.role?.S || "student").toLowerCase();
+  if (roleFromBody && roleFromBody !== storedRole) {
+    return jsonResponse(
+      403,
+      { ok: false, error: "ROLE_MISMATCH", role: storedRole },
+      baseHeaders
+    );
+  }
+
+  const profile = parseProfile(ddbItem.profile?.S || "{}");
+  const user = { email: rawEmail, role: storedRole, ...profile };
+
+  // 2) Cognito path (ONLY if enabled + password provided)
+  if (COGNITO_ENABLED && plainPassword) {
+    const auth = await cognitoAuthPassword(rawEmail, plainPassword);
+
+    if (auth.ok) {
+      // ✅ Cognito success → login success (DDB profile returned same as before)
+      return jsonResponse(200, { ok: true, role: storedRole, user }, baseHeaders);
+    }
+
+    // If Cognito says user doesn't exist, we can auto-migrate if DDB password matches.
+    if (isCognitoUserNotFound(auth.error)) {
+      const storedPw = ddbItem.passwordHash?.S || "";
+      const ddbOk = passwordMatches(storedPw, plainPassword);
+
+      if (!ddbOk) {
+        // User not in Cognito AND password doesn't match DDB
+        return jsonResponse(
+          401,
+          { ok: false, error: "INVALID_CREDENTIALS" },
+          baseHeaders
+        );
+      }
+
+      // ✅ Auto-migrate silently into Cognito using the password they just typed
+      try {
+        await cognitoCreateUserSilent(rawEmail);
+        await cognitoSetPermanentPassword(rawEmail, plainPassword);
+      } catch (e) {
+        console.warn("[login] cognito migrate failed (non-blocking):", e);
+        // Even if migration fails, we still allow login because DDB matched (non-breaking)
+      }
+
+      return jsonResponse(200, { ok: true, role: storedRole, user }, baseHeaders);
+    }
+
+    // Cognito says bad password or other auth error → do NOT leak details
+    if (isCognitoBadPassword(auth.error)) {
+      return jsonResponse(
+        401,
+        { ok: false, error: "INVALID_CREDENTIALS" },
+        baseHeaders
+      );
+    }
+
+    // Other Cognito error: fallback to legacy check to avoid breaking prod during rollout
+    console.warn("[login] cognito error, falling back to ddb:", auth.error);
+  }
+
+  // 3) Legacy DynamoDB passwordHash path (unchanged behavior)
+  try {
+    const storedPw = ddbItem.passwordHash?.S || "";
+    const candidate = plainPassword || legacyCandidate;
+
+    if (!passwordMatches(storedPw, candidate)) {
+      return jsonResponse(
+        401,
+        { ok: false, error: "INVALID_CREDENTIALS" },
+        baseHeaders
+      );
+    }
+
+    return jsonResponse(200, { ok: true, role: storedRole, user }, baseHeaders);
+  } catch (err) {
+    console.error("AuthHandler login legacy error:", err);
+    return jsonResponse(
+      500,
+      { ok: false, error: "SERVER_ERROR", detail: String(err?.message || err) },
+      baseHeaders
+    );
+  }
 }
 
 /* =======================================================================
@@ -457,6 +719,29 @@ async function handleRegisterStudent(event, baseHeaders) {
     if (existing.Item) {
       return jsonResponse(409, { ok: false, error: "EMAIL_EXISTS" }, baseHeaders);
     }
+
+    // ========================= ✅ ADD THIS BLOCK RIGHT HERE =========================
+    // ✅ If Cognito enabled and frontend provided plain password, create user in Cognito
+    if (COGNITO_ENABLED && body.password) {
+      const emailNorm = email;
+      const pw = String(body.password || "");
+      try {
+        /*await cognitoCreateUserSilent(emailNorm);*/
+        await cognitoCreateUserSilent(emailNorm, body.name || body?.profile?.name || "");
+        const setPw = await cognitoSetPermanentPassword(emailNorm, pw);
+        if (!setPw.ok) {
+          console.warn(
+            "[register-student] cognito set password failed:",
+            setPw.error
+          );
+          // Non-breaking: continue to store in DynamoDB so signup still works
+        }
+      } catch (e) {
+        console.warn("[register-student] cognito create failed (non-blocking):", e);
+        // Non-breaking: continue to DynamoDB
+      }
+    }
+    // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
 
     const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
@@ -533,6 +818,24 @@ async function handleRegisterLecturer(event, baseHeaders) {
       return jsonResponse(409, { ok: false, error: "EMAIL_EXISTS" }, baseHeaders);
     }
 
+    // ========================= ✅ ADD THIS BLOCK RIGHT HERE =========================
+    // ✅ If Cognito enabled and frontend provided plain password, create user in Cognito
+    if (COGNITO_ENABLED && body.password) {
+      const emailNorm = email;
+      const pw = String(body.password || "");
+      try {
+        /*await cognitoCreateUserSilent(emailNorm);*/
+        await cognitoCreateUserSilent(emailNorm, body.name || body?.profile?.name || "");
+        const setPw = await cognitoSetPermanentPassword(emailNorm, pw);
+        if (!setPw.ok) {
+          console.warn("[register-lecturer] cognito set password failed:", setPw.error);
+        }
+      } catch (e) {
+        console.warn("[register-lecturer] cognito create failed (non-blocking):", e);
+      }
+    }
+    // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
+
     const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
         ? String(body.passwordHash)
@@ -606,6 +909,24 @@ async function handleRegisterPartner(event, baseHeaders) {
     if (existing.Item) {
       return jsonResponse(409, { ok: false, error: "EMAIL_EXISTS" }, baseHeaders);
     }
+
+    // ========================= ✅ ADD THIS BLOCK RIGHT HERE =========================
+    // ✅ If Cognito enabled and frontend provided plain password, create user in Cognito
+    if (COGNITO_ENABLED && body.password) {
+      const emailNorm = email;
+      const pw = String(body.password || "");
+      try {
+        /*await cognitoCreateUserSilent(emailNorm);*/
+        await cognitoCreateUserSilent(emailNorm, body.name || body?.profile?.name || "");
+        const setPw = await cognitoSetPermanentPassword(emailNorm, pw);
+        if (!setPw.ok) {
+          console.warn("[register-partner] cognito set password failed:", setPw.error);
+        }
+      } catch (e) {
+        console.warn("[register-partner] cognito create failed (non-blocking):", e);
+      }
+    }
+    // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
 
     const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
@@ -718,6 +1039,23 @@ async function handleChangeEmail(event, baseHeaders) {
       return jsonResponse(409, { ok: false, error: "EMAIL_EXISTS" }, baseHeaders);
     }
 
+    // ========================= ✅ ADD THIS BLOCK RIGHT HERE =========================
+    // ✅ Best-effort Cognito mirror (non-breaking)
+    // We create the new Cognito user and delete the old one.
+    // If anything fails, we still proceed with DynamoDB change (so app doesn’t break).
+    if (COGNITO_ENABLED && password) {
+      try {
+        await cognitoCreateUserSilent(newEmail);
+        await cognitoSetPermanentPassword(newEmail, password);
+
+        // delete old Cognito user (ignore not found)
+        await cognitoDeleteUser(oldEmail);
+      } catch (e) {
+        console.warn("[change-email] cognito mirror failed (non-blocking):", e);
+      }
+    }
+    // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
+
     const newItem = {
       ...item,
       email: { S: newEmail },
@@ -817,7 +1155,7 @@ async function handleResetPassword(event, baseHeaders) {
     const item = res.Item;
     const storedRole = (item.role?.S || "student").toLowerCase();
 
-    const newHash = sha256Hex(newPassword);
+    {/*const newHash = sha256Hex(newPassword);
 
     await ddb.send(
       new UpdateItemCommand({
@@ -829,6 +1167,57 @@ async function handleResetPassword(event, baseHeaders) {
         },
       })
     );
+
+    // ========================= ✅ ADD THIS BLOCK RIGHT HERE =========================
+    // ✅ If Cognito enabled, also set password in Cognito (non-breaking)
+    if (COGNITO_ENABLED) {
+      try {
+        const setPw = await cognitoSetPermanentPassword(email, newPassword);
+        if (!setPw.ok) {
+          console.warn(
+            "[reset] cognito set password failed (non-blocking):",
+            setPw.error
+          );
+        }
+      } catch (e) {
+        console.warn("[reset] cognito error (non-blocking):", e);
+      }
+    }*/}
+    // ======================= ✅ END ADD BLOCK (KEEP RETURN BELOW) ===================
+
+    // ========================= ✅ COGNITO FIRST (AUTHORITATIVE) =========================
+if (COGNITO_ENABLED) {
+  try {
+    const setPw = await cognitoSetPermanentPassword(email, newPassword);
+    if (!setPw.ok) {
+      return jsonResponse(
+        500,
+        { ok: false, error: "COGNITO_PASSWORD_FAILED" },
+        baseHeaders
+      );
+    }
+  } catch (e) {
+    return jsonResponse(
+      500,
+      { ok: false, error: "COGNITO_PASSWORD_FAILED" },
+      baseHeaders
+    );
+  }
+}
+
+// ========================= ✅ DYNAMODB MIRROR (LEGACY / FALLBACK) ===================
+const newHash = sha256Hex(newPassword);
+
+await ddb.send(
+  new UpdateItemCommand({
+    TableName: TABLE_NAME,
+    Key: { email: { S: email } },
+    UpdateExpression: "SET passwordHash = :p",
+    ExpressionAttributeValues: {
+      ":p": { S: newHash },
+    },
+  })
+);
 
     return jsonResponse(200, { ok: true, role: storedRole, email }, baseHeaders);
   } catch (err) {

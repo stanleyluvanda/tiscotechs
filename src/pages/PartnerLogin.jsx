@@ -338,10 +338,38 @@ export default function PartnerLogin() {
   };
 
   /* ====== UI ====== */
+  
+  
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#f0f6ff] via-white to-[#eef2ff]">
-      <main className="flex-1">
-        <section className="max-w-md mx-auto px-4 py-12">
+  <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50">
+    {/* Cognito-like soft background blobs */}
+    <div
+      className="pointer-events-none absolute -left-[420px] -top-[260px] h-[900px] w-[900px] rounded-full blur-[55px] opacity-80"
+      style={{
+        background:
+          "radial-gradient(circle at 35% 35%, rgba(190,214,255,.95), rgba(214,196,255,.55), rgba(214,196,255,0))",
+      }}
+    />
+    <div
+      className="pointer-events-none absolute -right-[380px] -top-[420px] h-[900px] w-[900px] rounded-full blur-[55px] opacity-80"
+      style={{
+        background:
+          "radial-gradient(circle at 30% 30%, rgba(255,233,126,.95), rgba(255,206,120,.55), rgba(255,206,120,0))",
+      }}
+    />
+    <div
+      className="pointer-events-none absolute right-[-140px] top-[-80px] h-[780px] w-[780px] rounded-full blur-[70px] opacity-50"
+      style={{
+        background:
+          "radial-gradient(circle at 40% 40%, rgba(223,196,255,.9), rgba(223,196,255,0))",
+      }}
+    />
+
+    {/* Keep your existing layout above the background */}
+    <main className="relative z-10 flex-1">
+      <section className="max-w-md mx-auto px-4 py-12">            
+
           <div className="text-center">
             <img
               src="/images/1754280544595.jpeg"
@@ -509,7 +537,8 @@ export default function PartnerLogin() {
         </section>
       </main>
 
-      <footer className="bg-blue-900 text-white py-6 text-center text-sm">
+      {/*<footer className="bg-blue-900 text-white py-6 text-center text-sm">*/}
+      <footer className="relative z-10 bg-blue-900 text-white py-6 text-center text-sm">
         © {new Date().getFullYear()} ScholarsKnowledge ·{" "}
         <a href="/login" className="underline">
           Contact Sales
