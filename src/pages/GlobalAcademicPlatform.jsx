@@ -489,7 +489,7 @@ function AuthorMeta({ program, university, faculty, country, countryCode, create
   return (
     <span className="text-slate-500">
       {/* Program — make it stand out */}
-      {program && (
+      {/*{program && (
         <>
           {" "}
           •{" "}
@@ -497,7 +497,7 @@ function AuthorMeta({ program, university, faculty, country, countryCode, create
             {program}
           </span>
         </>
-      )}
+      )}*/}
 
       {/* University — dark blue, prominent */}
       {university && (
