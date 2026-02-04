@@ -874,110 +874,67 @@ function ImageGrid({
 
 /* ====== Comment thread with attachments (LinkedIn-style) ====== */
 function CommentThread({ comment, onAddReply, onOpenLightbox }) {
-  const [reply, setReply] = useState("");
-  const [replyImages, setReplyImages] = useState([]); // [{name,dataUrl}]
-  const [replyFiles, setReplyFiles] = useState([]);   // [{name,mime,dataUrl}]
+  const [reply,setReply]=useState("");
+  const [replyImages,setReplyImages]=useState([]); // [{name,dataUrl}]
+  const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
 
-  const onPickReplyImages = async (e) => {
-    const files = Array.from(e.target.files || []).filter((f) =>
-      f.type.startsWith("image/")
-    );
-    const dataUrls = await Promise.all(
-      files.map((f) => fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420))
-    );
-    const mapped = dataUrls.map((dataUrl, i) => ({
-      name: files[i].name,
-      dataUrl,
-    }));
-    setReplyImages((arr) => [...arr, ...mapped]);
-    e.target.value = "";
+  const onPickReplyImages = async (e)=>{
+    const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
+    const dataUrls = await Promise.all(files.map(f=>fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420)));
+    const mapped = dataUrls.map((dataUrl,i)=>({name:files[i].name, dataUrl}));
+    setReplyImages(arr=>[...arr, ...mapped]);
+    e.target.value="";
   };
-
-  const onPickReplyDocs = async (e) => {
-    const files = Array.from(e.target.files || []);
-    const mapped = await Promise.all(
-      files.map(async (f) => ({
-        name: f.name,
-        mime: f.type || "application/octet-stream",
-        dataUrl: await readFileAsDataURL(f),
-      }))
-    );
-    setReplyFiles((arr) => [...arr, ...mapped]);
-    e.target.value = "";
+  const onPickReplyDocs = async (e)=>{
+    const files = Array.from(e.target.files||[]);
+    const mapped = await Promise.all(files.map(async f=>({ name:f.name, mime:f.type||"application/octet-stream", dataUrl: await readFileAsDataURL(f) })));
+    setReplyFiles(arr=>[...arr, ...mapped]);
+    e.target.value="";
   };
-
-  // ✅ Time-ago helper (local to this component; non-breaking)
-  function formatTimeAgo(input) {
-    // If the backend already gave a compact label like "21h", keep it.
-    if (typeof input === "string" && /^\s*\d+\s*[smhd]\s*$/i.test(input)) {
-      return input.trim().replace(/\s+/g, "");
-    }
-
-    const t =
-      typeof input === "number"
-        ? input
-        : Date.parse(input || "") || 0;
-
-    if (!t) return "";
-
-    const diff = Math.max(0, Date.now() - t);
-    const sec = Math.floor(diff / 1000);
-    const min = Math.floor(sec / 60);
-    const hr = Math.floor(min / 60);
-    const day = Math.floor(hr / 24);
-
-    if (sec < 60) return "Just now";
-    if (min < 60) return `${min}m`;
-    if (hr < 24) return `${hr}h`;
-    if (day < 7) return `${day}d`;
-    return new Date(t).toLocaleDateString();
-  }
-
-  // ✅ Choose the best available timestamp field (comment + reply)
-  const pickTimeInput = (obj) =>
-    obj?.createdAt ??
-    obj?.created_at ??
-    obj?.timestamp ??
-    obj?.time ??
-    obj?.updatedAt ??
-    obj?.updated_at ??
-    0;
-
-  const commentTimeAgo = formatTimeAgo(pickTimeInput(comment));
 
   return (
     <div className="text-sm">
       <div className="flex items-start gap-2">
-        <Avatar size="sm" url={comment.authorPhoto} name={comment.author} />
+        <Avatar size="sm" url={comment.authorPhoto} name={comment.author}/>
         <div className="flex-1">
+          {/*<div className="font-medium text-slate-800">{comment.author}</div>
+          <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>*/}
           <div className="font-bold text-slate-900">{comment.author}</div>
 
-          {/* ✅ Program first, time after (BA in Economics · 21h) */}
-          {(comment.authorProgram || commentTimeAgo) ? (
-            <div className="text-xs font-bold text-blue-800 mb-1">
-              {comment.authorProgram ? comment.authorProgram : ""}
-              {comment.authorProgram && commentTimeAgo ? " \u00B7 " : ""}
-              {commentTimeAgo ? commentTimeAgo : ""}
-            </div>
-          ) : null}
+{/*{comment.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {comment.authorProgram}
+  </div>
+) : null}*/}
 
-          <ExpandableText text={comment.text} />
+{(comment?.authorProgram || comment?.createdAt) ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {(comment?.authorProgram || "").trim()}
+    {comment?.createdAt ? (
+      <>
+        {" "}•{" "}
+        {formatTimeAgo(comment.createdAt)}
+      </>
+    ) : null}
+  </div>
+) : null}
+
+          <ExpandableText text={comment.text}/>
 
           {/* comment images */}
-          {comment.images?.length > 0 && (
+          {comment.images?.length>0 && (
             <div className="mt-2">
               <ImageGrid
                 images={comment.images}
-                onOpen={(idx) => onOpenLightbox(comment.images, idx)}
+                onOpen={(idx)=>onOpenLightbox(comment.images, idx)}
                 max={3}
                 tileClass="h-28"
                 withArrows
               />
             </div>
           )}
-
           {/* comment files */}
-          {comment.files?.length > 0 && (
+          {comment.files?.length>0 && (
             <ul className="mt-2 space-y-1">
               {comment.files.map((f, idx) => (
                 <li key={idx} className="flex items-center gap-2">
@@ -988,74 +945,88 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
           )}
 
           {/* replies */}
-          {(() => {
-            const replies = Array.isArray(comment.replies) ? comment.replies : [];
-            if (!replies.length) return null;
+          {/* replies */}
+{(() => {
 
-            return (
-              <div className="mt-2 pl-6 space-y-2">
-                {replies.map((r, index) => {
-                  const replyTimeAgo = formatTimeAgo(pickTimeInput(r));
+const replies = Array.isArray(comment.replies) ? comment.replies : [];
+  if (!replies.length) return null;
 
-                  return (
-                    <div
-                      key={r?.id || `${comment.id || "comment"}-reply-${index}`}
-                      className="flex items-start gap-2"
-                    >
-                      <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
-                      <div>
-                        <div className="font-bold text-slate-900">{r?.author}</div>
+  return (
+    <div className="mt-2 pl-6 space-y-2">
+      {replies.map((r, index) => (
+        <div
+          key={r?.id || `${comment.id || "comment"}-reply-${index}`}
+          className="flex items-start gap-2"
+        >
+          <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
+          <div>
+            {/*<div className="font-medium text-slate-800">{r?.author}</div>
+            <div className="text-xs text-slate-500 mb-1">
+              {r?.authorProgram || ""}
+            </div>*/}
+            <div className="font-bold text-slate-900">{r?.author}</div>
 
-                        {/* ✅ Program first, time after */}
-                        {(r?.authorProgram || replyTimeAgo) ? (
-                          <div className="text-xs font-bold text-blue-800 mb-1">
-                            {r?.authorProgram ? r.authorProgram : ""}
-                            {r?.authorProgram && replyTimeAgo ? " \u00B7 " : ""}
-                            {replyTimeAgo ? replyTimeAgo : ""}
-                          </div>
-                        ) : null}
+{/*{r?.authorProgram ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {r.authorProgram}
+  </div>
+) : null}*/}
 
-                        <ExpandableText text={r?.text || ""} />
+{(r?.authorProgram || r?.createdAt) ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {(r?.authorProgram || "").trim()}
+    {r?.createdAt ? (
+      <>
+        {" "}•{" "}
+        {formatTimeAgo(r.createdAt)}
+      </>
+    ) : null}
+  </div>
+) : null}
 
-                        {Array.isArray(r?.images) && r.images.length > 0 && (
-                          <div className="mt-2">
-                            <ImageGrid
-                              images={r.images}
-                              onOpen={(idx) => onOpenLightbox(r.images, idx)}
-                              max={3}
-                              tileClass="h-24"
-                              withArrows
-                            />
-                          </div>
-                        )}
 
-                        {Array.isArray(r?.files) && r.files.length > 0 && (
-                          <ul className="mt-2 space-y-1">
-                            {r.files.map((f, i) => (
-                              <li key={i} className="flex items-center gap-2">
-                                📎 <AttachmentLink att={f} />
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+
+
+            <ExpandableText text={r?.text || ""} />
+
+            {Array.isArray(r?.images) && r.images.length > 0 && (
+              <div className="mt-2">
+                <ImageGrid
+                  images={r.images}
+                  onOpen={(idx) => onOpenLightbox(r.images, idx)}
+                  max={3}
+                  tileClass="h-24"
+                  withArrows
+                />
               </div>
-            );
-          })()}
+            )}
 
+            {Array.isArray(r?.files) && r.files.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {r.files.map((f, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    📎 <AttachmentLink att={f} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+})()}
           {/* reply composer */}
           <form
+            /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
             onSubmit={(e) => {
-              e.preventDefault();
-              const text = (reply || "").replace(/\r\n/g, "\n"); // ✅ keep newlines
-              onAddReply(text, replyImages, replyFiles);
-              setReply("");
-              setReplyImages([]);
-              setReplyFiles([]);
-            }}
+  e.preventDefault();
+  const text = (reply || "").replace(/\r\n/g, "\n"); // ✅ keep newlines
+  onAddReply(text, replyImages, replyFiles);
+  setReply("");
+  setReplyImages([]);
+  setReplyFiles([]);
+}}
             className="mt-2"
           >
             <div className="flex items-start gap-2">
@@ -1071,30 +1042,14 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
                 className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
                 style={{ minHeight: 40, maxHeight: 220 }}
               />
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">
-                📷
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={onPickReplyImages}
-                />
+              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
               </label>
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">
-                📎
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={onPickReplyDocs}
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
-                />
+              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
+                <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
               </label>
-              <button
-                type="submit"
-                className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700"
-              >
+              {/* NEW: make reply button prominent */}
+              <button type="submit" className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
                 Reply
               </button>
             </div>
@@ -1138,57 +1093,26 @@ function PostCard({
   onToggleLike,
   onAddComment,
   onAddReply,
-  onDeletePost, // NEW
+  onDeletePost,     // NEW
   currentUser,
   isHighlighted,
 }) {
-  const [showComments, setShowComments] = useState(true);
-  const [cmt, setCmt] = useState("");
-  const [cmtImages, setCmtImages] = useState([]); // [{name,dataUrl}]
-  const [cmtFiles, setCmtFiles] = useState([]); // [{name,mime,dataUrl}]
-  const [lightbox, setLightbox] = useState({ open: false, items: [], index: 0 });
+  const [showComments,setShowComments]=useState(true);
+  const [cmt,setCmt]=useState("");
+  const [cmtImages,setCmtImages]=useState([]); // [{name,dataUrl}]
+  const [cmtFiles,setCmtFiles]=useState([]);   // [{name,mime,dataUrl}]
+  const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
 
-  /* ✅ ADD "time ago" helper HERE (inside PostCard; safe, no side effects) */
-  function timeAgo(ts) {
-    const t = Number(ts || 0);
-    if (!t) return "";
-    const diff = Math.max(0, Date.now() - t);
-
-    const s = Math.floor(diff / 1000);
-    const m = Math.floor(s / 60);
-    const h = Math.floor(m / 60);
-    const d = Math.floor(h / 24);
-
-    if (s < 60) return "Just now";
-    if (m < 60) return `${m}m`;
-    if (h < 24) return `${h}h`;
-    if (d < 7) return `${d}d`;
-    return new Date(t).toLocaleDateString();
-  }
-
-  /* ✅ Use existing post.time if present; otherwise derive from createdAt */
-  const postTimeLabel = post?.time || (post?.createdAt ? timeAgo(post.createdAt) : "");
-
-  const onPickCmtImages = async (e) => {
-    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith("image/"));
-    const dataUrls = await Promise.all(
-      files.map((f) => fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420))
-    );
-    const mapped = dataUrls.map((dataUrl, i) => ({ name: files[i].name, dataUrl }));
-    setCmtImages((arr) => [...arr, ...mapped]);
-    e.target.value = "";
+  const onPickCmtImages = async (e)=>{
+    const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
+    const dataUrls = await Promise.all(files.map(f=>fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420)));
+    const mapped = dataUrls.map((dataUrl,i)=>({name:files[i].name, dataUrl}));
+    setCmtImages(arr=>[...arr, ...mapped]); e.target.value="";
   };
-  const onPickCmtDocs = async (e) => {
-    const files = Array.from(e.target.files || []);
-    const mapped = await Promise.all(
-      files.map(async (f) => ({
-        name: f.name,
-        mime: f.type || "application/octet-stream",
-        dataUrl: await readFileAsDataURL(f),
-      }))
-    );
-    setCmtFiles((arr) => [...arr, ...mapped]);
-    e.target.value = "";
+  const onPickCmtDocs = async (e)=>{
+    const files = Array.from(e.target.files||[]);
+    const mapped = await Promise.all(files.map(async f=>({ name:f.name, mime:f.type||"application/octet-stream", dataUrl: await readFileAsDataURL(f)})));
+    setCmtFiles(arr=>[...arr, ...mapped]); e.target.value="";
   };
 
   // Lightbox controls
@@ -1200,15 +1124,15 @@ function PostCard({
       index: Math.max(0, Math.min(index, items.length - 1)),
     });
   };
-  const closeLightbox = () => setLightbox((l) => ({ ...l, open: false }));
+  const closeLightbox = () => setLightbox(l => ({ ...l, open:false }));
   const step = (dir) =>
-    setLightbox((l) => {
+    setLightbox(l => {
       const len = l.items?.length || 0;
       if (len <= 1) return l;
       return { ...l, index: (l.index + dir + len) % len };
     });
 
-  useEffect(() => {
+  useEffect(()=>{
     if (!lightbox.open) return;
     const onKey = (e) => {
       if (e.key === "ArrowRight") step(1);
@@ -1219,36 +1143,47 @@ function PostCard({
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox.open]);
 
+  //const images = post.images || [];
+  //const { images, files } = splitImagesAndFilesFromPost(post);
+
   const parsed = splitImagesAndFilesFromPost(post);
 
-  const isImg = (a) => String(a?.mime || a?.type || "").toLowerCase().startsWith("image/");
+const isImg = (a) => String(a?.mime || a?.type || "").toLowerCase().startsWith("image/");
 
-  // ✅ Only true images go to ImageGrid
-  const images = (parsed.images || []).filter(isImg);
+// ✅ Only true images go to ImageGrid
+const images = (parsed.images || []).filter(isImg);
 
-  // ✅ Anything non-image must go to files (but dedupe so it doesn't show twice)
-  const mergedFiles = [...(parsed.files || []), ...(parsed.images || []).filter((a) => !isImg(a))];
+// ✅ Anything non-image must go to files (but dedupe so it doesn't show twice)
+const mergedFiles = [
+  ...(parsed.files || []),
+  ...(parsed.images || []).filter((a) => !isImg(a)),
+];
 
-  const seen = new Set();
-  const files = mergedFiles.filter((a) => {
-    const key = String(a?.url || a?.s3Url || a?.key || a?.id || `${a?.name || a?.fileName || ""}`);
-    if (!key) return true;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+const seen = new Set();
+const files = mergedFiles.filter((a) => {
+  const key = String(
+    a?.url || a?.s3Url || a?.key || a?.id || `${a?.name || a?.fileName || ""}`
+  );
+  if (!key) return true;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+});
+
+
+
+
+
+
+
 
   // show a delete button ONLY for student-authored posts by me
   const canDelete = post.authorType === "student" && post.author === (currentUser?.name || "");
 
   return (
-    <div
-      className={`rounded-2xl border bg-white p-4 ${
-        isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"
-      }`}
-    >
+    <div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
       <div className="flex items-center gap-3">
-        <Avatar size="md" url={post.authorPhoto} name={post.author} />
+        <Avatar size="md" url={post.authorPhoto} name={post.author}/>
         <div className="min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <div className="font-semibold text-slate-900 truncate">{post.author}</div>
@@ -1262,23 +1197,12 @@ function PostCard({
               </span>
             )}
           </div>
-
-          {/* ✅ TIME AFTER PROGRAM (as requested) */}
           <div className="text-xs text-slate-500">
-            {(post.authorProgram || post.type) || ""}
-            {postTimeLabel ? ` • ${postTimeLabel}` : ""}
-            {" • "}
-            {post.audience === "GLOBAL"
-              ? "Public"
-              : post.audience?.startsWith("FACULTY__")
-              ? "Faculty"
-              : "Program"}
+            {(post.authorProgram||post.type)} • {post.time || ""} • {post.audience==="GLOBAL"?"Public":post.audience?.startsWith("FACULTY__")?"Faculty":"Program"}
           </div>
         </div>
 
-        <span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
-          {post.type}
-        </span>
+        <span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>
 
         {/* NEW: delete control (student can delete own posts) */}
         {canDelete && (
@@ -1293,11 +1217,13 @@ function PostCard({
       </div>
 
       {post.title && (
-        <h3 className="mt-3 text-base md:text-lg font-semibold text-slate-900">{post.title}</h3>
+        <h3 className="mt-3 text-base md:text-lg font-semibold text-slate-900">
+          {post.title}
+        </h3>
       )}
 
       {/* Body (notes/announcement/etc.) */}
-      {post.html && <ExpandableHtml html={post.html} />}
+      {post.html && <ExpandableHtml html={post.html}/>}
 
       {/* NEW: Video post from lecturer (render like LinkedIn embed) */}
       {post.type === "Video" && post.videoUrlOrId && (
@@ -1311,21 +1237,40 @@ function PostCard({
       {/* Academic Books: show small cover that enlarges on click (cover carried in images[0]) */}
       {post.type === "Academic Books" && images.length > 0 && (
         <div className="mt-3">
-          <ImageGrid images={images} onOpen={(idx) => openLightbox(images, idx)} max={1} tileClass="h-48" withArrows={false} />
+          <ImageGrid
+            images={images}
+            onOpen={(idx)=>openLightbox(images, idx)}
+            max={1}
+            tileClass="h-48"
+            withArrows={false}
+          />
         </div>
       )}
 
       {/* post images (general) */}
-      {post.type !== "Academic Books" && images.length > 0 && (
+      {post.type !== "Academic Books" && images.length>0 && (
         <div className="mt-3">
-          <ImageGrid images={images} onOpen={(idx) => openLightbox(images, idx)} max={3} tileClass="h-40" withArrows />
+          <ImageGrid
+            images={images}
+            onOpen={(idx)=>openLightbox(images, idx)}
+            max={3}
+            tileClass="h-40"
+            withArrows
+          />
         </div>
       )}
 
       {/* Lightbox */}
       {lightbox.open && (
-        <div className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4" onClick={closeLightbox}>
-          <div className="relative max-w-6xl w-full pointer-events-auto" onClick={stop} onMouseDown={stop}>
+        <div
+          className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4"
+          onClick={closeLightbox}
+        >
+          <div
+            className="relative max-w-6xl w-full pointer-events-auto"
+            onClick={stop}
+            onMouseDown={stop}
+          >
             <AttachmentImage
               key={lightbox.items[lightbox.index]?.id || lightbox.index}
               att={lightbox.items[lightbox.index]}
@@ -1337,25 +1282,19 @@ function PostCard({
             <button
               type="button"
               className="absolute -top-3 -right-3 bg-white rounded-full px-2 py-1 text-sm shadow z-10"
-              onClick={(e) => {
-                stop(e);
-                closeLightbox();
-              }}
+              onClick={(e)=>{ stop(e); closeLightbox(); }}
               aria-label="Close"
             >
               ✕
             </button>
 
             {/* Prev/Next */}
-            {lightbox.items.length > 1 && (
+            {lightbox.items.length>1 && (
               <>
                 <button
                   type="button"
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full px-3 py-2 text-xl shadow z-10"
-                  onClick={(e) => {
-                    stop(e);
-                    step(-1);
-                  }}
+                  onClick={(e)=>{ stop(e); step(-1); }}
                   aria-label="Previous"
                   title="Previous"
                 >
@@ -1364,10 +1303,7 @@ function PostCard({
                 <button
                   type="button"
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full px-3 py-2 text-xl shadow z-10"
-                  onClick={(e) => {
-                    stop(e);
-                    step(1);
-                  }}
+                  onClick={(e)=>{ stop(e); step(1); }}
                   aria-label="Next"
                   title="Next"
                 >
@@ -1380,50 +1316,54 @@ function PostCard({
       )}
 
       {/* Files (downloadable) */}
-      {files.length > 0 && (
-        <ul className="mt-2 text-sm text-slate-700 space-y-1">
-          {files.map((f, i) => (
-            <li key={`${f.id || f.name || "f"}-${i}`} className="flex items-center gap-2">
-              📎 <AttachmentLink att={f} />
-            </li>
-          ))}
-        </ul>
-      )}
+{files.length > 0 && (
+  <ul className="mt-2 text-sm text-slate-700 space-y-1">
+    {files.map((f, i) => (
+      <li key={`${(f.id || f.name || "f")}-${i}`} className="flex items-center gap-2">
+        📎 <AttachmentLink att={f} />
+      </li>
+    ))}
+  </ul>
+)}
 
-      <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
+
+
+
+
+
+     <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
         <button onClick={onToggleLike} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
-          <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked ? "currentColor" : "none"} stroke="currentColor">
-            <path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z" />
-          </svg>
-          Like {post.likes > 0 && <span className="text-slate-500">({post.likes})</span>}
+          <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked?"currentColor":"none"} stroke="currentColor"><path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z"/></svg>
+          Like {post.likes>0 && <span className="text-slate-500">({post.likes})</span>}
         </button>
-        <button onClick={() => setShowComments((s) => !s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
-          💬 Comment {post.comments?.length > 0 && <span className="text-slate-500">({post.comments.length})</span>}
+        <button onClick={()=>setShowComments(s=>!s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+          💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
         </button>
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
       </div>
 
+
+
       {showComments && (
         <div className="mt-3 space-y-3">
           {(Array.isArray(post.comments) ? post.comments : []).map((c, index) => (
-            <CommentThread
-              key={c?.id || `${post.id}-comment-${index}`}
-              comment={c}
-              onAddReply={(text, images, files) => onAddReply(c?.id, text, images, files)}
-              onOpenLightbox={(items, idx) => openLightbox(items, idx)}
-            />
-          ))}
+  <CommentThread
+    key={c?.id || `${post.id}-comment-${index}`}
+    comment={c}
+    onAddReply={(text, images, files) => onAddReply(c?.id, text, images, files)}
+    onOpenLightbox={(items, idx) => openLightbox(items, idx)}
+  />
+))}
 
           {/* comment composer with attachments */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const text = (cmt || "").replace(/\r\n/g, "\n"); // keep newlines
-              onAddComment(text, cmtImages, cmtFiles);
-              setCmt("");
-              setCmtImages([]);
-              setCmtFiles([]);
-            }}
+            /*onSubmit={(e)=>{e.preventDefault(); onAddComment(cmt, cmtImages, cmtFiles); setCmt(""); setCmtImages([]); setCmtFiles([]);}}*/
+            onSubmit={(e)=>{ 
+  e.preventDefault(); 
+  const text = (cmt || "").replace(/\r\n/g, "\n"); // keep newlines
+  onAddComment(text, cmtImages, cmtFiles);
+  setCmt(""); setCmtImages([]); setCmtFiles([]); 
+}}
             className="flex flex-col gap-2"
           >
             <div className="flex items-start gap-2">
@@ -1437,44 +1377,29 @@ function PostCard({
                 }}
                 placeholder="Write a comment/feedback…"
                 rows={1}
+                /*className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5"*/
                 className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
                 style={{ minHeight: 44, maxHeight: 220 }}
               />
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">
-                📷
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages} />
+              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
               </label>
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">
-                📎
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={onPickCmtDocs}
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
-                />
+              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
+                <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
               </label>
-              <button type="submit" className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
-                Post
-              </button>
+              <button type="submit" className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">Post</button>
             </div>
 
-            {(cmtImages.length > 0 || cmtFiles.length > 0) && (
+            {(cmtImages.length>0 || cmtFiles.length>0) && (
               <div className="pl-10 space-y-2">
-                {cmtImages.length > 0 && (
+                {cmtImages.length>0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {cmtImages.map((img, i) => (
-                      <img key={i} src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />
-                    ))}
+                    {cmtImages.map((img,i)=>(<img key={i} src={img.dataUrl} alt={img.name} className="w-full h-24 object-cover rounded" />))}
                   </div>
                 )}
-                {cmtFiles.length > 0 && (
+                {cmtFiles.length>0 && (
                   <ul className="text-sm space-y-1">
-                    {cmtFiles.map((f, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        📎 <span>{f.name}</span>
-                      </li>
-                    ))}
+                    {cmtFiles.map((f,i)=>(<li key={i} className="flex items-center gap-2">📎 <span>{f.name}</span></li>))}
                   </ul>
                 )}
               </div>
@@ -1598,6 +1523,26 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
 
   return { upImgs, upFiles };
 }
+
+
+
+
+// ✅ put helper here (top-level)
+function formatTimeAgo(input) {
+  const t = typeof input === "number" ? input : Date.parse(input || "") || Date.now();
+  const diff = Math.max(0, Date.now() - t);
+  const sec = Math.floor(diff / 1000);
+  const min = Math.floor(sec / 60);
+  const hr  = Math.floor(min / 60);
+  const day = Math.floor(hr / 24);
+
+  if (sec < 60) return "Just now";
+  if (min < 60) return `${min}m`;
+  if (hr  < 24) return `${hr}h`;
+  if (day < 7) return `${day}d`;
+  return new Date(t).toLocaleDateString();
+}
+
 
 
 
@@ -2127,7 +2072,7 @@ const latestVideo = visibleVideos[0] || null;
   const ts = (v) => (typeof v === "number" ? v : Date.parse(v) || 0);
 
   // Human-readable "time ago" label for posts
-  function formatTimeAgo(input) {
+  {/*function formatTimeAgo(input) {
     const t = typeof input === "number" ? input : Date.parse(input || "") || Date.now();
     const diff = Math.max(0, Date.now() - t);
     const sec = Math.floor(diff / 1000);
@@ -2140,7 +2085,7 @@ const latestVideo = visibleVideos[0] || null;
     if (hr  < 24) return `${hr}h`;
     if (day < 7) return `${day}d`;
     return new Date(t).toLocaleDateString();
-  }
+  }*/}
 
   // ===== Seeded posts
   /*const seeded = useMemo(()=>[

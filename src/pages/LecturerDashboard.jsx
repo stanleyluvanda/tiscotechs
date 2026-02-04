@@ -1412,10 +1412,16 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
     });
 
     // ensure any local-only comments also stay (and merge their replies)
-    return Array.from(map.values()).map(c => ({
+    /*return Array.from(map.values()).map(c => ({
       ...c,
       replies: mergeReplies(c?.replies, c?.replies),
-    }));
+    }));*/
+
+    return Array.from(map.values()).map(c => ({
+  ...c,
+  replies: mergeReplies(c?.replies, []),
+}));
+
   };
 
   // Build merged list in remote order (so feed ordering stays consistent)
@@ -1427,7 +1433,11 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
       ...lp,
       ...rp,
       // 👇 key fix: preserve union of threads
-      comments: mergeComments(lp.comments, rp.comments),
+      /*comments: mergeComments(lp.comments, rp.comments),*/
+      comments: mergeDuplicateCommentsByLogicalKey(
+  mergeComments(lp.comments, rp.comments)
+),
+
     };
   });
 
@@ -1878,20 +1888,6 @@ async function uploadItemToCloudFront({ item, fallbackName, fallbackMime, folder
     size: blob.size || 0,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2831,7 +2827,7 @@ function updatePostById(postId, updater) {
 };*/
 
 
-   const addComment = async (postId, text, images = [], files = []) => {
+  {/*const addComment = async (postId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
   if (!trimmed && images.length === 0 && files.length === 0) return;
 
@@ -2911,12 +2907,106 @@ function updatePostById(postId, updater) {
       comments: (x.comments || []).map((c) => (c.id === optimisticId ? { ...c, __pending: false } : c)),
     }));
   }
+};*/}
+
+
+
+const addComment = async (postId, text, images = [], files = []) => {
+  const trimmed = String(text || "").trim();
+  if (!trimmed && images.length === 0 && files.length === 0) return;
+
+  const siblingIds = getSiblingPostIdsForPost(postId);
+
+  let cfImages = [];
+  let cfFiles = [];
+  try {
+    const up = await uploadCommentReplyAttachments(images, files, "lecturer/comments");
+    cfImages = up.uploadedImages || [];
+    cfFiles = up.uploadedFiles || [];
+  } catch (e) {
+    console.error("[LecturerDashboard] comment attachment upload failed:", e);
+  }
+
+  const optimisticId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  // ✅ NEW: stable logical id shared across all sibling copies
+  const logicalId = `lc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  const baseOptimistic = {
+    id: optimisticId,
+    __pending: true,
+    logicalId,                 // ✅ NEW
+    authorId: user.id,
+    authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+    author: `${user.title ? user.title + " " : ""}${user.name}`,
+    authorPhoto: user.photoUrl,
+    authorProgram: user.faculty,
+    text: trimmed,
+    images: cfImages,
+    files: cfFiles,
+    replies: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  // Optimistic UI to every sibling post
+  siblingIds.forEach((pid) => {
+    updatePostById(pid, (x) => ({
+      ...x,
+      updatedAt: Date.now(),
+      comments: [{ ...baseOptimistic, postId: pid }, ...(x.comments || [])], // ✅ per-post postId
+    }));
+  });
+
+  const results = await Promise.allSettled(
+    siblingIds.map(async (pid) => {
+      const resp = await postCommentToServer({
+        postId: pid,
+        text: trimmed,
+        images: cfImages,
+        files: cfFiles,
+        authorId: user.id,
+        authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+        authorPhoto: user.photoUrl,
+        authorProgram: user.faculty,
+        logicalId,              // ✅ NEW (safe if backend ignores unknown fields)
+      });
+      return { pid, resp };
+    })
+  );
+
+  results.forEach((r) => {
+    if (r.status !== "fulfilled") {
+      console.error("[comment fanout] failed:", r.reason);
+      // clear pending only
+      return;
+    }
+
+    const { pid, resp } = r.value || {};
+    const serverComment = resp?.comment;
+
+    if (serverComment?.id) {
+      // Ensure server comment also carries logicalId for later dedupe
+      const patched = serverComment.logicalId ? serverComment : { ...serverComment, logicalId };
+
+      updatePostById(pid, (x) => ({
+        ...x,
+        updatedAt: Date.now(),
+        comments: (x.comments || []).map((c) => (c.id === optimisticId ? patched : c)),
+      }));
+    } else {
+      updatePostById(pid, (x) => ({
+        ...x,
+        comments: (x.comments || []).map((c) =>
+          c.id === optimisticId ? { ...c, __pending: false } : c
+        ),
+      }));
+    }
+  });
 };
-
-  
-
-
-
+  // Optional: quick debug line so you can confirm fanout count
+  /*console.log("[comment fanout] siblings:", siblingIds);
+};*/
 
   /*const addReply = async (postId, commentId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
@@ -3014,11 +3104,162 @@ function updatePostById(postId, updater) {
 };*/
 
 
+
+function findPostIdThatOwnsComment(postsList, fallbackPostId, commentId) {
+  if (!commentId) return fallbackPostId;
+
+  for (const p of (Array.isArray(postsList) ? postsList : [])) {
+    const cs = Array.isArray(p?.comments) ? p.comments : [];
+    if (cs.some((c) => c?.id === commentId)) {
+      return p.id || fallbackPostId;
+    }
+  }
+  return fallbackPostId;
+}
+
+
+function getSiblingPostIdsForPost(postId) {
+  if (!postId) return [];
+
+  const target = (posts || []).find((p) => p?.id === postId) || null;
+  const mgid = target?.multiGroupId;
+
+  if (!mgid) return [postId];
+
+  const sibs = (posts || [])
+    .filter((p) => p?.multiGroupId === mgid)
+    .map((p) => p?.id)
+    .filter(Boolean);
+
+  return sibs.length ? sibs : [postId];
+}
+
+
+function getCommentByIdInPosts(postsList, commentId) {
+  for (const p of (Array.isArray(postsList) ? postsList : [])) {
+    const cs = Array.isArray(p?.comments) ? p.comments : [];
+    const found = cs.find((c) => c?.id === commentId);
+    if (found) return { postId: p.id, comment: found };
+  }
+  return null;
+}
+
+function findEquivalentCommentIdInPost(post, logicalId, fallbackComment) {
+  const cs = Array.isArray(post?.comments) ? post.comments : [];
+  if (logicalId) {
+    const match = cs.find((c) => c?.logicalId === logicalId);
+    if (match?.id) return match.id;
+  }
+
+  // fallback heuristic if logicalId missing
+  const text = (fallbackComment?.text || "").trim();
+  const authorId = fallbackComment?.authorId || fallbackComment?.authorName || "";
+  const t = Math.floor((Number(fallbackComment?.createdAt) || 0) / 1000);
+
+  const match2 = cs.find((c) => {
+    const ct = Math.floor((Number(c?.createdAt) || 0) / 1000);
+    return (
+      (c?.authorId || c?.authorName || "") === authorId &&
+      (c?.text || "").trim() === text &&
+      ct === t
+    );
+  });
+
+  return match2?.id || null;
+}
+
+
+
+
+function mergeDuplicateCommentsByLogicalKey(comments = []) {
+  const map = new Map();
+
+  for (const c of (Array.isArray(comments) ? comments : [])) {
+    if (!c) continue;
+
+    // ✅ Prefer stable identity if present
+    const stableKey =
+      c.logicalId ||
+      c.clientLogicalId ||
+      c.threadId ||
+      null;
+
+    // Fallback (your old heuristic) ONLY if no stable key exists
+    const fallbackKey = [
+      c.authorId || c.authorName || "",
+      (c.text || "").trim(),
+      /*Math.floor((Number(c.createdAt) || 0) / 1000),*/
+      Math.floor((Number(c.createdAt) || 0) / 5000), // ✅ 5s bucket for fanout copies
+    ].join("|");
+
+    const key = stableKey || fallbackKey;
+
+    if (!map.has(key)) {
+      map.set(key, { ...c, replies: [...(c.replies || [])] });
+      continue;
+    }
+
+    const existing = map.get(key);
+
+    // Merge core fields without losing data
+    const merged = { ...existing, ...c };
+
+    // Merge replies, dedupe by reply.id (and fallback by stable reply signature)
+    const out = [];
+    const seen = new Set();
+    const addReply = (r) => {
+      if (!r) return;
+      
+
+      const stableReplyKey =
+  r.logicalId ||
+  r.clientLogicalId ||
+  r.threadId ||
+  null;
+
+const rid = r.id || "";
+
+const sig =
+  stableReplyKey ||
+  rid ||
+  [
+    r.authorId || r.authorName || r.author || "",
+    (r.text || "").trim(),
+    Math.floor((Number(r.createdAt) || 0) / 5000),
+  ].join("|");
+
+
+      if (seen.has(sig)) return;
+      seen.add(sig);
+      out.push(r);
+    };
+
+    (existing.replies || []).forEach(addReply);
+    (c.replies || []).forEach(addReply);
+    out.sort((a, b) => (Number(a?.createdAt) || 0) - (Number(b?.createdAt) || 0));
+
+    merged.replies = out;
+    map.set(key, merged);
+  }
+
+  return Array.from(map.values());
+}
+
+
 const addReply = async (postId, commentId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
   if (!trimmed && images.length === 0 && files.length === 0) return;
 
-  // ✅ Upload attachments to CloudFront so students can download
+  // 1) Locate the comment object we are replying to (to get logicalId)
+  const owner = getCommentByIdInPosts(posts, commentId);
+  const baseComment = owner?.comment || null;
+
+  const logicalId = baseComment?.logicalId || null;
+
+  // 2) Determine sibling posts
+  const siblingPostIds = getSiblingPostIdsForPost(postId);
+
+  // 3) Upload attachments once
   let cfImages = [];
   let cfFiles = [];
   try {
@@ -3027,97 +3268,170 @@ const addReply = async (postId, commentId, text, images = [], files = []) => {
     cfFiles = up.uploadedFiles || [];
   } catch (e) {
     console.error("[LecturerDashboard] reply attachment upload failed:", e);
-    cfImages = [];
-    cfFiles = [];
   }
 
   const optimisticId = `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  // ✅ One shared id for the SAME reply across sibling posts
+const replyLogicalId = `rl_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-  // optimistic local update
-  updatePostById(postId, (x) => ({
+  // 4) Build the fan-out targets: [{pid, cid}]
+  const targets = siblingPostIds
+    .map((pid) => {
+      const p = (posts || []).find((x) => x?.id === pid);
+      if (!p) return null;
+
+      const cid = findEquivalentCommentIdInPost(p, logicalId, baseComment);
+      if (!cid) return null;
+
+      return { pid, cid };
+    })
+    .filter(Boolean);
+
+  if (!targets.length) {
+    console.warn("[reply fanout] no targets found for", { postId, commentId, logicalId });
+    return;
+  }
+
+  // 5) Optimistic UI on each target
+  targets.forEach(({ pid, cid }) => {
+    updatePostById(pid, (x) => ({
+      ...x,
+      comments: (x.comments || []).map((c) =>
+        c.id === cid
+          ? {
+              ...c,
+              /*replies: [
+                {
+                  id: optimisticId,
+                  __pending: true,
+                  postId: pid,
+                  commentId: cid,
+                  logicalId, // optional on reply
+                  authorId: user.id,
+                  authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+                  authorPhoto: user.photoUrl,
+                  authorProgram: user.faculty,
+                  text: trimmed,
+                  images: cfImages,
+                  files: cfFiles,
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                },
+                ...(c.replies || []),
+              ],*/
+
+              replies: [
+  ...(c.replies || []),
+  {
+    id: optimisticId,
+    __pending: true,
+    postId: pid,
+    commentId: cid,
+    /*logicalId,*/
+    logicalId: replyLogicalId,
+    authorId: user.id,
+    authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+    authorPhoto: user.photoUrl,
+    authorProgram: user.faculty,
+    text: trimmed,
+    images: cfImages,
+    files: cfFiles,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  },
+],
+            }
+          : c
+      ),
+    }));
+  });
+
+  // 6) Persist to backend for each target
+  const results = await Promise.allSettled(
+    targets.map(async ({ pid, cid }) => {
+      const resp = await postReplyToServer({
+        postId: pid,
+        commentId: cid,
+        text: trimmed,
+        images: cfImages,
+        files: cfFiles,
+        logicalId: replyLogicalId,   // ✅ add this
+        authorId: user.id,
+        authorName: `${user.title ? user.title + " " : ""}${user.name}`,
+        authorPhoto: user.photoUrl,
+        authorProgram: user.faculty,
+      });
+      return { pid, cid, resp };
+    })
+  );
+
+  // 7) Replace optimistic reply with server reply
+  results.forEach((r) => {
+    if (r.status !== "fulfilled") {
+      console.error("[reply fanout] failed:", r.reason);
+      return;
+    }
+    const { pid, cid, resp } = r.value || {};
+    const serverReply = resp?.reply;
+
+    {/*if (serverReply?.id) {
+      updatePostById(pid, (x) => ({
+        ...x,
+        comments: (x.comments || []).map((c) =>
+          c.id === cid
+            ? {
+                ...c,
+                replies: (c.replies || []).map((rr) =>
+                  rr.id === optimisticId ? serverReply : rr
+                ),
+              }
+            : c
+        ),
+      }));*/}
+
+      if (serverReply?.id) {
+  // ✅ Ensure the server reply keeps the shared logical id (so dedupe works)
+  const patchedReply = serverReply.logicalId
+    ? serverReply
+    : { ...serverReply, logicalId: replyLogicalId };
+
+  updatePostById(pid, (x) => ({
     ...x,
     comments: (x.comments || []).map((c) =>
-      c.id === commentId
+      c.id === cid
         ? {
             ...c,
-            replies: [
-              {
-                id: optimisticId,
-                __pending: true,
-                postId,
-                commentId,
-                authorId: user.id,
-                authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-                authorPhoto: user.photoUrl,
-                authorProgram: user.faculty,
-                text: trimmed,
-                images: cfImages,
-                files: cfFiles,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              },
-              ...(c.replies || []),
-            ],
+            replies: (c.replies || []).map((rr) =>
+              rr.id === optimisticId ? patchedReply : rr
+            ),
           }
         : c
     ),
   }));
 
-  try {
-    const resp = await postReplyToServer({
-      postId,
-      commentId,
-      text: trimmed,
-      images: cfImages, // ✅ CloudFront-backed
-      files: cfFiles,   // ✅ CloudFront-backed
-      authorId: user.id,
-      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.faculty,
-    });
 
-    const serverReply = resp?.reply;
-
-    if (serverReply?.id) {
-      updatePostById(postId, (x) => ({
-        ...x,
-        comments: (x.comments || []).map((c) =>
-          c.id === commentId
-            ? {
-                ...c,
-                replies: (c.replies || []).map((r) => (r.id === optimisticId ? serverReply : r)),
-              }
-            : c
-        ),
-      }));
     } else {
-      updatePostById(postId, (x) => ({
+      updatePostById(pid, (x) => ({
         ...x,
         comments: (x.comments || []).map((c) =>
-          c.id === commentId
+          c.id === cid
             ? {
                 ...c,
-                replies: (c.replies || []).map((r) => (r.id === optimisticId ? { ...r, __pending: false } : r)),
+                replies: (c.replies || []).map((rr) =>
+                  rr.id === optimisticId ? { ...rr, __pending: false } : rr
+                ),
               }
             : c
         ),
       }));
     }
-  } catch (err) {
-    console.error("[LecturerDashboard] addReply failed:", err);
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) =>
-        c.id === commentId
-          ? {
-              ...c,
-              replies: (c.replies || []).map((r) => (r.id === optimisticId ? { ...r, __pending: false } : r)),
-            }
-          : c
-      ),
-    }));
-  }
+  });
+
+  console.log("[reply fanout] targets:", targets);
 };
+
+
+
 
 
 
@@ -3205,7 +3519,7 @@ const deletePost = async (post) => {
       } else {
         const base = arr[0];
         const multiPrograms = Array.from(new Set(arr.map(a => a.authorProgram))).sort();
-        const allC = [];
+        /*const allC = [];
         arr.forEach(a => (a.comments||[]).forEach(c => allC.push(c)));
         const cMap = new Map();
         allC.forEach(c=> { if(!cMap.has(c.id)) cMap.set(c.id, c); });
@@ -3215,7 +3529,23 @@ const deletePost = async (post) => {
           multiPrograms,
           displayProgramLabel: `Multiple programs (${multiPrograms.length})${base.targetYear ? ` • ${base.targetYear}` : ""}`,
           comments: Array.from(cMap.values()),
-        };
+        };*/
+
+        const allC = [];
+arr.forEach(a => (a.comments || []).forEach(c => allC.push(c)));
+
+// ✅ Deduplicate across sibling posts by logical identity (merges replies too)
+const mergedComments = mergeDuplicateCommentsByLogicalKey(allC);
+
+const rep = {
+  ...base,
+  multiGroupId: key,
+  multiPrograms,
+  displayProgramLabel: `Multiple programs (${multiPrograms.length})${base.targetYear ? ` • ${base.targetYear}` : ""}`,
+  comments: mergedComments,
+};
+
+
         result.push(rep);
       }
     });
@@ -4288,6 +4618,43 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
 }, [reply]);*/
 
 
+
+// --- render-time reply dedupe (prevents UI duplicates) ---
+function dedupeRepliesForRender(replies = []) {
+  const out = [];
+  const seen = new Set();
+
+  for (const r of (Array.isArray(replies) ? replies : [])) {
+    if (!r) continue;
+
+    const stable =
+      r.logicalId ||
+      r.clientLogicalId ||
+      r.threadId ||
+      "";
+
+    const sig = stable || [
+      r.authorId || r.authorName || r.author || "",
+      (r.text || "").trim(),
+      Math.floor((Number(r.createdAt) || 0) / 5000),
+    ].join("|");
+
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push(r);
+  }
+
+  out.sort((a, b) => (Number(a?.createdAt) || 0) - (Number(b?.createdAt) || 0));
+  return out;
+}
+
+
+
+
+
+
+
+
 function CommentThread({ comment, onAddReply }) {
   const [reply, setReply] = useState("");
   const [replyImages, setReplyImages] = useState([]); // [{name,dataUrl}]
@@ -4375,11 +4742,27 @@ function CommentThread({ comment, onAddReply }) {
   {displayWithTitle(commentAuthorName, "", commentAuthorName)}
 </div>
 
-{comment.authorProgram ? (
+{/*{comment.authorProgram ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
     {comment.authorProgram}
   </div>
+) : null}*/}
+
+{(comment?.authorProgram || comment?.createdAt) ? (
+  <div className="text-xs font-bold text-purple-800 mb-1">
+    {(comment?.authorProgram || "").trim()}
+    {comment?.createdAt ? (
+      <>
+        {" "}•{" "}
+        {formatTimeAgo(comment.createdAt)}
+      </>
+    ) : null}
+  </div>
 ) : null}
+
+
+
+
 
         <ExpandableText
           text={comment.text}
@@ -4409,7 +4792,8 @@ function CommentThread({ comment, onAddReply }) {
 
           {/* replies (guarded) */}
 {(() => {
-  const replies = Array.isArray(comment.replies) ? comment.replies : [];
+  /*const replies = Array.isArray(comment.replies) ? comment.replies : [];*/
+  const replies = dedupeRepliesForRender(comment.replies || []);
   return replies.length > 0 ? (
     <div className="mt-2 pl-6 space-y-2">
       {/*{replies.map((r) => (
@@ -4480,11 +4864,26 @@ function CommentThread({ comment, onAddReply }) {
           {displayWithTitle(replyAuthorName, "", replyAuthorName)}
         </div>
         {/*<div className="text-xs text-slate-500 mb-1">{r.authorProgram || ""}</div>*/}
-        {r.authorProgram ? (
+  {/*{r.authorProgram ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
     {r.authorProgram}
   </div>
+) : null}*/}
+
+{(r?.authorProgram || r?.createdAt) ? (
+  <div className="text-xs font-bold text-blue-800 mb-1">
+    {(r?.authorProgram || "").trim()}
+    {r?.createdAt ? (
+      <>
+        {" "}•{" "}
+        {formatTimeAgo(r.createdAt)}
+      </>
+    ) : null}
+  </div>
 ) : null}
+
+
+
         <ExpandableText text={r.text} />
 
         {r.images?.length > 0 && (

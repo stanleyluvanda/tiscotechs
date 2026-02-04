@@ -11,6 +11,13 @@
 // - adds: fetchPostsPage() -> { posts, cursor }
 // - adds: fetchThread() -> { comments, cursor } (for optional “load comments on expand” UX)
 // - safer JSON parsing + clearer error when API Gateway returns HTML (fixes "Unexpected token '<'")
+//
+// ✅ FIX (multi-program posts):
+// - Canonical threadId for comments/replies/thread fetch so replies never “disappear”
+// - Uses: post.multiGroupId || post.threadId || post.id || post.postId (fallback)
+//
+// ✅ FIX (reply not showing after 201):
+// - When server returns replies with commentId (no parentId), treat commentId as parentId during normalization.
 
 const RAW_POSTS_BASE =
   (import.meta.env.VITE_POSTS_API_BASE &&
@@ -73,7 +80,10 @@ async function doJsonFetch(pathOrUrl, options = {}) {
 
   if (!res.ok) {
     // If API Gateway / CloudFront returns your SPA HTML, make it obvious
-    if (typeof parsed === "string" && parsed.trim().toLowerCase().startsWith("<!doctype")) {
+    if (
+      typeof parsed === "string" &&
+      parsed.trim().toLowerCase().startsWith("<!doctype")
+    ) {
       const err = new Error(
         `HTTP ${res.status} – Received HTML instead of JSON. Check VITE_POSTS_API_BASE and API Gateway route for: ${url}`
       );
@@ -123,6 +133,34 @@ function formatTimeAgoForPost(ts) {
   if (hr < 24) return `${hr}h`;
   const day = Math.floor(hr / 24);
   return `${day}d`;
+}
+
+/**
+ * Canonical thread id resolver.
+ * Accepts either:
+ *  - a post object (preferred): uses multiGroupId when present
+ *  - a string id
+ */
+function getThreadId(input) {
+  if (!input) return "";
+  if (typeof input === "object") {
+    return String(
+      input.multiGroupId || input.threadId || input.id || input.postId || ""
+    ).trim();
+  }
+  return String(input).trim();
+}
+
+/* ===================== Thread cache ===================== */
+
+const _threadCache = new Map();
+
+/** Clear cached pages for a given thread id (used after comment/reply) */
+function clearThreadCacheFor(threadId) {
+  if (!threadId) return;
+  for (const k of _threadCache.keys()) {
+    if (String(k).startsWith(`${threadId}::`)) _threadCache.delete(k);
+  }
 }
 
 /**
@@ -179,7 +217,8 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     images = raw.attachments
       .filter(
         (a) =>
-          a && (a.type === "image" || String(a.mime || "").startsWith("image/"))
+          a &&
+          (a.type === "image" || String(a.mime || "").startsWith("image/"))
       )
       .map(mapImage);
   }
@@ -192,7 +231,8 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     files = raw.attachments
       .filter(
         (a) =>
-          a && !(a.type === "image" || String(a.mime || "").startsWith("image/"))
+          a &&
+          !(a.type === "image" || String(a.mime || "").startsWith("image/"))
       )
       .map(mapFile);
   }
@@ -233,13 +273,23 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     raw.authorCountryCode || raw.countryCode || raw.country_code || "";
 
   // ✅ parentId:
-  // - if server uses flat parentId, we keep it
-  // - if server returns nested replies[], we infer it
-  const parentIdRaw = inferredParentId != null ? inferredParentId : raw.parentId;
+  // - prefer explicit parentId
+  // - if server returns replies with commentId (no parentId), treat commentId as parentId
+  // - if nested replies[], we infer it via inferredParentId
+  const parentIdRaw =
+    inferredParentId != null
+      ? inferredParentId
+      : raw.parentId != null
+      ? raw.parentId
+      : raw.commentId != null
+      ? raw.commentId
+      : null;
+
   const parentId = parentIdRaw == null ? null : String(parentIdRaw);
 
   const thisId =
     raw.id ||
+    raw.replyId ||
     raw.commentId ||
     `c_${createdAt}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -405,11 +455,7 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
               a && (a.type === "image" || String(a.mime || "").startsWith("image/"))
           )
           .map((a) => ({
-            id:
-              a.key ||
-              a.id ||
-              a.url ||
-              `img_${Math.random().toString(36).slice(2)}`,
+            id: a.key || a.id || a.url || `img_${Math.random().toString(36).slice(2)}`,
             name: a.fileName || a.name || "image",
             mime: a.mime || "image/*",
             url: a.url || a.thumb || a.dataUrl || "",
@@ -429,11 +475,7 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
               !(a.type === "image" || String(a.mime || "").startsWith("image/"))
           )
           .map((a) => ({
-            id:
-              a.key ||
-              a.id ||
-              a.url ||
-              `file_${Math.random().toString(36).slice(2)}`,
+            id: a.key || a.id || a.url || `file_${Math.random().toString(36).slice(2)}`,
             name: a.fileName || a.name || "file",
             mime: a.mime || "application/octet-stream",
             url: a.url || a.dataUrl || "",
@@ -545,27 +587,22 @@ export async function fetchPosts({ scope = "student-dashboard" } = {}) {
   });
   return posts;
 }
-/*export async function fetchPosts({ scope = "student-dashboard" } = {}) {
-  const { posts } = await fetchPostsPage({ scope, limit: 30, withThread: false });
-  return posts;
-}*/
 
 /* ===================== Thread fetcher (optional) ===================== */
-
-const _threadCache = new Map();
 
 /**
  * ✅ Fetch comments+replies for ONE post (from /api/posts/thread)
  * Returns: { comments, cursor }
  */
 export async function fetchThread({ postId, limit = 500, cursor = null } = {}) {
-  if (!postId) throw new Error("postId is required for fetchThread");
+  const threadId = getThreadId(postId);
+  if (!threadId) throw new Error("postId is required for fetchThread");
 
-  const cacheKey = `${postId}::${cursor || ""}::${limit}`;
+  const cacheKey = `${threadId}::${cursor || ""}::${limit}`;
   if (_threadCache.has(cacheKey)) return _threadCache.get(cacheKey);
 
   const url = buildPostsUrl("/api/posts/thread", {
-    postId,
+    postId: threadId,
     limit,
     cursor: cursor || undefined,
   });
@@ -626,6 +663,8 @@ export async function createComment(payload = {}) {
     attachments = [],
   } = payload || {};
 
+  const threadId = getThreadId(postId);
+
   const trimmedText = String(text || "").trim();
   const trimmedHtml = String(html || "").trim();
 
@@ -634,7 +673,7 @@ export async function createComment(payload = {}) {
   const hasAtts = Array.isArray(attachments) && attachments.length > 0;
 
   if (
-    !postId ||
+    !threadId ||
     ((!trimmedText && !trimmedHtml) && !hasImages && !hasFiles && !hasAtts)
   ) {
     throw new Error(
@@ -644,10 +683,10 @@ export async function createComment(payload = {}) {
 
   const url = buildPostsUrl("/api/posts/comment");
 
-  return doJsonFetch(url, {
+  const res = await doJsonFetch(url, {
     method: "POST",
     body: {
-      postId,
+      postId: threadId,
       text: trimmedText,
       html: trimmedHtml,
 
@@ -672,6 +711,9 @@ export async function createComment(payload = {}) {
       attachments: Array.isArray(attachments) ? attachments : [],
     },
   });
+
+  clearThreadCacheFor(threadId);
+  return res;
 }
 
 export async function createReply(payload = {}) {
@@ -696,6 +738,7 @@ export async function createReply(payload = {}) {
     attachments = [],
   } = payload || {};
 
+  const threadId = getThreadId(postId);
   const realCommentId = String(commentId || parentId || "").trim();
 
   const trimmedText = String(text || "").trim();
@@ -706,7 +749,7 @@ export async function createReply(payload = {}) {
   const hasAtts = Array.isArray(attachments) && attachments.length > 0;
 
   if (
-    !postId ||
+    !threadId ||
     !realCommentId ||
     ((!trimmedText && !trimmedHtml) && !hasImages && !hasFiles && !hasAtts)
   ) {
@@ -717,10 +760,10 @@ export async function createReply(payload = {}) {
 
   const url = buildPostsUrl("/api/posts/reply");
 
-  return doJsonFetch(url, {
+  const res = await doJsonFetch(url, {
     method: "POST",
     body: {
-      postId,
+      postId: threadId,
       commentId: realCommentId,
       text: trimmedText,
       html: trimmedHtml,
@@ -746,6 +789,9 @@ export async function createReply(payload = {}) {
       attachments: Array.isArray(attachments) ? attachments : [],
     },
   });
+
+  clearThreadCacheFor(threadId);
+  return res;
 }
 
 /* ---- Back-compat aliases used in your pages ---- */
@@ -795,7 +841,8 @@ export async function createPostComment({
   images = [],
   files = [],
 }) {
-  if (!postId) return null;
+  const threadId = getThreadId(postId);
+  if (!threadId) return null;
 
   const trimmed = String(text || "").trim();
   const safeImages = Array.isArray(images) ? images : [];
@@ -804,7 +851,7 @@ export async function createPostComment({
   if (!trimmed && safeImages.length === 0 && safeFiles.length === 0) return null;
 
   const payload = {
-    postId,
+    postId: threadId,
     text: trimmed,
     images: safeImages,
     files: safeFiles,
@@ -812,8 +859,7 @@ export async function createPostComment({
     authorId: viewer?.id || viewer?.uid || viewer?.userId || "",
     authorName: viewer?.name || "Student",
     authorProgram: viewer?.program || "",
-    authorPhoto:
-      viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
+    authorPhoto: viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
 
     authorRole: viewer?.role || viewer?.authorRole || "",
     authorTitle: viewer?.title || "",
@@ -826,7 +872,9 @@ export async function createPostComment({
 
   try {
     const url = buildPostsUrl("/api/posts/comment");
-    return await doJsonFetch(url, { method: "POST", body: payload });
+    const res = await doJsonFetch(url, { method: "POST", body: payload });
+    clearThreadCacheFor(threadId);
+    return res;
   } catch (err) {
     console.error("[postsApi] createPostComment failed", err);
     return null;
@@ -841,7 +889,8 @@ export async function createPostReply({
   images = [],
   files = [],
 }) {
-  if (!postId || !commentId) return null;
+  const threadId = getThreadId(postId);
+  if (!threadId || !commentId) return null;
 
   const trimmed = String(text || "").trim();
   const safeImages = Array.isArray(images) ? images : [];
@@ -850,7 +899,7 @@ export async function createPostReply({
   if (!trimmed && safeImages.length === 0 && safeFiles.length === 0) return null;
 
   const payload = {
-    postId,
+    postId: threadId,
     commentId,
     text: trimmed,
     images: safeImages,
@@ -859,8 +908,7 @@ export async function createPostReply({
     authorId: viewer?.id || viewer?.uid || viewer?.userId || "",
     authorName: viewer?.name || "Student",
     authorProgram: viewer?.program || "",
-    authorPhoto:
-      viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
+    authorPhoto: viewer?.photoUrl || viewer?.avatarUrl || viewer?.profileImageUrl || "",
 
     authorRole: viewer?.role || viewer?.authorRole || "",
     authorTitle: viewer?.title || "",
@@ -873,7 +921,9 @@ export async function createPostReply({
 
   try {
     const url = buildPostsUrl("/api/posts/reply");
-    return await doJsonFetch(url, { method: "POST", body: payload });
+    const res = await doJsonFetch(url, { method: "POST", body: payload });
+    clearThreadCacheFor(threadId);
+    return res;
   } catch (err) {
     console.error("[postsApi] createPostReply failed", err);
     return null;

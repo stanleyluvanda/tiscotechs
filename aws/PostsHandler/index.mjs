@@ -7,6 +7,11 @@
 // - GET /api/posts/thread?postId=&limit=&cursor= for per-post thread loading (optional for UIs)
 // - Comments/replies keep FULL author snapshot fields so names never disappear
 // - Rejects base64 dataUrl attachments (prevents DynamoDB item size blowups)
+//
+// ✅ FIX (multi-program posts / disappearing replies):
+// - Canonical threadId resolver (multiGroupId/threadId preferred)
+// - Thread GET + comment/reply writes use canonical thread PK
+// - Compatibility fallback for "post exists" check during transition
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
@@ -56,7 +61,12 @@ function safeArr(v) {
 function hasBase64DataUrl(arr) {
   return (
     Array.isArray(arr) &&
-    arr.some((x) => x && typeof x.dataUrl === "string" && x.dataUrl.startsWith("data:"))
+    arr.some(
+      (x) =>
+        x &&
+        typeof x.dataUrl === "string" &&
+        x.dataUrl.startsWith("data:")
+    )
   );
 }
 
@@ -67,7 +77,8 @@ function uid(prefix) {
 function readJsonBody(event) {
   try {
     let bodyStr = event?.body || "{}";
-    if (event?.isBase64Encoded) bodyStr = Buffer.from(bodyStr, "base64").toString("utf8");
+    if (event?.isBase64Encoded)
+      bodyStr = Buffer.from(bodyStr, "base64").toString("utf8");
     return JSON.parse(bodyStr || "{}");
   } catch {
     return null;
@@ -83,6 +94,16 @@ function clampInt(v, def, min, max) {
   const n = Number(v);
   if (!Number.isFinite(n)) return def;
   return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
+/**
+ * Canonical thread id resolver.
+ * Prefer: multiGroupId/threadId, fallback: postId/id.
+ * Works for querystring objects and JSON payloads.
+ */
+function normalizeThreadId(obj) {
+  const o = obj || {};
+  return String(o.multiGroupId || o.threadId || o.postId || o.id || "").trim();
 }
 
 /* Cursor helpers: base64(json(lastEvaluatedKey)) */
@@ -127,7 +148,8 @@ const skPost = () => "POST";
 const gsi1pk = (scope) => `FEED#${String(scope || "student-dashboard")}`;
 const gsi1sk = (createdAt, postId) => `${pad13(createdAt)}#${String(postId)}`;
 
-const skComment = (createdAt, commentId) => `CMT#${pad13(createdAt)}#${String(commentId)}`;
+const skComment = (createdAt, commentId) =>
+  `CMT#${pad13(createdAt)}#${String(commentId)}`;
 const skReply = (commentId, createdAt, replyId) =>
   `RPL#${String(commentId)}#${pad13(createdAt)}#${String(replyId)}`;
 
@@ -165,7 +187,8 @@ async function loadThreadFast(postId, { limit = 500, cursor } = {}) {
   // Map replies by commentId
   const repliesByComment = new Map();
   for (const r of replies) {
-    const commentId = String(r.commentId || "").trim() || String(r.sk || "").split("#")[1] || "";
+    const commentId =
+      String(r.commentId || "").trim() || String(r.sk || "").split("#")[1] || "";
     if (!commentId) continue;
     if (!repliesByComment.has(commentId)) repliesByComment.set(commentId, []);
     repliesByComment.get(commentId).push(r);
@@ -282,6 +305,34 @@ async function deleteWholePost(postId) {
   return { deleted: true, count: deletedCount };
 }
 
+/**
+ * Ensure there is a POST item.
+ * For transition safety:
+ * - first check canonical threadId
+ * - if missing, check legacyPostId (payload.postId) if different
+ */
+async function ensurePostExists(threadId, legacyPostId) {
+  if (!threadId) return null;
+
+  let postResp = await ddb.send(
+    new GetCommand({
+      TableName: TABLE,
+      Key: { pk: pkPost(threadId), sk: skPost() },
+    })
+  );
+
+  if (!postResp.Item && legacyPostId && legacyPostId !== threadId) {
+    postResp = await ddb.send(
+      new GetCommand({
+        TableName: TABLE,
+        Key: { pk: pkPost(legacyPostId), sk: skPost() },
+      })
+    );
+  }
+
+  return postResp.Item || null;
+}
+
 /* ---------------- Main handler ---------------- */
 export const handler = async (event) => {
   const origin =
@@ -307,38 +358,50 @@ export const handler = async (event) => {
 
   const path = rawPath || "";
 
-  const isCommentPath = path === "/api/posts/comment" || path.endsWith("/posts/comment");
+  const isCommentPath =
+    path === "/api/posts/comment" || path.endsWith("/posts/comment");
   const isReplyPath = path === "/api/posts/reply" || path.endsWith("/posts/reply");
-  const isThreadPath = path === "/api/posts/thread" || path.endsWith("/posts/thread");
+  const isThreadPath =
+    path === "/api/posts/thread" || path.endsWith("/posts/thread");
   const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
 
   /* ---------- GET /api/posts/thread?postId=... ---------- */
   if (isThreadPath && method === "GET") {
     try {
       const qs = event.queryStringParameters || {};
-      const postId = String(qs.postId || qs.id || "").trim();
-      if (!postId) {
-        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "postId is required" }) };
+
+      // Canonical threadId (supports postId=..., threadId=..., multiGroupId=...)
+      const threadId = normalizeThreadId(qs);
+      if (!threadId) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ ok: false, error: "postId is required" }),
+        };
       }
 
       const limit = clampInt(qs.limit, 500, 1, 2000);
       const cursor = qs.cursor ? String(qs.cursor) : undefined;
 
-      const res = await loadThreadFast(postId, { limit, cursor });
+      const res = await loadThreadFast(threadId, { limit, cursor });
 
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
           ok: true,
-          postId,
+          postId: threadId, // keep response field name for compatibility
           comments: res.comments,
           cursor: res.cursor,
         }),
       };
     } catch (err) {
       console.error("[PostsHandlerDDB] thread GET failed:", err);
-      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to load thread" }) };
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Failed to load thread" }),
+      };
     }
   }
 
@@ -347,7 +410,11 @@ export const handler = async (event) => {
     try {
       const payload = readJsonBody(event);
       if (!payload) {
-        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+        };
       }
 
       if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
@@ -361,25 +428,33 @@ export const handler = async (event) => {
         };
       }
 
-      const postId = String(payload.postId || "").trim();
+      // Canonical thread id, but keep legacyPostId for existence-check fallback
+      const legacyPostId = String(payload.postId || "").trim();
+      const threadId = normalizeThreadId(payload);
+
       const text = String(payload.text || "").trim();
       const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
       const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
 
-      if (!postId || (!text && !hasImages && !hasFiles)) {
+      if (!threadId || (!text && !hasImages && !hasFiles)) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ ok: false, error: "postId and (text or images/files) are required" }),
+          body: JSON.stringify({
+            ok: false,
+            error: "postId and (text or images/files) are required",
+          }),
         };
       }
 
-      // Ensure post exists
-      const postResp = await ddb.send(
-        new GetCommand({ TableName: TABLE, Key: { pk: pkPost(postId), sk: skPost() } })
-      );
-      if (!postResp.Item) {
-        return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Post not found" }) };
+      // Ensure post exists (canonical first, then legacy as fallback)
+      const postItem = await ensurePostExists(threadId, legacyPostId);
+      if (!postItem) {
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not found" }),
+        };
       }
 
       const now = Date.now();
@@ -391,14 +466,16 @@ export const handler = async (event) => {
         payload.profileImageUrl ||
         "";
 
-      const commentId = String(payload.id || payload.commentId || payload.clientId || uid("c"));
+      const commentId = String(
+        payload.id || payload.commentId || payload.clientId || uid("c")
+      );
 
       const item = {
-        pk: pkPost(postId),
+        pk: pkPost(threadId),
         sk: skComment(now, commentId),
 
         type: "comment",
-        postId,
+        postId: threadId,
         commentId,
 
         authorId: payload.authorId || "",
@@ -429,10 +506,10 @@ export const handler = async (event) => {
         headers,
         body: JSON.stringify({
           ok: true,
-          postId,
+          postId: threadId,
           comment: {
             id: commentId,
-            postId,
+            postId: threadId,
             ...item,
             replies: [],
           },
@@ -440,7 +517,11 @@ export const handler = async (event) => {
       };
     } catch (err) {
       console.error("[PostsHandlerDDB] comment failed:", err);
-      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to save comment" }) };
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Failed to save comment" }),
+      };
     }
   }
 
@@ -449,7 +530,11 @@ export const handler = async (event) => {
     try {
       const payload = readJsonBody(event);
       if (!payload) {
-        return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+        };
       }
 
       if (hasBase64DataUrl(payload.images) || hasBase64DataUrl(payload.files)) {
@@ -463,26 +548,34 @@ export const handler = async (event) => {
         };
       }
 
-      const postId = String(payload.postId || "").trim();
+      const legacyPostId = String(payload.postId || "").trim();
+      const threadId = normalizeThreadId(payload);
+
       const commentId = String(payload.commentId || "").trim();
       const text = String(payload.text || "").trim();
       const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
       const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
 
-      if (!postId || !commentId || (!text && !hasImages && !hasFiles)) {
+      if (!threadId || !commentId || (!text && !hasImages && !hasFiles)) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ ok: false, error: "postId, commentId and (text or images/files) are required" }),
+          body: JSON.stringify({
+            ok: false,
+            error:
+              "postId, commentId and (text or images/files) are required",
+          }),
         };
       }
 
-      // Ensure post exists
-      const postResp = await ddb.send(
-        new GetCommand({ TableName: TABLE, Key: { pk: pkPost(postId), sk: skPost() } })
-      );
-      if (!postResp.Item) {
-        return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Post not found" }) };
+      // Ensure post exists (canonical first, then legacy as fallback)
+      const postItem = await ensurePostExists(threadId, legacyPostId);
+      if (!postItem) {
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not found" }),
+        };
       }
 
       const now = Date.now();
@@ -494,14 +587,16 @@ export const handler = async (event) => {
         payload.profileImageUrl ||
         "";
 
-      const replyId = String(payload.id || payload.replyId || payload.clientId || uid("r"));
+      const replyId = String(
+        payload.id || payload.replyId || payload.clientId || uid("r")
+      );
 
       const item = {
-        pk: pkPost(postId),
+        pk: pkPost(threadId),
         sk: skReply(commentId, now, replyId),
 
         type: "reply",
-        postId,
+        postId: threadId,
         commentId,
         replyId,
 
@@ -533,14 +628,18 @@ export const handler = async (event) => {
         headers,
         body: JSON.stringify({
           ok: true,
-          postId,
+          postId: threadId,
           commentId,
-          reply: { id: replyId, postId, commentId, ...item },
+          reply: { id: replyId, postId: threadId, commentId, ...item },
         }),
       };
     } catch (err) {
       console.error("[PostsHandlerDDB] reply failed:", err);
-      return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to save reply" }) };
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Failed to save reply" }),
+      };
     }
   }
 
@@ -557,7 +656,8 @@ export const handler = async (event) => {
         // Keep compatibility by default (withThread=1)
         const withThread =
           qs.withThread == null ? "1" : String(qs.withThread).trim();
-        const wantThread = withThread === "1" || withThread.toLowerCase() === "true";
+        const wantThread =
+          withThread === "1" || withThread.toLowerCase() === "true";
 
         // IMPORTANT: smaller default keeps UI snappy; still "unlimited" via cursor
         const limit = clampInt(qs.limit, 30, 1, 200);
@@ -589,23 +689,13 @@ export const handler = async (event) => {
           base.postId = postId;
 
           // ✅ FAST: 1 query per post (and only if requested)
-          /*if (wantThread && postId) {
+          if (wantThread && postId) {
             const thr = await loadThreadFast(postId, { limit: 500 });
             base.comments = thr.comments;
           } else {
-            base.comments = base.comments || [];
-          }*/
-
-          if (wantThread && postId) {
-  const thr = await loadThreadFast(postId, { limit: 500 });
-  base.comments = thr.comments;
-} else {
-  // ✅ FORCE empty comments when withThread=0 (prevents old embedded comments from leaking through)
-  base.comments = [];
-}
-
-
-
+            // ✅ FORCE empty comments when withThread=0 (prevents old embedded comments from leaking through)
+            base.comments = [];
+          }
 
           posts.push(base);
         }
@@ -622,7 +712,11 @@ export const handler = async (event) => {
         };
       } catch (err) {
         console.error("[PostsHandlerDDB] GET failed:", err);
-        return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to load posts" }) };
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Failed to load posts" }),
+        };
       }
     }
 
@@ -631,23 +725,39 @@ export const handler = async (event) => {
       try {
         const payload = readJsonBody(event);
         if (!payload) {
-          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Invalid JSON" }) };
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+          };
         }
 
-        const hasText = typeof payload.text === "string" && payload.text.trim().length > 0;
+        const hasText =
+          typeof payload.text === "string" && payload.text.trim().length > 0;
         const hasAttachments =
           (Array.isArray(payload.attachments) && payload.attachments.length > 0) ||
           (Array.isArray(payload.images) && payload.images.length > 0) ||
           (Array.isArray(payload.files) && payload.files.length > 0);
 
         if (!hasText && !hasAttachments) {
-          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "Either text or attachments are required" }) };
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({
+              ok: false,
+              error: "Either text or attachments are required",
+            }),
+          };
         }
 
         const now = Date.now();
         const createdAt = payload.createdAt || now;
 
-        const postId = String(payload.id || payload.postId || `p_${now}_${Math.random().toString(36).slice(2, 10)}`);
+        const postId = String(
+          payload.id ||
+            payload.postId ||
+            `p_${now}_${Math.random().toString(36).slice(2, 10)}`
+        );
         const sc = String(payload.scope || "student-dashboard");
 
         const photoUrl =
@@ -710,10 +820,18 @@ export const handler = async (event) => {
         delete out.pk;
         delete out.sk;
 
-        return { statusCode: 201, headers, body: JSON.stringify({ ok: true, post: out }) };
+        return {
+          statusCode: 201,
+          headers,
+          body: JSON.stringify({ ok: true, post: out }),
+        };
       } catch (err) {
         console.error("[PostsHandlerDDB] POST failed:", err);
-        return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to save post" }) };
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Failed to save post" }),
+        };
       }
     }
 
@@ -721,28 +839,53 @@ export const handler = async (event) => {
     if (method === "DELETE") {
       try {
         const qs = event.queryStringParameters || {};
-        let id = (qs.id && String(qs.id)) || (qs.postId && String(qs.postId)) || "";
+        let id =
+          (qs.id && String(qs.id)) || (qs.postId && String(qs.postId)) || "";
 
         if (!id && event.body) {
           const payload = readJsonBody(event);
-          if (payload) id = (payload.id && String(payload.id)) || (payload.postId && String(payload.postId)) || "";
+          if (payload)
+            id =
+              (payload.id && String(payload.id)) ||
+              (payload.postId && String(payload.postId)) ||
+              "";
         }
 
         if (!id) {
-          return { statusCode: 400, headers, body: JSON.stringify({ ok: false, error: "id or postId is required" }) };
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ ok: false, error: "id or postId is required" }),
+          };
         }
 
         const res = await deleteWholePost(id);
 
-        return { statusCode: 200, headers, body: JSON.stringify({ ok: true, id, ...res }) };
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ ok: true, id, ...res }),
+        };
       } catch (err) {
         console.error("[PostsHandlerDDB] DELETE failed:", err);
-        return { statusCode: 500, headers, body: JSON.stringify({ ok: false, error: "Failed to delete post" }) };
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Failed to delete post" }),
+        };
       }
     }
 
-    return { statusCode: 405, headers, body: JSON.stringify({ ok: false, error: "Method not allowed" }) };
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ ok: false, error: "Method not allowed" }),
+    };
   }
 
-  return { statusCode: 404, headers, body: JSON.stringify({ ok: false, error: "Not found" }) };
+  return {
+    statusCode: 404,
+    headers,
+    body: JSON.stringify({ ok: false, error: "Not found" }),
+  };
 };
