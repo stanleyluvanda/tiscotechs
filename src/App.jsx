@@ -1,7 +1,8 @@
 
 // src/App.jsx
 //import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+//import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -71,6 +72,37 @@ function PageWrap({ title, children }) {
 const Scholarships = () => <PageWrap title="Scholarships">List scholarships here.</PageWrap>;
 const EduInfo = () => <PageWrap title="EduInfo">Education-funding info (stub).</PageWrap>;
 const PartnerSignup = () => <PageWrap title="Partner Sign Up">Partner onboarding (stub).</PageWrap>;
+
+
+function RequireRole({ role, redirectTo = "/login" }) {
+  const loc = useLocation();
+  const u = getLoggedInUser();
+
+  // Not logged in -> go to login
+  if (!u?.role) {
+    return (
+      <Navigate
+        to={redirectTo}
+        replace
+        state={{ from: loc.pathname + loc.search, requiredRole: role }}
+      />
+    );
+  }
+
+  const actual = String(u.role || "").toLowerCase();
+  const required = String(role || "").toLowerCase();
+
+  // Logged in but wrong role -> send them to their own dashboard
+  if (actual !== required) {
+    if (actual === "lecturer") return <Navigate to="/lecturer/dashboard" replace />;
+    if (actual === "student") return <Navigate to="/student/dashboard" replace />;
+    if (actual === "partner") return <Navigate to="/partner/dashboard" replace />;
+    if (actual === "admin") return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Outlet />;
+}
 
 function NotFound() {
   const u = getLoggedInUser();
@@ -146,10 +178,22 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* dashboards */}
-        <Route path="/student/dashboard" element={<StudentDashboard />} />
-        <Route path="/lecturer/dashboard" element={<LecturerDashboard />} />
+        {/*<Route path="/student/dashboard" element={<StudentDashboard />} />*/}
+        {/*<Route path="/lecturer/dashboard" element={<LecturerDashboard />} />*/}
         {/* ✅ NEW: Student Video Tips page */}
+        {/*<Route path="/student/video-tips" element={<VideoTips />} />*/}
+
+        <Route element={<RequireRole role="lecturer" redirectTo="/login" />}>
+        <Route path="/lecturer/dashboard" element={<LecturerDashboard />} />
+        <Route path="/lecturer/messages" element={<LecturerMessages />} />
+        </Route>
+
+
+        <Route element={<RequireRole role="student" redirectTo="/login" />}>
+        <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/video-tips" element={<VideoTips />} />
+        <Route path="/marketplace" element={<StudentMarketplace />} />
+        </Route>
          
 
 
@@ -157,10 +201,10 @@ export default function App() {
       
         <Route path="/contact" element={<Contact />} />
         <Route path="/contact-lecturer/*" element={<ContactLecturer />} />
-        <Route path="/lecturer/messages" element={<LecturerMessages />} />
+        {/*<Route path="/lecturer/messages" element={<LecturerMessages />} />*/}
         <Route path="/platform/university" element={<UniversityAcademicPlatform />} />
         <Route path="/platform/global" element={<GlobalAcademicPlatform />} />
-        <Route path="/marketplace" element={<StudentMarketplace />} />
+        {/*<Route path="/marketplace" element={<StudentMarketplace />} />*/}
         <Route path="/upload-test" element={<UploadTest />} />
 
         {/* catch-all */}
