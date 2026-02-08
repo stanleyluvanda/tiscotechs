@@ -12,6 +12,9 @@ import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 //import { createPost as createPostOnServer } from "../lib/postsApi.js";  // ⬅️ ADD THIS
 //import { createPost as createPostOnServer, postCommentToServer, postReplyToServer,} from "../lib/postsApi.js";//
 import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,} from "../lib/postsApi.js";
+import { reportContent } from "../lib/moderationApi.js"; // adjust path
+import { uploadFileToS3 } from "../lib/uploadLambda";
+
 
 
 // ✅ ADD THIS HERE (top-level helper, before the component)
@@ -25,6 +28,78 @@ const POSTS_API_URL =
 
 
 const LECTURER_SCOPE = "student-dashboard";
+
+
+
+
+
+/*async function onReport({ itemType, itemId, postId, commentId="", replyId="" }) {
+  const reason = prompt("Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)", "spam");
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}*/
+
+async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const reason = prompt(
+    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
+    "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}
+
+
+
+
 
 async function fetchLecturerProfileFromServer(email) {
   const r = await fetch(
@@ -2189,7 +2264,7 @@ const onPickAvatar = async (e) => {
     }
   };*/
 
-  const handlePaste = (e) => {
+  /*const handlePaste = (e) => {
   e.preventDefault();
 
   const cb = e.clipboardData || window.clipboardData;
@@ -2236,7 +2311,129 @@ const onPickAvatar = async (e) => {
 
   range.insertNode(frag);
   range.collapse(false);
+};*/
+
+const handlePaste = async (e) => {
+  try {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // 1) If clipboard contains image(s), upload them and add to attachments
+    const items = cb?.items ? Array.from(cb.items) : [];
+    const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+
+    if (imageItems.length > 0) {
+      e.preventDefault(); // prevent blob/image being inserted into the editor
+
+      for (const it of imageItems) {
+        const file = it.getAsFile();
+        if (!file) continue;
+
+        // Optional size guard (8MB)
+        if (file.size > 8 * 1024 * 1024) {
+          alert("Screenshot is too large. Please use an image under 8MB.");
+          continue;
+        }
+
+        // ✅ Upload using your existing flow (same as AttachmentUploader)
+        const uploaded = await uploadFileToS3(file);
+
+        const att = {
+          url: uploaded.url,
+          key: uploaded.key,
+          fileName: file.name || "screenshot.png",
+          size: file.size,
+          mime: file.type,
+          type: "image",
+        };
+
+        // ✅ IMPORTANT: in LecturerDashboard this must be composerAttachments
+        setComposerAttachments((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          att,
+        ]);
+      }
+
+      return; // done handling image paste
+    }
+
+    // 2) Otherwise: keep your current text paste behavior (paragraph formatting)
+    e.preventDefault();
+
+    const text = cb?.getData("text/plain") || "";
+
+    // Normalize line endings
+    const normalized = String(text).replace(/\r\n/g, "\n");
+
+    // Escape HTML special chars
+    const esc = (s) =>
+      String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    // Convert:
+    // - blank lines => paragraph breaks
+    // - single newline => <br/>
+    const html = normalized
+      .split(/\n{2,}/g)
+      .map((para) => para.split("\n").map(esc).join("<br/>"))
+      .map((p) => `<p>${p || "<br/>"}</p>`)
+      .join("");
+
+    // Insert HTML at cursor (keeps paragraphs)
+    if (document.queryCommandSupported?.("insertHTML")) {
+      document.execCommand("insertHTML", false, html);
+      return;
+    }
+
+    // Fallback: manual range insert
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    sel.deleteFromDocument();
+
+    const range = sel.getRangeAt(0);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    const frag = document.createDocumentFragment();
+    while (container.firstChild) frag.appendChild(container.firstChild);
+
+    range.insertNode(frag);
+    range.collapse(false);
+  } catch (err) {
+    console.error("handlePaste failed:", err);
+    // If anything fails, don't break typing/paste entirely
+  }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /* ---- Auth store shim (align with StudentDashboard) ---- */
   function getAuthRecord(userId) {
@@ -3995,6 +4192,8 @@ const rep = {
               onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
               onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
               onDelete={() => deletePost(p)}
+              // ✅ NEW: pass report handler down
+              onReport={onReport}
               currentUser={user}
             />
           ))}
@@ -4218,6 +4417,48 @@ function sanitizePastedHtml(html = "") {
   return doc.body.innerHTML;
 }
 
+
+
+
+async function addPastedImagesToState(cb, setImages) {
+  const items = cb?.items ? Array.from(cb.items) : [];
+  const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+  if (imageItems.length === 0) return false;
+
+  for (const it of imageItems) {
+    const file = it.getAsFile();
+    if (!file) continue;
+
+    // optional guard
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Screenshot is too large. Please use an image under 8MB.");
+      continue;
+    }
+
+    // ✅ MATCH your existing comment picker flow
+    const dataUrl = await fileToDownscaledDataURL(file, 1280, 1280, 0.82, 420);
+
+    setImages((prev) => [
+      ...(Array.isArray(prev) ? prev : []),
+      {
+        name: file.name || "screenshot.png",
+        dataUrl,
+        mime: file.type || "image/png", // ✅ important for some upload paths
+      },
+    ]);
+  }
+
+  return true;
+}
+
+
+
+
+
+
+
+
+
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
 function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
@@ -4436,6 +4677,25 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
           💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
         </button>
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
+
+        {/* ✅ NEW: Report */}
+  <button
+    type="button"
+    onClick={() =>
+      onReport?.({
+        itemType: "post",
+        itemId: post.id,
+        postId: post.id,
+      })
+    }
+    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+    title="Report this post"
+  >
+    🚩 Report
+  </button>
+
+
+
       </div>
 
       {/* comments */}
@@ -4484,11 +4744,41 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, curr
       ref={cmtRef}
       value={cmt}
       onChange={(e) => setCmt(e.target.value)}
-      onPaste={(e) => {
+      /*onPaste={(e) => {
   const html = e.clipboardData?.getData("text/html") || "";
   setCmtHtml(sanitizePastedHtml(html));
-}}
-      placeholder="Write a comment on a post…"
+     }}*/
+
+     // ✅ REPLACE ONLY THIS onPaste BLOCK (start)
+  onPaste={async (e) => {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // 1) Screenshot/image paste → add to cmtImages (same flow as 📷 picker)
+    const handled = await addPastedImagesToState(cb, setCmtImages);
+    if (handled) {
+      e.preventDefault(); // stop the browser inserting the image/blob into the textarea
+      return;
+    }
+
+    // 2) Otherwise keep your existing HTML paste behavior
+    const html = cb?.getData("text/html") || "";
+    if (html) {
+      e.preventDefault();
+      setCmtHtml(sanitizePastedHtml(html));
+    }
+  }}
+  // ✅ REPLACE ONLY THIS onPaste BLOCK (end)
+
+
+
+
+
+
+
+
+
+
+      placeholder="Write a comment on this post…"
       rows={1}
       onInput={(e) => {
         e.currentTarget.style.height = "0px";
@@ -5003,10 +5293,38 @@ function CommentThread({ comment, onAddReply }) {
         ref={replyRef}
         value={reply}
         onChange={(e) => setReply(e.target.value)}
-        onPaste={(e) => {
+        /*onPaste={(e) => {
           const html = e.clipboardData?.getData("text/html") || "";
           setReplyHtml(sanitizePastedHtml(html));
-        }}
+        }}*/
+
+        onPaste={async (e) => {
+  const cb = e.clipboardData || window.clipboardData;
+
+  // 1) Screenshot/image paste → add to replyImages
+  const handled = await addPastedImagesToState(cb, setReplyImages);
+  if (handled) {
+    e.preventDefault();
+    return;
+  }
+
+  // 2) Otherwise keep your existing HTML paste behavior
+  const html = cb?.getData("text/html") || "";
+  if (html) {
+    e.preventDefault();
+    setReplyHtml(sanitizePastedHtml(html));
+  }
+}}
+
+
+
+
+
+
+
+
+
+
         placeholder="Write a reply…"
         rows={1}
         onInput={(e) => {

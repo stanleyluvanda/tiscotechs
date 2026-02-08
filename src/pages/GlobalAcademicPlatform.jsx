@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
+import { reportContent } from "../lib/moderationApi.js"; // adjust path
+import { uploadFileToS3 } from "../lib/uploadLambda";
 /*import {
   fetchPosts,
   createPost as createPostOnServer,
@@ -1641,6 +1643,93 @@ const seeded = useMemo(() => {
     );
   }
 
+
+
+
+  // ✅ Paste screenshot into S3-backed attachments (same persistence as AttachmentUploader)
+async function addPastedImagesToUploadAtts(cb, setAskUploadAtts) {
+  const items = cb?.items ? Array.from(cb.items) : [];
+  const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+  if (imageItems.length === 0) return false;
+
+  for (const it of imageItems) {
+    const file = it.getAsFile();
+    if (!file) continue;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Screenshot is too large. Please use an image under 8MB.");
+      continue;
+    }
+
+    const uploaded = await uploadFileToS3(file);
+
+    const att = {
+      url: uploaded.url,
+      key: uploaded.key,
+      fileName: file.name || "screenshot.png",
+      size: file.size,
+      mime: file.type || "image/png",
+      type: "image",
+    };
+
+    setAskUploadAtts((prev) => [...(Array.isArray(prev) ? prev : []), att]);
+  }
+
+  return true;
+}
+
+
+// Uses the SAME upload flow as AttachmentUploader
+async function addPastedImagesToInlineUploadAtts(cb, setUploadAtts) {
+  const items = cb?.items ? Array.from(cb.items) : [];
+  const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+  if (imageItems.length === 0) return false;
+
+  for (const it of imageItems) {
+    const file = it.getAsFile();
+    if (!file) continue;
+
+    // Optional size guard (8MB)
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Screenshot is too large. Please use an image under 8MB.");
+      continue;
+    }
+
+    const uploaded = await uploadFileToS3(file);
+
+    const att = {
+      url: uploaded.url,
+      key: uploaded.key,
+      fileName: file.name || "screenshot.png",
+      size: file.size,
+      mime: file.type || "image/png",
+      type: "image",
+    };
+
+    setUploadAtts((prev) => [...(Array.isArray(prev) ? prev : []), att]);
+  }
+
+  return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /*const onPickAskFiles = async (e) => {
     const chosen = await readFiles(e.target.files);
     setAskAtts((prev) => [...prev, ...chosen]);
@@ -1871,6 +1960,79 @@ const seeded = useMemo(() => {
       setTimeout(() => setToast(""), 4000);
     }
   };
+
+
+
+
+
+
+/*async function onReport({ itemType, itemId, postId, commentId="", replyId="" }) {
+  const reason = prompt("Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)", "spam");
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}*/
+
+async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const reason = prompt(
+    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
+    "Report reason? (Scam,harassment,Extremism,sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}
+
+
+
+
 
   /* Interactions */
   const toggleLike = (id) =>
@@ -2308,9 +2470,34 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         onPreview={setPreview}
       />
 
-      <div className="mt-2">
+      {/*<div className="mt-2">
         <SafeTextEditor html={html} onChange={setHtml} />
-      </div>
+      </div>*/}
+
+      <div
+  className="mt-2"
+  onPasteCapture={async (e) => {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // Screenshot/image paste → upload + append to uploadAtts (persists after refresh)
+    const handled = await addPastedImagesToInlineUploadAtts(cb, setUploadAtts);
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }}
+>
+  <SafeTextEditor html={html} onChange={setHtml} />
+</div>
+
+
+
+
+
+
+
+
+
 
       <div className="flex items-center gap-2 mt-2">
         <div className="mt-2">
@@ -2638,8 +2825,27 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                           dir="ltr"
                           style={{ direction: "ltr", unicodeBidi: "plaintext", textAlign: "left", writingMode: "horizontal-tb" }}
                         />
-                        <div className="mt-2">
-                          <SafeTextEditor html={askBodyHtml} onChange={setAskBodyHtml} />
+                        {/*<div className="mt-2">
+                          <SafeTextEditor html={askBodyHtml} onChange={setAskBodyHtml}/>
+                        </div>*/}
+
+                          <div
+  className="mt-2"
+  onPasteCapture={async (e) => {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // If screenshot/image is in clipboard → upload + append to askUploadAtts (persistent)
+    const handled = await addPastedImagesToUploadAtts(cb, setAskUploadAtts);
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }}
+>
+  <SafeTextEditor html={askBodyHtml} onChange={setAskBodyHtml} />
+
+
+             
                         </div>
                         <AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />
                         <div className="mt-1">
@@ -2836,9 +3042,18 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                     <span className="text-slate-700">{(post.comments || []).filter((c) => !c.parentId).length} Comments</span>
                     <span className="text-slate-400">•</span>
                     <span className="text-slate-700">{post.views || 0} Views</span>
+                    <button
+                     type="button"
+                  onClick={() => onReport({ itemType: "post", itemId: post.id, postId: post.id })}
+                     className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                    >
+                   🚩 Report
+                    </button>
+
                     <button onClick={() => toggleSave(post.id)} className="ml-auto rounded px-2 py-1 hover:bg-slate-50">
                       {post.saved ? "★ Saved" : "☆ Save"}
                     </button>
+
                   </div>
 
                   <div className="mt-2">

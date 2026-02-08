@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 //import { Link, useNavigate } from "react-router-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { reportContent } from "../lib/moderationApi"; // (or wherever you placed it)
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import {
   // fetchMarketplaceItems,   // ❌ no longer needed for initial load
@@ -949,6 +950,54 @@ export default function StudentMarketplace() {
       setPayBusy(false);
     }
   }
+
+
+// ✅ ADD onReport HERE (inside StudentMarketplace)
+// ✅ Hardened onReport (drop-in replacement)
+async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const it = String(itemType || "").trim();
+  const iid = String(itemId || "").trim();
+  const pid = String(postId || "").trim();
+
+  if (!it || !iid || !pid) {
+    alert("Cannot report: missing item id. Please refresh and try again.");
+    return;
+  }
+
+  const reason = prompt(
+    "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me2 = user || me || {};
+  const reportedByEmail = String(me2.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType: it,
+      itemId: iid,
+      postId: pid,
+      commentId,
+      replyId,
+      scope: MARKETPLACE_SCOPE, // "student-marketplace"
+      reportedByUserId: me2.id || userId || "",
+      reportedByEmail,
+      reportedByRole: me2.role || "student",
+      reason,
+      details,
+    });
+
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("[Marketplace] report failed:", e);
+    alert(e?.message || "Report failed. Please try again.");
+  }
+}
+
+
 
   // ✅ Normalize backend rows into your UI shape (same mapping rules as your current loadFromApi)
   function normalizeMarketplaceRows(remote = []) {
@@ -2274,6 +2323,29 @@ export default function StudentMarketplace() {
                     <button onClick={() => toggleSave(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
                       {item.saved ? "★ Saved" : "☆ Save"}
                     </button>
+
+                    {/* ✅ ADD THIS */}
+                   <button
+                    type="button"
+                     /*onClick={() => onReport({ itemType: "marketplace_item", itemId: item.id, postId: item.id })}*/
+
+                     onClick={() => {
+  const targetId = String(item?.id || item?.itemId || item?.pk || "").trim();
+  return onReport({
+    itemType: "marketplace_item",
+    itemId: targetId,
+    postId: targetId,
+  });
+}}
+
+
+
+                  className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                   >
+                  🚩 Report suspecious behavior
+                    </button>
+
+
                     <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">
                       Back to Dashboard
                     </Link>

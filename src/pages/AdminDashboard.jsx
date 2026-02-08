@@ -41,6 +41,12 @@ export default function AdminDashboard() {
           to="/admin/support"
           cta="Open Inbox"
         />
+        <AdminCard
+          title="Moderation"
+          body="Review reports (posts, comments, replies, marketplace). Hide/remove/publish items and close reports."
+          to="/admin/moderation"
+          cta="Open Moderation"
+        />
       </div>
 
       <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4">
@@ -52,6 +58,7 @@ export default function AdminDashboard() {
           <Link className="text-blue-600 hover:underline" to="/admin/posts/videos">Manage Video Posts</Link>
           <Link className="text-blue-600 hover:underline" to="/admin/consents">Student Alert Consents</Link>
           <Link className="text-blue-600 hover:underline" to="/admin/support">Support Inbox</Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/moderation">Moderation</Link>
 
         </div>
       </div>

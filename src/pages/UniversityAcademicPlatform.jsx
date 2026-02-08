@@ -3,6 +3,8 @@ import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
+import { reportContent } from "../lib/moderationApi.js"; // adjust path
+import { uploadFileToS3 } from "../lib/uploadLambda"; // adjust path if different
 import {
   fetchPosts,
   createPost as createPostOnServer,
@@ -10,6 +12,64 @@ import {
   postCommentToServer,
   postReplyToServer,
 } from "../lib/postsApi.js";
+
+
+
+async function addPastedImagesToUploadAtts(cb, setAskUploadAtts) {
+  const items = cb?.items ? Array.from(cb.items) : [];
+  const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+  if (imageItems.length === 0) return false;
+
+  for (const it of imageItems) {
+    const file = it.getAsFile();
+    if (!file) continue;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("Screenshot is too large. Please use an image under 8MB.");
+      continue;
+    }
+
+    const uploaded = await uploadFileToS3(file);
+
+    const att = {
+      url: uploaded.url,
+      key: uploaded.key,
+      fileName: file.name || "screenshot.png",
+      size: file.size,
+      mime: file.type || "image/png",
+      type: "image",
+    };
+
+    setAskUploadAtts((prev) => [...(Array.isArray(prev) ? prev : []), att]);
+  }
+
+  return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /* ============ Utils & Storage ============ */
@@ -1073,7 +1133,7 @@ const TOPIC_MAP = {
     "Economic Sanctions",
     "Financial Economics",
     "Health Economics",
-    "Internal Trade",
+    "International Trade",
     "International Economics",
     "Labor Economics",
     "Macroeconomics",
@@ -1774,6 +1834,80 @@ attachments: dedupeAttachments([
   const removeAskAttachment = (id) =>
   setAskUploadAtts((prev) => (prev || []).filter((a) => String(a.key || "") !== String(id)));
 
+  // ✅ Add onReport HERE (inside the component)
+/*async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const reason = prompt(
+    "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {};
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: PLATFORM_SCOPE, // ✅ use this page’s scope
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}*/
+
+async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const reason = prompt(
+    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
+    "Report reason? (Scam,harassment,Extremism,Racism,sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}
+
+
+
+
+
+
+
   const postQuestion = async (e) => {
     e.preventDefault();
 
@@ -2265,9 +2399,27 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         onPreview={setPreview}
       />
 
-      <div className="mt-2">
+      {/*<div className="mt-2">
         <SimpleHTMLEditor html={html} onChange={setHtml} placeholder={placeholder} />
-      </div>
+      </div>*/}
+
+      <div
+  className="mt-2"
+  onPasteCapture={async (e) => {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // Screenshot/image paste → upload + persist via AttachmentUploader state (uploadAtts)
+    const handled = await addPastedImagesToUploadAtts(cb, setUploadAtts);
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }}
+>
+  <SimpleHTMLEditor html={html} onChange={setHtml} placeholder={placeholder} />
+</div>
+
+
 
       {/* ✅ Use uploader (CloudFront URLs) instead of <input type="file"> */}
       <div className="mt-2 max-w-[520px]">
@@ -2583,9 +2735,34 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 {/* Optional: show selected attachments preview (remove if you don’t want it) */}
 {/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
 
-<div className="mt-2">
+{/*<div className="mt-2">
   <SimpleHTMLEditor html={askBodyHtml} onChange={setAskBodyHtml} placeholder="Write your post…" />
+</div>*/}
+
+<div
+  className="mt-2"
+  onPasteCapture={async (e) => {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // Screenshot/image paste → upload + persist via AttachmentUploader flow
+    const handled = await addPastedImagesToUploadAtts(cb, setAskUploadAtts);
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }}
+>
+  <SimpleHTMLEditor
+    html={askBodyHtml}
+    onChange={setAskBodyHtml}
+    placeholder="Write your post…"
+  />
 </div>
+
+
+
+
+
  <div className="mt-2">
   <AttachmentUploader
     value={askUploadAtts}
@@ -2786,6 +2963,16 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                     </span>
                   <span className="text-slate-400">•</span>
                   <span className="text-slate-700">{post.views || 0} Views</span>
+                  
+  <button
+    type="button"
+    onClick={() => onReport({ itemType: "post", itemId: post.id, postId: post.id })}
+    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+    title="Report"
+  >
+    🚩 Report
+  </button>
+
                   <button onClick={() => toggleSave(post.id)} className="ml-auto rounded px-2 py-1 hover:bg-slate-50">
                     {post.saved ? "★ Saved" : "☆ Save"}
                   </button>

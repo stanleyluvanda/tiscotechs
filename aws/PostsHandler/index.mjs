@@ -12,6 +12,10 @@
 // - Canonical threadId resolver (multiGroupId/threadId preferred)
 // - Thread GET + comment/reply writes use canonical thread PK
 // - Compatibility fallback for "post exists" check during transition
+//
+// ✅ NEW (moderation visibility):
+// - Feed queries SKIP posts where moderationStatus is "hidden"/"removed" (or removedAt is set)
+// - Thread endpoint returns 404 for hidden/removed posts
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
@@ -62,10 +66,7 @@ function hasBase64DataUrl(arr) {
   return (
     Array.isArray(arr) &&
     arr.some(
-      (x) =>
-        x &&
-        typeof x.dataUrl === "string" &&
-        x.dataUrl.startsWith("data:")
+      (x) => x && typeof x.dataUrl === "string" && x.dataUrl.startsWith("data:")
     )
   );
 }
@@ -126,6 +127,18 @@ function decodeCursor(cursor) {
   } catch {
     return undefined;
   }
+}
+
+/* ---------------- Moderation visibility helper ----------------
+   We treat these as "not visible in feeds/threads":
+   - moderationStatus: "hidden" | "removed"
+   - removedAt: any truthy value
+--------------------------------------------------------------- */
+function isHiddenOrRemovedPost(item) {
+  const ms = String(item?.moderationStatus || "published").trim().toLowerCase();
+  if (ms === "hidden" || ms === "removed") return true;
+  if (item?.removedAt) return true;
+  return false;
 }
 
 /* ---------------- Data model ----------------
@@ -360,7 +373,8 @@ export const handler = async (event) => {
 
   const isCommentPath =
     path === "/api/posts/comment" || path.endsWith("/posts/comment");
-  const isReplyPath = path === "/api/posts/reply" || path.endsWith("/posts/reply");
+  const isReplyPath =
+    path === "/api/posts/reply" || path.endsWith("/posts/reply");
   const isThreadPath =
     path === "/api/posts/thread" || path.endsWith("/posts/thread");
   const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
@@ -377,6 +391,23 @@ export const handler = async (event) => {
           statusCode: 400,
           headers,
           body: JSON.stringify({ ok: false, error: "postId is required" }),
+        };
+      }
+
+      // ✅ moderation gate for thread
+      const postItem = await ensurePostExists(threadId, null);
+      if (!postItem) {
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not found" }),
+        };
+      }
+      if (isHiddenOrRemovedPost(postItem)) {
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not available" }),
         };
       }
 
@@ -433,8 +464,10 @@ export const handler = async (event) => {
       const threadId = normalizeThreadId(payload);
 
       const text = String(payload.text || "").trim();
-      const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
-      const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
+      const hasImages =
+        Array.isArray(payload.images) && payload.images.length > 0;
+      const hasFiles =
+        Array.isArray(payload.files) && payload.files.length > 0;
 
       if (!threadId || (!text && !hasImages && !hasFiles)) {
         return {
@@ -454,6 +487,14 @@ export const handler = async (event) => {
           statusCode: 404,
           headers,
           body: JSON.stringify({ ok: false, error: "Post not found" }),
+        };
+      }
+      // ✅ don't allow new comments on hidden/removed posts
+      if (isHiddenOrRemovedPost(postItem)) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not available" }),
         };
       }
 
@@ -488,7 +529,8 @@ export const handler = async (event) => {
         authorUniversity: payload.authorUniversity || payload.university || "",
         authorFaculty: payload.authorFaculty || payload.faculty || "",
         authorCountry: payload.authorCountry || payload.country || "",
-        authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
+        authorCountryCode:
+          payload.authorCountryCode || payload.countryCode || "",
 
         html: payload.html || "",
         text,
@@ -553,8 +595,10 @@ export const handler = async (event) => {
 
       const commentId = String(payload.commentId || "").trim();
       const text = String(payload.text || "").trim();
-      const hasImages = Array.isArray(payload.images) && payload.images.length > 0;
-      const hasFiles = Array.isArray(payload.files) && payload.files.length > 0;
+      const hasImages =
+        Array.isArray(payload.images) && payload.images.length > 0;
+      const hasFiles =
+        Array.isArray(payload.files) && payload.files.length > 0;
 
       if (!threadId || !commentId || (!text && !hasImages && !hasFiles)) {
         return {
@@ -562,8 +606,7 @@ export const handler = async (event) => {
           headers,
           body: JSON.stringify({
             ok: false,
-            error:
-              "postId, commentId and (text or images/files) are required",
+            error: "postId, commentId and (text or images/files) are required",
           }),
         };
       }
@@ -575,6 +618,14 @@ export const handler = async (event) => {
           statusCode: 404,
           headers,
           body: JSON.stringify({ ok: false, error: "Post not found" }),
+        };
+      }
+      // ✅ don't allow new replies on hidden/removed posts
+      if (isHiddenOrRemovedPost(postItem)) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Post not available" }),
         };
       }
 
@@ -610,7 +661,8 @@ export const handler = async (event) => {
         authorUniversity: payload.authorUniversity || payload.university || "",
         authorFaculty: payload.authorFaculty || payload.faculty || "",
         authorCountry: payload.authorCountry || payload.country || "",
-        authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
+        authorCountryCode:
+          payload.authorCountryCode || payload.countryCode || "",
 
         html: payload.html || "",
         text,
@@ -663,41 +715,62 @@ export const handler = async (event) => {
         const limit = clampInt(qs.limit, 30, 1, 200);
         const cursor = qs.cursor ? String(qs.cursor) : undefined;
 
-        const resp = await ddb.send(
-          new QueryCommand({
-            TableName: TABLE,
-            IndexName: GSI_FEED,
-            KeyConditionExpression: "#gpk = :gpk",
-            ExpressionAttributeNames: { "#gpk": "gsi1pk" },
-            ExpressionAttributeValues: { ":gpk": gsi1pk(sc) },
-            ScanIndexForward: false,
-            Limit: limit,
-            ExclusiveStartKey: decodeCursor(cursor),
-          })
-        );
-
-        const postMeta = Array.isArray(resp.Items) ? resp.Items : [];
-
+        // ✅ We may need to fetch more than one page to fill `limit`
+        // after filtering out hidden/removed posts.
         const posts = [];
-        for (const p of postMeta) {
-          const postId = String(p.postId || p.id || "").trim();
-          const base = { ...p };
-          delete base.pk;
-          delete base.sk;
+        let lastKey = decodeCursor(cursor);
+        let safetyPages = 0;
+        const MAX_PAGES = 6;
 
-          base.id = base.id || postId;
-          base.postId = postId;
+        while (posts.length < limit && safetyPages < MAX_PAGES) {
+          safetyPages += 1;
 
-          // ✅ FAST: 1 query per post (and only if requested)
-          if (wantThread && postId) {
-            const thr = await loadThreadFast(postId, { limit: 500 });
-            base.comments = thr.comments;
-          } else {
-            // ✅ FORCE empty comments when withThread=0 (prevents old embedded comments from leaking through)
-            base.comments = [];
+          const resp = await ddb.send(
+            new QueryCommand({
+              TableName: TABLE,
+              IndexName: GSI_FEED,
+              KeyConditionExpression: "#gpk = :gpk",
+              ExpressionAttributeNames: { "#gpk": "gsi1pk" },
+              ExpressionAttributeValues: { ":gpk": gsi1pk(sc) },
+              ScanIndexForward: false,
+              // fetch a bit more to reduce extra round-trips when many are hidden
+              Limit: Math.min(200, Math.max(30, limit * 2)),
+              ExclusiveStartKey: lastKey,
+            })
+          );
+
+          const pageItems = Array.isArray(resp.Items) ? resp.Items : [];
+
+          for (const p of pageItems) {
+            if (posts.length >= limit) break;
+
+            // ✅ Skip hidden/removed posts universally
+            if (isHiddenOrRemovedPost(p)) continue;
+
+            const postId = String(p.postId || p.id || "").trim();
+            const base = { ...p };
+            delete base.pk;
+            delete base.sk;
+
+            base.id = base.id || postId;
+            base.postId = postId;
+
+            // ✅ FAST: 1 query per post (and only if requested)
+            if (wantThread && postId) {
+              const thr = await loadThreadFast(postId, { limit: 500 });
+              base.comments = thr.comments;
+            } else {
+              // ✅ FORCE empty comments when withThread=0
+              base.comments = [];
+            }
+
+            posts.push(base);
           }
 
-          posts.push(base);
+          lastKey = resp.LastEvaluatedKey;
+
+          // No more items
+          if (!lastKey) break;
         }
 
         return {
@@ -707,7 +780,7 @@ export const handler = async (event) => {
             ok: true,
             scope: sc,
             posts,
-            cursor: encodeCursor(resp.LastEvaluatedKey),
+            cursor: encodeCursor(lastKey),
           }),
         };
       } catch (err) {
@@ -809,6 +882,9 @@ export const handler = async (event) => {
           attachments,
           images: Array.isArray(payload.images) ? payload.images : attachments,
           files: Array.isArray(payload.files) ? payload.files : [],
+
+          // ✅ default visible state (moderation can later change it)
+          moderationStatus: payload.moderationStatus || "published",
 
           createdAt,
           updatedAt: now,

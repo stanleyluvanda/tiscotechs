@@ -115,7 +115,8 @@ export default function AdminLogin() {
               : safeParse(user.profile) || {};
 
           const payload = {
-            email: user.email || trimmedEmail,
+            /*email: user.email || trimmedEmail,*/
+            email: String(user.email || trimmedEmail || "").trim().toLowerCase(),
             role: user.role || "admin",
             name: profile.name || "Site Administrator",
             profile,
@@ -177,7 +178,8 @@ export default function AdminLogin() {
     }
 
     const payload = {
-      email: trimmedEmail,
+      /*email: trimmedEmail,*/
+      email: String(trimmedEmail || "").trim().toLowerCase(),
       role: "admin",
       name: "Site Administrator",
       loggedInAt: new Date().toISOString(),

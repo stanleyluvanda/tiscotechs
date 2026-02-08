@@ -13,7 +13,8 @@ import AttachmentUploader from "../components/upload/AttachmentUploader"; // ⬅
 //import { fetchPosts, createPost, deletePostOnServer } from "../lib/postsApi";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";
-
+import { reportContent } from "../lib/moderationApi.js"; // adjust path
+import { uploadFileToS3 } from "../lib/uploadLambda";
 
 
 /* ================= Utils ================ */
@@ -1030,7 +1031,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
             className="mt-2"
           >
             <div className="flex items-start gap-2">
-              <textarea
+              {/*<textarea
                 ref={(el) => el && autosize(el)}
                 value={reply}
                 onChange={(e) => {
@@ -1041,7 +1042,48 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
                 rows={1}
                 className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
                 style={{ minHeight: 40, maxHeight: 220 }}
-              />
+              />*/}
+
+
+              <textarea
+  ref={(el) => el && autosize(el)}
+  value={reply}
+  onChange={(e) => {
+    setReply(e.target.value);
+    autosize(e.target);
+  }}
+  onPaste={async (e) => {
+    try {
+      const did = await pasteClipboardImagesToState(e, {
+        setImages: setReplyImages,
+        max: 5,
+      });
+      if (did) return; // image paste handled
+      // if not an image paste, let the browser do normal text paste
+    } catch (err) {
+      console.error("[reply paste] failed:", err);
+    }
+  }}
+  placeholder="Write a reply…"
+  rows={1}
+  className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
+  style={{ minHeight: 64, maxHeight: 220 }}
+/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
               </label>
@@ -1087,6 +1129,82 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   );
 }
 
+
+
+async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
+  const cb = e.clipboardData || window.clipboardData;
+  const items = Array.from(cb?.items || []);
+
+  // Only handle image pastes; otherwise do nothing (so normal text paste still works)
+  const imgItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+  if (imgItems.length === 0) return false;
+
+  e.preventDefault();
+
+  // Convert each clipboard image to your existing [{name, dataUrl}] shape
+  for (const it of imgItems) {
+    const file = it.getAsFile();
+    if (!file) continue;
+
+    // Optional: limit how many images can be added from paste
+    let added = false;
+    await new Promise((r) =>
+      setImages((prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        if (arr.length >= max) return prev;
+        added = true;
+        return prev; // we only check capacity here
+      }) || r()
+    );
+
+    if (!added) break;
+
+    // Downscale (matches your existing logic used in onPickCmtImages)
+    const dataUrl = await fileToDownscaledDataURL(file, 1280, 1280, 0.82, 420);
+    const mapped = { name: file.name || "pasted-image.png", dataUrl };
+
+    setImages((prev) => [...(Array.isArray(prev) ? prev : []), mapped]);
+  }
+
+  return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ====== Post card (with lightbox + prev/next) ====== */
 function PostCard({
   post,
@@ -1094,6 +1212,7 @@ function PostCard({
   onAddComment,
   onAddReply,
   onDeletePost,     // NEW
+  onReport,
   currentUser,
   isHighlighted,
 }) {
@@ -1340,6 +1459,19 @@ const files = mergedFiles.filter((a) => {
           💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
         </button>
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
+        {/* ✅ ADD THIS */}
+  <button
+    type="button"
+    onClick={onReport}
+    className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+    title="Report this post"
+  >
+    🚩 Report
+  </button>
+
+
+
+
       </div>
 
 
@@ -1368,19 +1500,52 @@ const files = mergedFiles.filter((a) => {
           >
             <div className="flex items-start gap-2">
               <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
+              
+
+
               <textarea
-                ref={(el) => el && autosize(el)}
-                value={cmt}
-                onChange={(e) => {
-                  setCmt(e.target.value);
-                  autosize(e.target);
-                }}
-                placeholder="Write a comment/feedback…"
-                rows={1}
-                /*className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5"*/
-                className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
-                style={{ minHeight: 44, maxHeight: 220 }}
-              />
+  ref={(el) => el && autosize(el)}
+  value={cmt}
+  onChange={(e) => {
+    setCmt(e.target.value);
+    autosize(e.target);
+  }}
+  onPaste={async (e) => {
+    try {
+      const did = await pasteClipboardImagesToState(e, {
+        setImages: setCmtImages,
+        max: 5,
+      });
+      if (did) return;
+    } catch (err) {
+      console.error("[comment paste] failed:", err);
+    }
+  }}
+  placeholder="Write a comment/feedback…"
+  rows={1}
+  className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
+  style={{ minHeight: 64, maxHeight: 220 }}
+/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
               </label>
@@ -3063,7 +3228,7 @@ useEffect(() => {
     }
   };*/
 
-  const handlePaste = (e) => {
+  /*const handlePaste = (e) => {
   e.preventDefault();
 
   const cb = e.clipboardData || window.clipboardData;
@@ -3110,7 +3275,193 @@ useEffect(() => {
 
   range.insertNode(frag);
   range.collapse(false);
+};*/
+
+
+
+const handlePaste = async (e) => {
+  try {
+    const cb = e.clipboardData || window.clipboardData;
+
+    // 1) If clipboard contains image(s), upload them and add to attachments
+    const items = cb?.items ? Array.from(cb.items) : [];
+    const imageItems = items.filter((it) => it?.type && it.type.startsWith("image/"));
+
+    if (imageItems.length > 0) {
+      e.preventDefault(); // prevent blob/image being inserted into the editor
+
+      for (const it of imageItems) {
+        const file = it.getAsFile();
+        if (!file) continue;
+
+        // Optional size guard (8MB)
+        if (file.size > 8 * 1024 * 1024) {
+          alert("Screenshot is too large. Please use an image under 8MB.");
+          continue;
+        }
+
+        // ✅ Upload using your existing flow (same as AttachmentUploader)
+        const uploaded = await uploadFileToS3(file);
+
+        const att = {
+          url: uploaded.url,
+          key: uploaded.key,
+          fileName: file.name || "screenshot.png",
+          size: file.size,
+          mime: file.type,
+          type: "image",
+        };
+
+        // ✅ This is the SAME attachments state you already submit to the backend
+        setAttachments((prev) => [...(Array.isArray(prev) ? prev : []), att]);
+      }
+
+      return; // done handling image paste
+    }
+
+    // 2) Otherwise: keep your current text paste behavior (paragraph formatting)
+    e.preventDefault();
+
+    const text = cb?.getData("text/plain") || "";
+
+    // Normalize line endings
+    const normalized = String(text).replace(/\r\n/g, "\n");
+
+    // Escape HTML special chars
+    const esc = (s) =>
+      String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    // Convert:
+    // - blank lines => paragraph breaks
+    // - single newline => <br/>
+    const html = normalized
+      .split(/\n{2,}/g)
+      .map((para) => para.split("\n").map(esc).join("<br/>"))
+      .map((p) => `<p>${p || "<br/>"}</p>`)
+      .join("");
+
+    // Insert HTML at cursor (keeps paragraphs)
+    if (document.queryCommandSupported?.("insertHTML")) {
+      document.execCommand("insertHTML", false, html);
+      return;
+    }
+
+    // Fallback: manual range insert
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    sel.deleteFromDocument();
+
+    const range = sel.getRangeAt(0);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    const frag = document.createDocumentFragment();
+    while (container.firstChild) frag.appendChild(container.firstChild);
+
+    range.insertNode(frag);
+    range.collapse(false);
+  } catch (err) {
+    console.error("handlePaste failed:", err);
+    // If anything fails, don't break typing/paste entirely
+  }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  const reason = prompt(
+    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
+    "Report reason? (Scam,harassment,sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
+  const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType,
+      itemId,
+      postId,
+      commentId,
+      replyId,
+      scope: "student-dashboard", // or your page scope variable
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason,
+      details,
+    });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4238,7 +4589,7 @@ const feedCombined = useMemo(() => {
 
           
 
-         {filtered.map((p, idx) => (
+  {filtered.map((p, idx) => (
   <div
     key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}
     ref={(el) => {
@@ -4255,6 +4606,7 @@ const feedCombined = useMemo(() => {
         addReply(p.id, commentId, text, images, files)
       }
       onDeletePost={deletePost}
+      onReport={() => onReport({ itemType: "post", itemId: p.id, postId: p.id })}   // ✅ ADD THIS LINE
       currentUser={user}
       isHighlighted={highlightPostId === p.id}
     />

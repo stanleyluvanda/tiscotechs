@@ -46,6 +46,7 @@ import TermsOfUse from "./pages/TermsOfUse.jsx"
 import VideoTips from "./pages/VideoTips.jsx";
 import UploadTest from "./pages/UploadTest.jsx";
 import AdminSupportInbox from "./pages/AdminSupportInbox.jsx";
+import AdminModeration from "./pages/AdminModeration.jsx";
 
 
 
@@ -152,6 +153,7 @@ export default function App() {
         {/* Admin Scholarships */}
         <Route path="/admin/scholarships/new" element={<AdminScholarshipForm />} />
         <Route path="/admin/scholarships/:id/edit" element={<AdminScholarshipForm />} />
+        <Route path="/admin/moderation" element={<AdminModeration />} />
 
         {/* Admin — video posts */}
         <Route path="/admin/posts/video-new" element={<AdminVideoPostForm />} />
