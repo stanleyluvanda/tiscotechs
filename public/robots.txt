@@ -1,4 +1,13 @@
 User-agent: *
 Allow: /
 
+Disallow: /login
+Disallow: /signup
+Disallow: /student-dashboard
+Disallow: /lecturer-dashboard
+Disallow: /admin
+Disallow: /reset-password
+Disallow: /verify
+Disallow: /dashboard
+
 Sitemap: https://www.scholarsknowledge.com/sitemap.xml
