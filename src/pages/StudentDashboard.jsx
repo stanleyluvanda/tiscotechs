@@ -452,6 +452,7 @@ function consentPersistFor(id, email, consentObj) {
 const POST_TYPES = [
   "Notes",
   "Assignments",
+  "Internships",
   "Announcement",
   "Scholarships",
   "Academic Books",
@@ -1176,35 +1177,6 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ====== Post card (with lightbox + prev/next) ====== */
 function PostCard({
   post,
@@ -1729,6 +1701,38 @@ export default function StudentDashboard() {
     localStorage.getItem("currentUser") ||
     "{}"
   );
+
+
+
+  // ✅ ADD IT HERE (with other useState/useMemo)
+  const REPORT_REASONS = [
+    "Scam",
+    "Harassment",
+    "Sexual content",
+    "Hate",
+    "Misinformation",
+    "Copyright",
+    "Other",
+  ];
+
+  const [reportModal, setReportModal] = useState({
+    open: false,
+    payload: null, // { itemType, itemId, postId, commentId, replyId }
+    reason: "Scam",
+    details: "",
+  });
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ===================== Profile sync (banner/avatar) =====================
   // Uses the same API host you already use for auth/users.
@@ -3402,7 +3406,7 @@ const handlePaste = async (e) => {
 
 
 
-async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+/*async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
   const reason = prompt(
     "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
     "Report reason? (Scam,harassment,sexual, hate, misinformation, copyright, other)",
@@ -3429,6 +3433,45 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       reason,
       details,
     });
+    alert("Report submitted. Thank you.");
+  } catch (e) {
+    console.error("report failed", e);
+    alert(`Report failed: ${e.message}`);
+  }
+}*/
+
+function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+  setReportModal({
+    open: true,
+    payload: { itemType, itemId, postId, commentId, replyId },
+    reason: "Scam",
+    details: "",
+  });
+}
+
+async function submitReport() {
+  const p = reportModal.payload;
+  if (!p) return;
+
+  const me = user || currentUser || {}; // ✅ StudentDashboard variables
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();
+
+  try {
+    await reportContent({
+      itemType: p.itemType,
+      itemId: p.itemId,
+      postId: p.postId,
+      commentId: p.commentId || "",
+      replyId: p.replyId || "",
+      scope: "student-dashboard", // ✅ StudentDashboard scope
+      reportedByUserId: me.id || "",
+      reportedByEmail,
+      reportedByRole: me.role || "",
+      reason: reportModal.reason,
+      details: reportModal.details || "",
+    });
+
+    setReportModal({ open: false, payload: null, reason: "Scam", details: "" });
     alert("Report submitted. Thank you.");
   } catch (e) {
     console.error("report failed", e);
@@ -4870,6 +4913,71 @@ const feedCombined = useMemo(() => {
           </div>
         </div>
       )}
+
+
+      {/* ✅ REPORT MODAL (PASTE HERE) */}
+      {reportModal.open && (
+        <div
+          className="fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setReportModal((m) => ({ ...m, open: false }));
+          }}
+        >
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow p-4">
+            <div className="text-sm font-semibold text-slate-900">Report content</div>
+            <div className="mt-1 text-xs text-slate-600">
+              ScholarsKnowledge is committed to keeping our community safe and supportive.
+            </div>
+
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-slate-700 mb-1">Reason</label>
+              <select
+                className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
+                value={reportModal.reason}
+                onChange={(e) => setReportModal((m) => ({ ...m, reason: e.target.value }))}
+              >
+                {REPORT_REASONS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-slate-700 mb-1">Details (optional)</label>
+              <textarea
+                className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
+                rows={4}
+                value={reportModal.details}
+                onChange={(e) => setReportModal((m) => ({ ...m, details: e.target.value }))}
+                placeholder="What happened?"
+              />
+            </div>
+
+            <div className="mt-4 flex items-center gap-2 justify-end">
+              <button
+                type="button"
+                className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+                onClick={() => setReportModal({ open: false, payload: null, reason: "Scam", details: "" })}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700"
+                onClick={submitReport}
+              >
+                Submit report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
