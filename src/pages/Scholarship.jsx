@@ -264,25 +264,6 @@ export default function Scholarship() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Country options depend on continent
   const countryOptions = useMemo(() => {
     if (continent === "All") {
@@ -625,10 +606,12 @@ export default function Scholarship() {
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
 
+          const logo = s.providerLogoUrl || s.providerLogoData || "";      
+
               return (
                 <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
+                    {/*<div className="min-w-0">
                       <div className="text-lg font-semibold">{s.title}</div>
                       <div className="mt-0.5 text-sm text-slate-600">
                         {s.provider}
@@ -637,7 +620,44 @@ export default function Scholarship() {
                         {s.field ? ` • ${s.field}` : ""}
                         {fundingStr ? ` • ${fundingStr}` : ""}
                       </div>
-                    </div>
+                    </div>*/}
+
+                    <div className="min-w-0 flex items-start gap-3">
+    {logo ? (
+  <img
+    src={logo}
+    alt={`${s.provider || "Provider"} logo`}
+    className="h-12 w-12 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+    loading="lazy"
+    onError={(e) => {
+      e.currentTarget.style.display = "none";
+    }}
+  />
+) : null}
+
+    <div className="min-w-0">
+      <div className="text-lg font-semibold">{s.title}</div>
+      <div className="mt-0.5 text-sm text-slate-600">
+        {s.provider}
+        {s.country ? ` • ${s.country}` : ""}
+        {s.level ? ` • ${s.level}` : ""}
+        {s.field ? ` • ${s.field}` : ""}
+        {fundingStr ? ` • ${fundingStr}` : ""}
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
                     <div className="flex flex-col items-end gap-2 shrink-0">
                       {s.amount ? (

@@ -170,7 +170,7 @@ export default function PartnerSubmitScholarship() {
     imageData: "", // base64 data URL from local upload (fallback)
   });
 
-  const [msg, setMsg] = useState("");
+  /*const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgPreview, setImgPreview] = useState("");
@@ -180,10 +180,141 @@ export default function PartnerSubmitScholarship() {
   // ✅ Step A: states + helper for "paste link => CloudFront"
   const [importingHosted, setImportingHosted] = useState(false);
   const pendingHostedRef = useRef(""); // latest external URL being imported
+  // ✅ NEW: provider logo "paste link => CloudFront"
+  const [importingLogoHosted, setImportingLogoHosted] = useState(false);
+  const pendingLogoHostedRef = useRef("");
+  const logoImportTimerRef = useRef(null);
+  const lastLogoImportedRef = useRef("");*/
+
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+  const [uploadingImg, setUploadingImg] = useState(false);
+  const [imgPreview, setImgPreview] = useState("");
+
+  // ✅ NEW: provider logo upload state
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoPreview, setLogoPreview] = useState("");
+
+  const partnerEmail = getPartnerEmail();
+
+  // ✅ Step A: states + helper for "paste link => CloudFront"
+  const [importingHosted, setImportingHosted] = useState(false);
+  const pendingHostedRef = useRef("");
+
+  // ✅ NEW: provider logo "paste link => CloudFront"
+  const [importingLogoHosted, setImportingLogoHosted] = useState(false);
+  const pendingLogoHostedRef = useRef("");
+  const logoImportTimerRef = useRef(null);
+  const lastLogoImportedRef = useRef("");
+
 
   // Auto-import debounce + loop guard
   const importTimerRef = useRef(null);
   const lastImportedRef = useRef(""); // remembers the raw URL that was imported
+
+
+
+
+  async function forceImportLogoHostedUrl(rawUrl) {
+  const raw = String(rawUrl || "").trim();
+  if (!raw) return;
+
+  const isHttp = /^https?:\/\//i.test(raw);
+  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
+  if (!isHttp && !isDataImage) return;
+
+  if (isCloudfrontUrl(raw)) {
+    setErr("");
+    setLogoPreview(raw);
+    setForm((f) => ({ ...f, providerLogoUrl: raw, providerLogoData: "" }));
+    return;
+  }
+
+  if (pendingLogoHostedRef.current === raw) return;
+
+  try {
+    setErr("");
+    setImportingLogoHosted(true);
+    pendingLogoHostedRef.current = raw;
+
+    if (!API_BASE) throw new Error("Missing API_BASE. Cannot import hosted logo URL to CloudFront.");
+
+    const j = await importHostedUrlToCloudfront(raw);
+    const cf = j?.cloudfrontUrl || j?.publicUrl || j?.cloudFrontUrl;
+    if (!cf) throw new Error("Import succeeded but no CloudFront URL returned.");
+
+    lastLogoImportedRef.current = raw;
+
+    setLogoPreview(cf);
+    setForm((f) => ({ ...f, providerLogoUrl: cf, providerLogoData: "" }));
+  } catch (e) {
+    console.error(e);
+    setErr(String(e?.message || e || "Could not import hosted logo URL to CloudFront."));
+  } finally {
+    setImportingLogoHosted(false);
+    pendingLogoHostedRef.current = "";
+  }
+}
+
+const onPickLogo = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    setErr("Please choose a valid logo image file (PNG/JPG/SVG).");
+    return;
+  }
+
+  setErr("");
+  setUploadingLogo(true);
+
+  try {
+    // Fallback: if API not configured, keep base64 behavior
+    if (!API_BASE) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        setLogoPreview(dataUrl);
+        setForm((f) => ({ ...f, providerLogoData: dataUrl, providerLogoUrl: "" }));
+        setUploadingLogo(false);
+      };
+      reader.onerror = () => {
+        setUploadingLogo(false);
+        setErr("Failed to read the selected logo image.");
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // ✅ CloudFront upload path (same endpoint you already use)
+    const safeName = (file.name || "logo").replace(/[^\w.\-]+/g, "_");
+    const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
+
+    const uploadUrl = j?.uploadUrl;
+    const publicUrl = j?.publicUrl;
+
+    if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+
+    await putFileToS3(uploadUrl, file);
+
+    setLogoPreview(publicUrl);
+    setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));
+  } catch (err2) {
+    console.error(err2);
+    setErr(String(err2?.message || err2 || "Logo upload failed. Please try again."));
+  } finally {
+    setUploadingLogo(false);
+  }
+};
+
+const clearLogo = () => {
+  setLogoPreview("");
+  setForm((f) => ({ ...f, providerLogoData: "", providerLogoUrl: "" }));
+};
+
+
+
+
 
   async function forceImportHostedUrl(rawUrl) {
     const raw = String(rawUrl || "").trim();
@@ -242,18 +373,20 @@ export default function PartnerSubmitScholarship() {
   }, [form.continent]);
 
   /** ===== Basic input handlers ===== */
-  // Editing imageUrl clears base64 + clears preview so auto-import can refresh it
-  const onChange = (e) => {
-    const { name, value } = e.target;
+// Editing imageUrl/providerLogoUrl clears base64 + clears preview so auto-import can refresh it
+const onChange = (e) => {
+  const { name, value } = e.target;
 
-    setForm((f) => {
-      if (name === "continent") return { ...f, continent: value, country: "Multiple" };
-      if (name === "imageUrl") return { ...f, imageUrl: value, imageData: "" }; // clear base64
-      return { ...f, [name]: value };
-    });
+  setForm((f) => {
+    if (name === "continent") return { ...f, continent: value, country: "Multiple" };
+    if (name === "imageUrl") return { ...f, imageUrl: value, imageData: "" }; // clear banner base64
+    if (name === "providerLogoUrl") return { ...f, providerLogoUrl: value, providerLogoData: "" }; // ✅ NEW clear logo base64
+    return { ...f, [name]: value };
+  });
 
-    if (name === "imageUrl") setImgPreview("");
-  };
+  if (name === "imageUrl") setImgPreview("");
+  if (name === "providerLogoUrl") setLogoPreview(""); // ✅ NEW
+};
 
   // ✅ Step B: update existing auto-import effect to use forceImportHostedUrl
   useEffect(() => {
@@ -296,6 +429,54 @@ export default function PartnerSubmitScholarship() {
       };
     });
   };
+
+
+
+  useEffect(() => {
+  const raw = String(form.providerLogoUrl || "").trim();
+
+  if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
+  if (!raw) return;
+
+  if (isCloudfrontUrl(raw)) {
+    setLogoPreview(raw);
+    return;
+  }
+
+  const isHttp = /^https?:\/\//i.test(raw);
+  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
+  if (!isHttp && !isDataImage) return;
+
+  if (lastLogoImportedRef.current === raw) return;
+
+  logoImportTimerRef.current = setTimeout(() => {
+    forceImportLogoHostedUrl(raw);
+  }, 700);
+
+  return () => {
+    if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [form.providerLogoUrl]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /** ===== Quill editors (four) — host refs & instances ===== */
   const descHostRef = useRef(null);
@@ -454,6 +635,27 @@ export default function PartnerSubmitScholarship() {
       return;
     }
 
+
+    // ✅ NEW: Block submit while provider logo import is running
+  if (importingLogoHosted) {
+    setErr("Please wait: importing provider logo URL to CloudFront…");
+    return;
+  }
+
+  // ✅ NEW: Enforce provider logo URL (if present) is CloudFront
+  const logoUrl = String(form.providerLogoUrl || "").trim();
+  if (logoUrl && !isCloudfrontUrl(logoUrl)) {
+    setErr(
+      "Provider logo URL must be imported to CloudFront first (wait for import) or upload the file."
+    );
+    return;
+  }
+
+
+
+
+
+
     const payload = {
       title: form.title,
       provider: form.provider,
@@ -473,6 +675,9 @@ export default function PartnerSubmitScholarship() {
       // ✅ image: prefer hosted URL if provided; otherwise data URL
       imageUrl: imgUrl,
       imageData: form.imageData || "",
+      // ✅ NEW: provider logo (CloudFront URL preferred; base64 fallback)
+      providerLogoUrl: logoUrl,
+      providerLogoData: form.providerLogoData || "",
       partnerEmail: String(partnerEmail),
       createdAt: Date.now(),
       status: "pending",
@@ -537,11 +742,18 @@ export default function PartnerSubmitScholarship() {
       notes: "",
       imageUrl: "",
       imageData: "",
+      providerLogoUrl: "",
+      providerLogoData: "",
     });
     setImgPreview("");
     lastImportedRef.current = "";
     pendingHostedRef.current = "";
     setImportingHosted(false);
+
+    setLogoPreview("");
+    lastLogoImportedRef.current = "";
+    pendingLogoHostedRef.current = "";
+    setImportingLogoHosted(false);
 
     if (importTimerRef.current) {
       clearTimeout(importTimerRef.current);
@@ -730,9 +942,96 @@ export default function PartnerSubmitScholarship() {
                 </label>
               </div>
 
+
+              {/* Provider Logo (NEW) */}
+<div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+  <div className="text-sm font-medium">Provider Logo (University / Company / Foundation)</div>
+  <p className="mt-1 text-xs text-slate-600">
+    Upload the provider logo. This will appear on the public scholarship list and details pages.
+  </p>
+
+  {/* URL input */}
+  <label className="block mt-3">
+    <div className="text-sm font-medium">Hosted Logo URL</div>
+    <input
+      name="providerLogoUrl"
+      value={form.providerLogoUrl}
+      onChange={onChange}
+      onPaste={(e) => {
+        const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+        setTimeout(() => forceImportLogoHostedUrl(pasted), 0);
+      }}
+      onBlur={() => {
+        forceImportLogoHostedUrl(form.providerLogoUrl);
+      }}
+      placeholder="https://example.edu/logo.png"
+      className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+    />
+    {(uploadingLogo || importingLogoHosted) && (
+      <div className="mt-2 text-[11px] text-slate-500">
+        {importingLogoHosted ? "Importing hosted logo URL to CloudFront…" : "Processing logo…"}
+      </div>
+    )}
+  </label>
+
+  <div className="my-3 text-center text-xs text-slate-500">— or —</div>
+
+  {/* File picker */}
+  <div className="flex items-center gap-3">
+    <label className="inline-flex items-center px-3 py-2 border border-slate-300 rounded cursor-pointer text-sm hover:bg-white">
+      <input type="file" accept="image/*" onChange={onPickLogo} className="hidden" />
+      Choose Logo…
+    </label>
+    {uploadingLogo && <span className="text-xs text-slate-500">Processing logo…</span>}
+    {!!logoPreview && (
+      <button
+        type="button"
+        onClick={clearLogo}
+        className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-white"
+      >
+        Remove logo
+      </button>
+    )}
+  </div>
+
+  {/* Preview */}
+  {logoPreview ? (
+    <div className="mt-3">
+      <div className="text-xs text-slate-600 mb-1">Preview</div>
+      <img
+        src={logoPreview}
+        alt="Provider logo preview"
+        className="h-14 w-14 object-contain bg-white rounded border border-slate-200 p-1"
+      />
+      {isCloudfrontUrl(logoPreview) && (
+        <div className="mt-1 text-[11px] text-green-700">✅ CloudFront URL detected</div>
+      )}
+    </div>
+  ) : form.providerLogoUrl ? (
+    <div className="mt-3">
+      <div className="text-xs text-slate-600 mb-1">Preview</div>
+      <img
+        src={form.providerLogoUrl}
+        alt="Provider logo preview"
+        className="h-14 w-14 object-contain bg-white rounded border border-slate-200 p-1"
+        onError={() => setErr("Could not load the hosted provider logo URL.")}
+      />
+    </div>
+  ) : null}
+</div>
+
+
+
+
+
+
+
+
+
+
               {/* Logo/Banner */}
               <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-                <div className="text-sm font-medium">Logo / Banner</div>
+                <div className="text-sm font-medium">Scholarship Banner</div>
                 <p className="mt-1 text-xs text-slate-600">
                   Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
                   the details page.

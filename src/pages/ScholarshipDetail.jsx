@@ -476,9 +476,12 @@ const canShowAds = Boolean(item);
     howToApply,
     imageUrl,
     imageData,
+    providerLogoUrl,
+    providerLogoData,
   } = item;
 
   const bannerSrc = imageUrl || imageData || "";
+  const logo = providerLogoUrl || providerLogoData || "";
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -518,14 +521,45 @@ const canShowAds = Boolean(item);
               </div>
 
               <div className="max-w-5xl mx-auto px-4 py-6">
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+                {/*</div><div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
                   <h1 className="text-2xl font-bold">{title}</h1>
                   <p className="mt-1 text-slate-600">
                     <span className="font-medium">{provider}</span>
                     {country ? ` • ${country}` : ""}
                     {level ? ` • ${level}` : ""}
                     {field ? ` • ${field}` : ""}
-                  </p>
+                  </p>*/}
+
+
+                  <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
+  <div className="flex items-start gap-4">
+    {logo ? (
+      <img
+        src={logo}
+        alt={`${provider || "Provider"} logo`}
+        className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+        loading="lazy"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    ) : null}
+
+    <div className="min-w-0">
+      <h1 className="text-2xl font-bold">{title}</h1>
+      <p className="mt-1 text-slate-600">
+        <span className="font-medium">{provider}</span>
+        {country ? ` • ${country}` : ""}
+        {level ? ` • ${level}` : ""}
+        {field ? ` • ${field}` : ""}
+      </p>
+    </div>
+  </div>
+
+
+
+
+
 
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
@@ -575,7 +609,7 @@ const canShowAds = Boolean(item);
                         rel="noopener noreferrer"
                         className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
                       >
-                        Provider Page
+                        Visit website
                       </a>
                     )}
                   </div>
