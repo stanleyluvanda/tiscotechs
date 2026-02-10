@@ -1,7 +1,7 @@
 // src/pages/LecturerSignUp.jsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-
+import useNoIndex from "../lib/useNoIndex";
 import {
   getContinents,
   getCountriesWithFlags,
@@ -125,6 +125,7 @@ const TITLE_OPTIONS = ["Mr.", "Miss", "Madam", "Dr.", "Ass. Prof", "Prof."];
 
 export default function LecturerSignUp() {
   const navigate = useNavigate();
+   useNoIndex();
 
   /* ------------------ State ------------------ */
   const [form, setForm] = useState({

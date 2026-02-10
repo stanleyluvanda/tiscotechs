@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
+import useNoIndex from "../lib/useNoIndex";
 
 const API_BASE =
   import.meta.env.VITE_API_URL ||
@@ -233,6 +234,7 @@ const FUNDING_OPTIONS = [
 ];
 
 export default function AdminScholarshipForm() {
+  useNoIndex();
   const { id } = useParams(); // "new" or numeric id
   const isNew = id === "new";
   const navigate = useNavigate();

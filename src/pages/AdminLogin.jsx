@@ -1,6 +1,7 @@
 // src/pages/AdminLogin.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import useNoIndex from "../lib/useNoIndex";
 
 /* ----------------- Demo / fallback creds ----------------- */
 const DEMO_EMAIL =
@@ -59,6 +60,7 @@ function setSupportTokenSidecar() {
 }
 
 export default function AdminLogin() {
+  useNoIndex();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);

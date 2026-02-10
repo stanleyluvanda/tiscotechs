@@ -386,7 +386,8 @@ export default function Scholarship() {
 
   return (
     // ✅ Outer layout: left ad | center feed (unchanged width) | right ad
-    <div className="mx-auto w-full px-4 py-8">
+    /*<div className="mx-auto w-full px-4 py-8">*/
+      <div className="mx-auto w-full px-4 pt-0 pb-8">
       <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">
         {/* LEFT ADS (hidden on small screens) */}
         <aside className="hidden xl:block w-[200px] shrink-0">
@@ -398,13 +399,47 @@ export default function Scholarship() {
 
         {/* CENTER FEED (keeps EXACT same dimension as before) */}
         <main className="w-full max-w-[1056px] shrink-0">
-          <h2 className="text-3xl font-bold">
+          {/*<h2 className="text-3xl font-bold">
             Scholarships & Funding Opportunities for International students
           </h2>
           <p className="mt-1 text-blue-900">
             Explore verified scholarship and funding opportunities offered by partner universities,
             foundations, governments, and accredited external providers worldwide.
-          </p>
+          </p>*/}
+
+         {/* FULL-WIDTH (viewport) header banner (NO card) */}
+<div
+  className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
+  style={{
+    backgroundImage: "url(/images/Scholarship.png)", // <-- your banner
+    backgroundSize: "cover",
+    backgroundPosition: "left center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
+  {/* Strong readability overlay */}
+  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
+
+  <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-3 md:py-4">
+    <div className="mx-auto max-w-[1056px]">
+      <h2
+        className="text-2xl md:text-3xl font-extrabold text-white leading-tight"
+        style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+      >
+        Scholarships &amp; Funding Opportunities for International students
+      </h2>
+
+      <p
+        className="mt-2 text-sm md:text-base font-medium text-white/90"
+        style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
+      >
+        Explore verified scholarships and funding opportunities offered by universities,
+        foundations, governments, and accredited global providers.
+      </p>
+    </div>
+  </div>
+</div>
+          
 
           {/* Optional subtle banner if you want to surface cache/dev mode */}
           {usedFallback && (
@@ -414,7 +449,7 @@ export default function Scholarship() {
           )}
 
           {/* Controls */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
             <input
               value={q}
               onChange={(e) => {

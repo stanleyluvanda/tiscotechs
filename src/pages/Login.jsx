@@ -9,7 +9,7 @@ import {
 import { verifyTurnstileToken } from "../lib/turnstileVerify";
 import { login as apiLogin } from "../lib/api"; // ONLY for /api/auth/login
 import { apiCompletePasswordReset } from "../lib/api";
-
+import useNoIndex from "../lib/useNoIndex";
 /* ---------- Local helpers ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 function trySetItem(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
@@ -189,6 +189,7 @@ function emailExistsForRole(email, role) {
 export default function Login() {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
+  useNoIndex();
 
   const mode = (sp.get("mode") || "login").toLowerCase(); // 'login' | 'forgot' | 'reset'
   const initialRole =

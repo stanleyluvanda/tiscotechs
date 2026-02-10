@@ -14,6 +14,8 @@ import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,} from "../lib/postsApi.js";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
+import useNoIndex from "../lib/useNoIndex";
+
 
 
 
@@ -1214,6 +1216,7 @@ function TrashIcon({ className = "w-4 h-4" }) {
 export default function LecturerDashboard() {
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
+  useNoIndex();
 
   const current =
     JSON.parse(

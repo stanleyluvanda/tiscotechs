@@ -1,6 +1,7 @@
 // AdminSupportInbox.jsx
 import { useEffect, useMemo, useState, useLayoutEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import useNoIndex from "../lib/useNoIndex";
 
 const SUPPORT_API =
   (import.meta.env.VITE_SUPPORT_API_BASE &&
@@ -90,6 +91,7 @@ function MessageWithReadMore({ id, text, expanded, onOverflow }) {
 /* ---------------- Main component ---------------- */
 
 export default function AdminSupportInbox() {
+  useNoIndex();
   const navigate = useNavigate();
 
   const [items, setItems] = useState([]);

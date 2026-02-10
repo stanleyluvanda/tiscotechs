@@ -1,5 +1,6 @@
 // src/pages/AdminModeration.jsx
 import { useEffect, useMemo, useState } from "react";
+import useNoIndex from "../lib/useNoIndex";
 
 /**
  * Admin Moderation UI (queue + filters + cursor + detail + actions)
@@ -91,6 +92,7 @@ function short(s, n = 60) {
 }
 
 export default function AdminModeration() {
+  useNoIndex();
   const [status, setStatus] = useState("open"); // open|closed
   const [scope, setScope] = useState("all"); // all | student-marketplace | uni-academic-platform | global-academic-platform | ...
   const [pageSize, setPageSize] = useState(30);

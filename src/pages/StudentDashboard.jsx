@@ -15,6 +15,7 @@ import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
+import useNoIndex from "../lib/useNoIndex";
 
 
 /* ================= Utils ================ */
@@ -1688,6 +1689,7 @@ function formatTimeAgo(input) {
 /* ================== MAIN ================== */
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  useNoIndex();
 
   // ✅ Read ?editProfile=1 from the URL on every render (no extra state)
   const [searchParams] = useSearchParams();
