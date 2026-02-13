@@ -143,7 +143,7 @@ export default function VerifyGate({ email, role = "student", onVerified }) {
 
           <p className="mt-2 text-sm text-slate-600">
             Enter the 6-digit code we sent to <b>{email}</b>. You only need to
-            verify once for this email.
+            verify once for this email in this device and browser.
           </p>
         </div>
 
