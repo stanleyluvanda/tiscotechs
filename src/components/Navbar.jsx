@@ -31,6 +31,40 @@ function loadActiveUser() {
   );
 }
 
+function loadNavbarUser() {
+  // 1) Prefer existing logic (student/lecturer)
+  const u = loadActiveUser();
+  if (u) return u;
+
+  // 2) Fallback: partner session (does not affect student/lecturer)
+  const p = safeParse(localStorage.getItem("partnerAuth")) || null;
+  if (!p?.email) return null;
+
+  return {
+    // keep the same field names the Navbar already uses
+    role: "partner",
+    email: p.email,
+    name: p.organization || p.orgName || p.contactName || "Partner",
+    photoUrl: p.logoUrl || p.photo || p.avatarUrl || "",
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const a = (parts[0]?.[0] || "U").toUpperCase();
@@ -99,7 +133,8 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [user, setUser] = useState(() => loadActiveUser());
+  /*const [user, setUser] = useState(() => loadActiveUser());*/
+  const [user, setUser] = useState(() => loadNavbarUser());
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -110,12 +145,13 @@ export default function Navbar() {
 
   // keep auth fresh
   useEffect(() => {
-    const onStorage = () => setUser(loadActiveUser());
+    /*const onStorage = () => setUser(loadActiveUser());*/
+    const onStorage = () => setUser(loadNavbarUser());
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
-  useEffect(() => { setUser(loadActiveUser()); }, [location.pathname, location.search]);
-
+  /*useEffect(() => { setUser(loadActiveUser()); }, [location.pathname, location.search]);*/
+  useEffect(() => { setUser(loadNavbarUser()); }, [location.pathname, location.search]);
   // close menu on outside/esc
   useEffect(() => {
     const onDown = (e) => {
@@ -131,19 +167,48 @@ export default function Navbar() {
     };
   }, [open]);
 
+  /*const role = (user?.role || "").toLowerCase();
+  const dashboardPath = role === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard";*/
+
   const role = (user?.role || "").toLowerCase();
-  const dashboardPath = role === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard";
+const dashboardPath =
+  role === "partner"
+    ? "/partner/welcome"
+    : role === "lecturer"
+      ? "/lecturer/dashboard"
+      : "/student/dashboard";
 
   // When user clicks "Edit My Profile", we send them to dashboard with a flag
   const profileEditPath = `${dashboardPath}?editProfile=1`;
 
-  const handleLogout = () => {
+  /*const handleLogout = () => {
     const roleParam = role === "lecturer" ? "lecturer" : "student";
     clearAuthStateKeepData();
     setUser(null);
     setOpen(false);
     window.dispatchEvent(new Event("auth:changed"));
     navigate(`/login?role=${roleParam}`);
+  };*/
+
+  const handleLogout = () => {
+    const roleParam =
+      role === "lecturer" ? "lecturer" : role === "partner" ? "partner" : "student";
+
+    // clear existing auth
+    clearAuthStateKeepData();
+
+    // ✅ partner session cleanup (safe; only affects partner)
+    try {
+      localStorage.removeItem("partnerAuth");
+    } catch {}
+
+    setUser(null);
+    setOpen(false);
+    window.dispatchEvent(new Event("auth:changed"));
+
+    // route by role
+    if (role === "partner") navigate("/partner/login");
+    else navigate(`/login?role=${roleParam}`);
   };
 
   /* ===================== FIXED NAVBAR (portal) ===================== */
