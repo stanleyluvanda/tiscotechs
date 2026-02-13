@@ -402,7 +402,17 @@ export default function PartnerWelcome() {
   // Scholarships (center panel)
   const [allScholarships, setAllScholarships] = useState([]);
 
-  useEffect(() => {
+
+  const partnerKey = useMemo(() => {
+  const email = (user?.email || user?.userEmail || user?.username || "").trim().toLowerCase();
+  const id = String(user?.id || user?.userId || "").trim();
+  return email || id || "";
+}, [user?.email, user?.userEmail, user?.username, user?.id, user?.userId]);
+
+const [loadingScholarships, setLoadingScholarships] = useState(false);
+const [schErr, setSchErr] = useState("");
+
+  /*useEffect(() => {
     let alive = true;
     const load = async () => {
       const list = await loadAllScholarshipsForPartner(user || {});
@@ -415,7 +425,53 @@ export default function PartnerWelcome() {
       alive = false;
       window.removeEventListener("storage", onStorage);
     };
-  }, [user]);
+  }, [user]);*/
+
+  useEffect(() => {
+  let alive = true;
+  let inFlight = false;
+
+  const load = async () => {
+    if (!partnerKey) return;
+    if (inFlight) return; // ✅ prevents stacked fetches
+    inFlight = true;
+
+    setSchErr("");
+    setLoadingScholarships(true);
+
+    try {
+      const list = await loadAllScholarshipsForPartner(user || {});
+      if (alive) setAllScholarships(Array.isArray(list) ? list : []);
+    } catch (e) {
+      if (alive) setSchErr(e?.message || "Failed to load scholarships");
+    } finally {
+      inFlight = false;
+      if (alive) setLoadingScholarships(false);
+    }
+  };
+
+  load();
+
+  // ✅ only respond to our own storage broadcasts (optional, but cleaner)
+  const onStorage = (e) => {
+    if (e?.key && e.key !== "partnerAuth") return;
+    load();
+  };
+
+  window.addEventListener("storage", onStorage);
+  return () => {
+    alive = false;
+    window.removeEventListener("storage", onStorage);
+  };
+  // ✅ critical: do NOT depend on entire user object
+}, [partnerKey]); 
+
+
+
+
+
+
+
 
   // Filter “mine”
   const myScholarships = useMemo(() => {
@@ -663,11 +719,6 @@ const updated = {
   orgName: backendUser.organization,
   photo: backendUser.logoUrl,
 };
-
-
-
-
-
 
 
       if (wantsPwChange) {
@@ -1059,7 +1110,6 @@ const updated = {
     >
       View / Apply
     </a>
-
 
     {/* per-scholarship stats (right after the link) */}
     <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600">
