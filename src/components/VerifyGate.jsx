@@ -128,11 +128,24 @@ export default function VerifyGate({ email, role = "student", onVerified }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-        <h3 className="text-lg font-semibold text-slate-900">Verify your email</h3>
-        <p className="mt-1 text-sm text-slate-600">
-          Enter the 6-digit code we sent to <b>{email}</b>. You only need to verify once for
-          this email.
-        </p>
+        {/* ✅ UPDATED HEADER (UI only) */}
+        <div className="text-center">
+          {/*<div className="inline-flex items-center justify-center rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-800">
+            Welcome to ScholarsKnowledge
+          </div>*/}
+          <div className="-mx-6 -mt-6 rounded-t-2xl bg-blue-50 px-6 py-3 text-center text-sm font-semibold text-blue-800">
+  Welcome to ScholarsKnowledge
+</div>
+
+          <h3 className="mt-3 text-xl font-extrabold text-slate-900">
+            Verify your email
+          </h3>
+
+          <p className="mt-2 text-sm text-slate-600">
+            Enter the 6-digit code we sent to <b>{email}</b>. You only need to
+            verify once for this email.
+          </p>
+        </div>
 
         <div className="mt-4 flex gap-2">
           <input
