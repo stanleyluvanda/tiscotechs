@@ -127,7 +127,7 @@ export default function PartnerSignUp() {
       const bannerUrl = (banner || "").trim();
 
       // ✅ API-first payload (DynamoDB source of truth)
-      const payload = {
+      /*const payload = {
         email,
         passwordHash,
         role: "partner",
@@ -135,7 +135,19 @@ export default function PartnerSignUp() {
         contactName: form.contactName.trim(),
         photo: logoUrl,
         banner: bannerUrl,
-      };
+      };*/
+
+      // ✅ API-first payload (DynamoDB source of truth)
+const payload = {
+  email,
+  password: form.password,   // ✅ ADD THIS (plain password for Cognito)
+  passwordHash,              // keep (for your existing DynamoDB/Resend logic)
+  role: "partner",
+  orgName: form.orgName.trim(),
+  contactName: form.contactName.trim(),
+  logoUrl,
+  bannerUrl,
+};
 
       const base = String(API_BASE || "").replace(/\/+$/, "");
       const res = await fetch(`${base}/api/auth/register/partner`, {
