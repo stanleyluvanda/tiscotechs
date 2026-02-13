@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listScholarships, updateScholarship, deleteScholarship } from "../utils/scholarshipsApi";
+import useNoIndex from "../lib/useNoIndex";
 
 /* ---- Simple modal for “Preview” ---- */
 function Modal({ open, onClose, title, children }) {
@@ -39,6 +40,7 @@ function RichHtml({ html }) {
 }
 
 export default function AdminScholarshipList() {
+  useNoIndex();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);

@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { listConsentsPublic } from "../lib/consentsApi.js";
+import useNoIndex from "../lib/useNoIndex";
 
 /* ---------- tiny utils ---------- */
 const fmtDate = (d) => (d ? new Date(d).toLocaleString() : "—");
@@ -129,6 +130,7 @@ function toCSV(rows) {
 }
 
 export default function AdminStudentConsents() {
+  useNoIndex();
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("any");
   const [onlyOptedIn, setOnlyOptedIn] = useState(true);

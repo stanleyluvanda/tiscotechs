@@ -1,5 +1,6 @@
 // src/pages/AdminMembers.jsx
 import { useEffect, useMemo, useState } from "react";
+import useNoIndex from "../lib/useNoIndex";
 
 /* ---------- storage helpers (kept as fallback) ---------- */
 function safeParse(json) {
@@ -226,9 +227,11 @@ function writeUserBack(updated) {
 
 /* ---------- UI ---------- */
 export default function AdminMembers() {
+   useNoIndex();
   const [rows, setRows] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
 
   // Filters & search
   const [tab, setTab] = useState("All"); // All | Students | Lecturers | Partners
