@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
+import { shouldSendTrackOnce } from "../lib/trackGate"; // already imported in your file
 import {
   listScholarships,
   readScholarshipsCache,
@@ -362,6 +363,58 @@ export default function Scholarship() {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+
+
+  // 🔵 Track scholarship interactions (fire-and-forget)
+/*const trackScholarship = (id, type) => {
+  try {
+    fetch(
+      `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(id)}/track`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+        keepalive: true, // important: allows request during navigation
+      }
+    ).catch(() => {});
+  } catch {
+    // silent fail — never break UI
+  }
+};*/
+
+// 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
+const trackScholarship = (id, type) => {
+  try {
+    const sid = String(id || "");
+    const t = String(type || "").toLowerCase();
+    if (!sid || !t) return;
+
+    // ✅ Count only once per device (persistent guard)
+    const gateKey = `sch:${sid}:${t}`;
+    if (!shouldSendTrackOnce(gateKey)) return;
+
+    fetch(
+      `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: t }),
+        keepalive: true,
+      }
+    ).catch(() => {});
+  } catch {
+    // silent fail — never break UI
+  }
+};
+
+
+
+
+
+
+
+
+
   // ✅ AdSense content gate: only show ads when there is real publisher content
   const canShowAds = !loading && items.length >= 4;
 
@@ -675,12 +728,22 @@ export default function Scholarship() {
                   {snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Link
+                    {/*<Link
                       to={`/scholarship/${s.id}`}
                       className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
                     >
                       View details
+                    </Link>*/}
+
+                  <Link
+                   to={`/scholarship/${s.id}`}
+                      onClick={() => trackScholarship(s.id, "view")}
+                      className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
+                    >
+                  View details
                     </Link>
+
+
                     {s.partnerApplyUrl && (
                       <a
                         href={s.partnerApplyUrl}

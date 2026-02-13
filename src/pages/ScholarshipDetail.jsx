@@ -1,7 +1,9 @@
 // src/pages/ScholarshipDetail.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
+
 
 // ✅ Sidebar ads (same component used elsewhere)
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
@@ -324,6 +326,56 @@ export default function ScholarshipDetail() {
   // ✅ recommendations
   const [recs, setRecs] = useState([]);
 
+
+
+
+
+  // 🔵 Track scholarship interactions (fire-and-forget)
+  /*const trackScholarship = (sid, type) => {
+    try {
+      if (!API_BASE || !sid) return;
+
+      fetch(
+        `${API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type }),
+          keepalive: true, // survives navigation
+        }
+      ).catch(() => {});
+    } catch {
+      // never break UI
+    }
+  };*/
+
+  // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
+const trackScholarship = (sid, type) => {
+  try {
+    if (!API_BASE) return;
+
+    const idSafe = String(sid || "").trim();
+    const t = String(type || "").toLowerCase().trim();
+    if (!idSafe || !t) return;
+
+    // ✅ Count only once per device (persistent guard)
+    const gateKey = `sch:${idSafe}:${t}`;
+    if (!shouldSendTrackOnce(gateKey)) return;
+
+    fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: t }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // never break UI
+  }
+};
+
+
+
+
   useEffect(() => {
     let alive = true;
 
@@ -592,7 +644,7 @@ const canShowAds = Boolean(item);
                   </div>
 
                   <div className="mt-4 flex gap-3">
-                    {partnerApplyUrl && (
+                    {/*{partnerApplyUrl && (
                       <a
                         href={partnerApplyUrl}
                         target="_blank"
@@ -601,8 +653,25 @@ const canShowAds = Boolean(item);
                       >
                         Apply Now
                       </a>
-                    )}
-                    {link && (
+                    )}*/}
+
+
+
+                    {partnerApplyUrl && (
+                     <a
+                     href={partnerApplyUrl}
+                     target="_blank"
+                      rel="noopener noreferrer"
+                       onClick={() => trackScholarship(id, "apply")}
+                     className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                      >
+                  Apply Now
+                  </a>
+                     )}
+
+
+
+                    {/*{link && (
                       <a
                         href={link}
                         target="_blank"
@@ -611,7 +680,20 @@ const canShowAds = Boolean(item);
                       >
                         Visit website
                       </a>
-                    )}
+                    )}*/}
+
+                    {link && (
+                       <a
+                     href={link}
+                        target="_blank"
+                      rel="noopener noreferrer"
+                     onClick={() => trackScholarship(id, "website")}
+                     className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
+                       >
+                       Visit website
+                      </a>
+                       )}
+
                   </div>
                 </div>
               </div>
@@ -712,7 +794,7 @@ const canShowAds = Boolean(item);
                           )}
                         </dl>
 
-                        {partnerApplyUrl && (
+                        {/*{partnerApplyUrl && (
                           <a
                             href={partnerApplyUrl}
                             target="_blank"
@@ -721,7 +803,19 @@ const canShowAds = Boolean(item);
                           >
                             Apply Now
                           </a>
-                        )}
+                        )}*/}
+
+                        {partnerApplyUrl && (
+                         <a
+                         href={partnerApplyUrl}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         onClick={() => trackScholarship(id, "apply")}
+                         className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                         >
+                       Apply Now
+                         </a>
+                           )}
                       </div>
                     </div>
 

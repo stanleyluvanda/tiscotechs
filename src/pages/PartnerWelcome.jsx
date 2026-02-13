@@ -200,6 +200,12 @@ function normalizeScholarship(s = {}) {
     description: s.description || s.summary || "",
     amount: s.amount || s.value || "",
     link: s.link || s.applyLink || s.url || "",
+
+    // ✅ NEW: engagement counters (from DynamoDB fields)
+    views: Number(s.views || 0),
+    applyClicks: Number(s.applyClicks || 0),
+    websiteClicks: Number(s.websiteClicks || 0),
+
   };
 }
 
@@ -288,6 +294,26 @@ export default function PartnerWelcome() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [msg, setMsg] = useState("");
+
+
+  // ✅ Per-scholarship breakdown modal
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [statsItem, setStatsItem] = useState(null);
+
+  function openStatsModal(sch) {
+    setStatsItem(sch || null);
+    setStatsOpen(true);
+  }
+  function closeStatsModal() {
+    setStatsOpen(false);
+    setStatsItem(null);
+  }
+
+  function num(x) {
+    const n = Number(x);
+    return Number.isFinite(n) ? n : 0;
+  }
+
 
   const initialAvatar = getPartnerAvatar(user);
 
@@ -409,6 +435,19 @@ export default function PartnerWelcome() {
       .sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
   }, [allScholarships, user]);
 
+  const clickTotals = useMemo(() => {
+  return myScholarships.reduce(
+    (acc, s) => {
+      acc.views += Number(s.views || 0);
+      acc.apply += Number(s.applyClicks || 0);
+      acc.website += Number(s.websiteClicks || 0);
+      return acc;
+    },
+    { views: 0,apply: 0, website: 0 }
+  );
+}, [myScholarships]);
+
+
   const totalPosted = myScholarships.length;
   const pendingCount = myScholarships.filter((s) => {
     const st = String(s.status || "").toLowerCase();
@@ -418,6 +457,22 @@ export default function PartnerWelcome() {
     const st = String(s.status || "").toLowerCase();
     return st.includes("approved");
   }).length;
+
+
+  const { totalViews, totalApplyClicks, totalWebsiteClicks } = useMemo(() => {
+    let v = 0, a = 0, w = 0;
+    for (const s of myScholarships) {
+      v += Number(s?.views || 0);
+      a += Number(s?.applyClicks || 0);
+      w += Number(s?.websiteClicks || 0);
+    }
+    return { totalViews: v, totalApplyClicks: a, totalWebsiteClicks: w };
+  }, [myScholarships]);
+
+
+
+
+
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -714,73 +769,120 @@ const updated = {
         </div>
       </header>
 
-      {/* Body */}
-      <div className="flex-1">
-        <div className="mx-auto max-w-7xl px-2 lg:px-2 py-4 space-y-4">
-          {/* Overview strip (3 cards) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Organization summary card */}
-            <div className="rounded-2xl bg-white shadow-sm border border-slate-200 px-4 py-3 flex items-center gap-3">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={user?.orgName || "Organization logo"}
-                  className="h-10 w-10 rounded-full object-cover border border-white shadow-sm"
-                />
-              ) : (
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600/90 text-white font-semibold">
-                  {initials}
-                </div>
-              )}
-              <div className="min-w-0">
-                <div className="text-xs text-slate-500">Organization</div>
-                <div className="text-sm font-semibold text-slate-900 truncate">
-                  {user?.orgName || "Your organization"}
-                </div>
-                <div className="text-xs text-slate-500 truncate">
-                  {user?.email || "No email set"}
-                </div>
+    {/* Body */}
+<div className="flex-1">
+  <div className="mx-auto max-w-7xl px-2 lg:px-8 py-2 space-y-4">
+    {/* Overview strip (aligned with 3-column layout below) */}
+    {/*<div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_240px] gap-3 items-stretch">*/}
+    <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_260px] gap-4 items-stretch">
+      {/* LEFT: Organization summary card */}
+      <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center gap-2.5">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={user?.orgName || "Organization logo"}
+            className="h-9 w-9 rounded-full object-cover border border-white shadow-sm"
+          />
+        ) : (
+          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600/90 text-white text-sm font-semibold">
+            {initials}
+          </div>
+        )}
+
+        <div className="min-w-0">
+          <div className="text-[11px] text-slate-500 leading-tight">Organization</div>
+          <div className="text-sm font-semibold text-slate-900 truncate leading-tight">
+            {user?.orgName || "Your organization"}
+          </div>
+          <div className="text-[11px] text-slate-500 truncate leading-tight">
+            {user?.email || "No email set"}
+          </div>
+        </div>
+      </div>
+
+      {/* CENTER: wrap the two center cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full w-full">
+        {/* Scholarships stats card */}
+        <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2.5">
+          <div className="flex justify-between gap-2 text-[11px] text-slate-500 leading-tight">
+            <span className="flex-1 whitespace-nowrap">Posted</span>
+            <span className="flex-1 text-center whitespace-nowrap">Pending</span>
+            <span className="flex-1 text-right whitespace-nowrap">Approved</span>
+          </div>
+
+          <div className="flex items-end justify-between gap-4">
+            <div className="flex-1">
+              <div className="mt-1 text-2xl font-bold text-slate-900 leading-none">
+                {totalPosted}
+              </div>
+            </div>
+            <div className="flex-1 text-center">
+              <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
+                {pendingCount}
+              </div>
+            </div>
+            <div className="flex-1 text-right">
+              <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
+                {approvedCount}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scholarship clicks stats card */}
+        <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2">
+          <div className="text-[11px] text-slate-500 leading-tight text-center">Scholarship clicks stats</div>
+
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+              <div className="text-[11px] text-slate-500 leading-tight">Views</div>
+              <div className="text-xl font-bold text-slate-900 leading-none">
+                {clickTotals.views}
               </div>
             </div>
 
-            {/* Scholarships stats card */}
-            <div className="rounded-2xl bg-white shadow-sm border border-slate-200 px-4 py-4 flex flex-col gap-3">
-              <div className="flex justify-between gap-4 text-[10px] sm:text-xs text-slate-500">
-                <span className="flex-1 whitespace-nowrap">Scholarships posted</span>
-                <span className="flex-1 text-center whitespace-nowrap">Pending for Approval</span>
-                <span className="flex-1 text-right whitespace-nowrap">Approved</span>
-              </div>
-              <div className="flex items-end justify-between gap-4">
-                <div className="flex-1">
-                  <div className="mt-1 text-xl sm:text-2xl font-bold text-slate-900">
-                    {totalPosted}
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="mt-1 text-lg font-semibold text-slate-900">{pendingCount}</div>
-                </div>
-                <div className="flex-1 text-right">
-                  <div className="mt-1 text-lg font-semibold text-slate-900">{approvedCount}</div>
-                </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+              <div className="text-[11px] text-slate-500 leading-tight">Clicks on Apply</div>
+              <div className="text-xl font-bold text-slate-900 leading-none">
+                {clickTotals.apply}
               </div>
             </div>
 
-            {/* Account status card */}
-            <div className="rounded-2xl bg-white shadow-sm border border-slate-200 px-4 py-3 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-xs text-slate-500">Account status</div>
-                <div className="text-sm font-semibold text-slate-900">{verificationLabel}</div>
-                <div className="text-xs text-slate-500">Keep your info up to date for students.</div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+              <div className="text-[11px] text-slate-500 leading-tight">Website visits</div>
+              <div className="text-xl font-bold text-slate-900 leading-none">
+                {clickTotals.website}
               </div>
-              <button
-                onClick={() => setEditOpen(true)}
-                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                Edit profile
-              </button>
             </div>
           </div>
 
+          <div className="mt-0.5 text-[11px] text-slate-500 leading-tight text-center">
+            Totals across all your scholarships.
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: Account status card */}
+      <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2.5">
+        <div className="min-w-0">
+          <div className="text-[11px] text-slate-500 leading-tight">Account status</div>
+          <div className="text-sm font-semibold text-slate-900 leading-tight">
+            {verificationLabel}
+          </div>
+          <div className="text-[11px] text-slate-500 leading-tight">
+            Keep your info up to date for students.
+          </div>
+        </div>
+
+        <button
+          onClick={() => setEditOpen(true)}
+          className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 shrink-0"
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+  
           {/* Main 3-column layout */}
           <div className="grid gap-3 lg:gap-4 md:grid-cols-3 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
             {/* LEFT */}
@@ -947,18 +1049,43 @@ const updated = {
                                   </p>
                                 )}
 
-                                {sch.link && (
-                                  <div className="mt-1">
-                                    <a
-                                      href={sch.link}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="text-xs font-medium text-blue-700 hover:underline"
-                                    >
-                                      View / Apply
-                                    </a>
-                                  </div>
-                                )}
+                               {sch.link && (
+  <div className="mt-1">
+    <a
+      href={sch.link}
+      target="_blank"
+      rel="noreferrer"
+      className="text-xs font-medium text-blue-700 hover:underline"
+    >
+      View / Apply
+    </a>
+
+
+    {/* per-scholarship stats (right after the link) */}
+    <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600">
+      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+        Views: {sch.views ?? 0}
+      </span>
+      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+        Clicks on Apply: {sch.applyClicks ?? 0}
+      </span>
+      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+        Website visits: {sch.websiteClicks ?? 0}
+      </span>
+
+      {/* ✅ NEW: open per-scholarship breakdown modal */}
+  <button
+    type="button"
+    onClick={() => openStatsModal(sch)}
+    className="rounded-full border border-slate-300 bg-white px-3 py-0.6 hover:bg-slate-50"
+  >
+    Details
+  </button>
+
+    </div>
+  </div>
+
+)}
                               </div>
                             </div>
                           </li>
@@ -1023,6 +1150,93 @@ const updated = {
           </div>
         </div>
       )}
+
+      {/* ✅ Per-scholarship stats modal */}
+      {statsOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={closeStatsModal}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-200">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-slate-900 truncate">
+                  {statsItem?.title || "Scholarship details"}
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  {statsItem?.orgName ? statsItem.orgName : ""}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeStatsModal}
+                className="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 hover:bg-slate-50 text-slate-700"
+                aria-label="Close"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="text-xs text-slate-500">Views</div>
+                  <div className="text-xl font-bold text-slate-900">
+                    {num(statsItem?.views)}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="text-xs text-slate-500">Clicks on Apply</div>
+                  <div className="text-xl font-bold text-slate-900">
+                    {num(statsItem?.applyClicks)}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="text-xs text-slate-500">Website visits</div>
+                  <div className="text-xl font-bold text-slate-900">
+                    {num(statsItem?.websiteClicks)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={closeStatsModal}
+                  className="text-sm rounded border border-slate-300 px-3 py-1.5 hover:bg-slate-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* EDIT MODAL */}
       {editOpen && (
