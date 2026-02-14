@@ -107,9 +107,6 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   }
 }
 
-
-
-
 async function fetchLecturerProfileFromServer(email) {
   const r = await fetch(
     "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com/api/auth/lecturer/get-profile",
@@ -171,6 +168,7 @@ async function fetchLecturerPostsFromServer({ limit = 20, cursor = "" } = {}) {
     const qs = new URLSearchParams();
     qs.set("scope", LECTURER_SCOPE);
     qs.set("limit", String(limit));
+    qs.set("withThread", "0"); // ✅ ADD THIS LINE (smaller payload, faster feed)
     if (cursor) qs.set("cursor", cursor);
 
     const res = await fetch(`${POSTS_PATH}?${qs.toString()}`);
@@ -215,131 +213,6 @@ async function fetchAdminVideoPostsFromServer() {
     return [];
   }
 }
-
-
-
-
-
-// POST: save new posts – backend REQUIRES a non-empty "text" field
-async function saveLecturerPostsToServer(list) {
-  const items = Array.isArray(list) ? list : [list];
-  if (!items.length) return;
-
-
-
-  async function postCommentToServer(payload) {
-  const url = `${POSTS_API_URL.replace(/\/+$/, "")}/comment`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || "Failed to save comment");
-  return data; // { ok:true, postId, comment }
-}
-
-
-async function postCommentToServer(payload) {
-  const res = await fetch(`${POSTS_API_URL}/comment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const txt = await res.text();
-  let data = null;
-  try { data = JSON.parse(txt); } catch { /* keep raw */ }
-
-  if (!res.ok) throw new Error(data?.message || txt || `HTTP ${res.status}`);
-  return data; // expect { ok:true, comment:{...} } or similar
-}
-
-
-async function postReplyToServer(payload) {
-  const url = `${POSTS_API_URL.replace(/\/+$/, "")}/reply`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) throw new Error(data?.error || "Failed to save reply");
-  return data; // { ok:true, postId, commentId, reply }
-}
-
-
-
-  // 🔧 Normalize items to what the Lambda expects
-  const wireItems = items.map((item) => {
-    // Prefer existing text, otherwise derive from html or title/type
-    const baseText =
-      (item.text && String(item.text).trim()) ||
-      stripHtml(item.html || "") ||
-      (item.title ? String(item.title).trim() : "") ||
-      (item.type ? String(item.type).trim() : "");
-
-    const text = baseText || "Lecturer post";
-
-    return {
-      ...item,
-      text, // ensure every item has a non-empty text
-    };
-  });
-
-  // 👈 NEW: top-level text field for the Lambda
-  const topLevelText =
-    (wireItems[0] && String(wireItems[0].text || "").trim()) ||
-    "Lecturer post";
-
-  const payload = {
-    scope: LECTURER_SCOPE,
-    items: wireItems,
-    text: topLevelText, // ✅ what the backend checks
-  };
-
-  try {
-    /*const res = await fetch(POSTS_API_URL, {*/
-    const res = await fetch(POSTS_PATH,{
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    let bodyText = "";
-    try {
-      bodyText = await res.text();
-    } catch {
-      /* ignore */
-    }
-
-    if (!res.ok) {
-      console.warn(
-        "[LecturerDashboard] save posts status:",
-        res.status,
-        bodyText
-      );
-      alert(
-        "Could not save your post to the server. It may not be visible to other devices yet."
-      );
-    } else {
-      console.log(
-        "[LecturerDashboard] saved posts OK:",
-        res.status,
-        bodyText
-      );
-    }
-  } catch (err) {
-    console.warn("[LecturerDashboard] save posts failed", err);
-    alert(
-      "Could not save your post to the server. It may not be visible to other devices yet."
-    );
-  }
-}
-
-
-
-
 
 /* ---------------- Small utils ------------------ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
