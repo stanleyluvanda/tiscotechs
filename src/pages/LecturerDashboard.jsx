@@ -3443,7 +3443,8 @@ const rep = {
 
 
       {/* Keep total width tight and ensure equal margins on both sides */}
-      <main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">
+      {/*<main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
+      <main className="max-w-[1400px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">
         {/* LEFT: Profile + filters */}
         <aside className="space-y-4 pb-24">
           {/* Profile card */}

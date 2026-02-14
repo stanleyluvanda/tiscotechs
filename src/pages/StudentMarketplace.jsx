@@ -1759,7 +1759,8 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       </div>
 
       {/* Layout */}
-      <main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
+      {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
+      <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
         {/* LEFT: Filters */}
         <aside className="space-y-4 pb-32">
           <Card square>

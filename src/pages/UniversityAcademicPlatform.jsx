@@ -2608,8 +2608,10 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         )}
       </div>
 
-      <main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
-        {/* LEFT rail */}
+      {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
+      <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
+      
+      {/* LEFT rail */}
         <aside className="space-y-4 pb-24">
           <Card square>
             <HeaderBar title="University Academic Platform" square />
