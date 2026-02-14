@@ -1069,7 +1069,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   placeholder="Write a reply…"
   rows={1}
   className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
-  style={{ minHeight: 64, maxHeight: 220 }}
+  style={{ minHeight: 40, maxHeight: 150 }}
 />
 
 
@@ -1497,7 +1497,7 @@ const files = mergedFiles.filter((a) => {
   placeholder="Write a comment/feedback…"
   rows={1}
   className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
-  style={{ minHeight: 64, maxHeight: 220 }}
+  style={{ minHeight: 40, maxHeight: 150 }}
 />
 
 
