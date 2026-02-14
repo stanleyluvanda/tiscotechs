@@ -16,17 +16,23 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 
-
-
-
 // ✅ ADD THIS HERE (top-level helper, before the component)
 
 // 🔗 Simple backend helper for lecturer posts (same API as Student dashboard)
-const POSTS_API_URL =
-  "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com/posts";
+/*const POSTS_API_URL =
+  "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com/posts";*/
 //const LECTURER_SCOPE = "lecturer-dashboard";
 // IMPORTANT: use the SAME scope as StudentDashboard so both roles share one global posts JSON
 // If your StudentDashboard uses a different scope name, put that exact same string here.
+// 🔗 Posts API base
+// Use same-origin so CloudFront/Amplify routing hits your PostsHandler (/api/posts)
+const POSTS_API_URL =
+  ((import.meta.env.VITE_POSTS_API_BASE && String(import.meta.env.VITE_POSTS_API_BASE).trim()) || "")
+    .replace(/\/+$/, "") || "";
+
+// Final base: either "" (same-origin) or https://your-api-base
+const POSTS_BASE = POSTS_API_URL;
+const POSTS_PATH = `${POSTS_BASE}/api/posts`; // ✅ fast feed route
 
 
 const LECTURER_SCOPE = "student-dashboard";
@@ -102,7 +108,6 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
 
 
 
-
 async function fetchLecturerProfileFromServer(email) {
   const r = await fetch(
     "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com/api/auth/lecturer/get-profile",
@@ -158,28 +163,30 @@ async function updateLecturerProfile(patch, me) {
 }
 
 
-
-// GET: load posts for this scope
-async function fetchLecturerPostsFromServer() {
+// GET: load posts for this scope (fast feed + pagination)
+async function fetchLecturerPostsFromServer({ limit = 20, cursor = "" } = {}) {
   try {
-    const res = await fetch(
-      `${POSTS_API_URL}?scope=${encodeURIComponent(LECTURER_SCOPE)}`
-    );
+    const qs = new URLSearchParams();
+    qs.set("scope", LECTURER_SCOPE);
+    qs.set("limit", String(limit));
+    if (cursor) qs.set("cursor", cursor);
+
+    const res = await fetch(`${POSTS_PATH}?${qs.toString()}`);
 
     if (!res.ok) {
       console.warn("[LecturerDashboard] fetch posts status:", res.status);
-      return null;
+      return { posts: [], cursor: "" };
     }
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
-    // ✅ Lambda returns { ok:true, scope, posts:[...] }
-    const posts = Array.isArray(data?.posts) ? data.posts : [];
-
-    return posts;
+    return {
+      posts: Array.isArray(data?.posts) ? data.posts : [],
+      cursor: data?.cursor || data?.nextCursor || "",
+    };
   } catch (err) {
     console.warn("[LecturerDashboard] failed to load posts from server", err);
-    return null;
+    return { posts: [], cursor: "" };
   }
 }
 
@@ -192,7 +199,8 @@ const ADMIN_VIDEO_SCOPE = "admin-video-posts";
 async function fetchAdminVideoPostsFromServer() {
   try {
     const res = await fetch(
-      `${POSTS_API_URL}?scope=${encodeURIComponent(ADMIN_VIDEO_SCOPE)}`
+      /*`${POSTS_API_URL}?scope=${encodeURIComponent(ADMIN_VIDEO_SCOPE)}`*/
+      `${POSTS_PATH}?scope=${encodeURIComponent(ADMIN_VIDEO_SCOPE)}`
     );
     if (!res.ok) {
       console.warn("[LecturerDashboard] fetch admin videos status:", res.status);
@@ -246,8 +254,6 @@ async function postCommentToServer(payload) {
 }
 
 
-
-
 async function postReplyToServer(payload) {
   const url = `${POSTS_API_URL.replace(/\/+$/, "")}/reply`;
   const res = await fetch(url, {
@@ -291,7 +297,8 @@ async function postReplyToServer(payload) {
   };
 
   try {
-    const res = await fetch(POSTS_API_URL, {
+    /*const res = await fetch(POSTS_API_URL, {*/
+    const res = await fetch(POSTS_PATH,{
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -1210,8 +1217,6 @@ function TrashIcon({ className = "w-4 h-4" }) {
 
 
 
-
-
 /* ------------------------ Main Component ------------------------- */
 export default function LecturerDashboard() {
   const navigate = useNavigate();
@@ -1461,11 +1466,6 @@ useEffect(() => {
 
 
 
-
-
-
-
-
   // ✅ Merge remote posts into local without losing local-only threads (comments/replies)
 function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
   const localById = new Map((Array.isArray(localPosts) ? localPosts : []).map(p => [p?.id, p]));
@@ -1533,14 +1533,21 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
     let cancelled = false;
 
     async function loadFromServer() {
-      const remote = await fetchLecturerPostsFromServer();
-      if (!remote || cancelled) return;
+      /*const remote = await fetchLecturerPostsFromServer();*/
+    
+      /*if (!remote || cancelled) return;
 
       // If server has posts, prefer those; otherwise keep local seeded examples
       if (remote.length) {
         //setPosts(remote);
         setPosts(prev => mergeRemoteIntoLocal(prev, remote));
-      }
+      }*/
+      const { posts: remotePosts } = await fetchLecturerPostsFromServer({ limit: 20 });
+if (!remotePosts || cancelled) return;
+
+if (remotePosts.length) {
+  setPosts((prev) => mergeRemoteIntoLocal(prev, remotePosts));
+}
     }
 
     // Initial load
@@ -1633,6 +1640,12 @@ const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT
   const [filterType, setFilterType] = useState("All");
   const [composerOpen, setComposerOpen] = useState(false);
   const [composerType, setComposerType] = useState("Notes");
+  // ✅ 1) Stable sorting key (avoid Date.parse in comparators repeatedly)
+  const postsSorted = useMemo(() => {
+  const arr = Array.isArray(posts) ? posts.slice() : [];
+  arr.sort((a, b) => (Number(b?.createdAt) || 0) - (Number(a?.createdAt) || 0));
+  return arr;
+  }, [posts]);
 
   /* NEW: Title for post / video */
   const [composerTitle, setComposerTitle] = useState("");
@@ -2869,246 +2882,8 @@ function updatePostById(postId, updater) {
     });
   };
 
-  /*const addComment = async (postId, text, images = [], files = []) => {
-  const trimmed = String(text || "").trim();
-  if (!trimmed && images.length === 0 && files.length === 0) return;
-
-  const { imgDescs, fileDescs } = await persistAttachments(images, files);
-
-  // If postId is missing for any reason, just do local-only
-  if (!postId) {
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: [
-        ...(x.comments || []),
-        {
-          id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-          postId,
-          authorId: user.id,
-          authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-          authorPhoto: user.photoUrl,
-          authorProgram: user.faculty,
-          text: trimmed,
-          images: imgDescs,
-          files: fileDescs,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          replies: [],
-        },
-      ],
-    }));
-    return;
-  }
-
-  try {
-    const resp = await postCommentToServer({
-      postId,
-      text: trimmed,
-      images: imgDescs,
-      files: fileDescs,
-      authorId: user.id,
-      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.faculty,
-    });
-
-    const serverComment = resp?.comment;
-
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: [serverComment, ...(x.comments || [])],
-    }));
-  } catch (err) {
-    console.error("[LecturerDashboard] addComment failed:", err);
-
-    // fallback local-only
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: [
-        ...(x.comments || []),
-        {
-          id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-          postId,
-          authorId: user.id,
-          authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-          authorPhoto: user.photoUrl,
-          authorProgram: user.faculty,
-          text: trimmed,
-          images: imgDescs,
-          files: fileDescs,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          replies: [],
-        },
-      ],
-    }));
-  }
-};*/
-
-
-
-/*const addComment = async (postId, text, images = [], files = []) => {
-  const trimmed = String(text || "").trim();
-  if (!trimmed && images.length === 0 && files.length === 0) return;
-
-  const { imgDescs, fileDescs } = await persistAttachments(images, files);
-
-  // optimistic local id (so it shows instantly)
-  const optimisticId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-  // 1) optimistic local update (won’t vanish if we also do merge in step 2)
-  updatePostById(postId, (x) => ({
-    ...x,
-    updatedAt: Date.now(),
-    comments: [
-      {
-        id: optimisticId,
-        __pending: true,
-        postId,
-        authorId: user.id,
-        authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-        author: `${user.title ? user.title + " " : ""}${user.name}`,
-        authorPhoto: user.photoUrl,
-        authorProgram: user.faculty,
-        text: trimmed,
-        images: imgDescs,
-        files: fileDescs,
-        replies: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      ...(x.comments || []),
-    ],
-  }));
-
-  // 2) persist to backend
-  try {
-    const resp = await postCommentToServer({
-      postId,
-      text: trimmed,
-      images: imgDescs,
-      files: fileDescs,
-      authorId: user.id,
-      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.faculty,
-    });
-
-    const serverComment = resp?.comment;
-
-    // 3) replace the optimistic comment with the server comment
-    if (serverComment?.id) {
-      updatePostById(postId, (x) => ({
-        ...x,
-        updatedAt: Date.now(),
-        comments: (x.comments || []).map((c) =>
-          c.id === optimisticId ? serverComment : c
-        ),
-      }));
-    } else {
-      // if backend doesn't return a comment object, at least clear pending flag
-      updatePostById(postId, (x) => ({
-        ...x,
-        comments: (x.comments || []).map((c) =>
-          c.id === optimisticId ? { ...c, __pending: false } : c
-        ),
-      }));
-    }
-   } catch (err) {
-    console.error("[LecturerDashboard] addComment failed:", err);
-    // leave it visible, but mark as not pending
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) =>
-        c.id === optimisticId ? { ...c, __pending: false } : c
-      ),
-    }));
-  }
-};*/
-
-
-  {/*const addComment = async (postId, text, images = [], files = []) => {
-  const trimmed = String(text || "").trim();
-  if (!trimmed && images.length === 0 && files.length === 0) return;
-
-  // ✅ Upload attachments to CloudFront so students can download
-  let cfImages = [];
-  let cfFiles = [];
-  try {
-    const up = await uploadCommentReplyAttachments(images, files, "lecturer/comments");
-    cfImages = up.uploadedImages || [];
-    cfFiles = up.uploadedFiles || [];
-  } catch (e) {
-    console.error("[LecturerDashboard] comment attachment upload failed:", e);
-    // If upload fails, still allow comment text to post (attachments omitted)
-    cfImages = [];
-    cfFiles = [];
-  }
-
-  const optimisticId = `c_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-  // 1) optimistic local update (uses CloudFront urls if available)
-  updatePostById(postId, (x) => ({
-    ...x,
-    updatedAt: Date.now(),
-    comments: [
-      {
-        id: optimisticId,
-        __pending: true,
-        postId,
-        authorId: user.id,
-        authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-        author: `${user.title ? user.title + " " : ""}${user.name}`,
-        authorPhoto: user.photoUrl,
-        authorProgram: user.faculty,
-        text: trimmed,
-        images: cfImages,
-        files: cfFiles,
-        replies: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      },
-      ...(x.comments || []),
-    ],
-  }));
-
-  // 2) persist to backend
-  try {
-    const resp = await postCommentToServer({
-      postId,
-      text: trimmed,
-      images: cfImages,  // ✅ now CloudFront-backed
-      files: cfFiles,    // ✅ now CloudFront-backed
-      authorId: user.id,
-      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.faculty,
-    });
-
-    const serverComment = resp?.comment;
-
-    // 3) replace optimistic with server comment
-    if (serverComment?.id) {
-      updatePostById(postId, (x) => ({
-        ...x,
-        updatedAt: Date.now(),
-        comments: (x.comments || []).map((c) => (c.id === optimisticId ? serverComment : c)),
-      }));
-    } else {
-      updatePostById(postId, (x) => ({
-        ...x,
-        comments: (x.comments || []).map((c) => (c.id === optimisticId ? { ...c, __pending: false } : c)),
-      }));
-    }
-  } catch (err) {
-    console.error("[LecturerDashboard] addComment failed:", err);
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) => (c.id === optimisticId ? { ...c, __pending: false } : c)),
-    }));
-  }
-};*/}
-
+  
+  
 
 
 const addComment = async (postId, text, images = [], files = []) => {
@@ -3674,10 +3449,18 @@ const deletePost = async (post) => {
     }
 
     // Optional: pull fresh server truth so you see the same thing across devices immediately
-    const remote = await fetchLecturerPostsFromServer();
+    /*const remote = await fetchLecturerPostsFromServer();
     if (Array.isArray(remote)) {
       setPosts((prev) => mergeRemoteIntoLocal(prev, remote));
-    }
+    }*/
+    const { posts: remotePosts } = await fetchLecturerPostsFromServer({ limit: 20 });
+if (Array.isArray(remotePosts)) {
+  setPosts((prev) => mergeRemoteIntoLocal(prev, remotePosts));
+}
+
+
+
+
   } catch (err) {
     console.error("[LecturerDashboard] deletePost failed:", err);
 
@@ -3764,7 +3547,6 @@ const rep = {
     .filter((p) => (filterType === "All" ? true : p.type === filterType));
 
   const filtered = mergeForLecturerView(filteredRaw);
-
 
 
   /* UI helpers */
@@ -4464,7 +4246,8 @@ async function addPastedImagesToState(cb, setImages) {
 
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
-function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
+//function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
+function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onReport, currentUser }) {
   const [showComments, setShowComments] = useState(true);
   const [cmt, setCmt] = useState("");
   const [cmtHtml, setCmtHtml] = useState(""); // ✅ ADD THIS LINE HERE
