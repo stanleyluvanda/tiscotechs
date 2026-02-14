@@ -1501,31 +1501,13 @@ const files = mergedFiles.filter((a) => {
 />
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
               </label>
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
                 <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
               </label>
-              <button type="submit" className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">Post</button>
+              <button type="submit" className="rounded-full bg-purple-600 text-white px-4 py-1 text-sm font-semibold hover:bg-purple-700">Post</button>
             </div>
 
             {(cmtImages.length>0 || cmtFiles.length>0) && (
