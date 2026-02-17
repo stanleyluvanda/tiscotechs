@@ -18,6 +18,7 @@ import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 
 
+
 /* ================= Utils ================ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 const UPLOAD_LAMBDA =
@@ -1670,8 +1671,10 @@ function formatTimeAgo(input) {
 
 /* ================== MAIN ================== */
 export default function StudentDashboard() {
+
   const navigate = useNavigate();
   useNoIndex();
+
 
   // ✅ Read ?editProfile=1 from the URL on every render (no extra state)
   const [searchParams] = useSearchParams();

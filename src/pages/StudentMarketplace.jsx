@@ -85,6 +85,15 @@ function isNewPost(createdAt) {
   return Date.now() - ms < NEW_POST_MS;
 }
 
+// ✅ ADD THIS RIGHT HERE (after isNewPost, before conditionClass)
+function daysLeftFromPaidUntil(paidUntil) {
+  const t = paidUntil ? new Date(paidUntil).getTime() : 0;
+  if (!t) return null;
+  const diffMs = t - Date.now();
+  return Math.ceil(diffMs / (24 * 60 * 60 * 1000));
+}
+
+
 
 function conditionClass(cond = "") {
   const c = String(cond || "").trim();
@@ -683,6 +692,38 @@ function saveSeenCommentsForUser(userId, set) {
 export default function StudentMarketplace() {
   const navigate = useNavigate();
   const location = useLocation();
+
+
+  // ✅ Seller filter comes from URL: ?seller=<id>
+  const sellerOnlyId = useMemo(() => {
+    const qs = new URLSearchParams(location.search || "");
+    return (qs.get("seller") || "").trim() || null;
+  }, [location.search]);
+
+  // ✅ Set/clear seller filter without leaving marketplace
+  function setSellerFilter(id) {
+    const qs = new URLSearchParams(location.search || "");
+    if (id) qs.set("seller", String(id));
+    else qs.delete("seller");
+
+    navigate(
+      { pathname: location.pathname, search: qs.toString() ? `?${qs.toString()}` : "" },
+      { replace: true }
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
   const [user] = useState(() => loadActiveUser());
   const userId = useMemo(() => getCanonicalUserId(user), [user]); // ✅ NEW
   const me = useMemo(() => (user ? { ...user, id: userId } : null), [user, userId]); // ✅ NEW
@@ -692,6 +733,7 @@ export default function StudentMarketplace() {
   const [payOpen, setPayOpen] = useState(false);
   const [payBusy, setPayBusy] = useState(false);
   const [payInfo, setPayInfo] = useState(null); // entitlement payload
+  const [payPlan, setPayPlan] = useState("semester"); // "month" | "semester"
   // ✅ NEW: subscription toast popup
   /*const [subToast, setSubToast] = useState({ open: false, type: "success", msg: "" });*/
   const [subToast, setSubToast] = useState({
@@ -724,9 +766,6 @@ export default function StudentMarketplace() {
   }, []);
 
 
-
-
-
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
   }, [user, navigate]);
@@ -744,6 +783,11 @@ export default function StudentMarketplace() {
     const canceled = params.get("canceled") === "1";
 
     if (!paid && !canceled) return;
+    // ✅ HARD PIN: always keep Stripe returns on the marketplace route
+  if (location.pathname !== "/student-marketplace") {
+    navigate(`/student-marketplace${location.search || ""}`, { replace: true });
+    return;
+  }
 
     let cancelled = false;
 
@@ -806,6 +850,7 @@ export default function StudentMarketplace() {
           }*/
           if (paidUntil && paidUntil > Date.now()) {
             setPayInfo(ent);
+            console.log("entitlement:", ent); // ✅ TEMP (logs every retry)
             setPayOpen(false); // ✅ close paywall automatically
 
             // ✅ Success toast
@@ -848,6 +893,42 @@ export default function StudentMarketplace() {
   }, [location.search, location.pathname, navigate, userId]);
 
 
+  // ✅ ADD THIS REMINDER EFFECT RIGHT HERE (after Stripe return handler, before Seed & load items)
+  useEffect(() => {
+    if (!userId) return;
+
+    const paidUntil = payInfo?.paidUntil;
+    const status = String(payInfo?.status || "").toLowerCase();
+
+    // Only remind when active and has a future paidUntil
+    if (status && status !== "active") return;
+
+    const daysLeft = daysLeftFromPaidUntil(paidUntil);
+    if (daysLeft == null) return;
+    if (daysLeft <= 0) return;
+
+    const remindDays = new Set([10, 5, 1]);
+    if (!remindDays.has(daysLeft)) return;
+
+    // ✅ show each reminder once per subscription period
+    const key = `mk_expiry_toast__${userId}__${String(paidUntil)}__${daysLeft}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch {}
+
+    const plan = String(payInfo?.plan || "");
+    const planLabel = plan.includes("month") ? "monthly subscription" : "subscription";
+
+    setSubToast({
+      open: true,
+      type: "info",
+      msg: `Reminder: Your ${planLabel} will expire in ${daysLeft} day${daysLeft === 1 ? "" : "s"}. You can renew to keep posting your ads.`,
+      id: Date.now(),
+    });
+  }, [payInfo?.paidUntil, payInfo?.status, payInfo?.plan, userId]);
+
+  
 
 
 
@@ -940,6 +1021,7 @@ export default function StudentMarketplace() {
       const out = await startMarketplaceCheckout({
         userId, // ✅ canonical
         provider, // "stripe" or "flutterwave"
+        plan: payPlan, // ✅ ADD THIS LINE
         email: user?.email || "",
         name: user?.name || user?.fullName || "Student",
       });
@@ -1518,7 +1600,10 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   const [subFilter, setSubFilter] = useState("All");
   const [showMine, setShowMine] = useState(false);
 
-  const visibleItems = items.filter((i) => !i.deleted).filter((i) => i.university === uni);
+  // ✅ NEW: show listings for a specific seller (set by "View all listings")
+  /*const [sellerOnlyId, setSellerOnlyId] = useState(null); // string | null*/
+
+  /*const visibleItems = items.filter((i) => !i.deleted).filter((i) => i.university === uni);
 
   const filtered = visibleItems
     .filter((i) => (catFilter === "All" ? true : i.mainCategory === catFilter))
@@ -1529,7 +1614,33 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
         ? i.title.toLowerCase().includes(q.toLowerCase()) ||
           i.description.toLowerCase().includes(q.toLowerCase())
         : true
-    );
+    );*/
+
+    const visibleItems = items
+  .filter((i) => !i.deleted)
+  .filter((i) => i.university === uni);
+
+const filtered = visibleItems
+  .filter((i) => (catFilter === "All" ? true : i.mainCategory === catFilter))
+  .filter((i) => (subFilter === "All" ? true : (i.subCategory || "") === subFilter))
+  // ✅ If sellerOnlyId is set, show only that seller’s listings.
+  // Otherwise, keep your existing "My listings" toggle behavior.
+  .filter((i) => {
+    const sid = String(i?.seller?.id || "").trim();
+    if (sellerOnlyId) return sid === String(sellerOnlyId);
+    if (showMine) return sid === String(userId);
+    return true;
+  })
+  .filter((i) =>
+    q
+      ? i.title.toLowerCase().includes(q.toLowerCase()) ||
+        i.description.toLowerCase().includes(q.toLowerCase())
+      : true
+  );
+
+
+
+
 
   /* ---------- Interactions & comment/notification logic ---------- */
   const toggleLike = (id) =>
@@ -1777,14 +1888,34 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
           <Card square>
             <CardHeader title="My listings" square />
             <CardBody>
-              <button
+              {/*<button
                 onClick={() => setShowMine((v) => !v)}
                 className={`w-full rounded-full px-3 py-1.5 text-sm ${
                   showMine ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"
                 }`}
               >
                 {showMine ? "On" : "Off"}
-              </button>
+              </button>*/}
+
+              <button
+  onClick={() =>
+    setShowMine((v) => {
+      const next = !v;
+      if (next) setSellerFilter(null);
+      return next;
+    })
+  }
+
+
+  className={`w-full rounded-full px-3 py-1.5 text-sm ${
+    showMine ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"
+  }`}
+>
+  {showMine ? "On" : "Off"}
+</button>
+
+
+
               {showMine && (
                 <ul className="mt-3 space-y-2 text-sm">
                   {visibleItems.filter((i) => i.seller && i.seller.id === userId).length === 0 && (
@@ -2343,14 +2474,109 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
 
                   className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
                    >
-                  🚩 Report suspecious behavior
+                  🚩 Report misconduct
                     </button>
 
+                    {/*<button
+  type="button"
+  onClick={() => {
+    // show all listings by this seller
+    const sid = String(seller?.id || "").trim();
+    if (!sid) return;
+
+    setSellerOnlyId(sid);
+    setShowMine(false); // avoid conflict with sellerOnlyId
+    // optional: clear search so user sees everything
+    // setQ("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+  className="text-blue-600 underline"
+>
+  View all listings
+</button>*/}
+
+{/*<button
+  type="button"
+  onClick={() => {
+    const sid = String(seller?.id || "").trim();
+    if (!sid) return;
+
+    setShowMine(false);
+    setSellerFilter(sid);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+  className="text-blue-600 underline"
+>
+  View all listings
+</button>
 
                     <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">
                       Back to Dashboard
-                    </Link>
-                  </div>
+                    </Link>*/}
+
+                    {/*<button
+  type="button"
+  onClick={() => {
+    const sid = String(seller?.id || "").trim();
+    if (!sid) return;
+
+    setShowMine(false);
+    setSellerFilter(sid);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+  className="text-blue-600 underline"
+>
+  View all listings
+</button>
+
+{sellerOnlyId && (
+  <button
+    type="button"
+    onClick={() => {
+      setSellerFilter(null); // ✅ clears seller filter
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    className="text-blue-600 underline"
+  >
+    Back to all listings
+  </button>
+)}*/}
+{String(sellerOnlyId || "") === String(seller?.id || "") ? (
+  // ✅ Already viewing this seller => hide "View all listings"
+  <button
+    type="button"
+    onClick={() => {
+      setSellerFilter(null); // clears seller filter
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    /*className="text-blue-600 underline"*/
+    className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-green-100"
+  >
+    Back to all listings
+  </button>
+) : (
+  // ✅ Not viewing this seller => show "View all listings"
+  <button
+    type="button"
+    onClick={() => {
+      const sid = String(seller?.id || "").trim();
+      if (!sid) return;
+
+      setShowMine(false);
+      setSellerFilter(sid);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    /*className="text-blue-600 underline"*/
+    className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+  >
+    View all listings of this seller
+  </button>
+)}
+
+<Link to="/student-dashboard" className="ml-auto text-purple-600 underline">
+  Back to Dashboard
+</Link>
+</div>
 
                   {/* ✅ Lazy-loaded comments: use cache + onOpen */}
                   <Comments
@@ -2433,7 +2659,12 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
 
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-slate-900">
-                    {subToast.type === "success" ? "Subscription successful" : "Payment canceled"}
+                    {/*{subToast.type === "success" ? "Subscription successful" : "Payment canceled"}*/}
+                    {subToast.type === "success"
+                       ? "Subscription successful"
+                        : subToast.type === "info"
+                       ? "Subscription reminder"
+                        : "Payment canceled"}
                   </div>
                   <div className="mt-0.5 text-xs text-slate-600">
                     {subToast.msg}
@@ -2542,25 +2773,49 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
 
         {/* Pricing */}
         <div className="mt-5 rounded-2xl border border-slate-200 p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xl">
-                ✅
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-slate-900">
-                  Unlimited Listings Subscription
+          {/* ✅ Plan selector (monthly first, then semester) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setPayPlan("month")}
+              className={`rounded-2xl border p-4 text-left ${
+                payPlan === "month"
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-slate-200 bg-white hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold text-slate-900">Monthly</div>
+                <div className="text-xs text-slate-600">
+                  You’ve used your 1 free listing. Unlock unlimited listings for <b>1 month</b>.
                 </div>
+              </div>
+              <div className="mt-3">
+                <div className="text-xs text-slate-500">Subscription</div>
+                <div className="text-2xl font-extrabold text-slate-900">$29.00</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPayPlan("semester")}
+              className={`rounded-2xl border p-4 text-left ${
+                payPlan === "semester"
+                  ? "border-blue-600 bg-blue-50"
+                  : "border-slate-200 bg-white hover:bg-slate-50"
+              }`}
+            >
+              <div className="flex flex-col gap-1">
+                <div className="text-sm font-semibold text-slate-900">Semester</div>
                 <div className="text-xs text-slate-600">
                   You’ve used your 1 free listing. Unlock unlimited listings for <b>one semester</b>.
                 </div>
               </div>
-            </div>
-
-            <div className="sm:ml-auto">
-              <div className="text-xs text-slate-500">Subscription</div>
-              <div className="text-2xl font-extrabold text-slate-900">$99.99</div>
-            </div>
+              <div className="mt-3">
+                <div className="text-xs text-slate-500">Subscription</div>
+                <div className="text-2xl font-extrabold text-slate-900">$99.99</div>
+              </div>
+            </button>
           </div>
 
           <div className="mt-3 text-xs text-slate-500">
@@ -2607,10 +2862,10 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
     </div>
   </div>
 )}
-
 </div>
   );
 }
+
 
 
 /* ============ Comments component (two-way threads + focus-from-notification) ============ */

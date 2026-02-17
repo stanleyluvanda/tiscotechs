@@ -195,6 +195,8 @@ export default function App() {
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/video-tips" element={<VideoTips />} />
         <Route path="/marketplace" element={<StudentMarketplace />} />
+        {/*<Route path="/student-marketplace" element={<Navigate to="/marketplace" replace />} />*/}
+        <Route path="/student-marketplace" element={<StudentMarketplace />} />
         </Route>
          
 

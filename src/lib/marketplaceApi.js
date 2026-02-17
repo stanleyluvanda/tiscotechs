@@ -227,6 +227,7 @@ export async function getMarketplaceEntitlement(arg) {
 }
 
 // ✅ Accepts userId plus optional aliases in case older callers pass id/uid.
+// ✅ Accepts userId plus optional aliases in case older callers pass id/uid.
 export async function startMarketplaceCheckout({
   userId,
   id,
@@ -234,6 +235,7 @@ export async function startMarketplaceCheckout({
   provider = "stripe",
   email = "",
   name = "",
+  plan = "semester", // ✅ NEW: "month" | "semester" (default keeps old behavior)
 } = {}) {
   const finalUserId = String(userId || id || uid || "").trim();
   if (!finalUserId) throw new Error("Missing userId");
@@ -249,15 +251,18 @@ export async function startMarketplaceCheckout({
   const successUrl = `${origin}/student-marketplace?paid=1`;
   const cancelUrl = `${origin}/student-marketplace?canceled=1`;
 
-  // ✅ Send both styles so backend can use what it expects without breaking anything:
-  // - successUrl/cancelUrl (common)
-  // - success_url/cancel_url (some backends)
-  // - redirectUrl (Flutterwave-style single return)
   const body = {
     userId: finalUserId,
     provider,
     email,
     name,
+
+    // ✅ NEW (safe): backend can ignore if not implemented yet
+    /*plan: String(plan || "semester").trim(),*/
+    plan: (String(plan || "semester").trim().toLowerCase() === "month" ||
+       String(plan || "semester").trim().toLowerCase() === "monthly")
+  ? "month"
+  : "semester",
 
     successUrl,
     cancelUrl,
@@ -271,5 +276,3 @@ export async function startMarketplaceCheckout({
     body,
   }); // { ok:true, url }
 }
-
-export { buildUrl };
