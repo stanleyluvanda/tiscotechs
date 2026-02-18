@@ -73,7 +73,7 @@ export default function Home() {
       <SectionTabs />
 
       {/* 3) Testimonial with logo (Mpower card links to EduInfo) */}
-      <section className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
+      {/*<section className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
         <Link
           to="/eduinfo"
           className="block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0"
@@ -87,7 +87,40 @@ export default function Home() {
             </blockquote>
           </div>
         </Link>
-      </section>
+      </section>*/}
+
+      {/* 3) MPOWER section (corporate background + card links to EduInfo) */}
+<section
+  className="w-full"
+  style={{ backgroundColor: "#FFFAEE" }} // ✅ MPOWER corporate color
+>
+  <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
+    <div className="text-center">
+  <h2 className="text-3xl md:text-4xl font-extrabold text-[#2f4ea2]">
+    Funding for international students
+  </h2>
+</div>
+
+
+    <Link
+      to="/eduinfo"
+      className="mt-6 block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0 bg-white/80"
+      title="Learn more in EduInfo"
+    >
+      <div className="p-6 md:p-10 grid md:grid-cols-[120px_1fr] gap-6 items-center">
+        <img
+          src="/images/mpower.png"
+          alt="Mpower Financing logo"
+          className="w-24 h-24 object-contain opacity-90"
+        />
+        <blockquote className="text-lg text-slate-800">
+          “ScholarsKnowledge partners with MPOWER Financing to help international students access trusted financial solutions.”
+          <div className="mt-2 text-sm text-slate-500">— Learn More</div>
+        </blockquote>
+      </div>
+    </Link>
+  </div>
+</section>
 
       {/* 4) Three pillars (centered titles) */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
@@ -384,12 +417,14 @@ const cardsStudents = [
   ];
 
   const cardsIT = [
-    {
+    /*{
       tag: "Educational Loans",
       title: "Mpower Financing Loans",
       text: "ScholarsKnowledge partners with Mpower Financing to make global student achieve their career and education dreams",
       image: "/images/mpower-financing.png",
-    },
+    },*/
+
+    
     {
       tag: "Scholarships",
       title: "Explore Scholarships directly from Provider Institutions and Organizations",
@@ -474,6 +509,7 @@ const cardsStudents = [
     </section>
   );
 }
+
 
 function Pillar({ title, text, centered = false }) {
   return (
