@@ -12,7 +12,9 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <button onClick={logout} className="text-sm text-slate-600 hover:underline">Logout</button>
+        <button onClick={logout} className="text-sm text-slate-600 hover:underline">
+          Logout
+        </button>
       </div>
       <p className="text-slate-600 mt-1">Choose what you want to manage.</p>
 
@@ -23,24 +25,36 @@ export default function AdminDashboard() {
           to="/admin/members"
           cta="Open Members"
         />
+
         <AdminCard
           title="Scholarships"
           body="Review, create, and edit scholarships submitted by providers."
           to="/admin/scholarships"
           cta="Open Scholarships"
         />
+
+        {/* ✅ NEW: Funded Graduate Admission */}
+        <AdminCard
+          title="Funded Graduate Admission"
+          body="Review and approve funded graduate admission opportunities submitted by partners/universities."
+          to="/admin/funded-graduate-admissions"
+          cta="Open Funded Admissions"
+        />
+
         <AdminCard
           title="Posts & Media"
           body="Create announcements, upload video posts (YouTube), and share materials."
           to="/admin/posts/video-new"
           cta="New Video Post"
         />
+
         <AdminCard
           title="Support Inbox"
           body="View messages sent from the Contact page. Mark as read, reply status, and track issues."
           to="/admin/support"
           cta="Open Inbox"
         />
+
         <AdminCard
           title="Moderation"
           body="Review reports (posts, comments, replies, marketplace). Hide/remove/publish items and close reports."
@@ -52,14 +66,33 @@ export default function AdminDashboard() {
       <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4">
         <div className="text-sm font-semibold text-slate-900">Quick links</div>
         <div className="mt-3 flex flex-wrap gap-3">
-          <Link className="text-blue-600 hover:underline" to="/admin/members">Members</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/scholarships">Scholarships</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/posts/video-new">New Video Post</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/posts/videos">Manage Video Posts</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/consents">Student Alert Consents</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/support">Support Inbox</Link>
-          <Link className="text-blue-600 hover:underline" to="/admin/moderation">Moderation</Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/members">
+            Members
+          </Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/scholarships">
+            Scholarships
+          </Link>
 
+          {/* ✅ NEW */}
+          <Link className="text-blue-600 hover:underline" to="/admin/funded-graduate-admissions">
+            Funded Graduate Admission
+          </Link>
+
+          <Link className="text-blue-600 hover:underline" to="/admin/posts/video-new">
+            New Video Post
+          </Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/posts/videos">
+            Manage Video Posts
+          </Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/consents">
+            Student Alert Consents
+          </Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/support">
+            Support Inbox
+          </Link>
+          <Link className="text-blue-600 hover:underline" to="/admin/moderation">
+            Moderation
+          </Link>
         </div>
       </div>
     </div>

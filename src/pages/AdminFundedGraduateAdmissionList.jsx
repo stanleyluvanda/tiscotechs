@@ -1,4 +1,4 @@
-// src/pages/AdminScholarshipList.jsx
+// src/pages/AdminFundedGraduateAdmissionList.jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listScholarships, updateScholarship, deleteScholarship } from "../utils/scholarshipsApi";
@@ -33,7 +33,7 @@ function Modal({ open, onClose, title, children }) {
   );
 }
 
-/* Safe HTML print (server already stores HTML for description/eligibility/benefits/howToApply) */
+/* Safe HTML print */
 function RichHtml({ html }) {
   if (!html) return null;
   return <div className="prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
@@ -57,15 +57,14 @@ function orgLabel(item) {
   );
 }
 
+
 // ✅ ADD THIS helper right here (before export default)
 function isExpiredByDeadline(deadline) {
   const d = String(deadline || "").trim();
   if (!d) return false;
 
-  // Try common formats: YYYY-MM-DD, YYYY/MM/DD, MM/DD/YYYY, etc.
   let ts = Date.parse(d);
 
-  // If it looks like YYYY-MM-DD, force end-of-day local time so it expires after the day finishes
   if (!Number.isFinite(ts) && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
     ts = Date.parse(`${d}T23:59:59`);
   }
@@ -77,8 +76,11 @@ function isExpiredByDeadline(deadline) {
 
 
 
-export default function AdminScholarshipList() {
+export default function AdminFundedGraduateAdmissionList() {
   useNoIndex();
+
+  const CONTENT_TYPE = "FUNDED_GRAD_ADMISSION";
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -88,7 +90,7 @@ export default function AdminScholarshipList() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  // ✅ Preview modal state
+  // Preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState(null);
 
@@ -96,9 +98,22 @@ export default function AdminScholarshipList() {
     setLoading(true);
     setErr("");
     try {
-      const { items, total } = await listScholarships({ q, status, page, pageSize });
-      setItems(Array.isArray(items) ? items : []);
-      setTotal(Number(total || 0));
+      // ✅ Force funded admission content type so it never mixes with Scholarships
+      const { items, total } = await listScholarships({
+        q,
+        status,
+        page,
+        pageSize,
+        contentType: CONTENT_TYPE,
+      });
+
+      // Extra safety: if backend returns mixed content, filter client-side too
+      const filtered = (Array.isArray(items) ? items : []).filter(
+        (x) => String(x?.contentType || "").toUpperCase() === CONTENT_TYPE
+      );
+
+      setItems(filtered);
+      setTotal(Number(total || filtered.length || 0));
     } catch (e) {
       setErr(e.message || "Failed to load");
     } finally {
@@ -108,14 +123,15 @@ export default function AdminScholarshipList() {
 
   useEffect(() => {
     load();
-    /* eslint-disable-next-line */
+    // eslint-disable-next-line
   }, [q, status, page]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   async function setStatusAction(id, next) {
     try {
-      await updateScholarship(id, { status: next }); // API or local fallback
+      // ✅ Keep contentType pinned on updates as well (prevents accidental mutation to other types)
+      await updateScholarship(id, { status: next, contentType: CONTENT_TYPE });
       await load();
     } catch (e) {
       alert("Failed to update: " + e.message);
@@ -123,9 +139,9 @@ export default function AdminScholarshipList() {
   }
 
   async function remove(id) {
-    if (!confirm("Delete this scholarship?")) return;
+    if (!confirm("Delete this funded graduate admission item?")) return;
     try {
-      await deleteScholarship(id); // API or local fallback
+      await deleteScholarship(id);
       await load();
     } catch (e) {
       alert("Failed to delete: " + e.message);
@@ -139,7 +155,6 @@ export default function AdminScholarshipList() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Local CSS for bullet lists in preview */}
       <style>{`
         .prose-sm ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
         .prose-sm ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
@@ -149,12 +164,15 @@ export default function AdminScholarshipList() {
       `}</style>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Admin · Scholarships</h1>
+        <h1 className="text-2xl font-bold">Admin · Funded Graduate Admission</h1>
+
+        {/* If you later add an admin-create page for funded admissions, wire it here.
+           Keeping it as a Link placeholder prevents layout shifts. */}
         <Link
-          to="/admin/scholarships/new"
+          to="/admin/funded-graduate-admissions/new"
           className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
         >
-          + New Scholarship
+          + New Funded Admission
         </Link>
       </div>
 
@@ -168,6 +186,7 @@ export default function AdminScholarshipList() {
           placeholder="Search by title, provider, country…"
           className="w-full md:w-80 border border-slate-300 rounded px-3 py-2 text-sm"
         />
+
         <select
           value={status}
           onChange={(e) => {
@@ -203,6 +222,7 @@ export default function AdminScholarshipList() {
                     ? ` • ${Array.isArray(s.fundingType) ? s.fundingType.join(", ") : s.fundingType}`
                     : ""}
                 </div>
+
                 {/*<div className="mt-1 text-xs">
                   <span className="px-2 py-0.5 rounded-full border text-slate-700">
                     Status: <b>{s.status || "pending"}</b>
@@ -236,6 +256,7 @@ export default function AdminScholarshipList() {
     <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-800 max-w-full truncate">
       Org: {orgLabel(s)}
     </span>
+
     {isExpiredByDeadline(s?.deadline) ? (
   <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 whitespace-nowrap">
     Expired
@@ -243,12 +264,13 @@ export default function AdminScholarshipList() {
 ) : null}
 
   </div>
-   </div> 
-   </div>
+</div>
+</div>
+
+
 
 
               <div className="flex flex-col items-end gap-2">
-                {/* ✅ Row 1: Edit/Delete + new Preview/View */}
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -258,15 +280,17 @@ export default function AdminScholarshipList() {
                     Preview
                   </button>
 
+                  {/* Public view (adjust if your public detail route differs) */}
                   <Link
-                    to={`/scholarship/${s.id}`}
+                    to={`/funded-graduate-admission/${s.id}`}
                     className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
                   >
                     View
                   </Link>
 
+                  {/* Admin edit (optional; only works if you implement the edit route/page) */}
                   <Link
-                    to={`/admin/scholarships/${s.id}/edit`}
+                    to={`/admin/funded-graduate-admissions/${s.id}/edit`}
                     className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
                   >
                     Edit
@@ -280,7 +304,6 @@ export default function AdminScholarshipList() {
                   </button>
                 </div>
 
-                {/* Row 2: Approve/Reject/Mark Pending (unchanged) */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => setStatusAction(s.id, "approved")}
@@ -329,7 +352,6 @@ export default function AdminScholarshipList() {
         </div>
       )}
 
-      {/* ✅ Preview modal */}
       <Modal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
@@ -346,7 +368,7 @@ export default function AdminScholarshipList() {
 
             {previewItem.description && (
               <section>
-                <h4 className="text-base font-semibold">Scholarship Description</h4>
+                <h4 className="text-base font-semibold">Program Description</h4>
                 <div className="mt-2">
                   <RichHtml html={previewItem.description} />
                 </div>
@@ -364,7 +386,7 @@ export default function AdminScholarshipList() {
 
             {previewItem.benefits && (
               <section>
-                <h4 className="text-base font-semibold">Benefits</h4>
+                <h4 className="text-base font-semibold">Funding / Benefits</h4>
                 <div className="mt-2">
                   <RichHtml html={previewItem.benefits} />
                 </div>
@@ -380,7 +402,6 @@ export default function AdminScholarshipList() {
               </section>
             )}
 
-            {/* ✅ Internal notes (admin-only in Preview) */}
             {previewItem.notes ? (
               <section>
                 <h4 className="text-base font-semibold">Notes (internal)</h4>

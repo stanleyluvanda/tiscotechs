@@ -47,8 +47,10 @@ import VideoTips from "./pages/VideoTips.jsx";
 import UploadTest from "./pages/UploadTest.jsx";
 import AdminSupportInbox from "./pages/AdminSupportInbox.jsx";
 import AdminModeration from "./pages/AdminModeration.jsx";
-
-
+import FundedGraduateAdmission from "./pages/FundedGraduateAdmission.jsx";
+import FundedGraduateAdmissionDetail from "./pages/FundedGraduateAdmissionDetail.jsx";
+import PartnerSubmitFundedGraduateAdmission from "./pages/PartnerSubmitFundedGraduateAdmission.jsx";
+import AdminFundedGraduateAdmissionList from "./pages/AdminFundedGraduateAdmissionList.jsx";
 
 // ❌ Remove this import to avoid clash with inline stub
 // import StudyInUSPage from "./pages/StudyInUS.jsx";
@@ -135,6 +137,12 @@ export default function App() {
         <Route path="/scholarship/:id" element={<ScholarshipDetail />} />
         <Route path="/study-in-us" element={<StudyInUS />} />
         <Route path="/eduinfo" element={<Navigate to="/edufinancing" replace />} />
+
+        <Route path="/funded-graduate-admission" element={<FundedGraduateAdmission />} />
+        <Route path="/funded-graduate-admission/:id" element={<FundedGraduateAdmissionDetail />} />
+        <Route path="/partner/submit-funded-graduate-admission"element={<PartnerSubmitFundedGraduateAdmission />}/>
+        <Route path="/admin/funded-graduate-admissions"element={<AdminFundedGraduateAdmissionList />}/>
+
 
         {/* links used by Home.jsx */}
         <Route path="/eduinfo" element={<EduInfo />} />

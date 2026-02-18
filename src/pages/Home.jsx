@@ -111,6 +111,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ✅ NEW:  Funded graduate programs opportunities for international students (with background image + 4 StoryCards) */}
+<section
+  className="relative overflow-hidden"
+  style={{
+    backgroundImage: "url('/images/Scholarship.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  }}
+>
+  {/* Overlay for readability */}
+  <div className="absolute inset-0 bg-slate-950/55" />
+
+  <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
+    <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+      Funded graduate programs opportunities for international students
+    </h2>
+    <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
+      Access a curated selection of verified, university-funded graduate admission opportunities 
+      sourced directly from accredited institutions worldwide.
+    </p>
+
+    <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+  <StoryCard
+    image="/images/scholarships-us.png"
+    title="University-Funded graduate programs in the U.S."
+    linkTo="/funded-graduate-admission?country=United%20States"
+    linkText="Explore U.S. funded graduate programs"
+  />
+
+  <StoryCard
+    image="/images/scholarships-canada.png"
+    title="University-Funded graduate programs in Canada"
+    linkTo="/funded-graduate-admission?country=Canada"
+    linkText="Explore Canada funded graduate programs"
+  />
+
+  <StoryCard
+    image="/images/scholarships-uk.png"
+    title="University-Funded graduate programs in the UK"
+    linkTo="/funded-graduate-admission?country=United%20Kingdom"
+    linkText="Explore UK funded graduate programs"
+  />
+
+  <StoryCard
+    image="/images/scholarships-europe.png"
+    title="University-Funded graduate programs in Europe"
+    linkTo="/funded-graduate-admission?continent=Europe"
+    linkText="Explore Europe funded graduate programs"
+  />
+</div>
+  </div>
+</section>
+
+
       {/* 5) Customer stories teaser (centered headings; custom CTAs; faint borders; no 'All Customer Stories') */}
       <section className="bg-[#f6f9ff]">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
@@ -161,8 +215,10 @@ export default function Home() {
       Scholarships by Study Destination
     </h2>
     <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
-      Explore scholarships and funding opportunities tailored to popular destinations —
-      United States, Canada, United Kingdom, and Europe.
+      {/*Explore scholarships and funding opportunities tailored to popular destinations —
+      United States, Canada, United Kingdom, and Europe.*/}
+      Browse curated and verified scholarship opportunities carefully organized by major study destinations 
+      — the United States, Canada, the United Kingdom, and Europe.
     </p>
 
     <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -430,7 +486,8 @@ function Pillar({ title, text, centered = false }) {
 
 function StoryCard({ image, title, linkTo, linkText }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+    /*<div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">*/
+    <div className="rounded-2xl bg-white overflow-hidden">
       <img src={image} alt="" className="w-full h-40 object-cover" />
       <div className="p-4 text-center">
         <div className="font-semibold">{title}</div>

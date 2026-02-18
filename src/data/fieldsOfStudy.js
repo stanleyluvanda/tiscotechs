@@ -1,7 +1,7 @@
 // src/data/fieldsOfStudy.js
 // Consolidated from your sheet/screenshot (add/remove as you like)
 export const FIELDS_OF_STUDY = [
-  "Accounting","Actuarial Science","Advertising & Public Relations","Aerospace Technologies & Engineering",
+  "All Programs","Accounting","Actuarial Science","Advertising & Public Relations","Aerospace Technologies & Engineering",
   "Agriculture/Agribusiness","Agronomy & Soils","Aircraft Maintenance","Airline Flight Attendant","Animal Science",
   "Anthropology","Applied Science & Technology","Archaeology","Architecture","Art","Art History","Asian Studies",
   "Astrophysics","Atmospheric & Oceanic Science","Audiology","Automotive","Aviation","Biblical Studies","Biochemistry",
@@ -26,7 +26,7 @@ export const FIELDS_OF_STUDY = [
   "Pharmacology/Pharmacy","Philosophy","Photography","Physical Education","Physical Therapy","Physician Assistant",
   "Physics","Physiology & Neurobiology","Plumbing","Political Science","Project Management","Psychiatry",
   "Psychology/Counseling","Public Health","Public Policy","Radiography/Radiologic Sciences","Real Estate",
-  "Religious Studies","Social Work","Sociology","Spanish","Special Education","Speech, Language & Hearing Sciences",
+  "Religious Studies","STEM","Social Work","Sociology","Spanish","Special Education","Speech, Language & Hearing Sciences",
   "Sport Management","Statistics","Theater & Performance","Theology","Veterinary Medicine","Vocational Careers",
   "Web Design","Welding","Zoology"
 ];

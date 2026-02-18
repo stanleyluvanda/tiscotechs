@@ -125,9 +125,15 @@ function SpinningGlobe({ size = 36 }) {
 }
 
 /* ---------- NavLink style ---------- */
-const link = ({ isActive }) =>
+/*const link = ({ isActive }) =>
   "px-3 py-2 rounded-md text-sm font-semibold transition " +
+  (isActive ? "bg-white/10 text-white" : "text-white/90 hover:bg-white/10");*/
+const link = ({ isActive }) =>
+  "px-2 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition " +
   (isActive ? "bg-white/10 text-white" : "text-white/90 hover:bg-white/10");
+
+
+
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -244,12 +250,14 @@ const dashboardPath =
         </Link>
 
         {/* CENTER: nav (Partner after About) */}
-        <nav className="flex-1 flex items-center justify-center gap-1 md:gap-2 lg:gap-3">
+        {/*<nav className="flex-1 flex items-center justify-center gap-1 md:gap-2 lg:gap-3">*/}
+        <nav className="flex-1 flex items-center justify-center gap-0.5 md:gap-1 lg:gap-2">
           <NavLink to="/home" className={link}>Home</NavLink>
           <NavLink to="/about" className={link}>About</NavLink>
           <NavLink to="/partner" className={link}>Partner</NavLink>
           <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
           <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
+          <NavLink to="/funded-graduate-admission" className={link}> Funded Graduate Admission</NavLink>
           <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>

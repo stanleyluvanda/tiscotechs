@@ -1,23 +1,19 @@
-// src/pages/ScholarshipDetail.jsx
+// src/pages/FundedGraduateAdmissionDetail.jsx
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
-
-
-// ✅ Sidebar ads (same component used elsewhere)
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
-// ✅ Scholarships Details MUST use the Scholarships API base
+// ✅ Same API base as scholarships (same Lambda)
 const API_BASE = (
-  import.meta.env.VITE_SCHOLARSHIPS_API_BASE || // <-- primary (prod)
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
 ).replace(/\/+$/, "");
 
-/* Render server-provided HTML (or partner HTML).
-   If you later accept untrusted HTML, sanitize it first. */
+/* Render server-provided HTML */
 function RichHtml({ html }) {
   if (!html) return null;
   return (
@@ -28,9 +24,9 @@ function RichHtml({ html }) {
   );
 }
 
-/* ---- Local fallback helpers ---- */
+/* ---- Local fallback helpers (copied, unchanged semantics) ---- */
 const LOCAL_KEYS = ["partnerScholarships", "scholarships", "postedScholarships"];
-const CATALOG_CACHE_KEY = "scholarship_catalog_cache"; // optional list cache
+const CATALOG_CACHE_KEY = "scholarship_catalog_cache"; // unchanged key (safe)
 
 function tryJson(getter) {
   try {
@@ -40,12 +36,10 @@ function tryJson(getter) {
   }
 }
 
-// Some entries may be wrapped like { data: {...} }
 function unwrap(item) {
   return item && item.data && typeof item.data === "object" ? item.data : item;
 }
 
-// Collect all plausible identifiers for one item
 function candidateIds(item, storeKey, index) {
   const x = unwrap(item) || {};
   const ids = [
@@ -60,16 +54,13 @@ function candidateIds(item, storeKey, index) {
   ]
     .filter(Boolean)
     .map((v) => v.toString());
-  // Deterministic fallback id so list/detail can agree without a real id
   ids.push(`local_${storeKey}_${index}`);
   return ids;
 }
 
-// (Optional) scan a small number of localStorage arrays (serverless convenience)
 function scanAllLocalForId(want) {
   for (let i = 0; i < localStorage.length; i += 1) {
     const k = localStorage.key(i) || "";
-    // Skip obvious non-arrays / noisy keys
     if (!/scholar|post|list|cache|store/i.test(k)) continue;
     const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "null"));
     if (!Array.isArray(arr)) continue;
@@ -84,7 +75,6 @@ function scanAllLocalForId(want) {
 function loadLocalByIdOrIndex(idStr) {
   const want = idStr.toString();
 
-  // 0) Try the catalog cache (the list page can write exactly what it rendered)
   const cacheMap =
     tryJson(() => JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "{}")) ||
     {};
@@ -92,14 +82,12 @@ function loadLocalByIdOrIndex(idStr) {
     const cand = unwrap(cacheMap[want]) || cacheMap[want];
     return cand;
   }
-  // Also try any value in the cache map that matches by alternate id fields
   for (const v of Object.values(cacheMap)) {
     const cand = unwrap(v) || v;
     const ids = candidateIds(cand, "cache", -1);
     if (ids.includes(want)) return cand;
   }
 
-  // 1) Exact match against known id fields OR deterministic fallback id
   for (const k of LOCAL_KEYS) {
     const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
     if (!Array.isArray(arr)) continue;
@@ -109,7 +97,6 @@ function loadLocalByIdOrIndex(idStr) {
     }
   }
 
-  // 2) If numeric-like, allow index fallback (legacy convenience)
   if (/^\d+$/.test(want)) {
     const idx = Number(want);
     for (const k of LOCAL_KEYS) {
@@ -118,7 +105,6 @@ function loadLocalByIdOrIndex(idStr) {
     }
   }
 
-  // 3) Last resort: lightly scan other local arrays (keeps existing logic intact)
   const probed = scanAllLocalForId(want);
   if (probed) return probed;
 
@@ -126,9 +112,9 @@ function loadLocalByIdOrIndex(idStr) {
 }
 
 /* =========================
-   ✅ "You may also like" helpers (STRICT personalization)
+   Recommendations helpers (copied, with a funded-content filter)
    ========================= */
-const HABIT_KEY = "scholarship_browse_habit_v1";
+const HABIT_KEY = "funded_grad_browse_habit_v1"; // separate habit key (isolated)
 
 function normStr(x) {
   return String(x || "").toLowerCase().trim();
@@ -190,7 +176,7 @@ function buildTasteProfile() {
     field: new Map(),
     funding: new Map(),
     tokens: new Map(),
-    hasHistory: recent.length >= 3, // ✅ only personalize after a few views
+    hasHistory: recent.length >= 3,
   };
 
   function bump(map, key, w = 1) {
@@ -200,7 +186,7 @@ function buildTasteProfile() {
   }
 
   recent.forEach((e, idx) => {
-    const weight = Math.max(1, 6 - Math.floor(idx / 6)); // newest weighted more
+    const weight = Math.max(1, 6 - Math.floor(idx / 6));
     bump(counts.country, e.country, weight);
     bump(counts.level, e.level, weight);
     bump(counts.field, e.field, weight);
@@ -228,11 +214,6 @@ function overlapCount(setA, setB) {
   return c;
 }
 
-/**
- * ✅ Strict gate:
- * - Must have at least ONE strong signal (field match OR enough keyword overlap)
- * - And must pass score threshold
- */
 function scoreAndGate(candidate, current, taste) {
   if (!candidate) return { ok: false, score: -Infinity };
 
@@ -252,7 +233,6 @@ function scoreAndGate(candidate, current, taste) {
 
   const tasteTopFields = topKeys(taste?.field, 2);
   const tasteTopTokens = new Set(topKeys(taste?.tokens, 8));
-
   const tokenOverlapWithTaste = overlapCount(candTokens, tasteTopTokens);
 
   const sameFieldAsCurrent =
@@ -261,7 +241,6 @@ function scoreAndGate(candidate, current, taste) {
   const sameFieldAsTaste =
     candidate.field && tasteTopFields.includes(String(candidate.field));
 
-  // ✅ Strong signals required
   const hasStrongSignal =
     sameFieldAsCurrent ||
     sameFieldAsTaste ||
@@ -270,35 +249,24 @@ function scoreAndGate(candidate, current, taste) {
 
   if (!hasStrongSignal) return { ok: false, score: -Infinity };
 
-  // ---- scoring (only after pass the gate) ----
   let score = 0;
 
-  // Similarity to current scholarship (strong)
   if (sameFieldAsCurrent) score += 12;
   if (candidate.level && current?.level && candidate.level === current.level)
     score += 6;
-  if (
-    candidate.country &&
-    current?.country &&
-    candidate.country === current.country
-  )
+  if (candidate.country && current?.country && candidate.country === current.country)
     score += 4;
 
-  // Funding overlap (medium)
   const candFunding = new Set(
     Array.isArray(candidate.fundingType) ? candidate.fundingType : []
   );
-  (Array.isArray(current?.fundingType) ? current.fundingType : []).forEach(
-    (f) => {
-      if (candFunding.has(f)) score += 2;
-    }
-  );
+  (Array.isArray(current?.fundingType) ? current.fundingType : []).forEach((f) => {
+    if (candFunding.has(f)) score += 2;
+  });
 
-  // Keyword overlaps
   score += Math.min(8, tokenOverlapWithCurrent * 2);
   score += Math.min(6, tokenOverlapWithTaste);
 
-  // Personalization boosts (taste profile) — only if enough history
   if (taste?.hasHistory) {
     if (taste?.field?.has(candidate.field))
       score += Math.min(6, taste.field.get(candidate.field));
@@ -308,116 +276,86 @@ function scoreAndGate(candidate, current, taste) {
       score += Math.min(4, taste.country.get(candidate.country));
   }
 
-  // ✅ Minimum score so we don't show “everything”
-  const MIN_SCORE = taste?.hasHistory ? 14 : 16; // stricter if no history
+  const MIN_SCORE = taste?.hasHistory ? 14 : 16;
   if (score < MIN_SCORE) return { ok: false, score };
 
   return { ok: true, score };
 }
 
-export default function ScholarshipDetail() {
+export default function FundedGraduateAdmissionDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [err, setErr] = useState("");
 
-  // ✅ simple lightbox for banner
   const [showBanner, setShowBanner] = useState(false);
-
-  // ✅ recommendations
   const [recs, setRecs] = useState([]);
 
-
-
-
-
-  // 🔵 Track scholarship interactions (fire-and-forget)
-  /*const trackScholarship = (sid, type) => {
+  // Track interactions (same endpoint, separate gate key namespace)
+  const trackItem = (sid, type) => {
     try {
-      if (!API_BASE || !sid) return;
+      if (!API_BASE) return;
 
-      fetch(
-        `${API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type }),
-          keepalive: true, // survives navigation
-        }
-      ).catch(() => {});
-    } catch {
-      // never break UI
-    }
-  };*/
+      const idSafe = String(sid || "").trim();
+      const t = String(type || "").toLowerCase().trim();
+      if (!idSafe || !t) return;
 
-  // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
-const trackScholarship = (sid, type) => {
-  try {
-    if (!API_BASE) return;
+      const gateKey = `fga:${idSafe}:${t}`;
+      if (!shouldSendTrackOnce(gateKey)) return;
 
-    const idSafe = String(sid || "").trim();
-    const t = String(type || "").toLowerCase().trim();
-    if (!idSafe || !t) return;
-
-    // ✅ Count only once per device (persistent guard)
-    const gateKey = `sch:${idSafe}:${t}`;
-    if (!shouldSendTrackOnce(gateKey)) return;
-
-    fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: t }),
-      keepalive: true,
-    }).catch(() => {});
-  } catch {
-    // never break UI
-  }
-};
-
-
-
+      fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: t }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+  };
 
   useEffect(() => {
     let alive = true;
 
     (async () => {
       setErr("");
-      setItem(null);
 
-      const useApi = Boolean(API_BASE); // only if configured
+      // ✅ "instant feel": show local version immediately while API loads
+      const local = loadLocalByIdOrIndex(id);
+      if (alive && local) setItem(local);
 
+      const useApi = Boolean(API_BASE);
       if (useApi) {
         try {
           const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
           const res = await fetch(url);
 
-          if (res.status === 404) {
-            throw new Error("NOT_FOUND");
-          }
+          if (res.status === 404) throw new Error("NOT_FOUND");
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
           const data = await res.json();
           if (!alive) return;
+
+          // ✅ Safety: ensure this is actually a funded admission when your backend starts writing contentType
+          const ct = String(data?.contentType || "SCHOLARSHIP").toUpperCase();
+          if (ct !== "FUNDED_GRAD_ADMISSION") {
+            // still allow render (backward-compat), but could show a soft message if desired
+          }
+
           setItem(data);
           return;
-        } catch (e) {
-          // fallback to local
+        } catch {
+          // fallback to local below
         }
       }
 
-      const local = loadLocalByIdOrIndex(id);
       if (!alive) return;
 
-      if (local) {
-        setItem(local);
-        return;
-      }
-
-      if (API_BASE) {
-        setErr(
-          `Not found. This ID (${id}) is not in localStorage, and the API request failed or returned 404.`
-        );
-      } else {
-        setErr("Not found (local).");
+      if (!local) {
+        if (API_BASE) {
+          setErr(
+            `Not found. This ID (${id}) is not in localStorage, and the API request failed or returned 404.`
+          );
+        } else {
+          setErr("Not found (local).");
+        }
       }
     })();
 
@@ -426,7 +364,7 @@ const trackScholarship = (sid, type) => {
     };
   }, [id]);
 
-  // ✅ close lightbox on ESC
+  // close lightbox on ESC
   useEffect(() => {
     if (!showBanner) return;
     const onKey = (e) => {
@@ -436,7 +374,7 @@ const trackScholarship = (sid, type) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [showBanner]);
 
-  // ✅ STRICT "You may also like"
+  // Recommendations: keep them relevant (prefer contentType FUNDED_GRAD_ADMISSION)
   useEffect(() => {
     let alive = true;
 
@@ -447,22 +385,20 @@ const trackScholarship = (sid, type) => {
 
       let list = [];
 
-      // get catalog
       if (API_BASE) {
         try {
+          // ✅ Ask for funded type list once your Lambda supports contentType param
           const res = await fetch(
-            `${API_BASE}/api/scholarships?page=1&pageSize=200`
+            `${API_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
           );
           if (res.ok) {
             const data = await res.json();
             list = Array.isArray(data?.items) ? data.items : [];
           }
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
 
-      // fallback to local arrays if API list fails
+      // fallback to local arrays
       if (!list.length) {
         const merged = [];
         for (const k of LOCAL_KEYS) {
@@ -470,12 +406,14 @@ const trackScholarship = (sid, type) => {
             tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
           if (Array.isArray(arr)) merged.push(...arr.map(unwrap));
         }
-        list = merged.filter(Boolean);
+        // ✅ filter funded only if field exists locally
+        list = merged
+          .filter(Boolean)
+          .filter((x) => String(x?.contentType || "").toUpperCase() === "FUNDED_GRAD_ADMISSION");
       }
 
       const taste = buildTasteProfile();
 
-      // ✅ Only include strongly related items
       const ranked = list
         .map((x) => {
           const r = scoreAndGate(x, item, taste);
@@ -505,11 +443,13 @@ const trackScholarship = (sid, type) => {
 
   if (!item) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">Loading…</div>      
-       );
-      }
-  // ✅ AdSense gate: show ads only after scholarship content is loaded
-const canShowAds = Boolean(item);
+      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">
+        Loading…
+      </div>
+    );
+  }
+
+  const canShowAds = Boolean(item);
 
   const {
     title,
@@ -546,10 +486,9 @@ const canShowAds = Boolean(item);
       `}</style>
 
       <div className="flex-1">
-        {/* ✅ Side ads ONLY on 2xl+ so center feed never gets squeezed */}
         <div className="mx-auto w-full max-w-[1400px] px-4">
           <div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">
-            {/* LEFT ADS (2nd ad frozen) */}
+            {/* LEFT ADS */}
             <aside className="hidden 2xl:block pt-8">
               <div className="space-y-4">
                 <div className="max-h-[250px] overflow-hidden">
@@ -561,62 +500,46 @@ const canShowAds = Boolean(item);
               </div>
             </aside>
 
-            {/* CENTER (unchanged layout/dimensions) */}
+            {/* CENTER */}
             <main className="min-w-0">
               <div className="max-w-5xl mx-auto px-4 pt-8">
                 <Link
-                  to="/scholarship"
+                  to="/funded-graduate-admission"
                   className="text-blue-600 hover:underline text-sm"
                 >
-                  ← Back to Scholarships
+                  ← Back to Funded Graduate Admission
                 </Link>
               </div>
 
               <div className="max-w-5xl mx-auto px-4 py-6">
-                {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h1 className="text-2xl font-bold">{title}</h1>
-                  <p className="mt-1 text-slate-600">
-                    <span className="font-medium">{provider}</span>
-                    {country ? ` • ${country}` : ""}
-                    {level ? ` • ${level}` : ""}
-                    {field ? ` • ${field}` : ""}
-                  </p>*/}
+                {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/}
+                {/*<div className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">*/}
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-6">
+                  <div className="flex items-start gap-4">
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt={`${provider || "University"} logo`}
+                        /*className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
+                        /*className="h-14 w-14 shrink-0 rounded bg-slate-50 border border-transparent object-contain p-1"*/
+                        className="h-18 w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
 
-
-                  {/*</div><div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/}
-                  {/*<div className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">*/}
-                    {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/50 shadow-none p-6">*/}
-                    <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-6">
-  <div className="flex items-start gap-4">
-    {logo ? (
-      <img
-        src={logo}
-        alt={`${provider || "Provider"} logo`}
-        /*className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-        className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-
-        loading="lazy"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    ) : null}
-
-    <div className="min-w-0">
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p className="mt-1 text-slate-600">
-        <span className="font-medium">{provider}</span>
-        {country ? ` • ${country}` : ""}
-        {level ? ` • ${level}` : ""}
-        {field ? ` • ${field}` : ""}
-      </p>
-    </div>
-  </div>
-
-
-
-
-
+                    <div className="min-w-0">
+                      <h1 className="text-2xl font-bold">{title}</h1>
+                      <p className="mt-1 text-slate-600">
+                        <span className="font-medium">{provider}</span>
+                        {country ? ` • ${country}` : ""}
+                        {level ? ` • ${level}` : ""}
+                        {field ? ` • ${field}` : ""}
+                      </p>
+                    </div>
+                  </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
@@ -649,56 +572,29 @@ const canShowAds = Boolean(item);
                   </div>
 
                   <div className="mt-4 flex gap-3">
-                    {/*{partnerApplyUrl && (
+                    {partnerApplyUrl && (
                       <a
                         href={partnerApplyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => trackItem(id, "apply")}
                         className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
                       >
                         Apply Now
                       </a>
-                    )}*/}
+                    )}
 
-
-
-                    {partnerApplyUrl && (
-                     <a
-                     href={partnerApplyUrl}
-                     target="_blank"
-                      rel="noopener noreferrer"
-                       onClick={() => trackScholarship(id, "apply")}
-                     className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                      >
-                  Apply Now
-                  </a>
-                     )}
-
-
-
-                    {/*{link && (
+                    {link && (
                       <a
                         href={link}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => trackItem(id, "website")}
                         className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
                       >
                         Visit website
                       </a>
-                    )}*/}
-
-                    {link && (
-                       <a
-                     href={link}
-                        target="_blank"
-                      rel="noopener noreferrer"
-                     onClick={() => trackScholarship(id, "website")}
-                     className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-                       >
-                       Visit website
-                      </a>
-                       )}
-
+                    )}
                   </div>
                 </div>
               </div>
@@ -707,10 +603,10 @@ const canShowAds = Boolean(item);
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2 space-y-6">
                     {description && (
-                      
-                     <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
                         <h2 className="text-lg font-semibold">
-                          Scholarship Description
+                          Program Description
                         </h2>
                         <div className="mt-3">
                           <RichHtml html={description} />
@@ -720,8 +616,8 @@ const canShowAds = Boolean(item);
 
                     {eligibility && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">Eligibility</h2>
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
+                        <h2 className="text-lg font-semibold">Program Eligibility & Requirements</h2>
                         <div className="mt-3">
                           <RichHtml html={eligibility} />
                         </div>
@@ -730,8 +626,8 @@ const canShowAds = Boolean(item);
 
                     {benefits && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                        <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">Benefits</h2>
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
+                        <h2 className="text-lg font-semibold">Funding Benefits</h2>
                         <div className="mt-3">
                           <RichHtml html={benefits} />
                         </div>
@@ -740,7 +636,7 @@ const canShowAds = Boolean(item);
 
                     {howToApply && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
                         <h2 className="text-lg font-semibold">How to Apply</h2>
                         <div className="mt-3">
                           <RichHtml html={howToApply} />
@@ -751,8 +647,7 @@ const canShowAds = Boolean(item);
 
                   <aside className="space-y-6">
                     {bannerSrc && (
-                      
-                        <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -773,8 +668,7 @@ const canShowAds = Boolean(item);
                     )}
 
                     <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                      
-                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-6 text-center">
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">
                         <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
                             At a glance
@@ -782,7 +676,7 @@ const canShowAds = Boolean(item);
                         </h3>
 
                         <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
-                          <dt className="font-medium">Provider</dt>
+                          <dt className="font-medium">University</dt>
                           <dd className="mb-3">{provider || "-"}</dd>
 
                           <dt className="font-medium">Country</dt>
@@ -799,40 +693,28 @@ const canShowAds = Boolean(item);
 
                           {amount && (
                             <>
-                              <dt className="font-medium">Max Amount</dt>
+                              <dt className="font-medium">Funding</dt>
                               <dd className="mb-3">{amount}</dd>
                             </>
                           )}
                         </dl>
 
-                        {/*{partnerApplyUrl && (
+                        {partnerApplyUrl && (
                           <a
                             href={partnerApplyUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => trackItem(id, "apply")}
                             className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
                           >
                             Apply Now
                           </a>
-                        )}*/}
-
-                        {partnerApplyUrl && (
-                         <a
-                         href={partnerApplyUrl}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         onClick={() => trackScholarship(id, "apply")}
-                         className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                         >
-                       Apply Now
-                         </a>
-                           )}
+                        )}
                       </div>
                     </div>
 
                     {recs.length > 0 && (
-                      /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/
-                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <div className="bg-slate-100 px-5 py-4">
                           <h4 className="text-lg font-bold text-slate-900 text-center">
                             You may also like
@@ -842,11 +724,11 @@ const canShowAds = Boolean(item);
                         <div className="divide-y divide-slate-200">
                           {recs.map((s, idx) => {
                             const sid = getAnyId(s) || String(idx);
-                            const label = s?.title || "Untitled scholarship";
+                            const label = s?.title || "Untitled opportunity";
                             return (
                               <Link
                                 key={sid}
-                                to={`/scholarship/${encodeURIComponent(sid)}`}
+                                to={`/funded-graduate-admission/${encodeURIComponent(sid)}`}
                                 className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
                               >
                                 <span className="font-semibold">{label}</span>
@@ -861,7 +743,7 @@ const canShowAds = Boolean(item);
               </div>
             </main>
 
-            {/* RIGHT ADS (2nd ad frozen) */}
+            {/* RIGHT ADS */}
             <aside className="hidden 2xl:block pt-8">
               <div className="space-y-4">
                 <div className="max-h-[250px] overflow-hidden">
@@ -876,7 +758,7 @@ const canShowAds = Boolean(item);
         </div>
       </div>
 
-      {/* ✅ Lightbox overlay */}
+      {/* Lightbox */}
       {showBanner && (
         <div
           className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"

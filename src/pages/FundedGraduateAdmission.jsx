@@ -1,19 +1,17 @@
-// src/pages/Scholarship.jsx
+// src/pages/FundedGraduateAdmission.jsx
 import { useEffect, useMemo, useState } from "react";
-//import { Link } from "react-router-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
-import { shouldSendTrackOnce } from "../lib/trackGate"; // already imported in your file
+import { shouldSendTrackOnce } from "../lib/trackGate";
 import {
-  listScholarships,
-  readScholarshipsCache,
-} from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback + cache)
+  listFundedGraduateAdmissions,
+  readFundedAdmissionsCache,
+  getFundedGraduateAdmissionById, // used for hover/click prefetch to feel instant
+} from "../utils/scholarshipsApi";
 
-// ✅ Google Ads (same component you used in dashboards)
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
-const CONTENT_TYPE = "SCHOLARSHIP";
 const CONTINENT_NAMES = Object.keys(REGIONS);
 
 /* Build a quick lookup: country (lowercase) -> continent */
@@ -85,13 +83,10 @@ function filterSortPaginate({
   // Continent filter
   if (continent && continent !== "All") {
     out = out.filter((s) => {
-      // 1) If item already has an explicit continent, use it
       const direct = String(s.continent || "").trim();
       if (direct && direct !== "All") {
         return direct === continent;
       }
-
-      // 2) Otherwise infer from country via REGIONS
       const cName = String(s.country || "").toLowerCase();
       if (!cName) return false;
       const inferred = COUNTRY_TO_CONTINENT[cName];
@@ -152,7 +147,9 @@ function filterSortPaginate({
         new Date(a.deadline || "1900-01-01")
     );
   } else if (sort === "title") {
-    out.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    out.sort((a, b) =>
+      String(a.title || "").localeCompare(String(b.title || ""))
+    );
   }
 
   const total = out.length;
@@ -161,24 +158,20 @@ function filterSortPaginate({
   return { items: out.slice(start, end), total };
 }
 
-export default function Scholarship() {
-  // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
+export default function FundedGraduateAdmission() {
+  // ✅ baseItems is the full approved list (cache → then API refresh)
   const [baseItems, setBaseItems] = useState(() => {
-    /*const cached = readScholarshipsCache("approved");*/
-    /*const cached = readScholarshipsCache("approved", { contentType: CONTENT_TYPE });*/
-    const cached = readScholarshipsCache("approved", CONTENT_TYPE);
+    const cached = readFundedAdmissionsCache("approved");
     return cached?.items || [];
   });
 
   const [loading, setLoading] = useState(() => {
-    // If we have cached items, don't show a "blank loading" state.
-    /*const cached = readScholarshipsCache("approved");*/
-    const cached = readScholarshipsCache("approved", { contentType: CONTENT_TYPE });
+    const cached = readFundedAdmissionsCache("approved");
     return !(cached?.items && cached.items.length > 0);
   });
 
   const [err, setErr] = useState("");
-  const [usedFallback, setUsedFallback] = useState(false); // informational banner (cache/dev)
+  const [usedFallback, setUsedFallback] = useState(false);
 
   // Filters / sorting / pagination
   const [q, setQ] = useState("");
@@ -188,16 +181,15 @@ export default function Scholarship() {
   const [funding, setFunding] = useState("All");
   const [searchParams] = useSearchParams();
 
-  // ⭐ Level as multi-select stored in array, shown via compact dropdown
+  // Level multi-select stored in array, shown via compact dropdown
   const [levels, setLevels] = useState([]);
   const [levelOpen, setLevelOpen] = useState(false);
 
-  // Default to NEWEST so fresh posts appear first
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const pageSize = 100;
 
-  // Close the level dropdown when clicking outside
+  // Close level dropdown when clicking outside
   useEffect(() => {
     function onDocClick(e) {
       if (!e.target.closest?.("[data-level-popover]")) {
@@ -208,15 +200,8 @@ export default function Scholarship() {
     return () => document.removeEventListener("click", onDocClick);
   }, []);
 
-
-
-
-
-
-
-  // ✅ AUTO-APPLY filters from URL query params (country/continent/etc.)
+  // ✅ AUTO-APPLY filters from URL query params (same behavior)
   useEffect(() => {
-    // Read params
     const qpQ = (searchParams.get("q") || "").trim();
     const qpContinent = (searchParams.get("continent") || "").trim();
     const qpCountry = (searchParams.get("country") || "").trim();
@@ -224,7 +209,6 @@ export default function Scholarship() {
     const qpFunding = (searchParams.get("funding") || "").trim();
     const qpSort = (searchParams.get("sort") || "").trim();
 
-    // Apply ONLY when present (don’t override normal usage)
     let changed = false;
 
     if (qpQ) {
@@ -234,12 +218,11 @@ export default function Scholarship() {
 
     if (qpContinent) {
       setContinent(qpContinent);
-      setCountry("All"); // reset so countryOptions can update cleanly
+      setCountry("All");
       changed = true;
     }
 
     if (qpCountry) {
-      // If they provide country, infer continent too (best UX)
       const inferred = COUNTRY_TO_CONTINENT[qpCountry.toLowerCase()];
       if (inferred) setContinent(inferred);
       setCountry(qpCountry);
@@ -265,10 +248,6 @@ export default function Scholarship() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-
-
-
-
   // Country options depend on continent
   const countryOptions = useMemo(() => {
     if (continent === "All") {
@@ -279,7 +258,7 @@ export default function Scholarship() {
     return ["All", ...REGIONS[continent]];
   }, [continent]);
 
-  // Funding options inferred from baseItems (not paged items)
+  // Funding options inferred from baseItems
   const fundingOptions = useMemo(() => {
     const set = new Set();
     baseItems.forEach((s) => {
@@ -291,13 +270,13 @@ export default function Scholarship() {
     return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [baseItems]);
 
-  // Toggle a checkbox value in levels
   const toggleLevel = (val) => {
-    setLevels((prev) => (prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]));
+    setLevels((prev) =>
+      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
+    );
     setPage(1);
   };
 
-  // ✅ NEW: apply filters instantly from baseItems (no network)
   const { items, total } = useMemo(() => {
     return filterSortPaginate({
       list: baseItems,
@@ -313,23 +292,22 @@ export default function Scholarship() {
     });
   }, [baseItems, q, continent, country, field, funding, levels, sort, page]);
 
-  // ✅ Load approved list ONCE (not every filter change)
+  // ✅ Load approved list ONCE
   useEffect(() => {
     let alive = true;
 
     (async () => {
       setErr("");
 
-      // If we have no cache, show loading spinner
       if (!baseItems || baseItems.length === 0) setLoading(true);
 
       try {
-        const res = await listScholarships({
+        const res = await listFundedGraduateAdmissions({
           status: "approved",
-          contentType: CONTENT_TYPE, // ✅ prevents FUNDED_GRAD_ADMISSION from mixing in
-          q: "", // ✅ fetch once; keep filtering client-side for instant UI
+          contentType: "FUNDED_GRAD_ADMISSION", // ✅ ADD THIS
+          q: "",
           page: 1,
-          pageSize: 2000, // generous; your client filtering expects a big list
+          pageSize: 2000,
         });
 
         if (!alive) return;
@@ -337,14 +315,13 @@ export default function Scholarship() {
         const next = Array.isArray(res?.items) ? res.items : [];
         setBaseItems(next);
 
-        // informational banner: dev local or cache is not "offline", but you can show if you want
         const source = res?.meta?.source || "api";
         setUsedFallback(source !== "api");
 
         setLoading(false);
       } catch (e) {
         if (!alive) return;
-        setErr(e?.message || "Failed to load scholarships");
+        setErr(e?.message || "Failed to load funded graduate admissions");
         setLoading(false);
       }
     })();
@@ -353,7 +330,7 @@ export default function Scholarship() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ✅ only once
+  }, []);
 
   const resetFilters = () => {
     setQ("");
@@ -362,73 +339,55 @@ export default function Scholarship() {
     setField("All");
     setFunding("All");
     setLevels([]);
-    setSort("newest"); // keep newest as default
+    setSort("newest");
     setPage(1);
   };
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+  // Track interactions (same pattern; doesn't break anything)
+  const trackItem = (id, type) => {
+    try {
+      const sid = String(id || "");
+      const t = String(type || "").toLowerCase();
+      if (!sid || !t) return;
 
+      const gateKey = `fga:${sid}:${t}`;
+      if (!shouldSendTrackOnce(gateKey)) return;
 
-  // 🔵 Track scholarship interactions (fire-and-forget)
-/*const trackScholarship = (id, type) => {
-  try {
-    fetch(
-      `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(id)}/track`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
-        keepalive: true, // important: allows request during navigation
-      }
-    ).catch(() => {});
-  } catch {
-    // silent fail — never break UI
-  }
-};*/
+      // Reuse same track endpoint (works because item is still in same API)
+      fetch(
+        `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(
+          sid
+        )}/track`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: t }),
+          keepalive: true,
+        }
+      ).catch(() => {});
+    } catch {
+      // silent
+    }
+  };
 
-// 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
-const trackScholarship = (id, type) => {
-  try {
-    const sid = String(id || "");
-    const t = String(type || "").toLowerCase();
-    if (!sid || !t) return;
+  // Instant feel: warm detail cache on hover (fire-and-forget)
+  const prefetchDetail = (id) => {
+    try {
+      getFundedGraduateAdmissionById(id)?.catch?.(() => {});
+    } catch {
+      // ignore
+    }
+  };
 
-    // ✅ Count only once per device (persistent guard)
-    const gateKey = `sch:${sid}:${t}`;
-    if (!shouldSendTrackOnce(gateKey)) return;
-
-    fetch(
-      `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: t }),
-        keepalive: true,
-      }
-    ).catch(() => {});
-  } catch {
-    // silent fail — never break UI
-  }
-};
-
-
-
-
-
-
-
-
-
-  // ✅ AdSense content gate: only show ads when there is real publisher content
+  // AdSense content gate
   const canShowAds = !loading && items.length >= 4;
 
   return (
-    // ✅ Outer layout: left ad | center feed (unchanged width) | right ad
-    /*<div className="mx-auto w-full px-4 py-8">*/
-      <div className="mx-auto w-full px-4 pt-0 pb-8">
+    <div className="mx-auto w-full px-4 pt-0 pb-8">
       <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">
-        {/* LEFT ADS (hidden on small screens) */}
+        {/* LEFT ADS */}
         <aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}
@@ -436,54 +395,42 @@ const trackScholarship = (id, type) => {
           </div>
         </aside>
 
-        {/* CENTER FEED (keeps EXACT same dimension as before) */}
+        {/* CENTER FEED */}
         <main className="w-full max-w-[1056px] shrink-0">
-          {/*<h2 className="text-3xl font-bold">
-            Scholarships & Funding Opportunities for International students
-          </h2>
-          <p className="mt-1 text-blue-900">
-            Explore verified scholarship and funding opportunities offered by partner universities,
-            foundations, governments, and accredited external providers worldwide.
-          </p>*/}
+          {/* FULL-WIDTH header banner */}
+          <div
+            className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
+            style={{
+              backgroundImage: "url(/images/Scholarship.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "left center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
 
-         {/* FULL-WIDTH (viewport) header banner (NO card) */}
-<div
-  className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
-  style={{
-    backgroundImage: "url(/images/Scholarship.png)", // <-- your banner
-    backgroundSize: "cover",
-    backgroundPosition: "left center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  {/* Strong readability overlay */}
-  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
+            <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-3 md:py-4">
+              <div className="mx-auto max-w-[1056px]">
+                <h2
+                  className="text-2xl md:text-3xl font-extrabold text-white leading-tight"
+                  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+                >
+                  Funded graduate programs opportunities for international students
+                </h2>
 
-  <div className="relative z-10 mx-auto max-w-[1400px] px-4 py-3 md:py-4">
-    <div className="mx-auto max-w-[1056px]">
-      <h2
-        className="text-2xl md:text-3xl font-extrabold text-white leading-tight"
-        style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
-      >
-        Scholarships &amp; Funding Opportunities for International students
-      </h2>
+                <p
+                  className="mt-2 text-sm md:text-base font-medium text-white/90"
+                  style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
+                >
+                  Explore funded graduate admissions offered directly by universities worldwide.
+                </p>
+              </div>
+            </div>
+          </div>
 
-      <p
-        className="mt-2 text-sm md:text-base font-medium text-white/90"
-        style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
-      >
-        Explore verified scholarships and funding opportunities offered by universities,
-        foundations, governments, and accredited global providers.
-      </p>
-    </div>
-  </div>
-</div>
-          
-
-          {/* Optional subtle banner if you want to surface cache/dev mode */}
           {usedFallback && (
             <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
-              Showing cached scholarships for faster loading.
+              Showing cached opportunities for faster loading.
             </div>
           )}
 
@@ -495,7 +442,7 @@ const trackScholarship = (id, type) => {
                 setQ(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by title, provider, country…"
+              placeholder="Search by title, university, country…"
               className="w-full border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"
             />
 
@@ -548,7 +495,7 @@ const trackScholarship = (id, type) => {
               ))}
             </select>
 
-            {/* ⭐ Level multi-select as a compact dropdown */}
+            {/* Level multi-select */}
             <div className="relative" data-level-popover>
               <button
                 type="button"
@@ -650,10 +597,14 @@ const trackScholarship = (id, type) => {
           </div>
 
           {/* States */}
-          {loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}
+          {loading && (
+            <div className="mt-6 text-slate-600">
+              Loading funded graduate admissions…
+            </div>
+          )}
           {err && <div className="mt-6 text-red-600">{err}</div>}
           {!loading && !err && items.length === 0 && (
-            <div className="mt-6 text-slate-600">No scholarships found.</div>
+            <div className="mt-6 text-slate-600">No opportunities found.</div>
           )}
 
           {/* List */}
@@ -664,64 +615,41 @@ const trackScholarship = (id, type) => {
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
 
-          const logo = s.providerLogoUrl || s.providerLogoData || "";      
+              const logo = s.providerLogoUrl || s.providerLogoData || "";
 
               return (
                 <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
                   <div className="flex items-start justify-between gap-4">
-                    {/*<div className="min-w-0">
-                      <div className="text-lg font-semibold">{s.title}</div>
-                      <div className="mt-0.5 text-sm text-slate-600">
-                        {s.provider}
-                        {s.country ? ` • ${s.country}` : ""}
-                        {s.level ? ` • ${s.level}` : ""}
-                        {s.field ? ` • ${s.field}` : ""}
-                        {fundingStr ? ` • ${fundingStr}` : ""}
-                      </div>
-                    </div>*/}
-
                     <div className="min-w-0 flex items-start gap-3">
-    {logo ? (
-  <img
-    src={logo}
-    alt={`${s.provider || "Provider"} logo`}
-    /*className="h-12 w-12 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-    className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-    loading="lazy"
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-  />
-) : null}
+                      {logo ? (
+                        <img
+                          src={logo}
+                          alt={`${s.provider || "University"} logo`}
+                          /*className="h-12 w-12 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
+                          className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : null}
 
-    <div className="min-w-0">
-      <div className="text-lg font-semibold">{s.title}</div>
-      <div className="mt-0.5 text-sm text-slate-600">
-        {s.provider}
-        {s.country ? ` • ${s.country}` : ""}
-        {s.level ? ` • ${s.level}` : ""}
-        {s.field ? ` • ${s.field}` : ""}
-        {fundingStr ? ` • ${fundingStr}` : ""}
-      </div>
-    </div>
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
+                      <div className="min-w-0">
+                        <div className="text-lg font-semibold">{s.title}</div>
+                        <div className="mt-0.5 text-sm text-slate-600">
+                          {s.provider}
+                          {s.country ? ` • ${s.country}` : ""}
+                          {s.level ? ` • ${s.level}` : ""}
+                          {s.field ? ` • ${s.field}` : ""}
+                          {fundingStr ? ` • ${fundingStr}` : ""}
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="flex flex-col items-end gap-2 shrink-0">
                       {s.amount ? (
                         <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-                          Reward: {s.amount}
+                          Funding: {s.amount}
                         </div>
                       ) : null}
                       {s.deadline && (
@@ -730,25 +658,18 @@ const trackScholarship = (id, type) => {
                     </div>
                   </div>
 
-                  {/* Description snippet */}
                   {snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {/*<Link
-                      to={`/scholarship/${s.id}`}
+                    <Link
+                      to={`/funded-graduate-admission/${s.id}`}
+                      onMouseEnter={() => prefetchDetail(s.id)}
+                      onMouseDown={() => prefetchDetail(s.id)}
+                      onClick={() => trackItem(s.id, "view")}
                       className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
                     >
                       View details
-                    </Link>*/}
-
-                  <Link
-                   to={`/scholarship/${s.id}`}
-                      onClick={() => trackScholarship(s.id, "view")}
-                      className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
-                    >
-                  View details
                     </Link>
-
 
                     {s.partnerApplyUrl && (
                       <a
@@ -756,8 +677,10 @@ const trackScholarship = (id, type) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-1.5 hover:bg-blue-50"
+                        onMouseDown={() => trackItem(s.id, "apply")}
+                        onClick={() => trackItem(s.id, "apply")}
                       >
-                        Apply on Provider site
+                        Apply on University site
                       </a>
                     )}
                   </div>
@@ -790,7 +713,7 @@ const trackScholarship = (id, type) => {
           )}
         </main>
 
-        {/* RIGHT ADS (hidden on small screens) */}
+        {/* RIGHT ADS */}
         <aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}

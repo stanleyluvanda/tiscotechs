@@ -15,6 +15,17 @@ const LS_KEY = "scholarships_local";
 const IS_PROD = !!import.meta?.env?.PROD;
 
 /* =========================================================
+   🆕 Funded Graduate Admission (separate content type)
+   - Uses SAME backend endpoint
+   - Uses SAME DynamoDB table
+   - Does NOT affect scholarships logic
+========================================================= */
+
+const FUNDED_TYPE = "FUNDED_GRAD_ADMISSION";
+const FUNDED_CACHE_PREFIX = "sk:funded_admissions:cache:v1:";
+
+
+/* =========================================================
    ✅ NEW: Lightweight cache for instant UI
    - Works in PROD safely (it's just caching API responses)
    - Does NOT replace backend data, does NOT break cross-device
@@ -23,13 +34,21 @@ const IS_PROD = !!import.meta?.env?.PROD;
 const CACHE_PREFIX = "sk:scholarships:cache:v1:"; // key = prefix + status
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-function cacheKey(status) {
+/*function cacheKey(status) {
   return `${CACHE_PREFIX}${String(status || "all").toLowerCase()}`;
+}*/
+
+
+
+function cacheKey(status, contentType) {
+  const s = String(status || "all").toLowerCase();
+  const ct = String(contentType || "all").toUpperCase();
+  return `${CACHE_PREFIX}${s}:${ct}`;
 }
 
-export function readScholarshipsCache(status = "all") {
+export function readScholarshipsCache(status = "all", contentType = "all") {
   try {
-    const raw = localStorage.getItem(cacheKey(status));
+    const raw = localStorage.getItem(cacheKey(status, contentType));
     if (!raw) return null;
     const obj = JSON.parse(raw);
     if (!obj || typeof obj !== "object") return null;
@@ -38,7 +57,6 @@ export function readScholarshipsCache(status = "all") {
     const items = Array.isArray(obj.items) ? obj.items : [];
     const total = Number.isFinite(Number(obj.total)) ? Number(obj.total) : items.length;
 
-    // Expired? return null (so UI can still show local "instant" with stale data if you prefer)
     if (ts && Date.now() - ts > CACHE_TTL_MS) return null;
 
     return { items, total, ts };
@@ -47,18 +65,67 @@ export function readScholarshipsCache(status = "all") {
   }
 }
 
-export function writeScholarshipsCache(status = "all", payload) {
+export function writeScholarshipsCache(status = "all", contentType = "all", payload) {
   try {
     const items = Array.isArray(payload?.items) ? payload.items : [];
     const total = Number.isFinite(Number(payload?.total)) ? Number(payload.total) : items.length;
+
     localStorage.setItem(
-      cacheKey(status),
+      cacheKey(status, contentType),
       JSON.stringify({ ts: Date.now(), items, total })
     );
   } catch {
     // ignore
   }
 }
+
+
+/* =========================================================
+   🆕 Funded Graduate Admission Cache
+========================================================= */
+
+function fundedCacheKey(status) {
+  return `${FUNDED_CACHE_PREFIX}${String(status || "all").toLowerCase()}`;
+}
+
+export function readFundedAdmissionsCache(status = "all") {
+  try {
+    const raw = localStorage.getItem(fundedCacheKey(status));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== "object") return null;
+
+    const ts = Number(obj.ts || 0);
+    const items = Array.isArray(obj.items) ? obj.items : [];
+    const total = Number.isFinite(Number(obj.total)) ? Number(obj.total) : items.length;
+
+    if (ts && Date.now() - ts > CACHE_TTL_MS) return null;
+
+    return { items, total, ts };
+  } catch {
+    return null;
+  }
+}
+
+function writeFundedAdmissionsCache(status = "all", payload) {
+  try {
+    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const total = Number.isFinite(Number(payload?.total))
+      ? Number(payload.total)
+      : items.length;
+
+    localStorage.setItem(
+      fundedCacheKey(status),
+      JSON.stringify({ ts: Date.now(), items, total })
+    );
+  } catch {
+    // ignore
+  }
+}
+
+
+
+
 
 /* ---------- Local helpers ---------- */
 function readLocal() {
@@ -109,6 +176,7 @@ export async function listScholarships({
   status = "all",
   page = 1,
   pageSize = 50,
+  contentType = "", // ✅ ADD
 } = {}) {
   const params = new URLSearchParams({
     q,
@@ -116,6 +184,9 @@ export async function listScholarships({
     page: String(page),
     pageSize: String(pageSize),
   });
+  if (contentType) {
+  params.set("contentType", String(contentType));
+}
 
   const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
     method: "GET",
@@ -125,13 +196,18 @@ export async function listScholarships({
     // ✅ NEW: cache results (helps Scholarship page render instantly next time)
     // We cache only the first page because Scholarship.jsx requests a large page anyway.
     if (Number(page) === 1) {
-      writeScholarshipsCache(status, apiData);
+      /*writeScholarshipsCache(status, apiData);*/
+      writeScholarshipsCache(status, contentType || "all", apiData);
     }
     return { ...apiData, meta: { source: "api" } }; // meta is additive (non-breaking)
   }
 
   // Local fallback (DEV ONLY)
   let items = readLocal();
+  if (contentType) {
+  const want = String(contentType).toUpperCase();
+  items = items.filter((it) => String(it?.contentType || "").toUpperCase() === want);
+}
 
   if (q) {
     const s = q.toLowerCase();
@@ -156,6 +232,71 @@ export async function listScholarships({
   return { items: paged, total, meta: { source: "local-dev" } };
 }
 
+
+/* ================= INSERT NEW FUNCTION BELOW THIS LINE ================= */
+
+export async function listFundedGraduateAdmissions({
+  q = "",
+  status = "all",
+  page = 1,
+  pageSize = 50,
+} = {}) {
+  const params = new URLSearchParams({
+    q,
+    status,
+    page: String(page),
+    pageSize: String(pageSize),
+    contentType: FUNDED_TYPE,
+  });
+
+  const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
+    method: "GET",
+  });
+
+  if (apiData) {
+    if (Number(page) === 1) {
+      writeFundedAdmissionsCache(status, apiData);
+    }
+    return { ...apiData, meta: { source: "api" } };
+  }
+
+  // Local fallback (DEV ONLY)
+  let items = readLocal();
+
+  items = items.filter(
+    (it) => String(it?.contentType || "").toUpperCase() === FUNDED_TYPE
+  );
+
+  if (q) {
+    const s = q.toLowerCase();
+    items = items.filter((it) =>
+      [it.title, it.provider, it.country, it.level, it.field]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(s))
+    );
+  }
+
+  if (status && status !== "all") {
+    items = items.filter(
+      (it) => (it.status || "pending").toLowerCase() === status.toLowerCase()
+    );
+  }
+
+  items.sort((a, b) => (b.createdAt || b.id || 0) - (a.createdAt || a.id || 0));
+
+  const total = items.length;
+  const start = (page - 1) * pageSize;
+  const paged = items.slice(start, start + pageSize);
+
+  return { items: paged, total, meta: { source: "local-dev" } };
+}
+
+
+
+
+
+
+
 export async function createScholarship(data) {
   const apiData = await apiFetch(`/api/scholarships`, {
     method: "POST",
@@ -175,6 +316,48 @@ export async function createScholarship(data) {
   writeLocal(items);
   return withId;
 }
+
+
+
+/* ================= INSERT NEW FUNCTION BELOW THIS LINE ================= */
+
+export async function createFundedGraduateAdmission(data) {
+  const apiData = await apiFetch(`/api/scholarships`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...(data || {}),
+      contentType: FUNDED_TYPE,
+    }),
+  });
+
+  if (apiData) return apiData;
+
+  // Local fallback (DEV ONLY)
+  const items = readLocal();
+
+  const withId = ensureId({
+    ...data,
+    contentType: FUNDED_TYPE,
+    createdAt: data?.createdAt || Date.now(),
+    status: String(data?.status || "pending").toLowerCase(),
+  });
+
+  items.unshift(withId);
+  writeLocal(items);
+  return withId;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 export async function updateScholarship(id, patch) {
   const apiData = await apiFetch(`/api/scholarships/${id}`, {
@@ -201,4 +384,10 @@ export async function deleteScholarship(id) {
   const items = readLocal().filter((x) => String(x.id) !== String(id));
   writeLocal(items);
   return { ok: true };
+}
+
+/* ================= INSERT BELOW THIS LINE ================= */
+
+export async function getFundedGraduateAdmissionById(id) {
+  return apiFetch(`/api/scholarships/${id}`, { method: "GET" });
 }

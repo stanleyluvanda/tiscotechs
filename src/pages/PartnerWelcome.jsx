@@ -253,7 +253,7 @@ async function loadAllScholarshipsForPartner(partner) {
 
   // Otherwise: always try API first (works across browsers/devices),
   // and only fall back to local if API fails.
-  try {
+  /*try {
     const params = new URLSearchParams();
     if (partnerEmail) params.set("partnerEmail", partnerEmail);
     else if (partnerId) params.set("partnerId", partnerId);
@@ -271,7 +271,61 @@ async function loadAllScholarshipsForPartner(partner) {
     console.warn("[PartnerWelcome] API fetch failed, falling back to local:", e);
     return readLocal();
   }
+}*/
+
+try {
+    const baseParams = new URLSearchParams();
+    if (partnerEmail) baseParams.set("partnerEmail", partnerEmail);
+    else if (partnerId) baseParams.set("partnerId", partnerId);
+
+    // Helper: fetch one content type (keeps backend filtering intact)
+    const fetchByType = async (ct) => {
+      const p = new URLSearchParams(baseParams);
+      p.set("contentType", ct);
+
+      const url = `${API_BASE}/api/scholarships?${p.toString()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json().catch(() => ({}));
+      const list = Array.isArray(data.items)
+        ? data.items
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      return list;
+    };
+
+    // Fetch both types and merge (so PartnerWelcome shows both again)
+    const [sch, funded] = await Promise.all([
+      fetchByType("SCHOLARSHIP"),
+      fetchByType("FUNDED_GRAD_ADMISSION"),
+    ]);
+
+    const merged = [...(sch || []), ...(funded || [])];
+
+    // De-dupe by id (safe)
+    const seen = new Set();
+    const unique = [];
+    for (const it of merged) {
+      const id = String(it?.id || "");
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      unique.push(it);
+    }
+
+    return unique.map(normalizeScholarship);
+  } catch (e) {
+    console.warn("[PartnerWelcome] API fetch failed, falling back to local:", e);
+    return readLocal();
+  }
 }
+
+
+
+
+
 
 export default function PartnerWelcome() {
   const nav = useNavigate();
@@ -1019,14 +1073,31 @@ const updated = {
             {/* CENTER */}
             <main className="col-span-12 md:col-span-1">
               <div className="rounded-2xl bg-white shadow-sm border border-slate-200 flex flex-col h-full">
-                <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
+                {/*<div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
                   <Link
                     to="/partner/submit-scholarship"
                     className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
                   >
                     Post new scholarship
                   </Link>
-                </div>
+                </div>*/}
+                <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
+  <div className="flex items-center gap-2">
+    <Link
+      to="/partner/submit-scholarship"
+      className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
+    >
+      Post new scholarship
+    </Link>
+
+    <Link
+      to="/partner/submit-funded-graduate-admission"
+      className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-indigo-700"
+    >
+      Post Funded Admission
+    </Link>
+  </div>
+</div>
 
                 <div className="flex-1 h-[calc(100vh-3.5rem-160px)] overflow-y-auto">
                   {myScholarships.length === 0 ? (

@@ -1,13 +1,11 @@
-// src/pages/PartnerSubmitScholarship.jsx
+// src/pages/PartnerSubmitFundedGraduateAdmission.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
-import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // ⬅️ local fallback helper
+import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // reuse local fallback helper
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 
-// Normalize API base (empty string if not set) and strip trailing slashes
-// IMPORTANT: Partner scholarship submission must hit the Scholarships API.
 const API_BASE = (
   import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
@@ -19,7 +17,6 @@ function isCloudfrontUrl(u = "") {
   return /^https:\/\/[^/]+\.cloudfront\.net\//i.test(String(u || ""));
 }
 
-/** Accept multiple backend response field names without breaking existing backend */
 function pickCloudfrontUrl(obj) {
   if (!obj || typeof obj !== "object") return "";
   return (
@@ -49,9 +46,7 @@ async function getUploadUrl({ fileName, contentType }) {
   let j = {};
   try {
     j = JSON.parse(txt);
-  } catch {
-    // keep {}
-  }
+  } catch {}
 
   const uploadUrl = j.uploadUrl;
   const publicUrl = pickCloudfrontUrl(j);
@@ -90,27 +85,17 @@ async function importHostedUrlToCloudfront(url) {
   let j = {};
   try {
     j = JSON.parse(txt);
-  } catch {
-    // keep {}
-  }
+  } catch {}
 
   const cf = pickCloudfrontUrl(j);
   if (!cf) throw new Error(`import-image 200 OK but no CloudFront URL. Got: ${txt}`);
 
-  // normalize
   return { ...j, cloudfrontUrl: cf };
 }
 
-/** Match the same values you filter on in Scholarship.jsx */
-const LEVEL_OPTIONS = [
-  "Undergraduate",
-  "Masters",
-  "PhD",
-  "Undergraduate / Masters",
-  "Masters / PhD",
-];
+/** Graduate-only levels */
+const LEVEL_OPTIONS = ["Masters", "PhD", "Masters / PhD"];
 
-/** Standardized funding choices (same vocabulary your filters expect) */
 const FUNDING_OPTIONS = [
   "Full Funding",
   "Partial Funding",
@@ -122,7 +107,6 @@ const FUNDING_OPTIONS = [
   "Grant",
 ];
 
-/** Quill toolbar/modules (shared) */
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
@@ -132,7 +116,6 @@ const quillModules = {
   ],
 };
 
-/* ---- Helper: get the logged-in partner's email (from localStorage.partnerAuth) ---- */
 function getPartnerEmail() {
   try {
     const raw = localStorage.getItem("partnerAuth");
@@ -144,11 +127,11 @@ function getPartnerEmail() {
   }
 }
 
-export default function PartnerSubmitScholarship() {
+export default function PartnerSubmitFundedGraduateAdmission() {
   const [form, setForm] = useState({
     title: "",
     provider: "",
-    continent: "All", // UI only; not sent
+    continent: "All",
     country: "Multiple",
     level: "",
     field: "",
@@ -156,176 +139,51 @@ export default function PartnerSubmitScholarship() {
     deadline: "",
     link: "",
     partnerApplyUrl: "",
-    // Rich HTML captured from Quill editors:
+
     description: "",
     eligibility: "",
     benefits: "",
     howToApply: "",
-    // Optional amount (shows publicly if provided)
+
     amount: "",
-    // Internal notes (not public)
     notes: "",
-    // image fields
-    imageUrl: "", // hosted URL (preferred if present)
-    imageData: "", // base64 data URL from local upload (fallback)
+
+    imageUrl: "",
+    imageData: "",
+
+    // ✅ include these from the start
+    providerLogoUrl: "",
+    providerLogoData: "",
   });
-
-  /*const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
-  const [uploadingImg, setUploadingImg] = useState(false);
-  const [imgPreview, setImgPreview] = useState("");
-
-  const partnerEmail = getPartnerEmail();
-
-  // ✅ Step A: states + helper for "paste link => CloudFront"
-  const [importingHosted, setImportingHosted] = useState(false);
-  const pendingHostedRef = useRef(""); // latest external URL being imported
-  // ✅ NEW: provider logo "paste link => CloudFront"
-  const [importingLogoHosted, setImportingLogoHosted] = useState(false);
-  const pendingLogoHostedRef = useRef("");
-  const logoImportTimerRef = useRef(null);
-  const lastLogoImportedRef = useRef("");*/
 
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgPreview, setImgPreview] = useState("");
 
-  // ✅ NEW: provider logo upload state
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoPreview, setLogoPreview] = useState("");
 
   const partnerEmail = getPartnerEmail();
 
-  // ✅ Step A: states + helper for "paste link => CloudFront"
   const [importingHosted, setImportingHosted] = useState(false);
   const pendingHostedRef = useRef("");
+  const importTimerRef = useRef(null);
+  const lastImportedRef = useRef("");
 
-  // ✅ NEW: provider logo "paste link => CloudFront"
   const [importingLogoHosted, setImportingLogoHosted] = useState(false);
   const pendingLogoHostedRef = useRef("");
   const logoImportTimerRef = useRef(null);
   const lastLogoImportedRef = useRef("");
 
-
-  // Auto-import debounce + loop guard
-  const importTimerRef = useRef(null);
-  const lastImportedRef = useRef(""); // remembers the raw URL that was imported
-
-
-
-
-  async function forceImportLogoHostedUrl(rawUrl) {
-  const raw = String(rawUrl || "").trim();
-  if (!raw) return;
-
-  const isHttp = /^https?:\/\//i.test(raw);
-  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
-  if (!isHttp && !isDataImage) return;
-
-  if (isCloudfrontUrl(raw)) {
-    setErr("");
-    setLogoPreview(raw);
-    setForm((f) => ({ ...f, providerLogoUrl: raw, providerLogoData: "" }));
-    return;
-  }
-
-  if (pendingLogoHostedRef.current === raw) return;
-
-  try {
-    setErr("");
-    setImportingLogoHosted(true);
-    pendingLogoHostedRef.current = raw;
-
-    if (!API_BASE) throw new Error("Missing API_BASE. Cannot import hosted logo URL to CloudFront.");
-
-    const j = await importHostedUrlToCloudfront(raw);
-    const cf = j?.cloudfrontUrl || j?.publicUrl || j?.cloudFrontUrl;
-    if (!cf) throw new Error("Import succeeded but no CloudFront URL returned.");
-
-    lastLogoImportedRef.current = raw;
-
-    setLogoPreview(cf);
-    setForm((f) => ({ ...f, providerLogoUrl: cf, providerLogoData: "" }));
-  } catch (e) {
-    console.error(e);
-    setErr(String(e?.message || e || "Could not import hosted logo URL to CloudFront."));
-  } finally {
-    setImportingLogoHosted(false);
-    pendingLogoHostedRef.current = "";
-  }
-}
-
-const onPickLogo = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    setErr("Please choose a valid logo image file (PNG/JPG/SVG).");
-    return;
-  }
-
-  setErr("");
-  setUploadingLogo(true);
-
-  try {
-    // Fallback: if API not configured, keep base64 behavior
-    if (!API_BASE) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = String(reader.result || "");
-        setLogoPreview(dataUrl);
-        setForm((f) => ({ ...f, providerLogoData: dataUrl, providerLogoUrl: "" }));
-        setUploadingLogo(false);
-      };
-      reader.onerror = () => {
-        setUploadingLogo(false);
-        setErr("Failed to read the selected logo image.");
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-
-    // ✅ CloudFront upload path (same endpoint you already use)
-    const safeName = (file.name || "logo").replace(/[^\w.\-]+/g, "_");
-    const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
-
-    const uploadUrl = j?.uploadUrl;
-    const publicUrl = j?.publicUrl;
-
-    if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
-
-    await putFileToS3(uploadUrl, file);
-
-    setLogoPreview(publicUrl);
-    setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));
-  } catch (err2) {
-    console.error(err2);
-    setErr(String(err2?.message || err2 || "Logo upload failed. Please try again."));
-  } finally {
-    setUploadingLogo(false);
-  }
-};
-
-const clearLogo = () => {
-  setLogoPreview("");
-  setForm((f) => ({ ...f, providerLogoData: "", providerLogoUrl: "" }));
-};
-
-
-
-
-
   async function forceImportHostedUrl(rawUrl) {
     const raw = String(rawUrl || "").trim();
     if (!raw) return;
 
-    // ✅ Change 1: allow data:image base64 AND http(s)
     const isHttp = /^https?:\/\//i.test(raw);
-    const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
-    if (!isHttp && !isDataImage) return;
+    if (!isHttp) return;
 
-    // already cloudfront => just preview + store
     if (isCloudfrontUrl(raw)) {
       setErr("");
       setImgPreview(raw);
@@ -333,7 +191,6 @@ const clearLogo = () => {
       return;
     }
 
-    // prevent duplicate in-flight imports of same URL
     if (pendingHostedRef.current === raw) return;
 
     try {
@@ -341,16 +198,12 @@ const clearLogo = () => {
       setImportingHosted(true);
       pendingHostedRef.current = raw;
 
-      if (!API_BASE) throw new Error("Missing API_BASE. Cannot import hosted URL to CloudFront.");
-
       const j = await importHostedUrlToCloudfront(raw);
       const cf = j?.cloudfrontUrl || j?.publicUrl || j?.cloudFrontUrl;
       if (!cf) throw new Error("Import succeeded but no CloudFront URL returned.");
 
-      // mark imported (so effect doesn't loop on the same external URL)
       lastImportedRef.current = raw;
 
-      // overwrite input with CloudFront URL
       setImgPreview(cf);
       setForm((f) => ({ ...f, imageUrl: cf, imageData: "" }));
     } catch (e) {
@@ -362,189 +215,44 @@ const clearLogo = () => {
     }
   }
 
-  /** ===== Country options depend on selected continent ===== */
-  const countryOptions = useMemo(() => {
-    if (form.continent === "All") {
-      const set = new Set();
-      for (const list of Object.values(REGIONS)) list.forEach((c) => set.add(c));
-      return ["Multiple", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-    }
-    return ["Multiple", ...(REGIONS[form.continent] || [])];
-  }, [form.continent]);
-
-  /** ===== Basic input handlers ===== */
-// Editing imageUrl/providerLogoUrl clears base64 + clears preview so auto-import can refresh it
-const onChange = (e) => {
-  const { name, value } = e.target;
-
-  setForm((f) => {
-    if (name === "continent") return { ...f, continent: value, country: "Multiple" };
-    if (name === "imageUrl") return { ...f, imageUrl: value, imageData: "" }; // clear banner base64
-    if (name === "providerLogoUrl") return { ...f, providerLogoUrl: value, providerLogoData: "" }; // ✅ NEW clear logo base64
-    return { ...f, [name]: value };
-  });
-
-  if (name === "imageUrl") setImgPreview("");
-  if (name === "providerLogoUrl") setLogoPreview(""); // ✅ NEW
-};
-
-  // ✅ Step B: update existing auto-import effect to use forceImportHostedUrl
-  useEffect(() => {
-    const raw = String(form.imageUrl || "").trim();
-
-    if (importTimerRef.current) clearTimeout(importTimerRef.current);
+  async function forceImportLogoHostedUrl(rawUrl) {
+    const raw = String(rawUrl || "").trim();
     if (!raw) return;
 
-    // if already CloudFront, just preview it
+    const isHttp = /^https?:\/\//i.test(raw);
+    if (!isHttp) return;
+
     if (isCloudfrontUrl(raw)) {
-      setImgPreview(raw);
+      setErr("");
+      setLogoPreview(raw);
+      setForm((f) => ({ ...f, providerLogoUrl: raw, providerLogoData: "" }));
       return;
     }
 
-    // ✅ Change 2 + 3: do NOT reject data:, and only proceed for http(s) OR data:image;base64
-    const isHttp = /^https?:\/\//i.test(raw);
-    const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
-    if (!isHttp && !isDataImage) return;
+    if (pendingLogoHostedRef.current === raw) return;
 
-    // avoid re-import loop for the same raw URL
-    if (lastImportedRef.current === raw) return;
+    try {
+      setErr("");
+      setImportingLogoHosted(true);
+      pendingLogoHostedRef.current = raw;
 
-    // debounce typing
-    importTimerRef.current = setTimeout(() => {
-      forceImportHostedUrl(raw);
-    }, 700);
+      const j = await importHostedUrlToCloudfront(raw);
+      const cf = j?.cloudfrontUrl || j?.publicUrl || j?.cloudFrontUrl;
+      if (!cf) throw new Error("Import succeeded but no CloudFront URL returned.");
 
-    return () => {
-      if (importTimerRef.current) clearTimeout(importTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.imageUrl]);
+      lastLogoImportedRef.current = raw;
 
-  const toggleFunding = (v) => {
-    setForm((f) => {
-      const has = f.fundingType.includes(v);
-      return {
-        ...f,
-        fundingType: has ? f.fundingType.filter((x) => x !== v) : [...f.fundingType, v],
-      };
-    });
-  };
-
-
-
-  useEffect(() => {
-  const raw = String(form.providerLogoUrl || "").trim();
-
-  if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
-  if (!raw) return;
-
-  if (isCloudfrontUrl(raw)) {
-    setLogoPreview(raw);
-    return;
+      setLogoPreview(cf);
+      setForm((f) => ({ ...f, providerLogoUrl: cf, providerLogoData: "" }));
+    } catch (e) {
+      console.error(e);
+      setErr(String(e?.message || e || "Could not import hosted logo URL to CloudFront."));
+    } finally {
+      setImportingLogoHosted(false);
+      pendingLogoHostedRef.current = "";
+    }
   }
 
-  const isHttp = /^https?:\/\//i.test(raw);
-  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(raw);
-  if (!isHttp && !isDataImage) return;
-
-  if (lastLogoImportedRef.current === raw) return;
-
-  logoImportTimerRef.current = setTimeout(() => {
-    forceImportLogoHostedUrl(raw);
-  }, 700);
-
-  return () => {
-    if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [form.providerLogoUrl]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /** ===== Quill editors (four) — host refs & instances ===== */
-  const descHostRef = useRef(null);
-  const eligHostRef = useRef(null);
-  const beneHostRef = useRef(null);
-  const howHostRef = useRef(null);
-
-  const descQuillRef = useRef(null);
-  const eligQuillRef = useRef(null);
-  const beneQuillRef = useRef(null);
-  const howQuillRef = useRef(null);
-
-  // Initialize Quill editors once (guard against React StrictMode double-invoke)
-  useEffect(() => {
-    const init = (host, key, placeholder) => {
-      if (!host) return null;
-      if (host.dataset.inited === "1" || host.__quill) return host.__quill;
-
-      const q = new Quill(host, {
-        theme: "snow",
-        placeholder,
-        modules: quillModules,
-      });
-      host.dataset.inited = "1";
-      host.__quill = q;
-
-      // Keep form state (HTML) in sync as user types
-      q.on("text-change", () => {
-        setForm((f) => ({ ...f, [key]: q.root.innerHTML }));
-      });
-      return q;
-    };
-
-    descQuillRef.current = init(
-      descHostRef.current,
-      "description",
-      "Write a clear, concise description of the scholarship…"
-    );
-    eligQuillRef.current = init(
-      eligHostRef.current,
-      "eligibility",
-      "Who can apply? Add bullet points for clarity."
-    );
-    beneQuillRef.current = init(
-      beneHostRef.current,
-      "benefits",
-      "What does the scholarship cover? Use bullets or numbers."
-    );
-    howQuillRef.current = init(
-      howHostRef.current,
-      "howToApply",
-      "Steps to apply. You can insert links to external sites."
-    );
-
-    ["description", "eligibility", "benefits", "howToApply"].forEach((k) =>
-      setForm((f) => ({ ...f, [k]: f[k] ?? "" }))
-    );
-
-    return () => {
-      descQuillRef.current = null;
-      eligQuillRef.current = null;
-      beneQuillRef.current = null;
-      howQuillRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /** ===== Image upload ===== */
   const onPickImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -558,7 +266,6 @@ const onChange = (e) => {
     setUploadingImg(true);
 
     try {
-      // Fallback: if API not configured, keep base64 behavior
       if (!API_BASE) {
         const reader = new FileReader();
         reader.onload = () => {
@@ -575,20 +282,15 @@ const onChange = (e) => {
         return;
       }
 
-      // ✅ CloudFront upload path
       const safeName = (file.name || "image").replace(/[^\w.\-]+/g, "_");
       const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
 
-      const uploadUrl = j?.uploadUrl;
-      const publicUrl = j?.publicUrl;
+      if (!j?.uploadUrl || !j?.publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
 
-      if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+      await putFileToS3(j.uploadUrl, file);
 
-      await putFileToS3(uploadUrl, file);
-
-      // Save ONLY CloudFront URL
-      setImgPreview(publicUrl);
-      setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));
+      setImgPreview(j.publicUrl);
+      setForm((f) => ({ ...f, imageUrl: j.publicUrl, imageData: "" }));
     } catch (err2) {
       console.error(err2);
       setErr(String(err2?.message || err2 || "Image upload failed. Please try again."));
@@ -597,18 +299,196 @@ const onChange = (e) => {
     }
   };
 
+  const onPickLogo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErr("Please choose a valid logo image file (PNG/JPG/SVG).");
+      return;
+    }
+
+    setErr("");
+    setUploadingLogo(true);
+
+    try {
+      if (!API_BASE) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = String(reader.result || "");
+          setLogoPreview(dataUrl);
+          setForm((f) => ({ ...f, providerLogoData: dataUrl, providerLogoUrl: "" }));
+          setUploadingLogo(false);
+        };
+        reader.onerror = () => {
+          setUploadingLogo(false);
+          setErr("Failed to read the selected logo image.");
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const safeName = (file.name || "logo").replace(/[^\w.\-]+/g, "_");
+      const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
+
+      if (!j?.uploadUrl || !j?.publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+
+      await putFileToS3(j.uploadUrl, file);
+
+      setLogoPreview(j.publicUrl);
+      setForm((f) => ({ ...f, providerLogoUrl: j.publicUrl, providerLogoData: "" }));
+    } catch (err2) {
+      console.error(err2);
+      setErr(String(err2?.message || err2 || "Logo upload failed. Please try again."));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const clearImage = () => {
     setImgPreview("");
     setForm((f) => ({ ...f, imageData: "", imageUrl: "" }));
   };
 
-  /** ===== Submit (API-first, then local fallback) ===== */
+  const clearLogo = () => {
+    setLogoPreview("");
+    setForm((f) => ({ ...f, providerLogoData: "", providerLogoUrl: "" }));
+  };
+
+  const countryOptions = useMemo(() => {
+    if (form.continent === "All") {
+      const set = new Set();
+      for (const list of Object.values(REGIONS)) list.forEach((c) => set.add(c));
+      return ["Multiple", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+    }
+    return ["Multiple", ...(REGIONS[form.continent] || [])];
+  }, [form.continent]);
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((f) => {
+      if (name === "continent") return { ...f, continent: value, country: "Multiple" };
+      if (name === "imageUrl") return { ...f, imageUrl: value, imageData: "" };
+      if (name === "providerLogoUrl") return { ...f, providerLogoUrl: value, providerLogoData: "" };
+      return { ...f, [name]: value };
+    });
+
+    if (name === "imageUrl") setImgPreview("");
+    if (name === "providerLogoUrl") setLogoPreview("");
+  };
+
+  useEffect(() => {
+    const raw = String(form.imageUrl || "").trim();
+
+    if (importTimerRef.current) clearTimeout(importTimerRef.current);
+    if (!raw) return;
+
+    if (isCloudfrontUrl(raw)) {
+      setImgPreview(raw);
+      return;
+    }
+
+    const isHttp = /^https?:\/\//i.test(raw);
+    if (!isHttp) return;
+
+    if (lastImportedRef.current === raw) return;
+
+    importTimerRef.current = setTimeout(() => {
+      forceImportHostedUrl(raw);
+    }, 700);
+
+    return () => {
+      if (importTimerRef.current) clearTimeout(importTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.imageUrl]);
+
+  useEffect(() => {
+    const raw = String(form.providerLogoUrl || "").trim();
+
+    if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
+    if (!raw) return;
+
+    if (isCloudfrontUrl(raw)) {
+      setLogoPreview(raw);
+      return;
+    }
+
+    const isHttp = /^https?:\/\//i.test(raw);
+    if (!isHttp) return;
+
+    if (lastLogoImportedRef.current === raw) return;
+
+    logoImportTimerRef.current = setTimeout(() => {
+      forceImportLogoHostedUrl(raw);
+    }, 700);
+
+    return () => {
+      if (logoImportTimerRef.current) clearTimeout(logoImportTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.providerLogoUrl]);
+
+  const toggleFunding = (v) => {
+    setForm((f) => {
+      const has = f.fundingType.includes(v);
+      return {
+        ...f,
+        fundingType: has ? f.fundingType.filter((x) => x !== v) : [...f.fundingType, v],
+      };
+    });
+  };
+
+  const descHostRef = useRef(null);
+  const eligHostRef = useRef(null);
+  const beneHostRef = useRef(null);
+  const howHostRef = useRef(null);
+
+  const descQuillRef = useRef(null);
+  const eligQuillRef = useRef(null);
+  const beneQuillRef = useRef(null);
+  const howQuillRef = useRef(null);
+
+  useEffect(() => {
+    const init = (host, key, placeholder) => {
+      if (!host) return null;
+      if (host.dataset.inited === "1" || host.__quill) return host.__quill;
+
+      const q = new Quill(host, { theme: "snow", placeholder, modules: quillModules });
+      host.dataset.inited = "1";
+      host.__quill = q;
+
+      q.on("text-change", () => {
+        setForm((f) => ({ ...f, [key]: q.root.innerHTML }));
+      });
+
+      return q;
+    };
+
+    descQuillRef.current = init(descHostRef.current, "description", "Describe the funded graduate admission opportunity…");
+    eligQuillRef.current = init(eligHostRef.current, "eligibility", "Who qualifies? Add bullet points for clarity.");
+    beneQuillRef.current = init(beneHostRef.current, "benefits", "What is funded? Tuition, stipend, etc.");
+    howQuillRef.current = init(howHostRef.current, "howToApply", "Steps to apply. Include links if needed.");
+
+    ["description", "eligibility", "benefits", "howToApply"].forEach((k) =>
+      setForm((f) => ({ ...f, [k]: f[k] ?? "" }))
+    );
+
+    return () => {
+      descQuillRef.current = null;
+      eligQuillRef.current = null;
+      beneQuillRef.current = null;
+      howQuillRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const submit = async (e) => {
     e.preventDefault();
     setMsg("");
     setErr("");
 
-    // Validate required
     if (!form.title.trim() || !form.provider.trim()) {
       setErr("Please provide both Title and Provider.");
       return;
@@ -622,42 +502,31 @@ const onChange = (e) => {
       return;
     }
 
-    // ✅ Step D: Block submit while import is running
     if (importingHosted) {
       setErr("Please wait: importing hosted image URL to CloudFront…");
       return;
     }
-
-    // ✅ Enforce: if an image URL is present, it must be CloudFront
-    const imgUrl = String(form.imageUrl || "").trim();
-    if (imgUrl && !isCloudfrontUrl(imgUrl)) {
-      setErr("Image URL must be imported to CloudFront first (wait for import) or upload the file.");
+    if (importingLogoHosted) {
+      setErr("Please wait: importing provider logo URL to CloudFront…");
       return;
     }
 
+    const imgUrl = String(form.imageUrl || "").trim();
+    if (imgUrl && !isCloudfrontUrl(imgUrl)) {
+      setErr("Banner Image URL must be CloudFront (wait for import) or upload the file.");
+      return;
+    }
 
-    // ✅ NEW: Block submit while provider logo import is running
-  if (importingLogoHosted) {
-    setErr("Please wait: importing provider logo URL to CloudFront…");
-    return;
-  }
-
-  // ✅ NEW: Enforce provider logo URL (if present) is CloudFront
-  const logoUrl = String(form.providerLogoUrl || "").trim();
-  if (logoUrl && !isCloudfrontUrl(logoUrl)) {
-    setErr(
-      "Provider logo URL must be imported to CloudFront first (wait for import) or upload the file."
-    );
-    return;
-  }
-
-
-
-
-
+    const logoUrl = String(form.providerLogoUrl || "").trim();
+    if (logoUrl && !isCloudfrontUrl(logoUrl)) {
+      setErr("Provider Logo URL must be CloudFront (wait for import) or upload the file.");
+      return;
+    }
 
     const payload = {
-      contentType: "SCHOLARSHIP", // ✅ ADD THIS
+      // ✅ the differentiator
+      contentType: "FUNDED_GRAD_ADMISSION",
+
       title: form.title,
       provider: form.provider,
       country: form.country,
@@ -667,24 +536,26 @@ const onChange = (e) => {
       deadline: form.deadline,
       link: form.link,
       partnerApplyUrl: form.partnerApplyUrl,
+
       description: form.description,
       eligibility: form.eligibility,
       benefits: form.benefits,
       howToApply: form.howToApply,
+
       amount: form.amount,
       notes: form.notes,
-      // ✅ image: prefer hosted URL if provided; otherwise data URL
+
       imageUrl: imgUrl,
       imageData: form.imageData || "",
-      // ✅ NEW: provider logo (CloudFront URL preferred; base64 fallback)
+
       providerLogoUrl: logoUrl,
       providerLogoData: form.providerLogoData || "",
+
       partnerEmail: String(partnerEmail),
       createdAt: Date.now(),
       status: "pending",
     };
 
-    // 1) Try backend first if API_BASE present
     if (API_BASE) {
       try {
         const res = await fetch(`${API_BASE}/api/scholarships`, {
@@ -699,11 +570,9 @@ const onChange = (e) => {
         let data = {};
         try {
           data = JSON.parse(txt);
-        } catch {
-          // keep {}
-        }
+        } catch {}
 
-        setMsg(`Saved! Scholarship #${data?.id ?? ""} created.`);
+        setMsg(`Saved! Funded Graduate Admission #${data?.id ?? ""} created.`);
         setErr("");
         resetFormAndEditors();
         return;
@@ -712,10 +581,11 @@ const onChange = (e) => {
       }
     }
 
-    // 2) Fallback to localStorage
     try {
       const saved = saveLocalScholarship(payload, "scholarships_local");
-      setMsg(`Scholarship submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`);
+      setMsg(
+        `Submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`
+      );
       setErr("");
       resetFormAndEditors();
     } catch (localErr) {
@@ -746,6 +616,7 @@ const onChange = (e) => {
       providerLogoUrl: "",
       providerLogoData: "",
     });
+
     setImgPreview("");
     lastImportedRef.current = "";
     pendingHostedRef.current = "";
@@ -760,6 +631,10 @@ const onChange = (e) => {
       clearTimeout(importTimerRef.current);
       importTimerRef.current = null;
     }
+    if (logoImportTimerRef.current) {
+      clearTimeout(logoImportTimerRef.current);
+      logoImportTimerRef.current = null;
+    }
 
     [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef].forEach((r) => {
       if (r.current) r.current.setContents([]);
@@ -768,16 +643,14 @@ const onChange = (e) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
-      {/* wider container */}
       <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold">Submit a Scholarship</h1>
-        <p className="mt-1 text-slate-600">Partners and universities can list their opportunities here.</p>
+        <h1 className="text-2xl font-bold">Submit Funded Graduate Admission</h1>
+        <p className="mt-1 text-slate-600">
+          Partners and universities can list funded graduate admission opportunities here.
+        </p>
 
-        {/* Bordered card around the whole form & messages (matches login style) */}
         <div className="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          {/* a bit more breathing room */}
           <div className="p-6 md:p-8">
-            {/* Heads-up if not logged in as partner */}
             {!partnerEmail && (
               <div className="mb-4 p-3 rounded bg-amber-50 border border-amber-200 text-amber-800">
                 You’re not logged in as a Partner. Please{" "}
@@ -800,10 +673,9 @@ const onChange = (e) => {
             )}
 
             <form onSubmit={submit} className="space-y-6">
-              {/* Top grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
-                  <div className="text-sm font-medium">Title *</div>
+                  <div className="text-sm font-medium">Program Title/Name *</div>
                   <input
                     name="title"
                     value={form.title}
@@ -814,7 +686,7 @@ const onChange = (e) => {
                 </label>
 
                 <label className="block">
-                  <div className="text-sm font-medium">Provider *</div>
+                  <div className="text-sm font-medium">University name *</div>
                   <input
                     name="provider"
                     value={form.provider}
@@ -824,7 +696,6 @@ const onChange = (e) => {
                   />
                 </label>
 
-                {/* Continent + Country */}
                 <label className="block">
                   <div className="text-sm font-medium">Continent</div>
                   <select
@@ -857,7 +728,6 @@ const onChange = (e) => {
                   </select>
                 </label>
 
-                {/* Level */}
                 <label className="block">
                   <div className="text-sm font-medium">Academic Level *</div>
                   <select
@@ -876,7 +746,6 @@ const onChange = (e) => {
                   </select>
                 </label>
 
-                {/* Field of Study */}
                 <label className="block">
                   <div className="text-sm font-medium">Field of Study</div>
                   <select
@@ -911,13 +780,13 @@ const onChange = (e) => {
                     name="link"
                     value={form.link}
                     onChange={onChange}
-                    placeholder="https://example.edu/scholarship"
+                    placeholder="https://example.edu/grad-admissions"
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
                 </label>
 
                 <label className="block md:col-span-2">
-                  <div className="text-sm font-medium">Apply on Partner URL</div>
+                  <div className="text-sm font-medium">Apply URL (preferred)</div>
                   <input
                     name="partnerApplyUrl"
                     value={form.partnerApplyUrl}
@@ -927,134 +796,96 @@ const onChange = (e) => {
                   />
                 </label>
 
-                {/* Optional amount */}
                 <label className="block md:col-span-2">
-                  <div className="text-sm font-medium">Maximum Award Amount (optional)</div>
+                  <div className="text-sm font-medium">Funding Summary (optional)</div>
                   <input
                     name="amount"
                     value={form.amount}
                     onChange={onChange}
-                    placeholder="e.g., Up to $10,000 or Up to €8,500"
+                    placeholder="e.g., Full tuition + stipend, or Up to $25,000/year"
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
                   <p className="mt-1 text-xs text-slate-500">
-                    This will appear on the public scholarship page if provided.
+                    This appears publicly if provided.
                   </p>
                 </label>
               </div>
 
-
-              {/* Provider Logo (NEW) */}
-<div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-  <div className="text-sm font-medium">Provider Logo (University / Company / Foundation)</div>
-  <p className="mt-1 text-xs text-slate-600">
-    Upload the provider logo. This will appear on the public scholarship list and details pages.
-  </p>
-
-  {/* URL input */}
-  <label className="block mt-3">
-    <div className="text-sm font-medium">Hosted Logo URL</div>
-    <input
-      name="providerLogoUrl"
-      value={form.providerLogoUrl}
-      onChange={onChange}
-      onPaste={(e) => {
-        const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
-        setTimeout(() => forceImportLogoHostedUrl(pasted), 0);
-      }}
-      onBlur={() => {
-        forceImportLogoHostedUrl(form.providerLogoUrl);
-      }}
-      placeholder="https://example.edu/logo.png"
-      className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-    />
-    {(uploadingLogo || importingLogoHosted) && (
-      <div className="mt-2 text-[11px] text-slate-500">
-        {importingLogoHosted ? "Importing hosted logo URL to CloudFront…" : "Processing logo…"}
-      </div>
-    )}
-  </label>
-
-  <div className="my-3 text-center text-xs text-slate-500">— or —</div>
-
-  {/* File picker */}
-  <div className="flex items-center gap-3">
-    <label className="inline-flex items-center px-3 py-2 border border-slate-300 rounded cursor-pointer text-sm hover:bg-white">
-      <input type="file" accept="image/*" onChange={onPickLogo} className="hidden" />
-      Choose Logo…
-    </label>
-    {uploadingLogo && <span className="text-xs text-slate-500">Processing logo…</span>}
-    {!!logoPreview && (
-      <button
-        type="button"
-        onClick={clearLogo}
-        className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-white"
-      >
-        Remove logo
-      </button>
-    )}
-  </div>
-
-  {/* Preview */}
-  {logoPreview ? (
-    <div className="mt-3">
-      <div className="text-xs text-slate-600 mb-1">Preview</div>
-      <img
-        src={logoPreview}
-        alt="Provider logo preview"
-        className="h-14 w-14 object-contain bg-white rounded border border-slate-200 p-1"
-      />
-      {isCloudfrontUrl(logoPreview) && (
-        <div className="mt-1 text-[11px] text-green-700">✅ CloudFront URL detected</div>
-      )}
-    </div>
-  ) : form.providerLogoUrl ? (
-    <div className="mt-3">
-      <div className="text-xs text-slate-600 mb-1">Preview</div>
-      <img
-        src={form.providerLogoUrl}
-        alt="Provider logo preview"
-        className="h-14 w-14 object-contain bg-white rounded border border-slate-200 p-1"
-        onError={() => setErr("Could not load the hosted provider logo URL.")}
-      />
-    </div>
-  ) : null}
-</div>
-
-
-
-
-
-
-
-
-
-
-              {/* Logo/Banner */}
+              {/* Provider Logo */}
               <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-                <div className="text-sm font-medium">Scholarship Banner</div>
-                <p className="mt-1 text-xs text-slate-600">
-                  Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
-                  the details page.
-                </p>
+                <div className="text-sm font-medium">Provider Logo</div>
 
-                {/* URL input */}
+                <label className="block mt-3">
+                  <div className="text-sm font-medium">Hosted Logo URL</div>
+                  <input
+                    name="providerLogoUrl"
+                    value={form.providerLogoUrl}
+                    onChange={onChange}
+                    onPaste={(e) => {
+                      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+                      setTimeout(() => forceImportLogoHostedUrl(pasted), 0);
+                    }}
+                    onBlur={() => forceImportLogoHostedUrl(form.providerLogoUrl)}
+                    placeholder="https://example.edu/logo.png"
+                    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                  />
+                  {(uploadingLogo || importingLogoHosted) && (
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      {importingLogoHosted ? "Importing hosted logo URL to CloudFront…" : "Processing logo…"}
+                    </div>
+                  )}
+                </label>
+
+                <div className="my-3 text-center text-xs text-slate-500">— or —</div>
+
+                <div className="flex items-center gap-3">
+                  <label className="inline-flex items-center px-3 py-2 border border-slate-300 rounded cursor-pointer text-sm hover:bg-white">
+                    <input type="file" accept="image/*" onChange={onPickLogo} className="hidden" />
+                    Choose Logo…
+                  </label>
+                  {uploadingLogo && <span className="text-xs text-slate-500">Processing logo…</span>}
+                  {!!logoPreview && (
+                    <button
+                      type="button"
+                      onClick={clearLogo}
+                      className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-white"
+                    >
+                      Remove logo
+                    </button>
+                  )}
+                </div>
+
+                {logoPreview ? (
+                  <div className="mt-3">
+                    <div className="text-xs text-slate-600 mb-1">Preview</div>
+                    <img
+                      src={logoPreview}
+                      alt="Provider logo preview"
+                      className="h-14 w-14 object-contain bg-white rounded border border-slate-200 p-1"
+                    />
+                    {isCloudfrontUrl(logoPreview) && (
+                      <div className="mt-1 text-[11px] text-green-700">✅ CloudFront URL detected</div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Banner */}
+              <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+                <div className="text-sm font-medium">Opportunity Banner</div>
+
                 <label className="block mt-3">
                   <div className="text-sm font-medium">Hosted Image URL</div>
                   <input
                     name="imageUrl"
                     value={form.imageUrl}
                     onChange={onChange}
-                    // ✅ Step C: import immediately on paste + on blur
                     onPaste={(e) => {
                       const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
-                      // let React update input first
                       setTimeout(() => forceImportHostedUrl(pasted), 0);
                     }}
-                    onBlur={() => {
-                      forceImportHostedUrl(form.imageUrl);
-                    }}
-                    placeholder="https://example.edu/logo.png"
+                    onBlur={() => forceImportHostedUrl(form.imageUrl)}
+                    placeholder="https://example.edu/banner.png"
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
                   {(uploadingImg || importingHosted) && (
@@ -1066,7 +897,6 @@ const onChange = (e) => {
 
                 <div className="my-3 text-center text-xs text-slate-500">— or —</div>
 
-                {/* File picker */}
                 <div className="flex items-center gap-3">
                   <label className="inline-flex items-center px-3 py-2 border border-slate-300 rounded cursor-pointer text-sm hover:bg-white">
                     <input type="file" accept="image/*" onChange={onPickImage} className="hidden" />
@@ -1084,24 +914,17 @@ const onChange = (e) => {
                   )}
                 </div>
 
-                {/* Preview */}
                 {imgPreview ? (
                   <div className="mt-3">
                     <div className="text-xs text-slate-600 mb-1">Preview</div>
-                    <img src={imgPreview} alt="Selected preview" className="max-h-32 rounded border border-slate-200" />
+                    <img
+                      src={imgPreview}
+                      alt="Banner preview"
+                      className="max-h-32 rounded border border-slate-200"
+                    />
                     {isCloudfrontUrl(imgPreview) && (
                       <div className="mt-1 text-[11px] text-green-700">✅ CloudFront URL detected</div>
                     )}
-                  </div>
-                ) : form.imageUrl ? (
-                  <div className="mt-3">
-                    <div className="text-xs text-slate-600 mb-1">Preview</div>
-                    <img
-                      src={form.imageUrl}
-                      alt="Image preview"
-                      className="max-h-32 rounded border border-slate-200"
-                      onError={() => setErr("Could not load the hosted image URL.")}
-                    />
                   </div>
                 ) : null}
               </div>
@@ -1129,7 +952,7 @@ const onChange = (e) => {
               {/* Editors */}
               <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div>
-                  <div className="text-sm font-medium">Scholarship Description</div>
+                  <div className="text-sm font-medium">Gradute Program Description</div>
                   <div
                     ref={descHostRef}
                     className="mt-2 bg-white border border-slate-300 rounded"
@@ -1138,7 +961,7 @@ const onChange = (e) => {
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium">Eligibility (HTML ok)</div>
+                  <div className="text-sm font-medium">Admission Eligibility</div>
                   <div
                     ref={eligHostRef}
                     className="mt-2 bg-white border border-slate-300 rounded"
@@ -1147,7 +970,7 @@ const onChange = (e) => {
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium">Benefits (HTML ok)</div>
+                  <div className="text-sm font-medium">Benefits / Funding Details</div>
                   <div
                     ref={beneHostRef}
                     className="mt-2 bg-white border border-slate-300 rounded"
@@ -1156,7 +979,7 @@ const onChange = (e) => {
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium">How to Apply (HTML ok)</div>
+                  <div className="text-sm font-medium">How to Apply</div>
                   <div
                     ref={howHostRef}
                     className="mt-2 bg-white border border-slate-300 rounded"
@@ -1178,11 +1001,10 @@ const onChange = (e) => {
 
               <div className="pt-2">
                 <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
-                  Submit Scholarship
+                  Submit Funded Graduate Admission
                 </button>
               </div>
 
-              {/* Helpful footer for debugging */}
               <div className="text-[11px] text-slate-500">
                 API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
               </div>
