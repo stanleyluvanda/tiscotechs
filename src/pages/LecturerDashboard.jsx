@@ -11,7 +11,7 @@ import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 //import { createPost as createPostOnServer } from "../lib/postsApi.js";  // ⬅️ ADD THIS
 //import { createPost as createPostOnServer, postCommentToServer, postReplyToServer,} from "../lib/postsApi.js";//
-import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,} from "../lib/postsApi.js";
+import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,getMyNotifications,countUnread,markNotificationRead,} from "../lib/postsApi.js";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
@@ -406,29 +406,6 @@ function dedupeAttachments(list = []) {
   }
   return out;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1096,6 +1073,27 @@ function TrashIcon({ className = "w-4 h-4" }) {
 export default function LecturerDashboard() {
   const navigate = useNavigate();
   const [me, setMe] = useState(null);
+
+  // ✅ ADD THIS BLOCK EXACTLY HERE (notification state)
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unseenCount, setUnseenCount] = useState(0);
+
+
+  // ✅ ADD THIS BLOCK HERE (before loadNotifications)
+  const lecturerLS =
+    JSON.parse(localStorage.getItem("currentUser_lecturer") || "null") ||
+    JSON.parse(localStorage.getItem("lecturer") || "null");
+
+  const userId = String(
+    lecturerLS?.id || lecturerLS?.userId || lecturerLS?.uid || ""
+  ).trim();
+
+
+
+
+
+
   useNoIndex();
 
   const current =
@@ -1109,6 +1107,13 @@ export default function LecturerDashboard() {
 
   /* Seed canonical lecturer profile URL so other pages (Academic Platform, etc.) route back here */
   useEffect(() => { setLecturerProfileHref("/lecturer-dashboard"); }, []);
+
+  // ✅ PART 3 — Poll notifications (INSERT HERE)
+  useEffect(() => {
+    loadNotifications();
+    const t = setInterval(loadNotifications, 30000); // poll every 30s
+    return () => clearInterval(t);
+  }, []);
 
   /* Load active user (lecturer) + normalize like student dashboard */
   const [user, setUser] = useState(() => {
@@ -2305,27 +2310,6 @@ const handlePaste = async (e) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /* ---- Auth store shim (align with StudentDashboard) ---- */
   function getAuthRecord(userId) {
     const map = safeParse(localStorage.getItem("authUsersById")) || {};
@@ -2465,7 +2449,7 @@ function splitS3Attachments(list = []) {
     };*/
 
 
-  const base = {
+  /*const base = {
   id: att.id || 
   att.key || 
   `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -2475,6 +2459,19 @@ function splitS3Attachments(list = []) {
   url: att.url,
   key: att.key,
   size: att.size || att.bytes || att.contentLength || 0, // ✅ optional if present
+};*/
+
+const base = {
+  id:
+    att.id ||
+    att.key ||
+    `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+  name: fileName,          // fileName already computed above
+  fileName: fileName,
+  mime: mime || "application/octet-stream",
+  url: att.url,
+  key: att.key,
+  size: att.size || att.bytes || att.contentLength || 0,
 };
 
 
@@ -2735,6 +2732,63 @@ function splitS3Attachments(list = []) {
   // --- Route updates to the correct source (this file's "posts" == lecturerPosts) ---
 function updatePostById(postId, updater) {
   setPosts(prev => prev.map(p => (p.id === postId ? updater(p) : p)));
+}
+
+
+// ✅ INSERT START: thread state + loader
+const [threadLoading, setThreadLoading] = useState(() => ({})); // { [postId]: true }
+const [threadLoaded, setThreadLoaded] = useState(() => ({}));  // { [postId]: true }
+
+async function ensureThreadLoadedForPostId(postId) {
+  if (!postId) return;
+  if (threadLoaded[postId]) return;
+  if (threadLoading[postId]) return;
+
+  setThreadLoading((m) => ({ ...m, [postId]: true }));
+  try {
+    const data = await fetchThreadFromServer({ postId, scope: LECTURER_SCOPE });
+
+    const comments =
+      data?.comments ||
+      data?.thread?.comments ||
+      data?.post?.comments ||
+      [];
+
+    updatePostById(postId, (p) => ({
+      ...p,
+      // keep any optimistic comments that may already exist locally
+      comments: Array.isArray(comments) ? comments : (p.comments || []),
+      updatedAt: Date.now(),
+    }));
+
+    setThreadLoaded((m) => ({ ...m, [postId]: true }));
+  } catch (e) {
+    console.error("[LecturerDashboard] ensureThreadLoaded failed:", e);
+  } finally {
+    setThreadLoading((m) => {
+      const next = { ...m };
+      delete next[postId];
+      return next;
+    });
+  }
+}
+// ✅ INSERT END
+
+
+// ✅ ADD THIS RIGHT HERE (still inside LecturerDashboard)
+async function ensureThreadLoadedForPost(post) {
+  if (!post) return;
+
+  // If it’s a merged multi-program row, load all sibling threads
+  const ids = post.multiGroupId
+    ? (posts || [])
+        .filter((x) => x?.multiGroupId === post.multiGroupId)
+        .map((x) => x.id)
+        .filter(Boolean)
+    : [post.id];
+
+  // Load all in parallel
+  await Promise.all(ids.map((id) => ensureThreadLoadedForPostId(id)));
 }
 
 
@@ -3430,6 +3484,75 @@ const rep = {
   const selectAllPrograms = () => setSelectedPrograms(availablePrograms.slice(0, 200));
   const clearPrograms = () => setSelectedPrograms([]);
 
+
+  // ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
+  /*async function loadNotifications() {
+    try {
+      const res = await fetch("/api/notifications/mine", {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : data.items || [];
+
+      setNotifications(list);
+      setUnseenCount(list.filter((n) => !n.read).length);
+    } catch (e) {
+      console.error("loadNotifications failed", e);
+    }
+  }*/
+
+ 
+
+// ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
+async function loadNotifications() {
+  console.log("[notif] loadNotifications ran"); // ✅ first line
+
+  try {
+    /*const lecturer = JSON.parse(localStorage.getItem("lecturer") || "null");*/
+    const lecturer = JSON.parse(localStorage.getItem("currentUser_lecturer") || "null");
+    console.log("[notif] lecturer object:", lecturer);
+
+    const userId = String(lecturer?.id || lecturer?.userId || lecturer?.uid || "").trim();
+    console.log("[notif] resolved userId:", userId);
+
+    if (!userId) return;
+
+    const { notifications } = await getMyNotifications(userId, { limit: 30 });
+
+    setNotifications(notifications || []);
+    setUnseenCount(countUnread(notifications || []));
+  } catch (e) {
+    console.error("loadNotifications failed", e);
+  }
+}
+
+async function onClickNotification(n) {
+  try {
+    if (!n || n.read) return;
+    await markNotificationRead({ userId, id: n.id, createdAt: n.createdAt });
+
+    // optimistic UI update
+    setNotifications((prev) =>
+      (prev || []).map((x) => (x.id === n.id ? { ...x, read: true, readAt: Date.now() } : x))
+    );
+    setUnseenCount((c) => Math.max(0, (c || 0) - 1));
+  } catch (e) {
+    console.error("mark read failed", e);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
   /* ---- Layout ---- */
   return (
     <div className="min-h-screen bg-[#f3f6fb]">
@@ -3437,9 +3560,6 @@ const rep = {
 
     {/* 🔒 Email verification gate — shown on first sign-in or after email change */}
     <VerifyGate email={current?.email} />
-
-
-
 
 
       {/* Keep total width tight and ensure equal margins on both sides */}
@@ -3856,6 +3976,15 @@ const rep = {
               // ✅ NEW: pass report handler down
               onReport={onReport}
               currentUser={user}
+              onOpenComments={() => ensureThreadLoadedForPost(p)}   // ✅ asks parent to lazy-load thread(s)
+              /*commentsLoading={!!threadLoading[p.id]}*/               // ✅ spinner/label control (basic)
+              commentsLoading={
+             p.multiGroupId
+           ? (posts || []).some(
+                 (x) => x?.multiGroupId === p.multiGroupId && threadLoading[x.id]
+                )
+                    : !!threadLoading[p.id]
+                 }
             />
           ))}
           
@@ -3957,6 +4086,74 @@ const rep = {
            </div>
         </aside>
       </main>
+
+      {/* ✅ PART 4 — Notification bell + tray (PASTE HERE) */}
+      <button
+        type="button"
+        onClick={() => setNotifOpen(true)}
+        className="fixed z-[70] right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"
+      >
+        <span className="text-xl">🔔</span>
+        {unseenCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">
+            {unseenCount}
+          </span>
+        )}
+      </button>
+
+      {notifOpen && (
+        <div className="fixed inset-0 z-[69]" onClick={() => setNotifOpen(false)}>
+          <div
+            className="absolute right-4 bottom-20 w-[92vw] max-w-sm bg-white rounded-xl shadow-2xl border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-slate-100 font-semibold">
+              Notifications
+            </div>
+
+            <div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">
+              {/*{notifications.map((n) => (
+                <div key={n.id} className="p-3 text-sm">
+                  <span className="font-semibold">{n.actorName}</span>
+                  {" commented on your post"}
+                  <div className="text-xs text-slate-500">
+                    {new Date(n.createdAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}*/}
+
+              {notifications.map((n) => (
+  <div
+    key={n.id}
+    role="button"
+    tabIndex={0}
+    onClick={() => onClickNotification(n)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") onClickNotification(n);
+    }}
+    className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${
+      n.read ? "" : "bg-blue-50"
+    }`}
+    title={n.read ? "Read" : "Mark as read"}
+  >
+    <span className="font-semibold">{n.actorName}</span>
+    {n.type === "reply" ? " replied to your post" : " commented on your post"}
+    <div className="text-xs text-slate-500">
+      {new Date(n.createdAt).toLocaleString()}
+    </div>
+    {!n.read && <div className="text-[11px] text-blue-700 mt-1">Unread</div>}
+  </div>
+))}
+
+              {notifications.length === 0 && (
+                <div className="p-4 text-sm text-slate-500">No notifications.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      
 
       {/* Idle warning modal */}
       {idleWarning && (
@@ -4112,10 +4309,36 @@ async function addPastedImagesToState(cb, setImages) {
   return true;
 }
 
+// ===================== Thread fetch (lazy-load) =====================
+async function fetchThreadFromServer({ postId, scope }) {
+  if (!postId) return { comments: [] };
 
+  const base = (import.meta.env.VITE_POSTS_API_BASE || "")
+    .trim()
+    .replace(/\/+$/, "");
+  const rel = (p) => (base ? `${base}${p}` : p);
 
+  // 1) Preferred: dedicated thread endpoint
+  try {
+    const url = rel(
+      `/api/posts/thread?postId=${encodeURIComponent(postId)}${
+        scope ? `&scope=${encodeURIComponent(scope)}` : ""
+      }`
+    );
+    const r = await fetch(url, { method: "GET", credentials: "include" });
+    if (r.ok) return await r.json();
+  } catch (_) {}
 
-
+  // 2) Fallback: single-post fetch with withThread=1
+  const url2 = rel(
+    `/api/posts?postId=${encodeURIComponent(postId)}&withThread=1${
+      scope ? `&scope=${encodeURIComponent(scope)}` : ""
+    }`
+  );
+  const r2 = await fetch(url2, { method: "GET", credentials: "include" });
+  if (!r2.ok) throw new Error(`thread fetch failed (${r2.status})`);
+  return await r2.json();
+}
 
 
 
@@ -4123,8 +4346,10 @@ async function addPastedImagesToState(cb, setImages) {
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
-function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onReport, currentUser }) {
-  const [showComments, setShowComments] = useState(true);
+/*function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onReport, currentUser }) {*/
+function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,}) {
+  /*const [showComments, setShowComments] = useState(true);*/
+  const [showComments, setShowComments] = useState(false);
   const [cmt, setCmt] = useState("");
   const [cmtHtml, setCmtHtml] = useState(""); // ✅ ADD THIS LINE HERE
   const [cmtImages, setCmtImages] = useState([]); // [{name,dataUrl}]
@@ -4335,9 +4560,25 @@ function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onRe
           </svg>
           Like {post.likes>0 && <span className="text-slate-500">({post.likes})</span>}
         </button>
-        <button onClick={()=>setShowComments(s=>!s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+        {/*<button onClick={()=>setShowComments(s=>!s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
           💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
+        </button>*/}
+        <button
+       onClick={async () => {
+        if (!showComments) {
+         await onOpenComments?.();   // load thread(s) first
+         setShowComments(true);
+        } else {
+         setShowComments(false);
+         }
+        }}
+       className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+       >
+        💬 Comment {post.comments?.length > 0 && <span className="text-slate-500">({post.comments.length})</span>}
+       {commentsLoading ? <span className="text-xs text-slate-500">(loading…)</span> : null}
         </button>
+
+
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
 
         {/* ✅ NEW: Report */}

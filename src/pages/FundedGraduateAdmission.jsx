@@ -636,13 +636,37 @@ export default function FundedGraduateAdmission() {
 
                       <div className="min-w-0">
                         <div className="text-lg font-semibold">{s.title}</div>
-                        <div className="mt-0.5 text-sm text-slate-600">
+                        {/*<div className="mt-0.5 text-sm text-slate-600">
                           {s.provider}
                           {s.country ? ` • ${s.country}` : ""}
                           {s.level ? ` • ${s.level}` : ""}
                           {s.field ? ` • ${s.field}` : ""}
                           {fundingStr ? ` • ${fundingStr}` : ""}
-                        </div>
+                        </div>*/}
+
+
+
+                        <div className="mt-1.5 text-sm text-slate-600">
+  {s.provider ? (
+    <span className="font-semibold text-purple-800">{s.provider}</span>
+  ) : null}
+
+  {s.country ? (
+    <span className="font-semibold text-purple-700">{" • "}{s.country}</span>
+  ) : null}
+
+  {s.level ? (
+    <span className="font-semibold text-purple-700">{" • "}{s.level}</span>
+  ) : null}
+
+  {s.field ? (
+    <span className="font-semibold text-purple-700">{" • "}{s.field}</span>
+  ) : null}
+
+  {/*{fundingStr ? <span>{" • "}{fundingStr}</span> : null}*/}
+  {fundingStr ? <span className="font-semibold text-blue-900">{" • "}{fundingStr}</span> : null}
+</div>
+
                       </div>
                     </div>
 

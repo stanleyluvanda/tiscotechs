@@ -106,6 +106,72 @@ async function doJsonFetch(pathOrUrl, options = {}) {
   return parsed;
 }
 
+
+/* ===================== Notifications API ===================== */
+
+// Optional: small in-memory cache so the bell opens instantly after first load
+let _notifCache = { userId: null, notifications: [], cursor: null, fetchedAt: 0 };
+
+export function getCachedNotifications(userId) {
+  if (!userId) return { ok: true, notifications: [], cursor: null };
+  if (_notifCache.userId !== String(userId)) return { ok: true, notifications: [], cursor: null };
+  return { ok: true, notifications: _notifCache.notifications || [], cursor: _notifCache.cursor || null };
+}
+
+export function countUnread(notifications = []) {
+  return (Array.isArray(notifications) ? notifications : []).reduce(
+    (acc, n) => acc + (n && n.read ? 0 : 1),
+    0
+  );
+}
+
+export async function getMyNotifications(userId, { limit = 30, cursor = null } = {}) {
+  const uid = String(userId || "").trim();
+  if (!uid) return { ok: true, notifications: [], cursor: null };
+
+  const url = buildPostsUrl("/api/notifications/mine", {
+    userId: uid,
+    limit,
+    cursor: cursor || undefined,
+  });
+
+  const res = await doJsonFetch(url, { method: "GET" });
+
+  const notifications = Array.isArray(res?.notifications) ? res.notifications : [];
+  const nextCursor = res?.cursor ? String(res.cursor) : null;
+
+  // refresh cache
+  _notifCache = { userId: uid, notifications, cursor: nextCursor, fetchedAt: Date.now() };
+
+  return { ok: true, notifications, cursor: nextCursor };
+}
+
+export async function markNotificationRead({ userId, id, createdAt }) {
+  const uid = String(userId || "").trim();
+  const nid = String(id || "").trim();
+  const ts = Number(createdAt || 0);
+
+  if (!uid || !nid || !Number.isFinite(ts) || ts <= 0) {
+    throw new Error("markNotificationRead requires userId, id, createdAt");
+  }
+
+  const url = buildPostsUrl("/api/notifications/markRead");
+
+  const res = await doJsonFetch(url, {
+    method: "POST",
+    body: { userId: uid, id: nid, createdAt: ts },
+  });
+
+  // optimistic cache update (keeps UI instant)
+  if (_notifCache.userId === uid && Array.isArray(_notifCache.notifications)) {
+    _notifCache.notifications = _notifCache.notifications.map((n) =>
+      n && String(n.id || "") === nid ? { ...n, read: true, readAt: Date.now() } : n
+    );
+  }
+
+  return res;
+}
+
 /* ===================== Normalisation helpers (frontend-only) ===================== */
 
 function escapeHtml(str = "") {

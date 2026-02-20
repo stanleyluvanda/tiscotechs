@@ -1230,7 +1230,7 @@ const updated = {
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
                   <h3 className="text-sm font-semibold text-slate-900">Partnership standards</h3>
                   <ul className="mt-2 space-y-1.5 text-xs sm:text-sm text-slate-700">
-                    <li className="flex gap-2"><span>✅</span><span>No essays for students.</span></li>
+                    <li className="flex gap-2"><span>✅</span><span>Scholarships and Academic programs must be verified.</span></li>
                     <li className="flex gap-2"><span>✅</span><span>No application fees.</span></li>
                     <li className="flex gap-2">
                       <span>✅</span>
@@ -1242,7 +1242,7 @@ const updated = {
                     <li className="flex gap-2">
                       <span>✅</span>
                       <span>
-                        Scholarship providers must share a contact email using their organization’s domain and ensure it remains reachable.
+                        Universities and Scholarship providers must share a contact email using their organization’s domain and ensure it remains reachable.
                       </span>
                     </li>
                     <li className="flex gap-2"><span>✅</span><span>No confidential data collection (bank details, IDs, SSNs, etc.).</span></li>

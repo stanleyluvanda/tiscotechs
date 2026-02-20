@@ -3852,6 +3852,21 @@ try {
     });
     console.log("[postsApi] createComment response:", res);
     serverComment = res && (res.comment || res.data?.comment) || null;
+    
+    // ✅ NEW: notify post owner (lecturer) about this comment
+    try {
+      await notifyPostOwner({
+        type: "comment",
+        postId,
+        commentId: serverComment?.id,
+        actorId: authorId,
+        actorName: authorName,
+      });
+    } catch (e) {
+      console.warn("notifyPostOwner failed", e);
+    }
+
+
   } catch (err) {
     console.error("[StudentDashboard] createComment failed:", err);
   }

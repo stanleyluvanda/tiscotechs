@@ -167,28 +167,28 @@ export default function Home() {
 
     <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
   <StoryCard
-    image="/images/scholarships-us.png"
+    image="/images/USfundedprogram.jpg"
     title="University-Funded graduate programs in the U.S."
     linkTo="/funded-graduate-admission?country=United%20States"
     linkText="Explore U.S. funded graduate programs"
   />
 
   <StoryCard
-    image="/images/scholarships-canada.png"
+    image="/images/FundedprogranCanada.jpg"
     title="University-Funded graduate programs in Canada"
     linkTo="/funded-graduate-admission?country=Canada"
     linkText="Explore Canada funded graduate programs"
   />
 
   <StoryCard
-    image="/images/scholarships-uk.png"
+    image="/images/FundedprogramUK.png"
     title="University-Funded graduate programs in the UK"
     linkTo="/funded-graduate-admission?country=United%20Kingdom"
     linkText="Explore UK funded graduate programs"
   />
 
   <StoryCard
-    image="/images/scholarships-europe.png"
+    image="/images/FundedprogramEurope.jpg"
     title="University-Funded graduate programs in Europe"
     linkTo="/funded-graduate-admission?continent=Europe"
     linkText="Explore Europe funded graduate programs"
