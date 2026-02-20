@@ -3992,6 +3992,25 @@ try {
     });
     console.log("[postsApi] createReply response:", res);
     serverReply = res && (res.reply || res.data?.reply) || null;
+
+    // ✅ NEW: notify post owner (lecturer) about this comment
+    try {
+      await notifyPostOwner({
+        type: "reply",
+        postId,
+        commentId: serverComment?.id,
+        actorId: authorId,
+        actorName: authorName,
+      });
+    } catch (e) {
+      console.warn("notifyPostOwner failed", e);
+    }
+
+
+
+
+
+
   } catch (err) {
     console.error("[StudentDashboard] createReply failed:", err);
   }

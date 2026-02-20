@@ -1067,8 +1067,6 @@ function TrashIcon({ className = "w-4 h-4" }) {
   );
 }
 
-
-
 /* ------------------------ Main Component ------------------------- */
 export default function LecturerDashboard() {
   const navigate = useNavigate();
@@ -1078,6 +1076,73 @@ export default function LecturerDashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unseenCount, setUnseenCount] = useState(0);
+  const [forceOpenKey, setForceOpenKey] = useState(null);
+
+useEffect(() => {
+  if (notifications && notifications.length > 0) {
+    console.log("NOTIF SAMPLE", notifications[0]);
+  }
+}, [notifications]);
+
+
+
+
+
+
+
+
+  // --- Notification avatar helpers (UI-only) ---
+  function initialsFromName(name) {
+    const s = String(name || "").trim();
+    if (!s) return "?";
+    const parts = s.split(/\s+/).filter(Boolean);
+    const a = parts[0]?.[0] || "";
+    const b = parts.length > 1 ? parts[parts.length - 1]?.[0] || "" : "";
+    return (a + b).toUpperCase() || "?";
+  }
+
+  function notifActorName(n) {
+    return (
+      String(n?.actorName || n?.fromName || n?.byName || n?.actorEmail || n?.fromEmail || "Someone").trim()
+    );
+  }
+
+  function notifActorAvatar(n) {
+    // tolerate different shapes without breaking anything
+    return (
+      n?.actorAvatarUrl ||
+      n?.actorPhotoUrl ||
+      n?.actorPhoto ||
+      n?.fromPhotoUrl ||
+      n?.fromPhoto ||
+      n?.avatarUrl ||
+      n?.photoUrl ||
+      ""
+    );
+  }
+  // ✅ ADD THIS RIGHT HERE
+function initialsFromName(name = "") {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  const a = parts[0]?.[0] || "";
+  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] || "") : "";
+  return (a + b).toUpperCase() || "U";
+}
+
+
+
+
+
+  // ✅ Canonical lecturer identity for notifications (shared across load + click)
+const notifLecturer =
+  safeParse(localStorage.getItem("currentUser_lecturer")) ||
+  safeParse(sessionStorage.getItem("currentUser_lecturer")) ||
+  safeParse(localStorage.getItem("currentUser")) ||
+  safeParse(sessionStorage.getItem("currentUser")) ||
+  null;
+
+const notifUserId = String(
+  notifLecturer?.id || notifLecturer?.userId || notifLecturer?.uid || ""
+).trim();
 
 
   // ✅ ADD THIS BLOCK HERE (before loadNotifications)
@@ -1088,9 +1153,6 @@ export default function LecturerDashboard() {
   const userId = String(
     lecturerLS?.id || lecturerLS?.userId || lecturerLS?.uid || ""
   ).trim();
-
-
-
 
 
 
@@ -3039,6 +3101,37 @@ function getSiblingPostIdsForPost(postId) {
 }
 
 
+function resolveVisiblePostKeyFromNotification(n, allPosts = [], visiblePosts = []) {
+  const rawPostId = n?.postId || n?.itemId || n?.entityId || n?.targetPostId || "";
+  if (!rawPostId) return null;
+
+  // If the raw postId is directly one of the rendered cards
+  const direct = (visiblePosts || []).find((p) => p?.id === rawPostId);
+  if (direct) return direct.multiGroupId || direct.id;
+
+  // If rawPostId is one of the sibling copies, map to the merged card via multiGroupId
+  const src = (allPosts || []).find((p) => p?.id === rawPostId);
+  const mgid = src?.multiGroupId || null;
+  if (mgid) {
+    const merged = (visiblePosts || []).find((p) => p?.multiGroupId === mgid);
+    if (merged) return merged.multiGroupId || merged.id;
+  }
+
+  // Fallback: just use rawPostId
+  return rawPostId;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 function getCommentByIdInPosts(postsList, commentId) {
   for (const p of (Array.isArray(postsList) ? postsList : [])) {
     const cs = Array.isArray(p?.comments) ? p.comments : [];
@@ -3503,23 +3596,26 @@ const rep = {
     }
   }*/
 
+    function notifActionLabel(n) {
+  const t = String(n?.type || n?.eventType || n?.kind || "").toLowerCase();
+  if (t.includes("reply")) return "replied";
+  if (t.includes("comment")) return "commented";
+  if (t.includes("like")) return "liked";
+  return "interacted";
+}
+
  
 
 // ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
 async function loadNotifications() {
-  console.log("[notif] loadNotifications ran"); // ✅ first line
-
+  console.log("[notif] loadNotifications ran");
   try {
-    /*const lecturer = JSON.parse(localStorage.getItem("lecturer") || "null");*/
-    const lecturer = JSON.parse(localStorage.getItem("currentUser_lecturer") || "null");
-    console.log("[notif] lecturer object:", lecturer);
+    console.log("[notif] lecturer object:", notifLecturer);
+    console.log("[notif] resolved userId:", notifUserId);
 
-    const userId = String(lecturer?.id || lecturer?.userId || lecturer?.uid || "").trim();
-    console.log("[notif] resolved userId:", userId);
+    if (!notifUserId) return;
 
-    if (!userId) return;
-
-    const { notifications } = await getMyNotifications(userId, { limit: 30 });
+    const { notifications } = await getMyNotifications(notifUserId, { limit: 30 });
 
     setNotifications(notifications || []);
     setUnseenCount(countUnread(notifications || []));
@@ -3528,27 +3624,245 @@ async function loadNotifications() {
   }
 }
 
+// ✅ ADD THIS BLOCK: directly below loadNotifications() (same level)
+useEffect(() => {
+  loadNotifications();
+
+  const t = setInterval(() => loadNotifications(), 60000);
+  return () => clearInterval(t);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [notifUserId]);
+
+
+
+function notifTargetPostId(n) {
+  return (
+    n?.postId ||
+    n?.targetPostId ||
+    n?.parentPostId ||
+    n?.itemId ||
+    n?.entityId ||
+    n?.resourceId ||
+    n?.post?.id ||            // ✅ add this back
+    ""
+  );
+}
+
+function notifTargetCommentId(n) {
+  return (
+    n?.commentId ||
+    n?.targetCommentId ||
+    n?.entityCommentId ||
+    n?.parentCommentId ||
+    n?.cId ||
+    n?.comment?.id ||         // ✅ good fallback
+    ""
+  );
+}
+
+function notifTargetReplyId(n) {
+  return (
+    n?.replyId ||
+    n?.targetReplyId ||
+    n?.entityReplyId ||
+    n?.rId ||
+    n?.reply?.id ||           // ✅ good fallback
+    ""
+  );
+}
+
+function postTitleForNotification(n, allPosts = []) {
+  const raw = notifTargetPostId(n);
+  if (!raw) return "";
+
+  // match by id OR by multiGroupId (merged cards)
+  const p =
+    (allPosts || []).find((x) => x?.id === raw) ||
+    (allPosts || []).find((x) => x?.multiGroupId && x?.multiGroupId === raw) ||
+    null;
+
+  return String(p?.title || p?.postTitle || "").trim();
+}
+
+
+
 async function onClickNotification(n) {
   try {
     if (!n || n.read) return;
-    await markNotificationRead({ userId, id: n.id, createdAt: n.createdAt });
+    if (!notifUserId) return;
+
+    await markNotificationRead({
+      userId: notifUserId,
+      id: n.id,
+      createdAt: n.createdAt,
+    });
 
     // optimistic UI update
     setNotifications((prev) =>
-      (prev || []).map((x) => (x.id === n.id ? { ...x, read: true, readAt: Date.now() } : x))
+      (prev || []).map((x) =>
+        x.id === n.id ? { ...x, read: true, readAt: Date.now() } : x
+      )
     );
+
     setUnseenCount((c) => Math.max(0, (c || 0) - 1));
   } catch (e) {
     console.error("mark read failed", e);
   }
 }
 
+/*async function handleNotificationClick(n) {
+  // 1) Mark read (uses your existing safe code)
+  await onClickNotification(n);
+
+  // 2) Resolve which rendered post card to jump to (handles merged multi-program)
+  const key = resolveVisiblePostKeyFromNotification(n, posts, filtered);
+  if (!key) return;
+
+  // 3) Force-open comments for that card
+  setForceOpenKey(key);
+
+  // 4) Scroll to it
+  requestAnimationFrame(() => {
+    const el = document.getElementById(`post-${key}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // Optional: close tray after click (comment out if you want it to stay open)
+  setNotifOpen(false);
+}*/
+
+async function handleNotificationClick(n) {
+  try {
+    // mark read (safe)
+    await onClickNotification(n);
+
+    // IMPORTANT: do NOT close the tray here (or it will feel like nothing happened)
+    // setNotifOpen(false);
+
+    // map notification -> visible card key (handles merged multi-program)
+    const key = resolveVisiblePostKeyFromNotification(n, posts, filtered);
+    if (!key) return;
+
+    // force comments open on that merged card
+    setForceOpenKey(key);
+
+    // make sure thread(s) are loaded before showing comments
+    const visible = (filtered || []).find((p) => (p?.multiGroupId || p?.id) === key) || null;
+    if (visible) {
+      await ensureThreadLoadedForPost(visible);
+    }
+
+    
+const rawPostId = notifTargetPostId(n);
+    const commentId = notifTargetCommentId(n);
+    const replyId = notifTargetReplyId(n);
+
+    requestAnimationFrame(() => {
+      // 1) Prefer comment anchor inside the raw post
+      if (rawPostId && commentId) {
+        const cEl = document.getElementById(`cmt-${rawPostId}-${commentId}`);
+        if (cEl?.scrollIntoView) {
+          cEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+      }
+
+      // 2) Then try reply anchor (if present)
+      if (rawPostId && commentId && replyId) {
+        const rEl = document.getElementById(`rpl-${rawPostId}-${commentId}-${replyId}`);
+        if (rEl?.scrollIntoView) {
+          rEl.scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+      }
+
+      // 3) Fallback: post wrapper
+      const el = document.getElementById(`post-${key}`);
+      if (el?.scrollIntoView)
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  } catch (e) {
+    console.error("[notif] handleNotificationClick failed", e);
+  }
+}
+
+/*async function handleNotificationClick(n) {
+  try {
+    // 1) mark read (safe)
+    await onClickNotification(n);
+
+    // IMPORTANT: do NOT close the tray here
+    // setNotifOpen(false);
+
+    // 2) map notification -> visible card key (handles merged multi-program)
+    const key = resolveVisiblePostKeyFromNotification(n, posts, filtered);
+    if (!key) return;
+
+    // 3) force comments open on that merged card
+    setForceOpenKey(key);
+
+    // 4) make sure thread(s) are loaded before scrolling (so anchors exist)
+    const visible =
+      (filtered || []).find((p) => (p?.multiGroupId || p?.id) === key) || null;
+    if (visible) {
+      await ensureThreadLoadedForPost(visible);
+    }
+
+    // 5) targets from notification
+    const rawPostId = notifTargetPostId(n);
+    const commentId = notifTargetCommentId(n);
+    const replyId = notifTargetReplyId(n);
+
+    // 6) scroll (reply -> comment -> post), try both rawPostId and key
+    requestAnimationFrame(() => {
+      const postIdsToTry = Array.from(
+        new Set([rawPostId, key].filter(Boolean))
+      );
+
+      // A) Reply anchor (most specific)
+      if (replyId && commentId) {
+        for (const pid of postIdsToTry) {
+          const rEl = document.getElementById(`rpl-${pid}-${commentId}-${replyId}`);
+          if (rEl?.scrollIntoView) {
+            rEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+        }
+      }
+
+      // B) Comment anchor
+      if (commentId) {
+        for (const pid of postIdsToTry) {
+          const cEl = document.getElementById(`cmt-${pid}-${commentId}`);
+          if (cEl?.scrollIntoView) {
+            cEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+        }
+      }
+
+      // C) Fallback: post wrapper
+      const el = document.getElementById(`post-${key}`);
+      if (el?.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  } catch (e) {
+    console.error("[notif] handleNotificationClick failed", e);
+  }
+}*/
 
 
 
 
 
 
+
+
+// ✅ PASTE THIS IMMEDIATELY BELOW onClickNotification (same level)
+function clearReadNotificationsUIOnly() {
+  setNotifications((prev) => (prev || []).filter((n) => !n?.read));
+  setUnseenCount((prev) => Math.max(0, Number(prev) || 0)); // unseenCount already excludes read
+}
 
 
 
@@ -3965,29 +4279,37 @@ async function onClickNotification(n) {
           </ErrorBoundary>
 
           {/* Feed (deduped multi-program posts) */}
-          {filtered.map((p) => (
-            <PostCard
-              key={p.multiGroupId || p.id}
-              post={p}
-              onToggleLike={() => toggleLikeBy(p)}
-              onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
-              onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
-              onDelete={() => deletePost(p)}
-              // ✅ NEW: pass report handler down
-              onReport={onReport}
-              currentUser={user}
-              onOpenComments={() => ensureThreadLoadedForPost(p)}   // ✅ asks parent to lazy-load thread(s)
-              /*commentsLoading={!!threadLoading[p.id]}*/               // ✅ spinner/label control (basic)
-              commentsLoading={
-             p.multiGroupId
-           ? (posts || []).some(
-                 (x) => x?.multiGroupId === p.multiGroupId && threadLoading[x.id]
-                )
-                    : !!threadLoading[p.id]
-                 }
-            />
-          ))}
           
+
+          {filtered.map((p) => {
+  const key = p.multiGroupId || p.id;
+
+  return (
+    <div key={key} id={`post-${key}`} className="scroll-mt-24">
+      <PostCard
+        post={p}
+        onToggleLike={() => toggleLikeBy(p)}
+        onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
+        onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
+        onDelete={() => deletePost(p)}
+        onReport={onReport}
+        currentUser={user}
+        onOpenComments={() => ensureThreadLoadedForPost(p)}
+        commentsLoading={
+          p.multiGroupId
+            ? (posts || []).some(
+                (x) => x?.multiGroupId === p.multiGroupId && threadLoading[x.id]
+              )
+            : !!threadLoading[p.id]
+        }
+
+        // ✅ ADD THIS PROP (safe: frontend-only)
+        forceOpenComments={forceOpenKey === key}
+      />
+    </div>
+  );
+})}
+       
     </section>
 
         {/* RIGHT: Updates*/}
@@ -4107,9 +4429,22 @@ async function onClickNotification(n) {
             className="absolute right-4 bottom-20 w-[92vw] max-w-sm bg-white rounded-xl shadow-2xl border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-4 py-3 border-b border-slate-100 font-semibold">
+            {/*<div className="px-4 py-3 border-b border-slate-100 font-semibold">
               Notifications
-            </div>
+            </div>*/}
+
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
+  <div className="font-semibold text-slate-900">Notifications</div>
+
+  <button
+    type="button"
+    onClick={clearReadNotificationsUIOnly}
+    className="ml-auto text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
+    title="Remove read notifications (this does not delete from the server)"
+  >
+    Clear
+  </button>
+</div>
 
             <div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">
               {/*{notifications.map((n) => (
@@ -4122,36 +4457,137 @@ async function onClickNotification(n) {
                 </div>
               ))}*/}
 
-              {notifications.map((n) => (
-  <div
-    key={n.id}
+              {/*{(notifications || []).map((n) => {
+  const actor = (n?.actorName || n?.actorEmail || "Someone").trim?.() || "Someone";
+  const typeLabel =
+    n?.type === "reply" ? " replied to your post" :
+    n?.type === "comment" ? " commented on your post" :
+    " interacted with your post";
+
+  const createdLabel = n?.createdAt
+    ? new Date(n.createdAt).toLocaleString()
+    : "";
+
+  return (
+    <div
+      key={n?.id || `${n?.createdAt || "t"}_${actor}`}
+      role="button"
+      tabIndex={0}
+      onClick={() => onClickNotification(n)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClickNotification(n);
+      }}
+      className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${n?.read ? "" : "bg-blue-50"}`}
+      title={n?.read ? "Read" : "Mark as read"}
+    >
+      <span className="font-semibold">{actor}</span>
+      {typeLabel}
+      {createdLabel ? (
+        <div className="text-xs text-slate-500">{createdLabel}</div>
+      ) : null}
+      {!n?.read ? <div className="text-[11px] text-blue-700 mt-1">Unread</div> : null}
+    </div>
+  );
+})}*/}
+
+
+
+{(notifications || []).map((n) => {
+  const name = notifActorName(n);
+  const avatarUrl = notifActorAvatar(n);
+  const postTitle = postTitleForNotification(n, posts);
+  const msg = String(n?.message || n?.text || n?.title || "sent a notification");
+
+  /*return (
+    <div
+      key={n?.id || `${n?.createdAt || ""}_${name}`}
+      onClick={(e) => { 
+      e.stopPropagation(); 
+      handleNotificationClick(n); 
+    }}
+    className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${n?.read ? "" : "bg-blue-50"}`}
     role="button"
     tabIndex={0}
-    onClick={() => onClickNotification(n)}
     onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") onClickNotification(n);
-    }}
-    className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${
-      n.read ? "" : "bg-blue-50"
-    }`}
-    title={n.read ? "Read" : "Mark as read"}
-  >
-    <span className="font-semibold">{n.actorName}</span>
-    {n.type === "reply" ? " replied to your post" : " commented on your post"}
-    <div className="text-xs text-slate-500">
-      {new Date(n.createdAt).toLocaleString()}
-    </div>
-    {!n.read && <div className="text-[11px] text-blue-700 mt-1">Unread</div>}
-  </div>
-))}
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNotificationClick(n);
+      }
+    }}*/
 
-              {notifications.length === 0 && (
-                <div className="p-4 text-sm text-slate-500">No notifications.</div>
-              )}
+    return (
+  <div
+    key={n?.id || `${n?.createdAt || ""}_${name}`}
+    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleNotificationClick(n); }}
+    className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${n?.read ? "" : "bg-blue-50"}`}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNotificationClick(n);
+      }
+    }}
+
+    >
+      <div className="flex items-start gap-3">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            className="h-9 w-9 rounded-full object-cover border border-slate-200"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-xs font-semibold text-slate-700 bg-slate-100">
+            {initialsFromName(name)}
+          </div>
+        )}
+
+        <div className="min-w-0">
+          <div className="truncate">
+            <span className="font-semibold">{name}</span>
+            <span className="text-slate-700">
+              {/*{" "}{String(n?.message || n?.text || n?.title || "sent a notification")}*/}
+              {" "}{msg}
+            </span>
+          </div>
+
+          {n?.createdAt ? (
+            <div className="text-xs text-slate-500">{formatTimeAgo(n.createdAt)}</div>
+          ) : null}
+
+          {postTitle ? (
+           <div className="text-xs text-slate-600 mt-1">
+            Post: <span className="font-medium">{postTitle}</span>
+            </div>
+            ) : null}
+
+          {!n?.read ? (
+    <div className="text-[11px] text-blue-700 mt-1">Unread</div>
+  ) : null}
+  </div>
+      </div>
+    </div>
+  );
+})}
+
+
+
+{(!notifications || notifications.length === 0) && (
+  <div className="p-4 text-sm text-slate-500">No notifications.</div>
+)}
             </div>
           </div>
         </div>
       )}
+
+
+              
+             
 
       
 
@@ -4347,7 +4783,8 @@ async function fetchThreadFromServer({ postId, scope }) {
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
 //function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
 /*function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onReport, currentUser }) {*/
-function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,}) {
+/*function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,}) {*/
+function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,forceOpenComments,}) {
   /*const [showComments, setShowComments] = useState(true);*/
   const [showComments, setShowComments] = useState(false);
   const [cmt, setCmt] = useState("");
@@ -4365,6 +4802,27 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
   }, [cmt]);
 
 
+  useEffect(() => {
+  if (!forceOpenComments) return;
+  if (showComments) return;
+
+  (async () => {
+    await onOpenComments?.();
+    setShowComments(true);
+  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [forceOpenComments]);
+
+
+
+
+
+
+
+
+
+
+
   
 
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
@@ -4378,6 +4836,13 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
     if (len <= 1) return l;
     return { ...l, index: (l.index + dir + len) % len };
   });
+
+
+
+ 
+
+
+
   useEffect(()=> {
     if (!lightbox.open) return;
     const onKey = (e) => {
@@ -4406,8 +4871,14 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
   const images = post.images || [];
   const programLabel = post.displayProgramLabel || post.authorProgram;
 
-  return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4">
+  /*return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-4">*/
+
+   return (
+  <div
+    id={`post-${post.id}`}
+    className="rounded-2xl border border-slate-100 bg-white p-4"
+  >   
 
 
 
@@ -4604,13 +5075,31 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
       {/* comments */}
       {showComments && (
         <div className="mt-3 space-y-3">
-          {(Array.isArray(post.comments) ? post.comments : []).map(c => (
+          {/*{(Array.isArray(post.comments) ? post.comments : []).map(c => (
             <CommentThread
               key={c.id}
               comment={c}
               onAddReply={(text, images, files) => onAddReply(c.id, text, images, files)}  // ✅ pass just (commentId, text…)
             />
-          ))}
+          ))}*/}
+
+         {(Array.isArray(post.comments) ? post.comments : []).map((c) => (
+  <div
+    key={c.id}
+    id={`cmt-${post.id}-${c.id}`}
+    className="scroll-mt-28"
+  >
+    <CommentThread
+      comment={{ ...c, postId: post.id }}   // ✅ add this so replies can anchor correctly
+      onAddReply={(text, images, files) => onAddReply(c.id, text, images, files)}
+    />
+  </div>
+))}
+     
+     
+
+
+
 {/* add comment */}
       <form
   onSubmit={(e) => {
@@ -5036,7 +5525,7 @@ function CommentThread({ comment, onAddReply }) {
 })()}*/}
 
 
-{replies.map((r) => {
+ {replies.map((r) => {
   const replyAuthorName =
     r.authorName ||
     r.author ||
@@ -5047,7 +5536,11 @@ function CommentThread({ comment, onAddReply }) {
     "Student";
 
   return (
-    <div key={r.id} className="flex items-start gap-2">
+    <div
+      key={r.id}
+      id={`rpl-${comment?.postId || ""}-${comment?.id || ""}-${r.id}`}
+      className="flex items-start gap-2 scroll-mt-28"
+    >
       <div className="shrink-0">
         <Avatar size="sm" url={r.authorPhoto} name={replyAuthorName} />
       </div>
@@ -5056,6 +5549,7 @@ function CommentThread({ comment, onAddReply }) {
         <div className="font-bold text-slate-900">
           {displayWithTitle(replyAuthorName, "", replyAuthorName)}
         </div>
+
         {/*<div className="text-xs text-slate-500 mb-1">{r.authorProgram || ""}</div>*/}
   {/*{r.authorProgram ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
