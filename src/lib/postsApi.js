@@ -172,6 +172,21 @@ export async function markNotificationRead({ userId, id, createdAt }) {
   return res;
 }
 
+// ✅ ADD THIS RIGHT HERE (immediately below markNotificationRead)
+export async function clearReadNotifications({ userId }) {
+  const uid = String(userId || "").trim();
+  if (!uid) throw new Error("clearReadNotifications requires userId");
+
+  const url = buildPostsUrl("/api/notifications/clearRead");
+
+  const res = await doJsonFetch(url, {
+    method: "POST",
+    body: { userId: uid },
+  });
+
+  return res;
+}
+
 /* ===================== Normalisation helpers (frontend-only) ===================== */
 
 function escapeHtml(str = "") {

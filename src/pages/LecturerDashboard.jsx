@@ -11,7 +11,7 @@ import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 //import { createPost as createPostOnServer } from "../lib/postsApi.js";  // ⬅️ ADD THIS
 //import { createPost as createPostOnServer, postCommentToServer, postReplyToServer,} from "../lib/postsApi.js";//
-import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,getMyNotifications,countUnread,markNotificationRead,} from "../lib/postsApi.js";
+import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,getMyNotifications,countUnread,markNotificationRead,clearReadNotifications,} from "../lib/postsApi.js";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
@@ -3848,18 +3848,19 @@ const rawPostId = notifTargetPostId(n);
 
 
 
+// ✅ Clear read notifications on the SERVER (so refresh doesn't bring them back)
+async function clearNotificationsServerBacked() {
+  try {
+    if (!notifUserId) return;
 
+    await clearReadNotifications({ userId: notifUserId });
 
-
-
-// ✅ Clear ONLY read notifications (UI only)
-function clearReadNotificationsUIOnly() {
-  setNotifications((prev) =>
-    (prev || []).filter((n) => !isNotifRead(n))
-  );
+    // refresh list so UI matches server after cutoff is saved
+    await loadNotifications();
+  } catch (e) {
+    console.error("[notif] clearNotificationsServerBacked failed", e);
+  }
 }
-
-
 
 
   /* ---- Layout ---- */
@@ -4453,7 +4454,8 @@ function clearReadNotificationsUIOnly() {
   onClick={(e) => {
     e.preventDefault();
     e.stopPropagation();
-    clearReadNotificationsUIOnly();
+    /*clearReadNotificationsUIOnly();*/
+    clearNotificationsServerBacked(); // ✅ changed
   }}
   className="ml-auto cursor-pointer text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
 >
