@@ -1077,6 +1077,7 @@ export default function LecturerDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [unseenCount, setUnseenCount] = useState(0);
   const [forceOpenKey, setForceOpenKey] = useState(null);
+  const showUnreadOnly = !notifOpen; // when tray is open, show all
 
 useEffect(() => {
   if (notifications && notifications.length > 0) {
@@ -3851,10 +3852,11 @@ const rawPostId = notifTargetPostId(n);
 
 
 
-// ✅ PASTE THIS IMMEDIATELY BELOW onClickNotification (same level)
+// ✅ Clear ONLY read notifications (UI only)
 function clearReadNotificationsUIOnly() {
-  setNotifications((prev) => (prev || []).filter((n) => !n?.read));
-  setUnseenCount((prev) => Math.max(0, Number(prev) || 0)); // unseenCount already excludes read
+  setNotifications((prev) =>
+    (prev || []).filter((n) => !isNotifRead(n))
+  );
 }
 
 
@@ -4429,85 +4431,52 @@ function clearReadNotificationsUIOnly() {
     <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
   <div className="font-semibold text-slate-900">Notifications</div>
 
-  <button
-    type="button"
-    onClick={clearReadNotificationsUIOnly}
-    className="ml-auto text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
-    title="Remove read notifications (this does not delete from the server)"
-  >
-    Clear
-  </button>
+{/*<button 
+  type="button"
+  onClick={clearNotificationsServerBacked}
+  className="ml-auto text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
+  title="Mark all notifications as read"
+>
+  Clear
+</button>*/}
+
+{/*<button
+  type="button"
+  onClick={clearNotificationsServerBacked}
+  className="ml-auto cursor-pointer text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
+  title="Mark all notifications as read"
+>
+  Clear
+</button>*/}
+<button
+  type="button"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    clearReadNotificationsUIOnly();
+  }}
+  className="ml-auto cursor-pointer text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
+>
+  Clear
+</button>
+
 </div>
 
-            <div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">
-              {/*{notifications.map((n) => (
-                <div key={n.id} className="p-3 text-sm">
-                  <span className="font-semibold">{n.actorName}</span>
-                  {" commented on your post"}
-                  <div className="text-xs text-slate-500">
-                    {new Date(n.createdAt).toLocaleString()}
-                  </div>
-                </div>
-              ))}*/}
-
-              {/*{(notifications || []).map((n) => {
-  const actor = (n?.actorName || n?.actorEmail || "Someone").trim?.() || "Someone";
-  const typeLabel =
-    n?.type === "reply" ? " replied to your post" :
-    n?.type === "comment" ? " commented on your post" :
-    " interacted with your post";
-
-  const createdLabel = n?.createdAt
-    ? new Date(n.createdAt).toLocaleString()
-    : "";
-
-  return (
-    <div
-      key={n?.id || `${n?.createdAt || "t"}_${actor}`}
-      role="button"
-      tabIndex={0}
-      onClick={() => onClickNotification(n)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onClickNotification(n);
-      }}
-      className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${n?.read ? "" : "bg-blue-50"}`}
-      title={n?.read ? "Read" : "Mark as read"}
-    >
-      <span className="font-semibold">{actor}</span>
-      {typeLabel}
-      {createdLabel ? (
-        <div className="text-xs text-slate-500">{createdLabel}</div>
-      ) : null}
-      {!n?.read ? <div className="text-[11px] text-blue-700 mt-1">Unread</div> : null}
-    </div>
-  );
-})}*/}
 
 
+<div className="max-h-[60vh] overflow-auto divide-y divide-slate-100">              
+{/*{(notifications || []).map((n) => {*/}
+{/*{(notifications || [])
+  .filter((n) => !isNotifRead(n))
+  .map((n) => {*/}
+{(notifications || [])
+  .filter((n) => (showUnreadOnly ? !isNotifRead(n) : true))
+  .map((n) => { 
 
-{(notifications || []).map((n) => {
   const name = notifActorName(n);
   const avatarUrl = notifActorAvatar(n);
   const postTitle = postTitleForNotification(n, posts);
   const msg = String(n?.message || n?.text || n?.title || "sent a notification");
-
-  /*return (
-    <div
-      key={n?.id || `${n?.createdAt || ""}_${name}`}
-      onClick={(e) => { 
-      e.stopPropagation(); 
-      handleNotificationClick(n); 
-    }}
-    className={`p-3 text-sm cursor-pointer hover:bg-slate-50 ${n?.read ? "" : "bg-blue-50"}`}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        handleNotificationClick(n);
-      }
-    }}*/
 
     return (
   <div
@@ -4570,7 +4539,16 @@ function clearReadNotificationsUIOnly() {
 
 
 
-{(!notifications || notifications.length === 0) && (
+{/*{(!notifications || notifications.length === 0) && (*/}
+{/*{(notifications || []).filter((n) => !isNotifRead(n)).length === 0 && (
+  <div className="p-4 text-sm text-slate-500">No notifications.</div>
+)}*/}
+
+{(
+  showUnreadOnly
+    ? (notifications || []).filter((n) => !isNotifRead(n)).length === 0
+    : (notifications || []).length === 0
+) && (
   <div className="p-4 text-sm text-slate-500">No notifications.</div>
 )}
             </div>
