@@ -1120,19 +1120,10 @@ useEffect(() => {
       ""
     );
   }
-  // ✅ ADD THIS RIGHT HERE
-function initialsFromName(name = "") {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  const a = parts[0]?.[0] || "";
-  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] || "") : "";
-  return (a + b).toUpperCase() || "U";
-}
 
+  
 
-
-
-
-  // ✅ Canonical lecturer identity for notifications (shared across load + click)
+  // ✅ PASTE THIS BLOCK RIGHT HERE (still inside LecturerDashboard(), before the polling useEffect)
 const notifLecturer =
   safeParse(localStorage.getItem("currentUser_lecturer")) ||
   safeParse(sessionStorage.getItem("currentUser_lecturer")) ||
@@ -1141,19 +1132,13 @@ const notifLecturer =
   null;
 
 const notifUserId = String(
-  notifLecturer?.id || notifLecturer?.userId || notifLecturer?.uid || ""
+  notifLecturer?.id ||
+  notifLecturer?.userId ||
+  notifLecturer?.uid ||
+  ""
 ).trim();
 
-
-  // ✅ ADD THIS BLOCK HERE (before loadNotifications)
-  const lecturerLS =
-    JSON.parse(localStorage.getItem("currentUser_lecturer") || "null") ||
-    JSON.parse(localStorage.getItem("lecturer") || "null");
-
-  const userId = String(
-    lecturerLS?.id || lecturerLS?.userId || lecturerLS?.uid || ""
-  ).trim();
-
+  
 
 
   useNoIndex();
@@ -1171,11 +1156,11 @@ const notifUserId = String(
   useEffect(() => { setLecturerProfileHref("/lecturer-dashboard"); }, []);
 
   // ✅ PART 3 — Poll notifications (INSERT HERE)
-  useEffect(() => {
+  /*useEffect(() => {
     loadNotifications();
     const t = setInterval(loadNotifications, 30000); // poll every 30s
     return () => clearInterval(t);
-  }, []);
+  }, []);*/
 
   /* Load active user (lecturer) + normalize like student dashboard */
   const [user, setUser] = useState(() => {
@@ -3596,7 +3581,7 @@ const rep = {
     }
   }*/
 
-    function notifActionLabel(n) {
+  function notifActionLabel(n) {
   const t = String(n?.type || n?.eventType || n?.kind || "").toLowerCase();
   if (t.includes("reply")) return "replied";
   if (t.includes("comment")) return "commented";
@@ -3604,7 +3589,11 @@ const rep = {
   return "interacted";
 }
 
- 
+// ✅ INSERT THIS RIGHT HERE (between notifActionLabel and loadNotifications)
+function isNotifRead(n) {
+  return Boolean(n?.read || n?.seen || n?.isRead || n?.readAt || n?.seenAt);
+}
+
 
 // ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
 async function loadNotifications() {
@@ -3617,8 +3606,11 @@ async function loadNotifications() {
 
     const { notifications } = await getMyNotifications(notifUserId, { limit: 30 });
 
-    setNotifications(notifications || []);
-    setUnseenCount(countUnread(notifications || []));
+    /*setNotifications(notifications || []);*/
+    /*setUnseenCount(countUnread(notifications || []));*/
+const list = Array.isArray(notifications) ? notifications : [];
+setNotifications(list);
+setUnseenCount(list.filter((n) => !isNotifRead(n)).length);
   } catch (e) {
     console.error("loadNotifications failed", e);
   }
@@ -3689,7 +3681,8 @@ function postTitleForNotification(n, allPosts = []) {
 
 async function onClickNotification(n) {
   try {
-    if (!n || n.read) return;
+    /*if (!n || n.read) return;*/
+    if (!n || isNotifRead(n)) return;
     if (!notifUserId) return;
 
     await markNotificationRead({
