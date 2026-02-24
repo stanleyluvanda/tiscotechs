@@ -226,6 +226,15 @@ export default function Login() {
       String(import.meta.env.VITE_EMAIL_API_BASE).trim()) ||
     API_BASE;
 
+    // ✅ Password reset API base (this is where /api/auth/forgot lives)
+const RESET_API_BASE =
+  (import.meta?.env?.VITE_RESET_API_BASE &&
+    String(import.meta.env.VITE_RESET_API_BASE).trim()) ||
+  "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com";
+
+
+
+
   /* ====== Load Turnstile script once ====== */
   useEffect(() => {
     const id = "cf-turnstile-api";
@@ -694,7 +703,8 @@ if (serverRole === "lecturer") {
     }
 
     try {
-      const res = await fetch(`${EMAIL_API_BASE}/api/auth/forgot`, {
+      /*const res = await fetch(`${EMAIL_API_BASE}/api/auth/forgot`, {*/
+      const res = await fetch(`${RESET_API_BASE.replace(/\/+$/, "")}/api/auth/forgot`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: em }),
