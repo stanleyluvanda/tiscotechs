@@ -1035,14 +1035,7 @@ if (serverRole === "lecturer") {
                   />
                 </label>
 
-                {/* ✅ Google Hosted UI (works for both student & lecturer; role can be inferred later) */}
-                      {/*<button
-                   type="button"
-                       onClick={onGoogleLogin}
-                    className="w-full rounded-lg border px-4 py-2 text-sm font-semibold bg-white hover:bg-slate-50"
-                          >
-                       Continue with Google
-                    </button>*/}
+                
                     <button
   type="button"
   onClick={onGoogleLogin}

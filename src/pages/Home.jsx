@@ -361,7 +361,7 @@ export default function Home() {
 </div>
 
 {/* ✅ One row under the whole button alignment */}
-<div className="mt-3 flex justify-center gap-6 text-xs text-white/85">
+<div className="mt-3 flex justify-center gap-6 text-xs text-white/95">
   <Link to="/privacy-policy" className="hover:underline">
     Privacy Policy
   </Link>
@@ -369,8 +369,6 @@ export default function Home() {
     Terms of Use
   </Link>
 </div>
-
-
 
 
 
