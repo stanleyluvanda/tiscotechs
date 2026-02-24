@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { signOut } from "aws-amplify/auth";
 
 /* ---------- Small helpers ---------- */
 function safeParse(json) {
@@ -52,19 +53,6 @@ function loadNavbarUser() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const a = (parts[0]?.[0] || "U").toUpperCase();
@@ -79,6 +67,31 @@ function clearAuthStateKeepData() {
     localStorage.removeItem(k);
   }
 }
+
+
+async function logoutEverywhere() {
+  try { await signOut({ global: true }); } catch {}
+  try {
+    [
+      "currentUser","authUserId","activeUserId","currentUserId","loggedInUserId",
+      "partnerAuth","adminAuth"
+    ].forEach((k) => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
+  } catch {}
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /* ---------- Avatar ---------- */
 function Avatar({ url, name }) {
@@ -150,12 +163,27 @@ export default function Navbar() {
   const TOTAL_H = NAV_H + STRIP_H;
 
   // keep auth fresh
-  useEffect(() => {
-    /*const onStorage = () => setUser(loadActiveUser());*/
+  /*useEffect(() => {
     const onStorage = () => setUser(loadNavbarUser());
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  }, []);*/
+
+  useEffect(() => {
+  const refresh = () => setUser(loadNavbarUser());
+
+  // Other tabs/windows
+  window.addEventListener("storage", refresh);
+
+  // Same tab (manual logout, auto logout, any forced refresh)
+  window.addEventListener("auth:changed", refresh);
+
+  return () => {
+    window.removeEventListener("storage", refresh);
+    window.removeEventListener("auth:changed", refresh);
+  };
+}, []);
+
   /*useEffect(() => { setUser(loadActiveUser()); }, [location.pathname, location.search]);*/
   useEffect(() => { setUser(loadNavbarUser()); }, [location.pathname, location.search]);
   // close menu on outside/esc
@@ -196,7 +224,7 @@ const dashboardPath =
     navigate(`/login?role=${roleParam}`);
   };*/
 
-  const handleLogout = () => {
+  /*const handleLogout = () => {
     const roleParam =
       role === "lecturer" ? "lecturer" : role === "partner" ? "partner" : "student";
 
@@ -215,7 +243,24 @@ const dashboardPath =
     // route by role
     if (role === "partner") navigate("/partner/login");
     else navigate(`/login?role=${roleParam}`);
-  };
+  };*/
+
+  const handleLogout = async () => {
+  const roleParam =
+    role === "lecturer" ? "lecturer" : role === "partner" ? "partner" : "student";
+
+  // ✅ important: actually sign out from Amplify/Cognito AND clear storage keys
+  await logoutEverywhere();
+
+  // keep your existing UI cleanup behavior
+  setUser(null);
+  setOpen(false);
+  window.dispatchEvent(new Event("auth:changed"));
+
+  // route by role
+  if (role === "partner") navigate("/partner/login");
+  else navigate(`/login?role=${roleParam}`);
+};
 
   /* ===================== FIXED NAVBAR (portal) ===================== */
   const NavbarBar = (

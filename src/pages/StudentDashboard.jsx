@@ -3050,7 +3050,7 @@ useEffect(() => {
   };
 
   // ===== Idle timer
-  const [idleWarning,setIdleWarning] = useState(false);
+  /*const [idleWarning,setIdleWarning] = useState(false);
   const [countdown,setCountdown] = useState(60);
   const idleTimerRef = useRef(null);
   const countdownRef = useRef(null);
@@ -3080,7 +3080,74 @@ useEffect(() => {
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[idleWarning]);
+  },[idleWarning]);*/
+
+  // ===== Idle timer
+const [idleWarning, setIdleWarning] = useState(false);
+const [countdown, setCountdown] = useState(60);
+const idleTimerRef = useRef(null);
+const countdownRef = useRef(null);
+
+const logoutEverywhereClientOnly = async () => {
+  try {
+    [
+      "currentUser",
+      "authUserId",
+      "activeUserId",
+      "currentUserId",
+      "loggedInUserId",
+      "partnerAuth",
+      "adminAuth",
+    ].forEach((k) => {
+      try { sessionStorage.removeItem(k); } catch {}
+      try { localStorage.removeItem(k); } catch {}
+    });
+  } catch {}
+  try { window.dispatchEvent(new Event("auth:changed")); } catch {}
+};
+
+const resetIdleTimer = () => {
+  if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+  idleTimerRef.current = setTimeout(() => {
+    setIdleWarning(true);
+    setCountdown(60);
+    countdownRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(countdownRef.current);
+          setIdleWarning(false);
+
+          logoutEverywhereClientOnly()
+            .catch(() => {})
+            .finally(() => {
+              navigate("/login?role=student");
+            });
+
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+  }, 20 * 60 * 1000);
+};
+
+useEffect(() => {
+  const bump = () => {
+    if (!idleWarning) resetIdleTimer();
+  };
+  window.addEventListener("mousemove", bump);
+  window.addEventListener("keydown", bump);
+  window.addEventListener("click", bump);
+  resetIdleTimer();
+  return () => {
+    window.removeEventListener("mousemove", bump);
+    window.removeEventListener("keydown", bump);
+    window.removeEventListener("click", bump);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [idleWarning]);
 
   /* ===== Banner/Avatar ===== */
   /*const onPickBanner = async (e)=>{
@@ -4821,10 +4888,25 @@ const feedCombined = useMemo(() => {
               </button>
               <button
                 className="rounded bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-                onClick={()=>{ setIdleWarning(false); if (countdownRef.current) clearInterval(countdownRef.current); navigate("/login?role=student"); }}
+                /*onClick={()=>{ setIdleWarning(false); if (countdownRef.current) clearInterval(countdownRef.current); navigate("/login?role=student"); }}
               >
                 Log out
-              </button>
+              </button>*/
+              onClick={() => {
+    setIdleWarning(false);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
+    logoutEverywhereClientOnly()
+      .catch(() => {})
+      .finally(() => {
+        navigate("/login?role=student");
+      });
+  }}
+>
+  Log out
+</button>
+
+
             </div>
           </div>
         </div>

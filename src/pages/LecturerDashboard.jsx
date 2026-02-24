@@ -15,6 +15,7 @@ import { createPost as createPostOnServer,deletePost as deletePostOnServer,postC
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
+import { signOut } from "aws-amplify/auth";
 
 
 
@@ -72,6 +73,25 @@ const LECTURER_SCOPE = "student-dashboard";
     alert(`Report failed: ${e.message}`);
   }
 }*/
+
+async function logoutEverywhereClientOnly() {
+  // 1) Cognito/Amplify session
+  try { await signOut({ global: true }); } catch {}
+
+  // 2) Your local/session storage keys (same list as Navbar)
+  try {
+    [
+      "currentUser","authUserId","activeUserId","currentUserId","loggedInUserId",
+      "partnerAuth","adminAuth"
+    ].forEach((k) => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
+  } catch {}
+
+  // 3) Tell Navbar (same-tab) to refresh immediately
+  try { window.dispatchEvent(new Event("auth:changed")); } catch {}
+}
 
 async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
   const reason = prompt(
@@ -1615,12 +1635,24 @@ const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT
       setCountdown(60);
       countdownRef.current = setInterval(() => {
         setCountdown((c) => {
-          if (c <= 1) {
+          /*if (c <= 1) {
             clearInterval(countdownRef.current);
             setIdleWarning(false);
             navigate("/login?role=lecturer");
           }
-          return c - 1;
+          return c - 1;*/
+          if (c <= 1) {
+  clearInterval(countdownRef.current);
+  setIdleWarning(false);
+
+  logoutEverywhereClientOnly().finally(() => {
+    navigate("/login?role=lecturer");
+  });
+
+  return 0;
+}
+return c - 1;
+
         });
       }, 1000);
     }, 20 * 60 * 1000);
@@ -4432,23 +4464,7 @@ async function clearNotificationsServerBacked() {
     <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
   <div className="font-semibold text-slate-900">Notifications</div>
 
-{/*<button 
-  type="button"
-  onClick={clearNotificationsServerBacked}
-  className="ml-auto text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
-  title="Mark all notifications as read"
->
-  Clear
-</button>*/}
 
-{/*<button
-  type="button"
-  onClick={clearNotificationsServerBacked}
-  className="ml-auto cursor-pointer text-xs rounded-full border border-slate-200 px-3 py-1 hover:bg-slate-50"
-  title="Mark all notifications as read"
->
-  Clear
-</button>*/}
 <button
   type="button"
   onClick={(e) => {
@@ -4561,9 +4577,6 @@ async function clearNotificationsServerBacked() {
 
               
              
-
-      
-
       {/* Idle warning modal */}
       {idleWarning && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -4579,12 +4592,28 @@ async function clearNotificationsServerBacked() {
               >
                 Stay Logged In
               </button>
-              <button
+              {/*<button
                 className="rounded bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
                 onClick={() => { setIdleWarning(false); if (countdownRef.current) clearInterval(countdownRef.current); navigate("/login?role=lecturer"); }}
               >
                 Log out
-              </button>
+              </button>*/}
+
+              <button
+  className="rounded bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
+  onClick={async () => {
+    setIdleWarning(false);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
+    await logoutEverywhereClientOnly();
+
+    navigate("/login?role=lecturer");
+  }}
+>
+  Log out
+</button>
+
+
             </div>
           </div>
         </div>

@@ -58,6 +58,7 @@ import AdminFundedGraduateAdmissionList from "./pages/AdminFundedGraduateAdmissi
 import Footer from "./components/Footer.jsx";
 
 import { getLoggedInUser } from "./lib/authState.js";
+import AuthCallback from "./pages/AuthCallback.jsx";
 
 function PageWrap({ title, children }) {
   return (
@@ -206,6 +207,8 @@ export default function App() {
         {/*<Route path="/student-marketplace" element={<Navigate to="/marketplace" replace />} />*/}
         <Route path="/student-marketplace" element={<StudentMarketplace />} />
         </Route>
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        
          
 
 

@@ -10,6 +10,7 @@ import { verifyTurnstileToken } from "../lib/turnstileVerify";
 import { login as apiLogin } from "../lib/api"; // ONLY for /api/auth/login
 import { apiCompletePasswordReset } from "../lib/api";
 import useNoIndex from "../lib/useNoIndex";
+import { loginWithGoogle } from "../lib/googleLogin";
 /* ---------- Local helpers ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 function trySetItem(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; } }
@@ -323,6 +324,20 @@ export default function Login() {
   const [newPass, setNewPass] = useState("");
   const [newPass2, setNewPass2] = useState("");
   const [resetMsg, setResetMsg] = useState("");
+
+  // ✅ Google login wrapper: remember selected role before redirecting
+const onGoogleLogin = async () => {
+  setError(""); // keep if you already have it
+
+  // ✅ Persist chosen role for AuthCallback to use after Google returns
+  try { sessionStorage.setItem("oauthRole", role); } catch {}
+
+  // (optional but recommended) remember where they came from
+  try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
+
+  // ✅ always redirect to Google Hosted UI
+  await loginWithGoogle();
+};
 
   /* ====== LOGIN HANDLER ====== */
   const onSubmitLogin = async (e) => {
@@ -1019,6 +1034,28 @@ if (serverRole === "lecturer") {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </label>
+
+                {/* ✅ Google Hosted UI (works for both student & lecturer; role can be inferred later) */}
+                      {/*<button
+                   type="button"
+                       onClick={onGoogleLogin}
+                    className="w-full rounded-lg border px-4 py-2 text-sm font-semibold bg-white hover:bg-slate-50"
+                          >
+                       Continue with Google
+                    </button>*/}
+                    <button
+  type="button"
+  onClick={onGoogleLogin}
+  className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2"
+>
+  <img
+    src="/images/Google icon.svg"
+    alt=""
+    className="h-5 w-5"
+  />
+  <span>Continue with Google</span>
+</button>
+
 
                 <div className="pt-1">
                   <div ref={turnstileRef} />

@@ -1,6 +1,6 @@
 // src/pages/StudentSignUp.jsx
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate,useSearchParams, Link } from "react-router-dom";
 
 import {
   getContinents,
@@ -141,6 +141,11 @@ function loadTurnstileScript() {
 export default function StudentSignUp() {
   const navigate = useNavigate();
 
+  const [sp] = useSearchParams();
+  const oauthMode = sp.get("oauth") === "1";
+  const oauthEmail = (sp.get("email") || "").trim();
+  const oauthName = (sp.get("name") || "").trim();
+
   /* ----------------- FORM STATE ----------------- */
   const [form, setForm] = useState({
     name: "",
@@ -159,6 +164,22 @@ export default function StudentSignUp() {
   });
 
   const [error, setError] = useState("");
+
+  /* ----------------- OAUTH PREFILL (Google) ----------------- */
+  useEffect(() => {
+    if (!oauthMode) return;
+
+    // Prefill what Google provided
+    if (oauthEmail) {
+      setForm((f) => ({ ...f, email: oauthEmail }));
+    }
+    if (oauthName) {
+      setForm((f) => ({ ...f, name: oauthName }));
+    }
+
+    // Important: do NOT set dummy passwords here.
+    // OAuth sign-up should not require a password at all.
+  }, [oauthMode, oauthEmail, oauthName]);
 
   /* ----------------- PHOTO (S3 URL) ----------------- */
   const [photo, setPhoto] = useState(null); // SingleImageUploader output
@@ -251,12 +272,26 @@ export default function StudentSignUp() {
     e.preventDefault();
     setError("");
 
-    const required = [
+    /*const required = [
       "name",
       "gender",
       "email",
       "password",
       "confirmPassword",
+      "continent",
+      "country",
+      "university",
+      "faculty",
+      "program",
+      "year",
+      "agree",
+    ];*/
+
+    const required = [
+      "name",
+      "gender",
+      "email",
+      ...(oauthMode ? [] : ["password", "confirmPassword"]),
       "continent",
       "country",
       "university",
@@ -272,7 +307,9 @@ export default function StudentSignUp() {
     if (missing.length)
       return setError("Please complete all fields.");
 
-    if (form.password !== form.confirmPassword)
+    /*if (form.password !== form.confirmPassword)
+      return setError("Passwords do not match.");*/
+     if (!oauthMode && form.password !== form.confirmPassword)
       return setError("Passwords do not match.");
 
     if (!turnstileToken)
@@ -288,7 +325,8 @@ export default function StudentSignUp() {
     }
 
     // Hash password ONCE
-    const passwordHash = await sha256Hex(form.password);
+    /*const passwordHash = await sha256Hex(form.password);*/
+    const passwordHash = oauthMode ? "" : await sha256Hex(form.password);
 
     // Build profile object
     const profile = {
@@ -310,6 +348,11 @@ export default function StudentSignUp() {
     let backendResp;
     try {
       backendResp = await apiRegisterStudent({
+        // Only send password fields for traditional sign-up
+        ...(!oauthMode ? { password: form.password, passwordHash } : {}),
+
+        // Optional: let backend know this is OAuth profile creation
+        ...(oauthMode ? { oauth: true, authProvider: "google" } : {}),
         email: emailNorm,
         password: form.password,     // ✅ NEW (Cognito)
         passwordHash,
@@ -378,7 +421,12 @@ export default function StudentSignUp() {
     }
 
     /* ---------------- LOCAL MIRRORS ----------------- */
-    sessionStorage.setItem("currentPassword", form.password);
+    /*sessionStorage.setItem("currentPassword", form.password);*/
+      if (!oauthMode) {
+      sessionStorage.setItem("currentPassword", form.password);
+    } else {
+      sessionStorage.removeItem("currentPassword");
+    }
 
     const id = `u_${Date.now()}`;
     const newUser = {
@@ -519,17 +567,27 @@ export default function StudentSignUp() {
               </select>
             </label>
 
-            <input
+            {/*<input
               name="email"
               type="email"
               className="w-full border rounded px-3 py-2"
               placeholder="Email"
               value={form.email}
               onChange={onBasic}
+            />*/}
+
+             <input
+              name="email"
+              type="email"
+              readOnly={oauthMode}
+              className={`w-full border rounded px-3 py-2 ${oauthMode ? "bg-slate-100" : ""}`}
+              placeholder="Email"
+              value={form.email}
+              onChange={onBasic}
             />
 
             {/* PASSWORD (enhanced UX, no backend changes) */}
-            <div className="space-y-2">
+            {/*<div className="space-y-2">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <input
@@ -541,7 +599,7 @@ export default function StudentSignUp() {
                     onChange={onBasic}
                   />
 
-                  {/* Strength meter */}
+          
                   {pw.length > 0 && (
                     <div className="text-xs">
                       <div className="flex items-center justify-between gap-2">
@@ -597,7 +655,7 @@ export default function StudentSignUp() {
                     onChange={onBasic}
                   />
 
-                  {/* Match indicator */}
+        
                   {pwTouched && cpw.length > 0 && (
                     <div className={`text-xs ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
                       {passwordsMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
@@ -609,7 +667,94 @@ export default function StudentSignUp() {
               <div className="text-xs text-slate-600">
                 Use 12+ characters with upper/lowercase letters, a number, and a symbol.
               </div>
+            </div>*/}
+
+            {!oauthMode && (
+  <>
+    {/* PASSWORD (enhanced UX, no backend changes) */} 
+    <div className="space-y-2">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <input
+            name="password"
+            type="password"
+            className="w-full border rounded px-3 py-2"
+            placeholder="Password"
+            value={form.password}
+            onChange={onBasic}
+          />
+
+          {/* Strength meter */}
+          {pw.length > 0 && (
+            <div className="text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-600">
+                  Strength:{" "}
+                  <span className="font-semibold text-slate-900">
+                    {pwStrength.label}
+                  </span>
+                </span>
+
+                <button
+                  type="button"
+                  className="text-[#1a73e8] underline whitespace-nowrap"
+                  onClick={() => {
+                    const gen = generateStrongPassword(14);
+                    setForm((f) => ({
+                      ...f,
+                      password: gen,
+                      confirmPassword: gen,
+                    }));
+                  }}
+                  title="Generate a strong password"
+                >
+                  Generate strong password
+                </button>
+              </div>
+
+              <div className="mt-1 h-2 w-full rounded bg-slate-200 overflow-hidden">
+                <div
+                  className="h-full rounded bg-[#1a73e8]"
+                  style={{ width: `${(pwStrength.score / 5) * 100}%` }}
+                />
+              </div>
+
+              {pwStrength.tips.length > 0 && (
+                <div className="mt-1 text-slate-600">
+                  Suggestions: {pwStrength.tips.slice(0, 2).join(" • ")}
+                </div>
+              )}
             </div>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <input
+            name="confirmPassword"
+            type="password"
+            className={`w-full border rounded px-3 py-2 ${
+              passwordsMatch ? "border-green-400" : passwordsMismatch ? "border-red-400" : ""
+            }`}
+            placeholder="Confirm password"
+            value={form.confirmPassword}
+            onChange={onBasic}
+          />
+
+          {/* Match indicator */}
+          {pwTouched && cpw.length > 0 && (
+            <div className={`text-xs ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
+              {passwordsMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="text-xs text-slate-600">
+        Use 12+ characters with upper/lowercase letters, a number, and a symbol.
+      </div>
+    </div>
+  </>
+)}
 
             {/* CONTINENT */}
             <label className="block">
