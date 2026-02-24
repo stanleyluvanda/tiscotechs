@@ -314,7 +314,7 @@ export default function Home() {
       and achieve together.
     </p>
 
-    <div className="mt-6 flex flex-wrap gap-3 justify-center">
+    {/*<div className="mt-6 flex flex-wrap gap-3 justify-center">
       <Link
         to="/student-sign-up"
         className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
@@ -335,9 +335,55 @@ export default function Home() {
       >
         Partner with Us
       </Link>
-    </div>
+    </div>*/}
+
+    <div className="mt-6 flex flex-wrap gap-3 justify-center">
+  <Link
+    to="/student-sign-up"
+    className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+  >
+    Student Sign Up
+  </Link>
+
+  <Link
+    to="/lecturer-sign-up"
+    className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+  >
+    Lecturer Sign Up
+  </Link>
+
+  <Link
+    to="/partner"
+    className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+  >
+    Partner with Us
+  </Link>
+</div>
+
+{/* ✅ One row under the whole button alignment */}
+<div className="mt-3 flex justify-center gap-6 text-xs text-white/85">
+  <Link to="/privacy-policy" className="hover:underline">
+    Privacy Policy
+  </Link>
+  <Link to="/terms-of-use" className="hover:underline">
+    Terms of Use
+  </Link>
+</div>
+
+
+
+
+
   </div>
 </section>
+
+
+
+
+
+
+
+
 
       {/* 7) Footer */}
       <footer className="bg-blue-900 text-white py-6 text-center text-sm">
