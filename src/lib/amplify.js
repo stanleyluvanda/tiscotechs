@@ -8,10 +8,12 @@ const domain = String(import.meta.env.VITE_COGNITO_DOMAIN || "").trim();
 const redirectIn =
   String(import.meta.env.VITE_COGNITO_REDIRECT_SIGNIN || "").trim() ||
   "http://localhost:5176/auth/callback";
+  "https://www.scholarsknowledge.com/auth/callback"
 
 const redirectOut =
   String(import.meta.env.VITE_COGNITO_REDIRECT_SIGNOUT || "").trim() ||
   "http://localhost:5176/login";
+  "https://www.scholarsknowledge.com/login"
 
 const SCOPES = ["openid", "email", "profile"];
 
