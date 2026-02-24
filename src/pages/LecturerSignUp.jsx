@@ -11,6 +11,7 @@ import {
 
 import SingleImageUploader from "../components/upload/SingleImageUploader";
 import { apiRegisterLecturer } from "../lib/api";
+import { loginWithGoogle } from "../lib/googleLogin";
 
 // Small rectangular flag PNG (24x18)
 const flagPng = (code) =>
@@ -242,6 +243,14 @@ export default function LecturerSignUp() {
 
   const onFaculty = (e) =>
     setForm((f) => ({ ...f, faculty: e.target.value }));
+
+// ✅ Google OAuth entry for Lecturer signup (doesn't touch backend)
+  const onGoogleSignup = async () => {
+    setError("");
+    try { sessionStorage.setItem("oauthRole", "lecturer"); } catch {}
+    try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
+    await loginWithGoogle();
+  };
 
   /* ------------------ Submit ------------------ */
   const onSubmit = async (e) => {
@@ -521,6 +530,24 @@ try {
                 {error}
               </p>
             )}
+
+
+            {/* ✅ Continue with Google (Lecturer) */}
+  {!oauthMode && (
+    <button
+      type="button"
+      onClick={onGoogleSignup}
+      className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2 bg-white hover:bg-slate-50"
+    >
+      <img src="/images/Google icon.svg" alt="" className="h-5 w-5" />
+      <span>Continue with Google</span>
+    </button>
+  )}
+
+
+
+
+
 
             {/* NEW S3 PHOTO UPLOADER */}
             <SingleImageUploader

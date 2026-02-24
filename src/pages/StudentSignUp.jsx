@@ -13,6 +13,7 @@ import {
 
 import SingleImageUploader from "../components/upload/SingleImageUploader";
 import { apiRegisterStudent } from "../lib/api";
+import { loginWithGoogle } from "../lib/googleLogin";
 
 /* ---------- Helpers ---------- */
 function safeParse(json) {
@@ -266,6 +267,16 @@ export default function StudentSignUp() {
 
   const onYear = (e) =>
     setForm((f) => ({ ...f, year: e.target.value }));
+
+
+  // ✅ Google OAuth entry for Student signup (doesn't touch backend)
+  const onGoogleSignup = async () => {
+    setError("");
+    try { sessionStorage.setItem("oauthRole", "student"); } catch {}
+    try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
+    await loginWithGoogle();
+  };
+
 
   /* ----------------- SUBMIT ----------------- */
   const onSubmit = async (e) => {
@@ -539,6 +550,18 @@ export default function StudentSignUp() {
                 {error}
               </p>
             )}
+
+            {/* ✅ Continue with Google (Student) */}
+  {!oauthMode && (
+    <button
+      type="button"
+      onClick={onGoogleSignup}
+      className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2 bg-white hover:bg-slate-50"
+    >
+      <img src="/images/Google icon.svg" alt="" className="h-5 w-5" />
+      <span>Continue with Google</span>
+    </button>
+  )}
 
             {/* NEW S3 IMAGE UPLOADER */}
             <SingleImageUploader value={photo} onChange={setPhoto} folder="profiles" />
