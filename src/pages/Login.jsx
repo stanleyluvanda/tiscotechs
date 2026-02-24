@@ -227,10 +227,10 @@ export default function Login() {
     API_BASE;
 
     // ✅ Password reset API base (this is where /api/auth/forgot lives)
-const RESET_API_BASE =
+/*const RESET_API_BASE =
   (import.meta?.env?.VITE_RESET_API_BASE &&
     String(import.meta.env.VITE_RESET_API_BASE).trim()) ||
-  "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com";
+  "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com";*/
 
 
 
