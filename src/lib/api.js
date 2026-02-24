@@ -9,7 +9,8 @@ const DEV_FORCE_GATEWAY =
 // ---- Bases ----
 const RAW_API_BASE = (
   DEV_FORCE_GATEWAY
-    ? "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com"
+    /*? "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com"*/
+    ? "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com"
     : import.meta?.env?.VITE_API_BASE || "http://localhost:5001"
 ).replace(/\/+$/, "");
 
