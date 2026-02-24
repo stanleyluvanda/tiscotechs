@@ -1,13 +1,23 @@
-//src/pages/AuthCallback.jsx
+// src/pages/AuthCallback.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
 
 function apiBase() {
-  const raw =
-    (import.meta.env.VITE_AUTH_API_BASE &&
-      String(import.meta.env.VITE_AUTH_API_BASE).trim()) ||
-    "";
+  const pick = (...vals) => {
+    for (const v of vals) {
+      const s = String(v || "").trim();
+      if (s) return s;
+    }
+    return "";
+  };
+
+  const raw = pick(
+    import.meta.env.VITE_AUTH_API_BASE,
+    import.meta.env.VITE_API_BASE,
+    import.meta.env.VITE_API_URL
+  );
+
   return raw ? raw.replace(/\/+$/, "") : "";
 }
 
@@ -43,6 +53,7 @@ async function getMyEmailFromAmplify() {
         idToken.payload["cognito:username"] ||
         idToken.payload.username ||
         "";
+
       // NOTE: only return if it looks like an email
       if (String(emailFromToken).includes("@")) {
         return String(emailFromToken).trim().toLowerCase();
@@ -78,13 +89,6 @@ async function fetchProfileByEmail(email) {
   return data; // { ok, userId, role, profile, user }
 }
 
-/*function routeForRole(role) {
-  const r = String(role || "").toLowerCase();
-  if (r === "lecturer") return "/lecturer-dashboard";
-  if (r === "partner") return "/partner-welcome"; // change if your partner route differs
-  return "/student-dashboard";
-}*/
-
 function routeForRole(role) {
   const r = String(role || "").toLowerCase();
   if (r === "lecturer") return "/lecturer/dashboard";
@@ -92,17 +96,16 @@ function routeForRole(role) {
   return "/student/dashboard";
 }
 
-
-
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [msg, setMsg] = useState("Signing you in...");
 
-  /*useEffect(() => {
+  useEffect(() => {
     (async () => {
+      let email = "";
       try {
         // 1) Ensure Amplify finishes the Hosted UI redirect session
-        const email = await getMyEmailFromAmplify();
+        email = await getMyEmailFromAmplify();
         if (!email) throw new Error("MISSING_EMAIL_FROM_GOOGLE");
 
         setMsg("Loading your profile...");
@@ -120,77 +123,44 @@ export default function AuthCallback() {
         // 4) Go to correct dashboard
         navigate(routeForRole(out.role), { replace: true });
       } catch (e) {
+        const errMsg = String(e?.message || e);
         console.error("AuthCallback error:", e);
-        setMsg(`Login failed: ${String(e?.message || e)}`);
+
+        // ✅ If they authenticated with Google but do NOT have a profile yet:
+        if (errMsg === "NO_ACCOUNT") {
+          const oauthRole =
+            (sessionStorage.getItem("oauthRole") || "student").toLowerCase() ===
+            "lecturer"
+              ? "lecturer"
+              : "student";
+
+          // optional: prefill name on signup page too
+          let fullName = "";
+          try {
+            fullName = await getMyNameFromAmplify();
+          } catch {}
+
+          const qs =
+            `?oauth=1` +
+            (email ? `&email=${encodeURIComponent(email)}` : "") +
+            (fullName ? `&name=${encodeURIComponent(fullName)}` : "");
+
+          navigate(
+            oauthRole === "lecturer"
+              ? `/lecturer-sign-up${qs}`
+              : `/student-sign-up${qs}`,
+            { replace: true }
+          );
+          return;
+        }
+
+        setMsg(`Login failed: ${errMsg}`);
 
         // optional: send them back to login after a moment
         setTimeout(() => navigate("/login", { replace: true }), 1200);
       }
     })();
-  }, [navigate]);*/
-
-  useEffect(() => {
-  (async () => {
-    let email = "";
-    try {
-      // 1) Ensure Amplify finishes the Hosted UI redirect session
-      email = await getMyEmailFromAmplify();
-      if (!email) throw new Error("MISSING_EMAIL_FROM_GOOGLE");
-
-      setMsg("Loading your profile...");
-
-      // 2) Resolve role/profile from DynamoDB via your AuthHandler endpoint
-      const out = await fetchProfileByEmail(email);
-
-      // 3) Keep your current app logic working (dashboards expect currentUser)
-      const user = out.user || { email, role: out.role, ...(out.profile || {}) };
-
-      // Store in both (your app uses sessionStorage + localStorage fallback)
-      sessionStorage.setItem("currentUser", JSON.stringify(user));
-      localStorage.setItem("currentUser", JSON.stringify(user));
-
-      // 4) Go to correct dashboard
-      navigate(routeForRole(out.role), { replace: true });
-    } catch (e) {
-      const errMsg = String(e?.message || e);
-      console.error("AuthCallback error:", e);
-
-      // ✅ If they authenticated with Google but do NOT have a profile yet:
-if (errMsg === "NO_ACCOUNT") {
-  const oauthRole =
-    (sessionStorage.getItem("oauthRole") || "student").toLowerCase() === "lecturer"
-      ? "lecturer"
-      : "student";
-
-  // optional: prefill name on signup page too
-  let fullName = "";
-  try { fullName = await getMyNameFromAmplify(); } catch {}
-
-  const qs =
-    `?oauth=1` +
-    (email ? `&email=${encodeURIComponent(email)}` : "") +
-    (fullName ? `&name=${encodeURIComponent(fullName)}` : "");
-
-  navigate(
-    oauthRole === "lecturer"
-      ? `/lecturer-sign-up${qs}`
-      : `/student-sign-up${qs}`,
-    { replace: true }
-  );
-  return;
-}
-
-      setMsg(`Login failed: ${errMsg}`);
-
-      // optional: send them back to login after a moment
-      setTimeout(() => navigate("/login", { replace: true }), 1200);
-    }
-  })();
-}, [navigate]);
-
-
-
-
+  }, [navigate]);
 
   return (
     <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
