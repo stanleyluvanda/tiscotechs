@@ -1665,13 +1665,8 @@ function formatTimeAgo(input) {
 }
 
 
-
-
-
-
 /* ================== MAIN ================== */
 export default function StudentDashboard() {
-
   const navigate = useNavigate();
   useNoIndex();
 
@@ -1679,9 +1674,6 @@ export default function StudentDashboard() {
   // ✅ Read ?editProfile=1 from the URL on every render (no extra state)
   const [searchParams] = useSearchParams();
   const editProfile = searchParams.get("editProfile") === "1";
-
-
-
 
   const current = JSON.parse(
     sessionStorage.getItem("currentUser") ||
@@ -1709,17 +1701,7 @@ export default function StudentDashboard() {
     details: "",
   });
 
-
-
-
-
-
-
-
-
-
-
-
+  
 
   // ===================== Profile sync (banner/avatar) =====================
   // Uses the same API host you already use for auth/users.
@@ -4959,6 +4941,7 @@ const feedCombined = useMemo(() => {
           </span>
         )}
       </button>
+
 
       {/* Notification Tray */}
       {notifOpen && (

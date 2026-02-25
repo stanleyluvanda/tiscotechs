@@ -363,6 +363,62 @@ function roleFromPath(pathLower) {
   return null;
 }
 
+/* ============================
+   ✅ NEW: GET /api/auth/profile
+   ============================ */
+   function getQuery(event) {
+    const qs = event?.queryStringParameters || {};
+    return qs || {};
+  }
+  
+  async function handleGetAuthProfile(event, baseHeaders) {
+    try {
+      const qs = getQuery(event);
+      const email = normalizeEmail(qs.email || "");
+  
+      if (!email) {
+        return jsonResponse(400, { ok: false, error: "MISSING_EMAIL" }, baseHeaders);
+      }
+  
+      const res = await ddb.send(
+        new GetItemCommand({
+          TableName: TABLE_NAME,
+          Key: { email: { S: email } },
+        })
+      );
+  
+      if (!res.Item) {
+        return jsonResponse(404, { ok: false, error: "NO_ACCOUNT" }, baseHeaders);
+      }
+  
+      const storedRole = (res.Item.role?.S || "student").toLowerCase();
+      const profile = parseProfile(res.Item.profile?.S || "{}");
+      const userId = email;
+  
+      return jsonResponse(
+        200,
+        {
+          ok: true,
+          userId,
+          role: storedRole,
+          profile,
+          user: { email, role: storedRole, ...profile },
+        },
+        baseHeaders
+      );
+    } catch (err) {
+      console.error("AuthHandler GET /api/auth/profile error:", err);
+      return jsonResponse(
+        500,
+        { ok: false, error: "SERVER_ERROR", detail: String(err?.message || err) },
+        baseHeaders
+      );
+    }
+  }
+
+
+
+
 /**
  * POST /api/auth/<role>/get-profile
  * Body: { email }
@@ -696,7 +752,7 @@ async function handleLogin(event, baseHeaders) {
    REGISTER STUDENT
    ======================================================================= */
 
-async function handleRegisterStudent(event, baseHeaders) {
+/*async function handleRegisterStudent(event, baseHeaders) {
   const body = parseBody(event);
 
   const email = normalizeEmail(body.email);
@@ -705,7 +761,22 @@ async function handleRegisterStudent(event, baseHeaders) {
 
   if (!email || !rawPassword) {
     return jsonResponse(400, { ok: false, error: "MISSING_FIELDS" }, baseHeaders);
-  }
+  }*/
+
+  async function handleRegisterStudent(event, baseHeaders) {
+    const body = parseBody(event);
+  
+    const email = normalizeEmail(body.email);
+    const role = "student";
+  
+    const isOauth = body.oauth === true || String(body.authProvider || "").toLowerCase() === "google";
+  
+    // For traditional signup, we still require a password (existing behavior).
+    const rawPassword = body.password || body.passwordHash || "";
+  
+    if (!email || (!isOauth && !rawPassword)) {
+      return jsonResponse(400, { ok: false, error: "MISSING_FIELDS" }, baseHeaders);
+    }
 
   try {
     // Check if already exists
@@ -727,7 +798,8 @@ async function handleRegisterStudent(event, baseHeaders) {
       const pw = String(body.password || "");
       try {
         /*await cognitoCreateUserSilent(emailNorm);*/
-        await cognitoCreateUserSilent(emailNorm, body.name || body?.profile?.name || "");
+        /*await cognitoCreateUserSilent(emailNorm, body.name || body?.profile?.name || "");*/
+        await cognitoCreateUserSilent(emailNorm, body.contactName || body.orgName || "");
         const setPw = await cognitoSetPermanentPassword(emailNorm, pw);
         if (!setPw.ok) {
           console.warn(
@@ -743,10 +815,18 @@ async function handleRegisterStudent(event, baseHeaders) {
     }
     // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
 
-    const passwordToStore =
+    /*const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
         ? String(body.passwordHash)
-        : sha256Hex(rawPassword);
+        : sha256Hex(rawPassword);*/
+
+    const passwordToStore = isOauth
+        ? ""
+        : (
+            body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
+              ? String(body.passwordHash)
+              : sha256Hex(rawPassword)
+          );
 
     const profile =
       body.profile && typeof body.profile === "object"
@@ -765,7 +845,7 @@ async function handleRegisterStudent(event, baseHeaders) {
             createdAt: new Date().toISOString(),
           };
 
-    await ddb.send(
+    /*await ddb.send(
       new PutItemCommand({
         TableName: TABLE_NAME,
         Item: {
@@ -774,6 +854,24 @@ async function handleRegisterStudent(event, baseHeaders) {
           role: { S: role },
           profile: { S: JSON.stringify(profile) },
         },
+      })
+    );*/
+
+    const item = {
+      email: { S: email },
+      role: { S: role },
+      profile: { S: JSON.stringify(profile) },
+    };
+
+    // Only store passwordHash for traditional sign-up
+    if (!isOauth) {
+      item.passwordHash = { S: passwordToStore };
+    }
+
+    await ddb.send(
+      new PutItemCommand({
+        TableName: TABLE_NAME,
+        Item: item,
       })
     );
 
@@ -794,7 +892,7 @@ async function handleRegisterStudent(event, baseHeaders) {
    REGISTER LECTURER
    ======================================================================= */
 
-async function handleRegisterLecturer(event, baseHeaders) {
+/*async function handleRegisterLecturer(event, baseHeaders) {
   const body = parseBody(event);
 
   const email = normalizeEmail(body.email);
@@ -803,7 +901,24 @@ async function handleRegisterLecturer(event, baseHeaders) {
 
   if (!email || !rawPassword) {
     return jsonResponse(400, { ok: false, error: "MISSING_FIELDS" }, baseHeaders);
-  }
+  }*/
+
+  async function handleRegisterLecturer(event, baseHeaders) {
+    const body = parseBody(event);
+  
+    const email = normalizeEmail(body.email);
+    const role = "lecturer";
+  
+    const isOauth =
+      body.oauth === true ||
+      String(body.authProvider || "").toLowerCase() === "google";
+  
+    // For traditional signup, we still require a password (existing behavior).
+    const rawPassword = body.password || body.passwordHash || "";
+  
+    if (!email || (!isOauth && !rawPassword)) {
+      return jsonResponse(400, { ok: false, error: "MISSING_FIELDS" }, baseHeaders);
+    }
 
   try {
     // Check if already exists
@@ -836,10 +951,18 @@ async function handleRegisterLecturer(event, baseHeaders) {
     }
     // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
 
-    const passwordToStore =
+    /*const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
         ? String(body.passwordHash)
-        : sha256Hex(rawPassword);
+        : sha256Hex(rawPassword);*/
+
+    const passwordToStore = isOauth
+  ? ""
+  : (
+      body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
+        ? String(body.passwordHash)
+        : sha256Hex(rawPassword)
+    );
 
     const profile =
       body.profile && typeof body.profile === "object"
@@ -857,7 +980,14 @@ async function handleRegisterLecturer(event, baseHeaders) {
             createdAt: new Date().toISOString(),
           };
 
-    await ddb.send(
+           // ✅ ADD THIS BLOCK (right after profile is constructed)
+    if (isOauth) {
+      profile.authProvider = profile.authProvider || "google";
+      profile.oauth = true;
+    }
+    // ✅ END ADD BLOCK
+
+    /*await ddb.send(
       new PutItemCommand({
         TableName: TABLE_NAME,
         Item: {
@@ -866,6 +996,24 @@ async function handleRegisterLecturer(event, baseHeaders) {
           role: { S: role },
           profile: { S: JSON.stringify(profile) },
         },
+      })
+    );*/
+
+    const item = {
+      email: { S: email },
+      role: { S: role },
+      profile: { S: JSON.stringify(profile) },
+    };
+    
+    // Only store passwordHash for traditional sign-up
+    if (!isOauth) {
+      item.passwordHash = { S: passwordToStore };
+    }
+    
+    await ddb.send(
+      new PutItemCommand({
+        TableName: TABLE_NAME,
+        Item: item,
       })
     );
 
@@ -928,6 +1076,7 @@ async function handleRegisterPartner(event, baseHeaders) {
     }
     // ======================= ✅ END ADD BLOCK (KEEP CODE BELOW) =====================
 
+  
     const passwordToStore =
       body.passwordHash && /^[0-9a-f]{64}$/i.test(String(body.passwordHash))
         ? String(body.passwordHash)
@@ -1269,6 +1418,11 @@ export const handler = async (event) => {
   if (method === "GET" && path.endsWith("/api/admin/members")) {
     return handleAdminMembers(event, baseHeaders);
   }
+
+  // ✅ NEW: Auth profile lookup (DynamoDB-backed)
+if (method === "GET" && path.endsWith("/api/auth/profile")) {
+  return handleGetAuthProfile(event, baseHeaders);
+}
 
   // Existing routes (unchanged)
   if (method === "POST" && path.endsWith("/api/auth/login")) {

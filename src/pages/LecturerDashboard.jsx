@@ -41,39 +41,6 @@ const POSTS_PATH = `${POSTS_BASE}/api/posts`; // ✅ fast feed route
 const LECTURER_SCOPE = "student-dashboard";
 
 
-
-
-
-/*async function onReport({ itemType, itemId, postId, commentId="", replyId="" }) {
-  const reason = prompt("Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)", "spam");
-  if (!reason) return;
-
-  const details = prompt("Optional details (what happened?)", "") || "";
-
-  const me = user || currentUser || {}; // use whatever variable your page uses
-  const reportedByEmail = String(me.email || "").trim().toLowerCase();
-
-  try {
-    await reportContent({
-      itemType,
-      itemId,
-      postId,
-      commentId,
-      replyId,
-      scope: "student-dashboard", // or your page scope variable
-      reportedByUserId: me.id || "",
-      reportedByEmail,
-      reportedByRole: me.role || "",
-      reason,
-      details,
-    });
-    alert("Report submitted. Thank you.");
-  } catch (e) {
-    console.error("report failed", e);
-    alert(`Report failed: ${e.message}`);
-  }
-}*/
-
 async function logoutEverywhereClientOnly() {
   // 1) Cognito/Amplify session
   try { await signOut({ global: true }); } catch {}
@@ -1087,6 +1054,23 @@ function TrashIcon({ className = "w-4 h-4" }) {
   );
 }
 
+/* ---------- Unread helpers for message dock ---------- */
+function unreadForLecturerThread(t) {
+  const lr = t?.lastRead?.lecturerId || 0;
+  const msgs = Array.isArray(t?.messages) ? t.messages : [];
+  return msgs.filter(
+    (m) => m?.authorRole === "student" && (m?.createdAt || 0) > lr
+  ).length;
+}
+
+function sumUnreadLecturer(threads) {
+  const list = Array.isArray(threads) ? threads : [];
+  return list.reduce((acc, t) => acc + unreadForLecturerThread(t), 0);
+}
+
+
+
+
 /* ------------------------ Main Component ------------------------- */
 export default function LecturerDashboard() {
   const navigate = useNavigate();
@@ -1098,7 +1082,7 @@ export default function LecturerDashboard() {
   const [unseenCount, setUnseenCount] = useState(0);
   const [forceOpenKey, setForceOpenKey] = useState(null);
   const showUnreadOnly = !notifOpen; // when tray is open, show all
-
+  
 useEffect(() => {
   if (notifications && notifications.length > 0) {
     console.log("NOTIF SAMPLE", notifications[0]);
@@ -1307,7 +1291,7 @@ useEffect(() => {
 
 
   // ===== Unread messages coming from Students (badge for "Students’ Messages")
-  const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
+  /*const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
   useEffect(() => {
     const raw = localStorage.getItem("currentUser");
     const me = raw ? JSON.parse(raw) : null;
@@ -1320,7 +1304,12 @@ useEffect(() => {
       window.removeEventListener("storage", recalc);
       window.removeEventListener("contact:updated", recalc);
     };
-  }, []);
+  }, []);*/
+  /*const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
+
+useEffect(() => {
+  setUnreadStudentMsgs(sumUnreadLecturer(msgThreads));
+}, [msgThreads]);*/
 
   /* Audience labels */
   const facKey = facultyAudienceKey(user);
@@ -4451,6 +4440,7 @@ async function clearNotificationsServerBacked() {
         )}
       </button>
 
+
       {notifOpen && (
         <div className="fixed inset-0 z-[69]" onClick={() => setNotifOpen(false)}>
           <div
@@ -5901,6 +5891,7 @@ function ExpandableHtml({ html, initialChars = 280 }) {
           {open ? "Read less" : "Read more"}
         </button>
       )}
+
     </div>
   );
 }
