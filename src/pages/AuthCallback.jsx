@@ -75,8 +75,37 @@ async function getMyEmailFromAmplify() {
   throw new Error("MISSING_EMAIL_FROM_GOOGLE");
 }
 
-async function fetchProfileByEmail(email) {
+/*async function fetchProfileByEmail(email) {
   const base = apiBase();
+  const url = `${base}/api/auth/profile?email=${encodeURIComponent(email)}`;
+
+  const res = await fetch(url, { method: "GET", credentials: "include" });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || !data?.ok) {
+    const err = data?.error || res.statusText || "PROFILE_LOOKUP_FAILED";
+    throw new Error(err);
+  }
+  return data; // { ok, userId, role, profile, user }
+}*/
+
+async function fetchProfileByEmail(email) {
+  const pick = (...vals) => {
+    for (const v of vals) {
+      const s = String(v || "").trim();
+      if (s) return s;
+    }
+    return "";
+  };
+
+  // ✅ Profile endpoint lives on eovdrymvq3
+  const raw = pick(
+    import.meta.env.VITE_PROFILE_API_BASE,  // <-- NEW (eovdrymvq3)
+    import.meta.env.VITE_RESET_API_BASE,    // optional fallback (also eovdrymvq3 in your envs)
+    import.meta.env.VITE_POSTS_API_BASE     // optional fallback (also eovdrymvq3)
+  );
+
+  const base = raw ? raw.replace(/\/+$/, "") : "";
   const url = `${base}/api/auth/profile?email=${encodeURIComponent(email)}`;
 
   const res = await fetch(url, { method: "GET", credentials: "include" });
