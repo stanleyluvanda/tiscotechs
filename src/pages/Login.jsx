@@ -227,10 +227,10 @@ export default function Login() {
     API_BASE;
 
     // separate base for forgot/reset password (PasswordReset-API)
-  const RESET_API_BASE =
+  /*const RESET_API_BASE =
     (import.meta?.env?.VITE_RESET_API_BASE &&
       String(import.meta.env.VITE_RESET_API_BASE).trim()) ||
-    API_BASE;
+    API_BASE;*/
 
 
 
