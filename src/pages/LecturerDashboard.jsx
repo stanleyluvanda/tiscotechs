@@ -758,22 +758,6 @@ function AttachmentLink({ att }) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ImageGrid with paging */
 function ImageGrid({
   images = [],
@@ -1288,10 +1272,8 @@ useEffect(() => {
   saveAndBroadcastUser(user);     // the new cross-tab sync trigger
 }, [user]);
 
-
-
-  // ===== Unread messages coming from Students (badge for "Students’ Messages")
-  /*const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
+// ===== Unread messages coming from Students (badge for "Students’ Messages")
+  const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
   useEffect(() => {
     const raw = localStorage.getItem("currentUser");
     const me = raw ? JSON.parse(raw) : null;
@@ -1304,12 +1286,9 @@ useEffect(() => {
       window.removeEventListener("storage", recalc);
       window.removeEventListener("contact:updated", recalc);
     };
-  }, []);*/
-  /*const [unreadStudentMsgs, setUnreadStudentMsgs] = useState(0);
+  }, []);
 
-useEffect(() => {
-  setUnreadStudentMsgs(sumUnreadLecturer(msgThreads));
-}, [msgThreads]);*/
+
 
   /* Audience labels */
   const facKey = facultyAudienceKey(user);
