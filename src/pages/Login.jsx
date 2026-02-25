@@ -226,11 +226,11 @@ export default function Login() {
       String(import.meta.env.VITE_EMAIL_API_BASE).trim()) ||
     API_BASE;
 
-    // ✅ Password reset API base (this is where /api/auth/forgot lives)
-/*const RESET_API_BASE =
-  (import.meta?.env?.VITE_RESET_API_BASE &&
-    String(import.meta.env.VITE_RESET_API_BASE).trim()) ||
-  "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com";*/
+    // separate base for forgot/reset password (PasswordReset-API)
+  const RESET_API_BASE =
+    (import.meta?.env?.VITE_RESET_API_BASE &&
+      String(import.meta.env.VITE_RESET_API_BASE).trim()) ||
+    API_BASE;
 
 
 
