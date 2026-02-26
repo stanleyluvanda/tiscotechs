@@ -1344,43 +1344,34 @@ const updated = {
       )}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       {/* EDIT MODAL */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">Update Account Information</h3>
-              <button
-                onClick={() => {
-                  setEditOpen(false);
-                  setPwErr("");
-                  setCurrentPw("");
-                  setNewPw("");
-                  setConfirmPw("");
-                }}
-                className="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
+       <div className="fixed inset-0 z-50 bg-black/40 overflow-y-auto px-4 py-6">   
+            <div className="w-full max-w-xl mx-auto mt-32 rounded-2xl bg-white shadow-xl max-h-[calc(100vh-9rem)] flex flex-col">
+            <div className="relative px-5 py-4 border-b border-slate-200">
+  <h3 className="text-lg font-semibold text-slate-900 text-center">
+    Update Account Information
+  </h3>
 
-            <form onSubmit={saveUpdates} className="px-5 py-4">
+  <button
+    type="button"
+    onClick={() => {
+      setEditOpen(false);
+      setPwErr("");
+      setCurrentPw("");
+      setNewPw("");
+      setConfirmPw("");
+    }}
+    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+    aria-label="Close"
+    title="Close"
+  >
+    ✕
+  </button>
+</div>
+
+            {/*<form onSubmit={saveUpdates} className="px-5 py-4">*/}
+            <form onSubmit={saveUpdates} className="px-5 py-4 overflow-y-auto">
               {/* Account fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
