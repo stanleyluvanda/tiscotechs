@@ -222,14 +222,11 @@ const payload = {
 
     {/* Keep your existing layout above the background */}
     <main className="relative z-10 flex-1">
-      <section className="max-w-xl mx-auto px-4 py-12">       
+      <section className="max-w-xl mx-auto px-4 py-12">    
 
 
-
-
-
-          <h1 className="text-3xl font-bold">Partner Sign Up</h1>
-          <p className="text-slate-600 mt-1">Create an account to list scholarships on ScholarsKnowledge.</p>
+          <h1 className="text-3xl font-bold text-center">Partner Sign Up</h1>
+          <p className="text-slate-600 mt-1 text-center">Create an account to list scholarships on ScholarsKnowledge.</p>
 
           <form onSubmit={submit} className="mt-6 bg-white rounded-2xl p-6 border space-y-5">
             {err && (
@@ -237,6 +234,12 @@ const payload = {
                 {err}
               </div>
             )}
+
+             {/* S3 Logo uploader (FIRST) */}
+            <div className="space-y-1">
+              <span className="text-sm text-slate-700 font-medium">Upload Organization Logo</span>
+              <SingleImageUploader value={logo} onChange={setLogo} folder="partner-logos" />
+            </div>
 
             {/* ORG NAME */}
             <label className="block">
@@ -262,79 +265,84 @@ const payload = {
               />
             </label>
 
-            {/* Optional URL */}
+            {/* EMAIL */}
             <label className="block">
-              <span className="block text-sm text-slate-600 mb-1">Logo URL (optional)</span>
+              <span className="block text-sm text-slate-600 mb-1">Email *</span>
               <input
-                name="logoUrl"
-                value={form.logoUrl}
+                type="email"
+                name="email"
+                value={form.email}
                 onChange={onChange}
                 className="w-full border rounded px-3 py-2"
-                placeholder="https://example.edu/logo.png"
+                placeholder="organization/university@org.edu"
               />
             </label>
 
-            {/* S3 Logo uploader */}
-            <div className="space-y-1">
-              <span className="text-sm text-slate-700 font-medium">Upload Organization Logo</span>
-              <SingleImageUploader value={logo} onChange={setLogo} folder="partner-logos" />
-            </div>
+            {/* Optional URL */}
+<label className="block">
+  <span className="block text-sm text-slate-600 mb-1">Logo URL (optional)</span>
+  <input
+    name="logoUrl"
+    value={form.logoUrl}
+    onChange={onChange}
+    className="w-full border rounded px-3 py-2"
+    placeholder="https://example.edu/logo.png"
+  />
 
-            {/* S3 Banner uploader */}
-            {/*<div className="space-y-1">
-              <span className="text-sm text-slate-700 font-medium">Upload Banner (optional)</span>
-              <SingleImageUploader value={banner} onChange={setBanner} folder="partner-banners" />
-            </div>*/}
+  {/* Preview if a link is provided */}
+  {String(form.logoUrl || "").trim() && (
+    <div className="mt-3 flex items-center gap-3">
+      <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
+        <img
+          src={String(form.logoUrl || "").trim()}
+          alt="Logo preview"
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            // hide broken image without affecting any other logic
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+      <span className="text-xs text-slate-500">Preview from the logo URL.</span>
+    </div>
+  )}
+</label>
 
-            {/* EMAIL + PASSWORD */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">Email *</span>
+            {/* PASSWORD */}
+            <label className="block">
+              <span className="block text-sm text-slate-600 mb-1">Password *</span>
+              <div className="relative">
                 <input
-                  type="email"
-                  name="email"
-                  value={form.email}
+                  type={showPw ? "text" : "password"}
+                  name="password"
+                  value={form.password}
                   onChange={onChange}
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="you@org.edu"
+                  className="w-full border rounded px-3 py-2 pr-20"
+                  placeholder="••••••••"
                 />
-              </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPw((s) => !s)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600"
+                >
+                  {showPw ? "Hide" : "Show"}
+                </button>
+              </div>
 
-              <label className="block">
-                <span className="block text-sm text-slate-600 mb-1">Password *</span>
-                <div className="relative">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    name="password"
-                    value={form.password}
-                    onChange={onChange}
-                    className="w-full border rounded px-3 py-2 pr-20"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600"
-                  >
-                    {showPw ? "Hide" : "Show"}
-                  </button>
-                </div>
-
-                {form.password && (
-                  <div className="mt-2">
-                    <div className="flex gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`h-1 flex-1 rounded ${i < strength.bar ? "bg-green-500" : "bg-slate-200"}`}
-                        />
-                      ))}
-                    </div>
-                    <div className="mt-1 text-xs text-slate-600">Strength: {strength.label}</div>
+              {form.password && (
+                <div className="mt-2">
+                  <div className="flex gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded ${i < strength.bar ? "bg-green-500" : "bg-slate-200"}`}
+                      />
+                    ))}
                   </div>
-                )}
-              </label>
-            </div>
+                  <div className="mt-1 text-xs text-slate-600">Strength: {strength.label}</div>
+                </div>
+              )}
+            </label>
 
             {/* Confirm Password */}
             <label className="block">
