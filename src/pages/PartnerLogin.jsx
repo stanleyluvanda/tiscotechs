@@ -1,3 +1,4 @@
+// src/pages/PartnerLogin.jsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 
