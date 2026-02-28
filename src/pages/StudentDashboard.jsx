@@ -16,6 +16,8 @@ import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} f
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
+//import {getConversation,listPeople,listThreads,markRead,sendMessage,} from "../lib/messagingApi";
+import MessagingDock from "../components/MessagingDock";
 
 
 
@@ -1860,6 +1862,12 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
     merged.countryCode = ensureCountryCode(merged.country, merged.countryCode);
     return merged;
   });
+
+   // ✅ ADD THIS RIGHT HERE (after user exists)
+  /*const scopeKey =
+    `${user?.university || ""}#${user?.college || ""}#${user?.department || ""}`.toLowerCase();*/
+  const scopeKey =
+  `${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();
 
 
   // Presence heartbeat
@@ -5065,6 +5073,16 @@ const feedCombined = useMemo(() => {
         </div>
       )}
 
+      {/* ✅ ADD MessagingDock HERE (right before the final closing div) */}
+      <MessagingDock
+  me={{
+    userId: user.id,                 // ✅ use your actual id
+    role: "student",                 // ✅ be explicit if your user.role isn’t reliable
+    fullName: user.name,             // ✅ your dashboard uses user.name
+    avatarUrl: user.photoUrl || "",  // ✅ your dashboard uses photoUrl
+    scopeKey,
+  }}
+/>
     </div>
   );
 }

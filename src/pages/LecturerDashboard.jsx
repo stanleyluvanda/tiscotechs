@@ -16,6 +16,9 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 import { signOut } from "aws-amplify/auth";
+import MessagingDock from "../components/MessagingDock";
+
+
 
 
 
@@ -1196,6 +1199,10 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
     };
     return merged;
   });
+
+  // ✅ ADD THIS RIGHT HERE (scopeKey for MessagingDock)
+  const scopeKey =
+  `${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();
   
 
 
@@ -4587,6 +4594,18 @@ async function clearNotificationsServerBacked() {
           </div>
         </div>
       )}
+
+      {/* ✅ Messaging dock (ADD HERE, inside the page wrapper, at the very bottom) */}
+      <MessagingDock
+  me={{
+    userId: user?.userId || user?.id,
+    role: user?.role || "lecturer",
+    fullName: user?.fullName || user?.name,
+    avatarUrl: user?.avatarUrl || user?.photoUrl,
+    scopeKey,
+  }}
+/>
+
     </div>
   );
 }
@@ -5774,6 +5793,7 @@ function stripHtml(s = "") { const div = document.createElement("div"); div.inne
     </div>
   );
 }*/
+
 /* ---------- Expandable text/html ---------- */
 
 function renderTextWithHeadings(text = "") {
@@ -5853,6 +5873,7 @@ function ExpandableText({ text, initialChars = 180, className = "" }) {
           {open ? "Read less" : "Read more"}
         </button>
       )}
+     
     </div>
   );
 }
