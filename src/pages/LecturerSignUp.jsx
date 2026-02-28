@@ -42,6 +42,26 @@ function trySet(k, v) {
   } catch {}
 }
 
+
+// ✅ ADD THESE HELPERS START
+function safeStr2(x) {
+  return String(x || "").trim();
+}
+
+function buildScopeKey({ university, faculty }) {
+  const u = safeStr2(university);
+  const f = safeStr2(faculty);
+  return [u, f].filter(Boolean).join("#");
+}
+
+function buildGsiScopeRole({ scopeKey, role }) {
+  const sk = safeStr2(scopeKey);
+  const r = safeStr2(role).toLowerCase();
+  return sk && r ? `${sk}#${r}` : "";
+}
+// ✅ ADD THESE HELPERS END
+
+
 /* ---------- Password UX helpers (UI only) ---------- */
 function scorePassword(pw = "") {
   const p = String(pw || "");
@@ -319,6 +339,10 @@ if (!oauthMode) {
   passwordHash = await sha256Hex(form.password);
 }
 
+
+const scopeKey = buildScopeKey({ university: form.university, faculty: form.faculty });
+const gsi_scopeRole = buildGsiScopeRole({ scopeKey, role: "lecturer" });
+
     /* ------------------ Profile object (using S3 URL) ------------------ */
     const profile = {
       title: form.title,
@@ -329,6 +353,9 @@ if (!oauthMode) {
       countryCode: form.countryCode,
       university: form.university,
       faculty: form.faculty,
+      // ✅ add these
+      scopeKey,
+      gsi_scopeRole,
       photoUrl: photo || "", // ✅ add this
       photo: photo || "", // <--- S3 URL
     };
@@ -353,6 +380,8 @@ try {
   const payload = {
     email: emailNorm,
     role: "lecturer",
+    scopeKey,        // ✅ safe to add
+    gsi_scopeRole,   // ✅ safe to add
     profile,
     ...(oauthMode
       ? { oauth: true, authProvider: "google" }     // ✅ OAuth path (no password fields)
@@ -403,6 +432,8 @@ try {
             title: form.title,
             university: form.university,
             faculty: form.faculty, // this field currently holds Faculty/School/College/Dept selection
+            scopeKey,        // ✅ add
+            gsi_scopeRole,   // ✅ add
             photoUrl: photo || "",
             profile: { ...profile, photoUrl: photo || "" },
           },
@@ -432,6 +463,9 @@ try {
       countryCode: form.countryCode,
       university: form.university,
       faculty: form.faculty,
+      // ✅ add
+      scopeKey,
+      gsi_scopeRole,
       photoUrl: photo || "", // <--- S3 URL
       createdAt: new Date().toISOString(),
     };

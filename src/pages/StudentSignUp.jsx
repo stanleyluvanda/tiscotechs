@@ -37,6 +37,17 @@ function trySet(k, v) {
   } catch {}
 }
 
+function safeStr(x) {
+  return String(x || "").trim();
+}
+
+// scopeKey used by messaging filter: University#Faculty
+function buildScopeKey({ university, faculty }) {
+  const u = safeStr(university);
+  const f = safeStr(faculty);
+  return [u, f].filter(Boolean).join("#");
+}
+
 /* --- Local email role-check --- */
 function emailExistsForRoleLocal(email, role) {
   const em = normalizeEmail(email);
@@ -339,6 +350,8 @@ export default function StudentSignUp() {
     /*const passwordHash = await sha256Hex(form.password);*/
     const passwordHash = oauthMode ? "" : await sha256Hex(form.password);
 
+    const scopeKey = buildScopeKey({ university: form.university, faculty: form.faculty });
+
     // Build profile object
     const profile = {
       name: form.name,
@@ -353,6 +366,8 @@ export default function StudentSignUp() {
       program: form.program,
       year: form.year,
       photoUrl: photo || "", // <-- S3 URL
+      // optional (harmless): store also inside profile for convenience
+      scopeKey,
     };
 
     /* ----------------- BACKEND CALL ----------------- */
@@ -367,6 +382,8 @@ export default function StudentSignUp() {
         email: emailNorm,
         password: form.password,     // ✅ NEW (Cognito)
         passwordHash,
+        // ✅ ADD THIS scopeKey (top-level for DynamoDB column + messaging API)
+        scopeKey,
         role: "student",
         profile,
         name: form.name,

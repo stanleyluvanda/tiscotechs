@@ -73,6 +73,32 @@ function toUrl(path, base) {
   return joinUrl(base, p);
 }
 
+// ✅ ADD: safe string helpers + scopeKey builders (non-breaking)
+function safeStr(x) {
+  return String(x || "").trim();
+}
+function safeLower(x) {
+  return safeStr(x).toLowerCase();
+}
+
+// Messaging scopeKey: "University#Faculty"
+function buildScopeKeyFromProfile(profile) {
+  const u = safeStr(profile?.university);
+  const f = safeStr(profile?.faculty);
+  return [u, f].filter(Boolean).join("#");
+}
+
+// Optional (only if your backend uses it anywhere)
+function buildGsiScopeRole(scopeKey, role) {
+  const sk = safeStr(scopeKey);
+  const r = safeLower(role);
+  return sk && r ? `${sk}#${r}` : "";
+}
+
+
+
+
+
 async function parseJsonSafe(res) {
   try { return await res.json(); } catch { return {}; }
 }
@@ -238,9 +264,34 @@ export async function apiRegisterStudent(payload) {
  * Register a lecturer (same backend, different route).
  * Payload shape mirrors student: { email, passwordHash, role, profile }
  */
-export async function apiRegisterLecturer(payload) {
+/*export async function apiRegisterLecturer(payload) {
   return corePostJSON("/api/auth/register/lecturer", payload);
+}*/
+export async function apiRegisterLecturer(payload) {
+  // ✅ Non-breaking: do not mutate caller object
+  const next = { ...(payload || {}) };
+  const role = safeLower(next.role || "lecturer");
+
+  // Prefer explicit scopeKey, else derive from profile
+  const scopeKey =
+    safeStr(next.scopeKey) ||
+    safeStr(next.profile?.scopeKey) ||
+    buildScopeKeyFromProfile(next.profile);
+
+  // Attach only if we actually have one (avoid writing empty strings)
+  if (scopeKey) {
+    next.scopeKey = scopeKey;
+    next.profile = { ...(next.profile || {}), scopeKey };
+
+    // Optional: include if your backend stores/queries it
+    // next.gsi_scopeRole = buildGsiScopeRole(scopeKey, role);
+    // next.profile.gsi_scopeRole = next.gsi_scopeRole;
+  }
+
+  return corePostJSON("/api/auth/register/lecturer", next);
 }
+
+
 
 /** Login against your API (Express or serverless proxy) — STRICT */
 export async function login(payload) {
