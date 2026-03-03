@@ -4596,9 +4596,10 @@ async function clearNotificationsServerBacked() {
       )}
 
       {/* ✅ Messaging dock (ADD HERE, inside the page wrapper, at the very bottom) */}
-      <MessagingDock
+<MessagingDock
   me={{
     userId: user?.userId || user?.id,
+    email: user?.email || user?.profile?.email || "",   // ✅ add this
     role: user?.role || "lecturer",
     fullName: user?.fullName || user?.name,
     avatarUrl: user?.avatarUrl || user?.photoUrl,

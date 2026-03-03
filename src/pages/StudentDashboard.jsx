@@ -5074,12 +5074,14 @@ const feedCombined = useMemo(() => {
       )}
 
       {/* ✅ ADD MessagingDock HERE (right before the final closing div) */}
-      <MessagingDock
+      
+<MessagingDock
   me={{
-    userId: user.id,                 // ✅ use your actual id
-    role: "student",                 // ✅ be explicit if your user.role isn’t reliable
-    fullName: user.name,             // ✅ your dashboard uses user.name
-    avatarUrl: user.photoUrl || "",  // ✅ your dashboard uses photoUrl
+    userId: user.id,
+    email: user?.email || user?.profile?.email || "",   // ✅ add this
+    role: "student",
+    fullName: user.name,
+    avatarUrl: user.photoUrl || "",
     scopeKey,
   }}
 />

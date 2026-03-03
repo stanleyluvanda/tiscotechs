@@ -67,6 +67,7 @@ export default function AttachmentUploader({
   role = "student",
   folder = "attachments",
   maxFiles = MAX_FILES_DEFAULT,
+  showList = true, // ✅ NEW: controls internal preview list
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -200,40 +201,78 @@ export default function AttachmentUploader({
   return (
     <div className="space-y-2">
       {/* Drop zone + button */}
-      <div
+      {/*<div
         onDrop={onDrop}
         onDragOver={onDragOver}
-        /*className={`border-2 border-dashed rounded-lg px-4 py-3 text-sm cursor-pointer bg-slate-50 hover:bg-slate-100 ${
-          uploading ? "opacity-70 cursor-progress" : ""*/
+        className={`border-2 border-dashed rounded-lg px-4 py-3 text-sm cursor-pointer bg-slate-50 hover:bg-slate-100 ${
+          uploading ? "opacity-70 cursor-progress" : ""
           className={`border border-dashed rounded-md px-1 py-0.5 text-sm cursor-pointer bg-slate-50 hover:bg-slate-100 ${
-  uploading ? "opacity-70 cursor-progress" : ""
+  uploading ? "opacity-70 cursor-progress" : ""*/}
+  <div
+  onDrop={onDrop}
+  onDragOver={onDragOver}
+  className={`inline-block ${
+    uploading ? "opacity-70 cursor-progress" : ""
+
 
         }`}
       >
-        <label className="flex items-center justify-between gap-3 cursor-pointer">
-          <div className="flex flex-col">
-            <span className="font-medium text-slate-700">
-              Attach files (max {maxFiles})
-            </span>
-            <span className="text-xs text-slate-500">
-              Images (JPG, PNG, GIF, WebP) and documents (PDF, DOCX, PPTX, XLSX,
-              TXT). Max {formatSize(MAX_FILE_SIZE)} each.
-            </span>
-          </div>
-          <div>
-            <span className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm">
-              {uploading ? "Uploading..." : "Browse"}
-            </span>
-          </div>
-          <input
-            type="file"
-            multiple
-            accept={accept}
-            onChange={onInputChange}
-            className="hidden"
-            disabled={uploading || remainingSlots <= 0}
-          />
-        </label>
+        {/*<label className="flex items-center justify-between gap-3 cursor-pointer">*/}
+        
+
+        <label className="inline-flex items-center gap-2 cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+  {/* icons like LinkedIn (clicking anywhere still opens file picker) */}
+  <div className="inline-flex items-center gap-2">
+    {/* image icon */}
+    <span
+      className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
+      title={`Attach files/image (max ${maxFiles})`}
+      aria-label={`Attach files/image (max ${maxFiles})`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="w-5 h-5 text-slate-700"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM5 5h14v9.2l-2.6-2.6a2 2 0 0 0-2.8 0l-2.8 2.8-1.8-1.8a2 2 0 0 0-2.8 0L5 15.4V5Zm0 14v-1.8l2.8-2.8 4.6 4.6 2.8-2.8L19 18.2V19H5Z" />
+        <path d="M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+      </svg>
+    </span>
+
+    {/* link/attachment icon */}
+    <span
+      className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
+      title={`Attach files/image (max ${maxFiles})`}
+      aria-hidden="true"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="w-5 h-5 text-slate-700"
+        fill="currentColor"
+      >
+        <path d="M10.6 13.4a1 1 0 0 0 1.4 1.4l4.95-4.95a3 3 0 1 0-4.24-4.24L7.8 10.55a5 5 0 0 0 7.07 7.07l5.3-5.3a1 1 0 1 0-1.4-1.4l-5.3 5.3a3 3 0 1 1-4.24-4.24l4.95-4.95a1 1 0 1 1 1.4 1.4l-4.95 4.95Z" />
+      </svg>
+    </span>
+
+    {/* small max indicator */}
+    <span className="text-[11px] text-slate-500">max {maxFiles}</span>
+  </div>
+
+  <input
+    type="file"
+    multiple
+    accept={accept}
+    onChange={onInputChange}
+    className="hidden"
+    disabled={uploading || remainingSlots <= 0}
+  />
+</label>
+
+
+
+
+
         {remainingSlots <= 0 && (
           <p className="mt-1 text-xs text-slate-500">
             You have attached the maximum of {maxFiles} files.
@@ -249,7 +288,8 @@ export default function AttachmentUploader({
       )}
 
       {/* List of attachments */}
-      {(value || []).length > 0 && (
+      {/*{(value || []).length > 0 && (*/}
+      {showList && (value || []).length > 0 && (
         <ul className="space-y-2 text-sm">
           {value.map((att, idx) => (
             <li

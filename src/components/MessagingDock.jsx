@@ -7,21 +7,68 @@ import {
   markRead,
   sendMessage,
 } from "../lib/messagingApi";
+import AttachmentUploader from "./upload/AttachmentUploader";
 
-// NOTE: swap this with your existing uploader component if you want inline upload UI.
-// For now we allow pasting an attachment URL (CloudFront) plus optional filename.
-
+/* ---------------- Helpers ---------------- */
 function safeStr(x) {
   return String(x || "").trim();
+}
+
+function isEmail(x) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(x || "").trim());
+}
+
+// ✅ IMPORTANT: backend expects stable ids. If it's not email and not already prefixed,
+// treat it as a UID (so "u1" becomes "uid:u1").
+function normalizeUserId(x) {
+  const s = safeStr(x);
+  if (!s) return "";
+
+  // keep already-normalized ids
+  if (s.startsWith("email:") || s.startsWith("uid:")) return s;
+
+  // normalize emails
+  if (isEmail(s)) return `email:${s.toLowerCase()}`;
+
+  // if it already contains a prefix-like colon (e.g. "google:xxx"), keep as-is
+  if (s.includes(":")) return s;
+
+  // fallback: treat as uid
+  return `uid:${s}`;
 }
 
 function makeScopeKey(me) {
   return safeStr(me?.scopeKey);
 }
+// ✅ map a person to their thread row (to show unread dot per person)
+function threadForPerson(threads, personUserId) {
+  const target = normalizeUserId(personUserId);
+  return (threads || []).find((t) => normalizeUserId(t?.otherUserId) === target) || null;
+}
+
+function isImageAttachment(a) {
+  const ct = String(a?.contentType || a?.mime || "").toLowerCase();
+  const url = String(a?.url || "").toLowerCase();
+  const name = String(a?.name || a?.fileName || "").toLowerCase();
+
+  if (ct.startsWith("image/")) return true;
+  return (
+    url.match(/\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/) ||
+    name.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/)
+  );
+}
 
 export default function MessagingDock({ me }) {
-  /*const userId = safeStr(me?.userId);*/
-  const userId = safeStr(me?.userId || me?.id || me?.uid || me?.studentId || me?.lecturerId);
+  // (1) ✅ normalize MY userId used everywhere (threads, markRead, fromUserId)
+  const userId = normalizeUserId(
+  me?.email ||          // ✅ prefer email if available
+    me?.userId ||
+    me?.id ||
+    me?.uid ||
+    me?.studentId ||
+    me?.lecturerId
+);
+
   const myRole = safeStr(me?.role); // "student" or "lecturer"
   const scopeKey = makeScopeKey(me);
 
@@ -30,13 +77,34 @@ export default function MessagingDock({ me }) {
   const [q, setQ] = useState("");
 
   const [people, setPeople] = useState([]);
+  // ✅ ADD THIS RIGHT HERE
+  const [roleByUserId, setRoleByUserId] = useState(() => new Map());
   const [threads, setThreads] = useState([]);
-  const [active, setActive] = useState(null); // { threadId, otherUserId, otherName, otherAvatarUrl }
 
+  // { threadId, otherUserId, otherName, otherAvatarUrl, otherProgram? }
+  const [active, setActive] = useState(null);
   const [msgs, setMsgs] = useState([]);
-  const [msgText, setMsgText] = useState("");
 
-  // simple attachment input (url + name). Replace with your uploader if desired.
+  // separate LinkedIn-style chat window state
+  const [chatOpen, setChatOpen] = useState(false);
+  function closeChat() {
+    setChatOpen(false);
+    setActive(null);
+    setMsgs([]);
+  }
+
+  // attachment icon toggle (UI only)
+  const [attachOpen, setAttachOpen] = useState(false);
+  // ✅ upload attachments (real file/image upload)
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  // composer
+  const [msgText, setMsgText] = useState("");
+  const [composerExpanded, setComposerExpanded] = useState(false);
+  const [composerAttachments, setComposerAttachments] = useState([]); // [{url,name,contentType,key}...]
+
+  // simple attachment url + name
   const [attUrl, setAttUrl] = useState("");
   const [attName, setAttName] = useState("");
 
@@ -51,72 +119,303 @@ export default function MessagingDock({ me }) {
 
   async function refreshThreads() {
     if (!userId) return;
-    const data = await listThreads({ userId });
+    const data = await listThreads({ userId }); // already normalized
     setThreads(data.threads || []);
+    return data.threads || [];
   }
 
-  /*async function refreshPeople(search = "") {
-    if (!scopeKey || !myRole) return;
-    const data = await listPeople({ scopeKey, role: myRole, q: search });
-    setPeople(data.people || []);
-  }*/
   async function refreshPeople(search = "") {
-  if (!scopeKey || !myRole) return;
-  const data = await listPeople({ scopeKey, role: otherRole, q: search }); // ✅ target role
-  setPeople(data.people || []);
+    if (!scopeKey || !myRole) return;
+    /*const data = await listPeople({ scopeKey, role: otherRole, q: search });*/
+    const data = await listPeople({ scopeKey, role: listRole, q: search });
+    /*setPeople(data.people || []);*/
+    const arr = data.people || [];
+
+// ✅ if student is viewing Students tab, remove "me" from the list
+const filtered =
+  myRole === "student" && tab === "other"
+    ? arr.filter((p) => normalizeUserId(p?.userId || p?.email) !== userId)
+    : arr;
+
+setPeople(filtered);
+  }
+
+  const listRole = useMemo(() => {
+  // lecturer experience unchanged: they only list students
+  if (myRole === "lecturer") return "student";
+
+  // student can switch tabs
+  if (myRole === "student") {
+    return tab === "other" ? "student" : "lecturer";
+  }
+
+  // fallback
+  return "lecturer";
+}, [myRole, tab]);
+
+
+
+async function refreshRoleDirectory() {
+  if (myRole !== "student") return;   // only students need both tabs
+  if (!scopeKey) return;
+
+  try {
+    // Fetch BOTH lists (no search filtering) so badges are always correct
+    const [lec, stu] = await Promise.all([
+      listPeople({ scopeKey, role: "lecturer", q: "" }),
+      listPeople({ scopeKey, role: "student", q: "" }),
+    ]);
+
+    const next = new Map();
+
+    for (const p of lec?.people || []) {
+      const id = normalizeUserId(p?.userId || p?.email);
+      if (id) next.set(id, "lecturer");
+    }
+    for (const p of stu?.people || []) {
+      const id = normalizeUserId(p?.userId || p?.email);
+      if (id) next.set(id, "student");
+    }
+
+    setRoleByUserId(next);
+  } catch {
+    // ignore; badges will just be best-effort
+  }
 }
 
+
   async function openConversation(thread) {
-    setActive(thread);
-    // fetch messages
-    const data = await getConversation({ threadId: thread.threadId, limit: 50 });
-    setMsgs(data.messages || []);
-    // mark read
-    await markRead({ userId, threadId: thread.threadId });
-    // refresh threads to zero unread
-    await refreshThreads();
+    setChatOpen(true);
+    setAttachOpen(false);
+
+    // keep header avatar/name stable even if thread payload is partial
+    setActive((prev) => {
+      const merged = { ...(prev || {}), ...(thread || {}) };
+
+      merged.otherAvatarUrl =
+        safeStr(thread?.otherAvatarUrl) ||
+        safeStr(prev?.otherAvatarUrl) ||
+        safeStr(thread?.avatarUrl) ||
+        safeStr(prev?.avatarUrl) ||
+        "";
+
+      merged.otherName =
+        safeStr(thread?.otherName) ||
+        safeStr(prev?.otherName) ||
+        safeStr(thread?.fullName) ||
+        safeStr(prev?.fullName) ||
+        "";
+
+      merged.otherProgram =
+        safeStr(thread?.otherProgram) ||
+        safeStr(prev?.otherProgram) ||
+        "";
+
+      merged.otherRole =
+        safeStr(thread?.otherRole) ||
+        safeStr(prev?.otherRole) ||
+        "";
+
+      // normalize otherUserId if present
+      merged.otherUserId = normalizeUserId(
+        thread?.otherUserId || prev?.otherUserId
+      );
+      return merged;
+    });
+
+    setMsgs([]);
+
+    const threadId = safeStr(thread?.threadId);
+    if (!threadId) return;
+
+    try {
+      const data = await getConversation({ threadId, limit: 50 });
+      setMsgs(data.messages || []);
+    } catch {
+      setMsgs([]);
+    }
+
+    try {
+      await markRead({ userId, threadId }); // userId normalized
+    } catch {}
+
+    try {
+      await refreshThreads();
+    } catch {}
+  }
+
+  async function openChat(person) {
+    setChatOpen(true);
+    setAttachOpen(false);
+    if (!person?.userId && !person?.email) return;
+
+    // (2) ✅ normalize otherUserId consistently
+    const otherUserId = normalizeUserId(person.userId || person.email);
+    const otherName = safeStr(person.fullName); // keep titles like "Dr." / "Prof." as-is
+    const otherAvatarUrl = safeStr(person.avatarUrl);
+    const otherProgram = safeStr(person.program); // student subtitle
+
+    // open UI immediately even if no thread yet
+    setActive({
+      threadId: "",
+      otherUserId,
+      otherName,
+      otherAvatarUrl,
+      otherProgram,
+      otherRole: safeStr(person.role), // ✅ add this
+    });
+    setMsgs([]);
+
+    // find existing thread
+    let tlist = [];
+    try {
+      const data = await listThreads({ userId }); // userId normalized
+      tlist = data.threads || [];
+      setThreads(tlist);
+    } catch {
+      tlist = threads || [];
+    }
+
+    // ✅ compare normalized ids (prevents "u1" vs "uid:u1" mismatches)
+    const existing = (tlist || []).find(
+      (t) => normalizeUserId(t?.otherUserId) === otherUserId
+    );
+
+    if (existing?.threadId) {
+      await openConversation({
+        ...existing,
+        otherUserId,
+        otherName: otherName || existing.otherName || "",
+        otherAvatarUrl: otherAvatarUrl || existing.otherAvatarUrl || "",
+        otherProgram: otherProgram || existing.otherProgram || "",
+      });
+    }
+  }
+
+
+
+
+
+  // ✅ TODO: wire to your existing S3/CloudFront uploader (posts/marketplace uploader)
+  // Must return { url, name, contentType }
+  async function uploadAttachmentFile(file) {
+    // Placeholder so we don't silently fail.
+    // You will replace this function after you share your uploader helper (postsApi.js etc.)
+    throw new Error("UPLOAD_NOT_WIRED_YET");
+  }
+
+  async function onPickFiles(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ""; // allow picking the same file again
+    if (!files.length) return;
+
+    try {
+      setUploading(true);
+
+      for (const file of files) {
+        const out = await uploadAttachmentFile(file); // {url,name,contentType}
+        if (out?.url) {
+          setComposerAttachments((prev) => [
+            ...prev,
+            {
+              url: out.url,
+              name: out.name || file.name || "attachment",
+              contentType: out.contentType || file.type || "",
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert(String(err?.message || "Upload failed"));
+    } finally {
+      setUploading(false);
+      setAttachOpen(true);
+    }
   }
 
   async function handleSend() {
     if (!active) return;
-    const text = safeStr(msgText);
-    const attachments = [];
 
+    const text = safeStr(msgText);
+
+    // allow adding a pasted URL as an attachment
     const u = safeStr(attUrl);
     if (u) {
-      attachments.push({
-        url: u,
-        name: safeStr(attName) || "attachment",
-      });
+      setComposerAttachments((prev) => [
+        ...prev,
+        { url: u, name: safeStr(attName) || "attachment" },
+      ]);
     }
 
-    if (!text && attachments.length === 0) return;
+    const attachments = Array.isArray(composerAttachments)
+      ? composerAttachments
+      : [];
 
-    await sendMessage({
-      fromUserId: userId,
-      toUserId: active.otherUserId,
-      scopeKey,
-      text,
-      attachments,
-    });
+    // include immediate attachment if state hasn't flushed yet
+    const immediate = u
+      ? [{ url: u, name: safeStr(attName) || "attachment" }]
+      : [];
+    const finalAttachments = u && attachments.length === 0 ? immediate : attachments;
+
+    if (!text && finalAttachments.length === 0) return;
+
+    let out = null;
+    try {
+      out = await sendMessage({
+        // ✅ fromUserId should be the normalized userId (fixes "u1" causing backend 500)
+        fromUserId: userId,
+        // (3) ✅ normalize toUserId too
+        toUserId: normalizeUserId(active.otherUserId),
+        scopeKey,
+        text,
+        attachments: finalAttachments,
+      });
+    } catch {
+      return;
+    }
 
     setMsgText("");
     setAttUrl("");
     setAttName("");
+    setComposerAttachments([]);
+    setAttachOpen(false);
 
-    // refresh conversation + threads
-    const data = await getConversation({ threadId: active.threadId, limit: 50 });
-    setMsgs(data.messages || []);
-    await refreshThreads();
+    const newThreadId = safeStr(out?.threadId) || safeStr(active?.threadId);
+    if (newThreadId && safeStr(active?.threadId) !== newThreadId) {
+      setActive((prev) => (prev ? { ...prev, threadId: newThreadId } : prev));
+    }
+
+    if (newThreadId) {
+      try {
+        const data = await getConversation({ threadId: newThreadId, limit: 50 });
+        setMsgs(data.messages || []);
+      } catch {}
+      try {
+        await refreshThreads();
+      } catch {}
+    } else {
+      try {
+        await refreshThreads();
+      } catch {}
+    }
   }
 
   // initial load when opened
-  useEffect(() => {
+  /*useEffect(() => {
     if (!open) return;
     refreshThreads();
     refreshPeople(q);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open,tab]);*/
+
+  useEffect(() => {
+  if (!open) return;
+  refreshThreads();
+  refreshPeople(q);
+  refreshRoleDirectory(); // ✅ add this
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [open, tab]);
 
   // search debounce
   useEffect(() => {
@@ -126,27 +425,32 @@ export default function MessagingDock({ me }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, open]);
 
-  // threads polling (unread across devices)
+  // threads polling (badge across devices)
   useEffect(() => {
     if (!userId) return;
     clearInterval(pollRef.current);
-    pollRef.current = setInterval(() => {
-      // do not hammer if closed; still poll lightly for badge
+    /*pollRef.current = setInterval(() => {
       refreshThreads().catch(() => {});
-    }, open ? 6000 : 12000);
+    }, open ? 6000 : 12000);*/
+    pollRef.current = setInterval(() => {
+  refreshThreads()
+    .then(() => refreshRoleDirectory())
+    .catch(() => {});
+}, open ? 6000 : 12000);
 
     return () => clearInterval(pollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, open]);
 
-  // conversation polling when active
+  // conversation polling (only if we have threadId)
   useEffect(() => {
     clearInterval(convoPollRef.current);
-    if (!active?.threadId) return;
+    const threadId = safeStr(active?.threadId);
+    if (!threadId) return;
 
     convoPollRef.current = setInterval(async () => {
       try {
-        const data = await getConversation({ threadId: active.threadId, limit: 50 });
+        const data = await getConversation({ threadId, limit: 50 });
         setMsgs(data.messages || []);
       } catch {}
     }, 4000);
@@ -159,10 +463,75 @@ export default function MessagingDock({ me }) {
     return (threads || []).reduce((acc, t) => acc + (t.unreadCount || 0), 0);
   }, [threads]);
 
+  const unreadByOtherId = useMemo(() => {
+  const map = new Map();
+
+  for (const t of threads || []) {
+    const otherId = normalizeUserId(t?.otherUserId);
+    const c = Number(t?.unreadCount || 0);
+    if (!otherId || c <= 0) continue;
+    map.set(otherId, c);
+  }
+
+  return map;
+}, [threads]);
+
+// ✅ ADD THIS BLOCK RIGHT HERE (between unreadByOtherId and the null return)
+/*const unreadCountsByRole = useMemo(() => {
+  let lecturers = 0;
+  let students = 0;
+
+  for (const t of threads || []) {
+    const c = Number(t?.unreadCount || 0);
+    if (c <= 0) continue;
+
+    const otherId = normalizeUserId(t?.otherUserId);
+    if (!otherId) continue;
+
+    let otherRoleGuess = "";
+
+    const found = (people || []).find(
+      (p) => normalizeUserId(p?.userId || p?.email) === otherId
+    );
+    otherRoleGuess = found?.role || "";
+
+    if (otherRoleGuess === "student") students += c;
+    else if (otherRoleGuess === "lecturer") lecturers += c;
+    else lecturers += c; // fallback
+  }
+
+  return { lecturers, students };
+}, [threads, people]);*/
+
+const unreadCountsByRole = useMemo(() => {
+  let lecturers = 0;
+  let students = 0;
+
+  for (const t of threads || []) {
+    const c = Number(t?.unreadCount || 0);
+    if (c <= 0) continue;
+
+    const otherId = normalizeUserId(t?.otherUserId);
+    if (!otherId) continue;
+
+    const r = roleByUserId.get(otherId);
+
+    if (r === "student") students += c;
+    else if (r === "lecturer") lecturers += c;
+    else {
+      // fallback: if role not found, keep it under lecturers
+      lecturers += c;
+    }
+  }
+
+  return { lecturers, students };
+}, [threads, roleByUserId]);
+
+
+
   if (!userId || !myRole || !scopeKey) return null;
 
   return (
-    /*<div className="fixed bottom-4 right-4 z-50">*/
     <div className="fixed bottom-4 right-40 z-50">
       {/* collapsed pill */}
       {!open && (
@@ -176,19 +545,21 @@ export default function MessagingDock({ me }) {
             ) : null}
           </div>
           <span className="font-semibold">Messaging</span>
-          {unseen > 0 && (
-            <span className="ml-1 text-xs bg-red-600 text-white rounded-full px-2 py-0.5">
-              {unseen}
-            </span>
-          )}
+          {/*{unseen > 0 && <span className="ml-1 w-2 h-2 rounded-full bg-emerald-600" />}*/}
+          {unseen > 0 ? (
+  <span className="ml-2 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[11px] font-semibold">
+    {unseen}
+  </span>
+) : null}
+
           <span className="ml-2 text-slate-500">▲</span>
         </button>
       )}
 
-      {/* expanded tray */}
+      {/* expanded tray: list-only dock */}
       {open && (
-        /*<div className="w-[360px] h-[520px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden">*/
-        <div className="w-[360px] h-[520px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden mr-30">
+        <div className="w-[320px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+          {/* header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
@@ -197,17 +568,11 @@ export default function MessagingDock({ me }) {
                 ) : null}
               </div>
               <div className="font-semibold">Messaging</div>
-              {unseen > 0 && (
-                <span className="text-xs bg-red-600 text-white rounded-full px-2 py-0.5">
-                  {unseen}
-                </span>
-              )}
+              {unseen > 0 && <span className="w-2 h-2 rounded-full bg-emerald-600" />}
             </div>
+
             <button
-              onClick={() => {
-                setActive(null);
-                setOpen(false);
-              }}
+              onClick={() => setOpen(false)}
               className="text-slate-600 hover:text-slate-900"
               title="Close"
             >
@@ -220,192 +585,476 @@ export default function MessagingDock({ me }) {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder={`Search ${otherRole} by name`}
+              /*placeholder={`Search ${otherRole} by name`}*/
+              placeholder={`Search ${listRole} by name`}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none"
             />
           </div>
 
           {/* tabs */}
-          <div className="flex border-b border-slate-100">
+{/*<div className="flex border-b border-slate-100">
+  <button
+    onClick={() => setTab("focused")}
+    className={`flex-1 py-2 text-sm ${
+      tab === "focused"
+        ? "font-semibold border-b-2 border-emerald-600"
+        : "text-slate-500"
+    }`}
+  >
+    {myRole === "student" ? "Lecturers" : "Students"}
+  </button>
+
+  <button
+    onClick={() => setTab("other")}
+    className={`flex-1 py-2 text-sm ${
+      tab === "other"
+        ? "font-semibold border-b-2 border-emerald-600"
+        : "text-slate-500"
+    }`}
+  >
+    {myRole === "student" ? "Students" : "Other"}
+  </button>
+</div>*/}
+{/* tabs */}
+<div className="flex border-b border-slate-100">
+  <button
+    onClick={() => setTab("focused")}
+    className={`flex-1 py-2 text-sm flex items-center justify-center gap-2 ${
+      tab === "focused"
+        ? "font-semibold border-b-2 border-emerald-600"
+        : "text-slate-500"
+    }`}
+  >
+    {myRole === "student" ? "Lecturers" : "Students"}
+
+    {myRole === "student" && unreadCountsByRole.lecturers > 0 ? (
+      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[11px] font-semibold">
+        {unreadCountsByRole.lecturers}
+      </span>
+    ) : null}
+  </button>
+
+  <button
+    onClick={() => setTab("other")}
+    className={`flex-1 py-2 text-sm flex items-center justify-center gap-2 ${
+      tab === "other"
+        ? "font-semibold border-b-2 border-emerald-600"
+        : "text-slate-500"
+    }`}
+  >
+    {myRole === "student" ? "Students" : "Other"}
+
+    {myRole === "student" && unreadCountsByRole.students > 0 ? (
+      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[11px] font-semibold">
+        {unreadCountsByRole.students}
+      </span>
+    ) : null}
+  </button>
+</div>
+
+          {/* list area */}
+          <div className="flex-1 min-h-0 overflow-auto">
+            
+
+            <div className="px-3 pt-4 pb-2 text-xs font-semibold text-slate-500">
+              {/*{otherRole === "lecturer" ? "Lecturers" : "Students"}*/}
+              {listRole === "lecturer" ? "Lecturers" : "Students"}
+            </div>
+
+            {people.map((p) => {
+              const t = threadForPerson(threads, p.userId || p.email);
+              const hasUnread = (t?.unreadCount || 0) > 0;
+
+              return (
+                <button
+                  key={p.userId || p.email}
+                  onClick={() => openChat(p)}
+                  className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                      {p.avatarUrl ? (
+                        <img
+                          src={p.avatarUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : null}
+
+                      {/* ✅ unread dot */}
+                      {hasUnread ? (
+                        <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white" />
+                      ) : null}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        {/*<div className="font-semibold truncate">{p.fullName}</div>*/}
+                        {(() => {
+  const pid = normalizeUserId(p.userId || p.email);
+  const c = unreadByOtherId.get(pid) || 0;
+
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <div className="font-semibold truncate">{p.fullName}</div>
+
+      {c > 0 ? (
+        <span className="shrink-0 inline-flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-emerald-600" />
+          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[11px] font-semibold flex items-center justify-center">
+            {c}
+          </span>
+        </span>
+      ) : null}
+    </div>
+  );
+})()}
+  </div>
+
+                      {/* Optional: show last message preview if exists, otherwise program */}
+                      <div className="text-xs text-slate-500 truncate">
+                        {t?.lastText ? t.lastText : (p.program || "")}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {people.length === 0 && (
+              <div className="px-3 py-2 text-sm text-slate-500">No results.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* separate chat window next to dock (LinkedIn-style) */}
+      {chatOpen && active && (
+        <div className="fixed bottom-4 right-[485px] z-50 w-[650px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+          {/* chat header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                {active.otherAvatarUrl || active.avatarUrl ? (
+                  <img
+                    src={active.otherAvatarUrl || active.avatarUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full" />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{active.otherName || "Conversation"}</div>
+                {/*<div className="text-xs text-slate-500 truncate">
+                  {myRole === "student" ? "Lecturer" : safeStr(active.otherProgram) || "Student"}
+                </div>*/}
+
+                <div className="text-xs text-slate-500 truncate">
+                {safeStr(active?.otherRole) === "student"
+                 ? safeStr(active?.otherProgram) || "Student"
+                : "Lecturer"}
+                  </div>
+
+              </div>
+            </div>
+
             <button
-              onClick={() => setTab("focused")}
-              className={`flex-1 py-2 text-sm ${tab === "focused" ? "font-semibold border-b-2 border-emerald-600" : "text-slate-500"}`}
+              onClick={closeChat}
+              className="text-slate-600 hover:text-slate-900"
+              title="Close chat"
             >
-              Focused
-            </button>
-            <button
-              onClick={() => setTab("other")}
-              className={`flex-1 py-2 text-sm ${tab === "other" ? "font-semibold border-b-2 border-emerald-600" : "text-slate-500"}`}
-            >
-              Other
+              ✕
             </button>
           </div>
 
-          {/* content area */}
-          <div className="h-[360px] overflow-auto">
-            {/* active conversation */}
-            {active ? (
-              <div>
-                <div className="flex items-center gap-2 p-3 border-b border-slate-100">
-                  <button
-                    onClick={() => setActive(null)}
-                    className="text-slate-600 hover:text-slate-900"
-                    title="Back"
-                  >
-                    ←
-                  </button>
-                  <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-                    {active.otherAvatarUrl ? (
-                      <img src={active.otherAvatarUrl} alt="" className="w-full h-full object-cover" />
-                    ) : null}
-                  </div>
-                  <div className="font-semibold">{active.otherName || "Conversation"}</div>
-                </div>
+          {/* messages (LinkedIn rows, not bubbles) */}
+          <div className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">
+            {msgs.length === 0 ? (
+              <div className="text-sm text-slate-500">
+                No messages yet. Send the first message to start this conversation.
+              </div>
+            ) : (
+              msgs
+                .slice()
+                .reverse()
+                .map((m) => {
+                  const mine = normalizeUserId(m?.fromUserId) === userId;
 
-                <div className="p-3 space-y-2">
-                  {msgs.map((m) => {
-                    const mine = m.fromUserId === userId;
-                    return (
-                      <div key={m.messageId} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                        <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${mine ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-900"}`}>
-                          {m.text ? <div className="whitespace-pre-wrap">{m.text}</div> : null}
-                          {(m.attachments || []).map((a, idx) => (
-                            <div key={idx} className="mt-2">
-                              <a
-                                href={a.url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className={`underline ${mine ? "text-white" : "text-slate-700"}`}
-                              >
-                                {a.name || "attachment"}
-                              </a>
+                  return (
+                    <div
+                      key={m.messageId || m.sk || `${m.createdAt || ""}`}
+                      className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className="w-full">
+                        <div className="flex items-start gap-2">
+                          {/* avatar */}
+                          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                            {mine ? (
+                              me?.avatarUrl ? (
+                                <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
+                              ) : null
+                            ) : active?.otherAvatarUrl ? (
+                              <img
+                                src={active.otherAvatarUrl}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            ) : null}
+                          </div>
+
+                          <div className="min-w-0 text-left">
+                            {/* name + role + date (single line) */}
+                            <div className="text-xs text-slate-600 flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-slate-900">
+                                {mine
+                                  ? safeStr(me?.fullName || me?.name) || "You"
+                                  : active?.otherName || "User"}
+                              </span>
+
+                              <span className="text-slate-400">•</span>
+
+                              <span>
+                                {mine
+                                  ? myRole === "lecturer"
+                                    ? "Lecturer"
+                                    : safeStr(me?.program) || "Student"
+                                  : myRole === "lecturer"
+                                  ? safeStr(active?.otherProgram) || "Student"
+                                  : "Lecturer"}
+                              </span>
+
+                              <span className="text-slate-400">•</span>
+
+                              <span className="text-[11px] text-slate-400">
+                                {new Date(m.createdAt || 0).toLocaleString()}
+                              </span>
                             </div>
-                          ))}
-                          <div className={`mt-1 text-[10px] opacity-80`}>
-                            {new Date(m.createdAt).toLocaleString()}
+
+                            {/* text */}
+                            {m.text ? (
+                              <div className="mt-1 text-sm text-slate-900 whitespace-pre-wrap">
+                                {m.text}
+                              </div>
+                            ) : null}
+
+                            
+                            {/* attachments */}
+{(m.attachments || []).length > 0 ? (
+  <div className="mt-2 space-y-2">
+    {(m.attachments || []).map((a, idx) => {
+      const ct = String(a?.contentType || a?.mime || "").toLowerCase();
+      const url = String(a?.url || "").toLowerCase();
+      const name = String(a?.name || a?.fileName || "attachment");
+
+      const isImage =
+        ct.startsWith("image/") ||
+        /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/.test(url) ||
+        /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name);
+
+      return isImage ? (
+        <a
+          key={idx}
+          href={a.url}
+          target="_blank"
+          rel="noreferrer"
+          className="block"
+        >
+          <img
+            src={a.url}
+            alt={name}
+            className="max-w-[500px] w-full rounded-lg border border-slate-200 object-cover"
+            loading="lazy"
+          />
+          <div className="mt-1 text-xs text-slate-500 truncate">
+            {name}
+          </div>
+        </a>
+      ) : (
+        <a
+          key={idx}
+          href={a.url}
+          target="_blank"
+          rel="noreferrer"
+          className="block text-sm text-blue-600 hover:underline break-all"
+        >
+          {name}
+        </a>
+      );
+    })}
+  </div>
+) : null}
+
+
+
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-                  {msgs.length === 0 && (
-                    <div className="text-sm text-slate-500">No messages yet.</div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              // list view: recent threads + people directory
-              <div>
-                <div className="px-3 py-2 text-xs font-semibold text-slate-500">Recent</div>
-                {threads.map((t) => (
-                  <button
-                    key={t.threadId}
-                    onClick={() => openConversation(t)}
-                    className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden">
-                        {t.otherAvatarUrl ? (
-                          <img src={t.otherAvatarUrl} alt="" className="w-full h-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="font-semibold truncate">{t.otherName}</div>
-                          {t.unreadCount > 0 && (
-                            <span className="text-xs bg-emerald-600 text-white rounded-full px-2 py-0.5">
-                              {t.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-slate-500 truncate">{t.lastText || ""}</div>
-                      </div>
                     </div>
-                  </button>
-                ))}
-                {threads.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-slate-500">No conversations yet.</div>
-                )}
-
-                <div className="px-3 py-2 text-xs font-semibold text-slate-500 mt-2">
-                  {otherRole === "lecturer" ? "Lecturers in your department" : "Students in your department"}
-                </div>
-
-                {people.map((p) => (
-                  <button
-                    key={p.userId}
-                    onClick={() =>
-                      openConversation({
-                        threadId: p.threadId, // backend returns a deterministic threadId or we create on send
-                        otherUserId: p.userId,
-                        otherName: p.fullName,
-                        otherAvatarUrl: p.avatarUrl,
-                      })
-                    }
-                    className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden">
-                        {p.avatarUrl ? (
-                          <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold truncate">{p.fullName}</div>
-                        <div className="text-xs text-slate-500 truncate">
-                          {p.program ? p.program : ""}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-                {people.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-slate-500">No results.</div>
-                )}
-              </div>
+                  );
+                })
             )}
           </div>
 
-          {/* composer */}
+          {/* composer (LinkedIn-like) */}
           <div className="border-t border-slate-200 p-3">
-            {!active ? (
-              <div className="text-xs text-slate-500">
-                Select a person or a recent conversation to start messaging.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <textarea
-                  value={msgText}
-                  onChange={(e) => setMsgText(e.target.value)}
-                  placeholder="Write a message…"
-                  className="w-full h-16 resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none"
-                />
+<div className="relative">
+  <textarea
+    value={msgText}
+    onChange={(e) => setMsgText(e.target.value)}
+    placeholder="Write a message..."
+    className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-2 pr-10 text-sm outline-none ${
+      composerExpanded ? "h-46" : "h-14"
+    }`}
+  />
 
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    value={attUrl}
-                    onChange={(e) => setAttUrl(e.target.value)}
-                    placeholder="Attachment URL (CloudFront)"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none"
-                  />
-                  <input
-                    value={attName}
-                    onChange={(e) => setAttName(e.target.value)}
-                    placeholder="File name (optional)"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs outline-none"
-                  />
-                </div>
+  {/* ✅ Attachment preview shown in the editor area (does not push Send) */}
+{(composerAttachments || []).length > 0 ? (
+  <div className="mt-2 flex flex-wrap gap-2">
+    {composerAttachments.map((a, idx) => {
+      const isImg =
+        /^image\//i.test(String(a.contentType || "")) ||
+        /\.(png|jpe?g|gif|webp)$/i.test(String(a.url || ""));
 
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSend}
-                    className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-semibold"
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            )}
+      return (
+        <div
+          key={idx}
+          className="relative border border-slate-200 rounded-md bg-slate-50 p-1"
+        >
+          {isImg ? (
+            <img
+              src={a.url}
+              alt={a.name || "image"}
+              className="h-16 w-24 object-cover rounded"
+            />
+          ) : (
+            <a
+              href={a.url}
+              target="_blank"
+              rel="noreferrer"
+              className="block max-w-[180px] text-xs text-blue-600 underline truncate px-2 py-2"
+              title={a.name || "attachment"}
+            >
+              {a.name || "attachment"}
+            </a>
+          )}
+
+          <button
+            type="button"
+            onClick={() =>
+              setComposerAttachments((prev) => prev.filter((_, i) => i !== idx))
+            }
+            className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-white border border-slate-200 text-xs flex items-center justify-center text-slate-600 hover:text-slate-900"
+            title="Remove"
+          >
+            ✕
+          </button>
+        </div>
+      );
+    })}
+  </div>
+) : null}
+
+
+
+
+
+
+  {/* LinkedIn-style expand/collapse arrow */}
+  <button
+    type="button"
+    onClick={() => setComposerExpanded((v) => !v)}
+    className="absolute right-2 bottom-2 w-9 h-9 rounded-full border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center"
+    title={composerExpanded ? "Collapse" : "Expand"}
+  >
+    <span className="text-slate-600 text-lg leading-none">
+      {composerExpanded ? "▾" : "▴"}
+    </span>
+  </button>
+</div>
+
+            {/* queued attachments preview (put ABOVE the bottom row, so it doesn't push Send) */}
+{(composerAttachments || []).length > 0 ? (
+  <div className="mt-2 text-xs text-slate-600 space-y-1">
+    {composerAttachments.map((a, idx) => (
+      <div key={idx} className="flex items-center justify-between gap-2">
+        <span className="truncate">{a.name || "attachment"}</span>
+        <button
+          type="button"
+          className="text-slate-500 hover:text-slate-900"
+          onClick={() =>
+            setComposerAttachments((prev) => prev.filter((_, i) => i !== idx))
+          }
+          title="Remove"
+        >
+          ✕
+        </button>
+      </div>
+    ))}
+  </div>
+) : null}
+
+{/* bottom row: 📎 + attach inputs + Send */}
+<div className="mt-2 flex items-center justify-between gap-2">
+  <div className="flex items-center gap-2 min-w-0">
+    <button
+      type="button"
+      onClick={() => setAttachOpen((v) => !v)}
+      className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center shrink-0"
+      title="Add attachment"
+    >
+      <span className="text-slate-600 text-lg">📎</span>
+    </button>
+
+    {attachOpen && (
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <input
+            value={attUrl}
+            onChange={(e) => setAttUrl(e.target.value)}
+            placeholder="Paste attachment URL"
+            className="w-[220px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
+          />
+
+          <input
+            value={attName}
+            onChange={(e) => setAttName(e.target.value)}
+            placeholder="Attachment Name"
+            className="w-[130px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
+          />
+
+          <div className="shrink-0 scale-90 origin-left">
+            <AttachmentUploader
+              value={composerAttachments}
+              onChange={(arr) => {
+                const mapped = (arr || []).map((a) => ({
+                  url: a.url,
+                  name: a.fileName || "attachment",
+                  contentType: a.mime || "",
+                  key: a.key || "",
+                }));
+                setComposerAttachments(mapped);
+              }}
+              role={myRole === "lecturer" ? "lecturer" : "student"}
+              folder="messaging-attachments"
+              maxFiles={5}
+              showList={false}
+            />
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <button
+    onClick={handleSend}
+    className="rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shrink-0"
+  >
+    Send
+  </button>
+</div>
           </div>
         </div>
       )}
