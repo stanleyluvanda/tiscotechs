@@ -986,8 +986,6 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
   );
 }
 
-
-
 /* Lightbox for image preview */
 function Lightbox({ img, onClose }) {
   useEffect(() => {

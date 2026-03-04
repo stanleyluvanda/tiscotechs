@@ -770,6 +770,7 @@ export default function StudentMarketplace() {
     if (!user) navigate("/login?role=student", { replace: true });
   }, [user, navigate]);
 
+
   // ✅ Stripe/Flutterwave return handler:
   // - detects ?paid=1 or ?canceled=1
   // - refreshes entitlement instantly (with retry in case webhook is slightly delayed)
@@ -1579,6 +1580,8 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
         );
       }
     } catch (err) {
+    
+      
       // ✅ If backend blocks (402) show paywall
       const isPaywall =
         err?.status === 402 ||
@@ -2030,6 +2033,7 @@ const filtered = visibleItems
                   <Avatar url={user?.photoUrl} name={user?.name} />
                   <button
                     onClick={() => setOpenComposer(true)}
+                    
                     className="flex-1 text-left border border-slate-200 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"
                   >
                     Create a listing
@@ -2792,7 +2796,7 @@ const filtered = visibleItems
               </div>
               <div className="mt-3">
                 <div className="text-xs text-slate-500">Subscription</div>
-                <div className="text-2xl font-extrabold text-slate-900">$29.00</div>
+                <div className="text-2xl font-extrabold text-slate-900">$39.99</div>
               </div>
             </button>
 
@@ -3044,32 +3048,6 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
             </div>
           ))}
 
-          {/* Top-level composer intentionally kept disabled exactly like your current file */}
-          {/*<form onSubmit={submitTopLevel}>
-            <div className="flex items-start gap-2">
-              <textarea
-                value={text}
-                onChange={(e) => {
-                  setText(e.target.value);
-                  autoGrow(e);
-                }}
-                onInput={autoGrow}
-                placeholder={
-                  isSeller
-                    ? "Write a private message to the buyer…"
-                    : "Write a private comment to the seller…"
-                }
-                rows={1}
-                className="flex-1 border border-slate-200 rounded-2xl px-3 py-2 resize-none overflow-hidden leading-5"
-              />
-              <button
-                type="submit"
-                className="rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50"
-              >
-                Post
-              </button>
-            </div>
-          </form>*/}
         </div>
       )}
     </div>
