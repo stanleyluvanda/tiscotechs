@@ -476,33 +476,6 @@ async function refreshRoleDirectory() {
   return map;
 }, [threads]);
 
-// ✅ ADD THIS BLOCK RIGHT HERE (between unreadByOtherId and the null return)
-/*const unreadCountsByRole = useMemo(() => {
-  let lecturers = 0;
-  let students = 0;
-
-  for (const t of threads || []) {
-    const c = Number(t?.unreadCount || 0);
-    if (c <= 0) continue;
-
-    const otherId = normalizeUserId(t?.otherUserId);
-    if (!otherId) continue;
-
-    let otherRoleGuess = "";
-
-    const found = (people || []).find(
-      (p) => normalizeUserId(p?.userId || p?.email) === otherId
-    );
-    otherRoleGuess = found?.role || "";
-
-    if (otherRoleGuess === "student") students += c;
-    else if (otherRoleGuess === "lecturer") lecturers += c;
-    else lecturers += c; // fallback
-  }
-
-  return { lecturers, students };
-}, [threads, people]);*/
-
 const unreadCountsByRole = useMemo(() => {
   let lecturers = 0;
   let students = 0;
@@ -591,31 +564,7 @@ const unreadCountsByRole = useMemo(() => {
             />
           </div>
 
-          {/* tabs */}
-{/*<div className="flex border-b border-slate-100">
-  <button
-    onClick={() => setTab("focused")}
-    className={`flex-1 py-2 text-sm ${
-      tab === "focused"
-        ? "font-semibold border-b-2 border-emerald-600"
-        : "text-slate-500"
-    }`}
-  >
-    {myRole === "student" ? "Lecturers" : "Students"}
-  </button>
-
-  <button
-    onClick={() => setTab("other")}
-    className={`flex-1 py-2 text-sm ${
-      tab === "other"
-        ? "font-semibold border-b-2 border-emerald-600"
-        : "text-slate-500"
-    }`}
-  >
-    {myRole === "student" ? "Students" : "Other"}
-  </button>
-</div>*/}
-{/* tabs */}
+          
 <div className="flex border-b border-slate-100">
   <button
     onClick={() => setTab("focused")}

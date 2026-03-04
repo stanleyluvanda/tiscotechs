@@ -1358,7 +1358,8 @@ const files = mergedFiles.filter((a) => {
       {/* Lightbox */}
       {lightbox.open && (
         <div
-          className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4"
+          /*className="fixed inset-0 z-[80] bg-black/70 flex items-center justify-center p-4"*/
+          className="fixed left-0 right-0 bottom-0 top-[145px] z-[9999] bg-black/70 flex items-center justify-center p-4"
           onClick={closeLightbox}
         >
           <div
@@ -1370,7 +1371,8 @@ const files = mergedFiles.filter((a) => {
               key={lightbox.items[lightbox.index]?.id || lightbox.index}
               att={lightbox.items[lightbox.index]}
               enlarge
-              className="w-full max-h-[88vh] object-contain rounded"
+              /*className="w-full max-h-[88vh] object-contain rounded"*/
+              className="w-full max-h-[calc(100vh-165px)] object-contain rounded"
             />
 
             {/* Close */}

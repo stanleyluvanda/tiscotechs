@@ -834,7 +834,11 @@ function Lightbox({ img, onClose }) {
   }, [onClose]);
   if (!img) return null;
   return (
-    <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
+    /*<div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>*/
+      <div
+  className="fixed left-0 right-0 bottom-0 top-[140px] z-[9999] bg-black/80 flex items-center justify-center p-4"
+  onClick={onClose}
+>
       <img src={attHref(img)} alt={img.name} className="max-h-full max-w-full rounded shadow-lg" />
     </div>
   );

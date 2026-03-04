@@ -999,8 +999,18 @@ function Lightbox({ img, onClose }) {
   }, [onClose]);
   if (!img) return null;
   return (
-    <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>
-      <img src={img.dataUrl} alt={img.name} className="max-h-full max-w-full rounded shadow-lg" />
+    /*<div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={onClose}>*/
+      <div
+  className="fixed left-0 right-0 bottom-0 top-[165px] z-[9999] bg-black/80 flex items-center justify-center p-4"
+  onClick={onClose}
+>
+      {/*<img src={img.dataUrl} alt={img.name} className="max-h-full max-w-full rounded shadow-lg" />*/}
+      <img
+  src={img.dataUrl}
+  alt={img.name}
+  className="max-h-[calc(100vh-140px)] max-w-full rounded shadow-lg object-contain"
+/>
+
     </div>
   );
 }
@@ -2914,9 +2924,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }}
 />
-
-
-    </div>
+  </div>
 
     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
       <span>{post.author?.program || "Program"}</span>
