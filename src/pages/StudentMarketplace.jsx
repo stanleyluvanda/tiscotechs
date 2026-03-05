@@ -654,6 +654,11 @@ const CATEGORY_MAP = {
     "Wedges",
     "Other",
   ],
+
+
+
+
+
   "Rooms & Hostel Items": ["On-Campus rooms", "Off-Campus Rooms", "Room seekers"],
   "Sports & Fitness": [],
   Tickets: [],
@@ -2134,13 +2139,12 @@ const filtered = visibleItems
     Condition (optional)
   </option>
 
-  <option className="font-semibold text-green-600">New Arrivals</option>
+  {/*<option className="font-semibold text-green-600">New Arrivals</option>*/}
   <option className="font-semibold text-purple-600">Brand New</option>
   <option className="font-semibold text-blue-600">Used-like New</option>
   <option className="font-semibold text-blue-900">Used-Good</option>
   <option className="font-semibold text-black">Used-Fair</option>
 </select>
-
 
 
 
