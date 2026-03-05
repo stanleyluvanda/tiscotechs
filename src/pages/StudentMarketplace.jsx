@@ -521,20 +521,8 @@ function NewPostBadge() {
 
 /* ============ Categories ============ */
 const CATEGORY_MAP = {
-  Laptops: [
-    "Acer",
-    "Apple/Mac",
-    "Asus",
-    "Dell",
-    "HP",
-    "Lenovo",
-    "LG",
-    "Microsoft",
-    "MSL",
-    "Razer",
-    "Samsung",
-    "Toshiba",
-    "Otherbrands",
+  "Laptops": [ "Acer",  "Apple","Toshiba", "ASUS", "Dell","Infinix", "Razer","LG", "Lenovo", "Microsoft Surface","Samsung", "Panasonic","Alienware", "AORUS","Dynabook", "Eluktronics", "Eurocom", "Fujitsu", "Framework", "Gigabyte", "Honor", "HP", "Huawei",
+      "MSI", "Origin PC",  "Purism", "Realme",  "System76", "Tecno", "VAIO", "Xiaomi", "XMG",
   ],
   "Laptop Accessories": [
     "Adapters/Chargers",
@@ -553,7 +541,9 @@ const CATEGORY_MAP = {
     "USB hubs",
     "Other Accessories",
   ],
+
   "Laptop Bags": ["Laptop backpack", "Laptop Sleeves"],
+
   Tablets: [
     "Acer",
     "Apple/Mac",
@@ -642,7 +632,8 @@ const CATEGORY_MAP = {
     "A4Tech",
     "Other",
   ],
-  "Men's shoes": ["Athletic", "Loafers", "Slip-ons", "Sandals", "Slippers", "Other"],
+  "Men's shoes": ["Athletic", "Loafers", "Slip-ons", "Sandals", "Slippers","Boat shoes", "Boots", "Chelsea boots", "Chukka boots", "Derbies", "Dress shoes", "Flip-flops", "Hiking boots", "Moccasins", "Monk straps", "Oxfords", "Running shoes","Sneakers", "Training shoes", "Work boots", "Other"],
+  
   "Women shoes": [
     "Women sneakers",
     "Heels",
@@ -655,7 +646,27 @@ const CATEGORY_MAP = {
     "Other",
   ],
 
+  "Men's perfumes and fragrances": ["Perfumes", "Fragrances", "Afnan", "Ajmal", "Amouage", "Antonio Banderas", "Armaf", "Bvlgari", "Byredo", "Calvin Klein", "Chanel", 
+"Creed", "Davidoff", "Dior", "Dolce & Gabbana", "Giorgio Armani", "Guess", "Hugo Boss", "Issey Miyake", 
+"Jaguar", "Jean Paul Gaultier", "Lattafa", "Le Labo", "Mancera", "Maison Francis Kurkdjian (MFK)", 
+"Montale", "Nautica", "Nishane", "Paco Rabanne", "Parfums de Marly", "Penhaligon’s", "Police", "Prada", 
+"Ralph Lauren", "Rasasi", "Shiseido", "Swiss Arabian", "Tom Ford", "Versace", "Xerjoff", 
+"Yves Saint Laurent (YSL)"
+    ],
 
+"Men's Clothing": ["Athletic tops", "Belts","Blazers", "Boxers", "Briefs", "Cardigans", "Coats", "Compression shirts", "Dress shirts", "Gloves", "Hats", "Hoodies", "Jackets", "Jeans", "Joggers", "Long-sleeve shirts",
+   "Overcoats", "Pants", "Polo shirts", "Puffer jackets", "Scarves", "Shirts", "Shorts", "Socks", "Suits", "Sweaters", "Sweatpants", "Sweatshirts", "Tank tops", "Ties", "Trousers", "T-shirts", "Underwear", "Vests"],    
+
+   "Women's perfumes and fragrances": ["Perfumes", "Fragrances", "Afnan", "Ajmal", "Amouage", "Armaf", "Bvlgari", "Byredo", "Calvin Klein", "Carolina Herrera", "Chanel", "Chloé", 
+    "Creed", "Dior", "Dolce & Gabbana", "Givenchy", "Giorgio Armani", "Gucci", "Issey Miyake", "Jean Paul Gaultier", "Jo Malone London", "Kayali", "Lancôme", "Lattafa", "Le Labo",
+     "Maison Francis Kurkdjian (MFK)", "Mancera", "Marc Jacobs", "Montale", "Nishane", "Paco Rabanne", "Parfums de Marly", "Penhaligon’s", "Prada", "Ralph Lauren", "Rasasi", "Swiss Arabian", 
+     "Tiffany & Co.", "Tom Ford", "Viktor & Rolf", "Xerjoff"
+   ],
+
+   "Women's Clothing": ["Athletic tops", "Belts", "Blazers", "Blouses", "Bodysuits", "Boyshorts", "Bras", "Bralettes", "Bustiers", "Camisoles", "Capris", "Cardigans", "Coats", "Compression leggings", 
+    "Corsets", "Crop tops", "Culottes", "Denim jackets", "Dresses", "Gloves", "Hats", "High‑waist pants", "Hoodies", "Jackets", "Jeans", "Jumpsuits", "Leg warmers", "Leggings", "Leather jackets", "Overalls",
+     "Panties", "Pants", "Peplum tops", "Puffer jackets", "Rompers", "Scarves", "Shapewear", "Shawls", "Shirts", "Shorts", "Skirts", "Socks", "Sports bras", "Stockings", "Sweaters", "Tank tops", "Tights", "T‑shirts",
+     "Trench coats", "Wraps", "Yoga pants"],
 
 
 
