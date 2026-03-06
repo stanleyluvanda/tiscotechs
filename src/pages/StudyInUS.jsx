@@ -3,14 +3,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 /* ---------- tiny UI helpers ---------- */
-/*function Section({ title, children }) {
-  return (
-    <section className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-      <div className="mt-2 text-sm leading-6 text-slate-700">{children}</div>
-    </section>
-  );
-}*/
 
 function Section({ title, children }) {
   return (
@@ -84,12 +76,7 @@ export default function StudyInUS() {
             Study in The U.S
           </h1>
 
-          {/*<p className="mt-1 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-            Are you in <b>Africa</b>, <b>Asia</b>, <b>Europe</b>, and want to study
-            in the U.S.? We’ve got you covered with important information about
-            U.S. higher learning education— admissions, funding, visas, campus
-            life, and more.
-          </p>*/}
+        
           <p className="mt-1 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
   Studying in the United States opens doors to one of the world’s most diverse, innovative, and academically rigorous higher‑education systems. Whether you are in <b>Africa</b>, <b>Asia</b>, <b>Europe</b>, or any other region, this guide is designed to support your journey by providing clear, reliable, and student‑focused information about U.S. universities and the pathways that lead to them.
 </p>
@@ -128,8 +115,6 @@ export default function StudyInUS() {
 
       {/* ✅ Everything else remains as-is */}
       <main className="max-w-[1200px] mx-auto px-4 lg:px-8 py-8 space-y-6">
-        {/* LAYOUT: main content + right sidebar images */}
-        {/*<div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">*/}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           {/* LEFT — content */}
           <div className="space-y-6">

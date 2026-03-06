@@ -108,6 +108,7 @@ const LEVEL_OPTIONS = [
   "PhD",
   "Undergraduate / Masters",
   "Masters / PhD",
+  "Non-Degree"
 ];
 
 /** Standardized funding choices (same vocabulary your filters expect) */

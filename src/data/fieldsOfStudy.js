@@ -18,7 +18,7 @@ export const FIELDS_OF_STUDY = [
   "Graphic Design","Health Care Management","Health Education","Health Informatics","History","Horticulture",
   "Hotel & Restaurant Management","Human Resource Management","Human Services","Humanities","HVAC","Information Systems",
   "International Relations","International Studies","Jewish Studies","Journalism","Kinesiology","Landscape Architecture",
-  "Law","Liberal Arts","Library Science","Lighting Design","Linguistics","Logistics/Supply Chain","Marketing",
+  "Law","Leadership & Management","Liberal Arts","Library Science","Lighting Design","Linguistics","Logistics/Supply Chain","Marketing",
   "Materials Science","Mathematics/Statistics","Mechanical Engineering","Medical Technology","Microbiology",
   "Molecular Biology","Museum Studies","Music","Native American Studies","Neuroscience (General)","Neuroscience (Health)",
   "Nonprofit Management","Nuclear Science","Nursing","Nursing (RN)","Nutrition/Dietetics","Occupational Therapy",
