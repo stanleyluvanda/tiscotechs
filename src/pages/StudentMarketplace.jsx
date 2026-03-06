@@ -650,8 +650,8 @@ const CATEGORY_MAP = {
 "Creed", "Davidoff", "Dior", "Dolce & Gabbana", "Giorgio Armani", "Guess", "Hugo Boss", "Issey Miyake", 
 "Jaguar", "Jean Paul Gaultier", "Lattafa", "Le Labo", "Mancera", "Maison Francis Kurkdjian (MFK)", 
 "Montale", "Nautica", "Nishane", "Paco Rabanne", "Parfums de Marly", "Penhaligon’s", "Police", "Prada", 
-"Ralph Lauren", "Rasasi", "Shiseido", "Swiss Arabian", "Tom Ford", "Versace", "Xerjoff", 
-"Yves Saint Laurent (YSL)"
+"Ralph Lauren", "Rasasi", "Shiseido", "Swiss Arabian", "Tom Ford", "Versace","Verse", "Xerjoff", 
+"Yves Saint Laurent (YSL)","Other brands"
     ],
 
 "Men's Clothing": ["Athletic tops", "Belts","Blazers", "Boxers", "Briefs", "Cardigans", "Coats", "Compression shirts", "Dress shirts", "Gloves", "Hats", "Hoodies", "Jackets", "Jeans", "Joggers", "Long-sleeve shirts",
@@ -660,7 +660,7 @@ const CATEGORY_MAP = {
    "Women's perfumes and fragrances": ["Perfumes", "Fragrances", "Afnan", "Ajmal", "Amouage", "Armaf", "Bvlgari", "Byredo", "Calvin Klein", "Carolina Herrera", "Chanel", "Chloé", 
     "Creed", "Dior", "Dolce & Gabbana", "Givenchy", "Giorgio Armani", "Gucci", "Issey Miyake", "Jean Paul Gaultier", "Jo Malone London", "Kayali", "Lancôme", "Lattafa", "Le Labo",
      "Maison Francis Kurkdjian (MFK)", "Mancera", "Marc Jacobs", "Montale", "Nishane", "Paco Rabanne", "Parfums de Marly", "Penhaligon’s", "Prada", "Ralph Lauren", "Rasasi", "Swiss Arabian", 
-     "Tiffany & Co.", "Tom Ford", "Viktor & Rolf", "Xerjoff"
+     "Tiffany & Co.", "Tom Ford", "Viktor & Rolf", "Xerjoff","Other brands"
    ],
 
    "Women's Clothing": ["Athletic tops", "Belts", "Blazers", "Blouses", "Bodysuits", "Boyshorts", "Bras", "Bralettes", "Bustiers", "Camisoles", "Capris", "Cardigans", "Coats", "Compression leggings", 
