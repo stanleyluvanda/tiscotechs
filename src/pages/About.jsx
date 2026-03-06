@@ -41,13 +41,17 @@ export default function About() {
           </h1>
 
           <p className="mt-5 text-base md:text-lg text-white/90 max-w-4xl mx-auto leading-relaxed">
-            ScholarsKnowledge is a global academic platform built to connect{" "}
+            {/*ScholarsKnowledge is a global academic platform built to connect*/}
+            ScholarsKnowledge LLC is a global academic platform committed to expanding access to education and strengthening academic communities worldwide. 
+            {" "}
             <span className="font-semibold text-white">
-              students, lecturers, and partners
+              {/*students, lecturers, and partners*/}
+              We provide a secure digital platform where students, lecturers, institutions, and education‑finance partners connect through knowledge‑sharing, academic resources, and equitable funding opportunities.
             </span>{" "}
-            through knowledge-sharing, financing opportunities, and collaborative
+            {/*through knowledge-sharing, financing opportunities, and collaborative
             growth. Our mission is to remove barriers to education by empowering
-            academic communities worldwide.
+            academic communities worldwide.*/}
+            Our mission is to remove barriers to education by delivering transparent, responsible, and sustainable services that support learning, collaboration, and global academic growth.
           </p>
 
           {/* subtle badges */}
