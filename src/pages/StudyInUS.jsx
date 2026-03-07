@@ -1,6 +1,7 @@
 // src/pages/StudyInUS.jsx
 import React from "react";
 import { Link } from "react-router-dom";
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 /* ---------- tiny UI helpers ---------- */
 
@@ -860,51 +861,98 @@ export default function StudyInUS() {
             </div>
           </div>
 
-          {/* RIGHT — image card */}
-          <aside className="space-y-6">
-            {/*<div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">*/}
-            {/*<div className="rounded-2xl border-0 bg-[#f3f6fb] p-3 shadow-sm font-['Times_New_Roman',Times,serif]">*/}
-              <div className="rounded-2xl border-0 ring-0 outline-none shadow-none bg-[#f3f6fb] p-3 font-['Times_New_Roman',Times,serif]">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-                <img
-                  className="h-full w-full object-cover"
-                  src="https://images.unsplash.com/photo-1460518451285-97b6aa326961?auto=format&fit=crop&w=1600&q=80"
-                  alt="U.S. university campus building"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src =
-                      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1400&q=80";
-                  }}
-                />
-                <div className="absolute bottom-3 right-3 flex items-center" aria-label="U.S. flag">
-                  <div className="h-16 w-[3px] bg-neutral-700/80 shadow-sm md:h-20"></div>
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg"
-                    alt="United States flag"
-                    className="ml-1 h-12 w-auto rounded-[2px] shadow-md ring-1 ring-white/80 md:h-14"
-                    loading="lazy"
-                  />
-                </div>
-              </div>
+          
+          
 
-              <div className="mt-3 aspect-[4/3] w-full overflow-hidden rounded-xl">
-                <img
-                  className="h-full w-full object-cover"
-                  src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80"
-                  alt="Students cheering"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src =
-                      "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=1200&q=80";
-                  }}
-                />
-              </div>
-            </div>
-          </aside>
+{/* RIGHT — consultation card + ads */}
+<aside className="space-y-6">
+  <div className="rounded-2xl border-0 ring-0 outline-none shadow-none bg-[#f3f6fb] p-3 font-['Times_New_Roman',Times,serif]">
+    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+      <img
+        className="h-full w-full object-cover"
+        src="/images/Study in the USA with diversity.png"
+        alt="U.S. university campus building"
+        loading="lazy"
+      />
+      <div className="absolute bottom-3 right-3 flex items-center">
+        <img
+          src="/images/study-usa-banner.png"
+          alt="Study in USA"
+          className="ml-1 h-16 w-auto rounded-md shadow-md md:h-20"
+          loading="lazy"
+        />
+      </div>
+    </div>
+
+    <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200">
+      <div className="aspect-[3/4] w-full overflow-hidden">
+        <img
+          className="h-full w-full object-cover"
+          src="/images/OneOnOne Consultation.png"
+          alt="One-on-one academic consultation"
+          loading="lazy"
+        />
+      </div>
+
+      <div className="bg-[#f8fafc] px-5 py-5 font-['Times_New_Roman',Times,serif]">
+        <div className="flex justify-center">
+          <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+            Personalized Guidance
+          </div>
+        </div>
+
+        <h3 className="mt-3 text-2xl font-bold leading-tight text-[#4B1F73]">
+          Book a One-on-One Consultation
+        </h3>
+
+        <p className="mt-3 text-[18px] leading-8 text-slate-800">
+          Schedule a 1-hour consultation for <b>$50</b> and receive personalized
+          guidance on all major aspects of studying in the United States,
+          including admissions, academic program selection, funding,
+          scholarships, visas, and preparation for campus life.
+        </p>
+
+        <div className="mt-4 grid gap-2 text-[15px] text-slate-700">
+          <div className="flex items-start gap-2">
+            <span className="mt-1 text-blue-600">•</span>
+            <span>Admissions and application planning</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-1 text-blue-600">•</span>
+            <span>Funding, scholarships, and assistantships</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-1 text-blue-600">•</span>
+            <span>Visa preparation and interview guidance</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-1 text-blue-600">•</span>
+            <span>Academic and campus-life transition support</span>
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <button
+            onClick={openCalendly}
+            className="w-full whitespace-nowrap rounded-xl bg-blue-600 px-4 py-3 text-[13px] md:text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          >
+            Check availability &amp; book ($50 / 60 min)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Google ads only below the consultation area */}
+  <GoogleSidebarAd />
+
+  <div
+    className="sticky top-[160px] pt-2 overflow-hidden"
+    style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
+  >
+    <GoogleSidebarAd />
+  </div>
+</aside>
         </div>
       </main>
 
