@@ -718,6 +718,29 @@ const canShowAds = Boolean(item);
                       </section>
                     )}
 
+                    {bannerSrc && (
+  <section className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+    <button
+      type="button"
+      onClick={() => setShowBanner(true)}
+      className="block w-full text-left"
+      title="Click to enlarge"
+    >
+      <img
+        src={bannerSrc}
+        alt={`${provider || title} banner`}
+        className="w-full h-auto object-contain bg-white"
+        loading="lazy"
+      />
+    </button>
+    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+      Click image to enlarge
+    </div>
+  </section>
+)}
+
+
+
                     {eligibility && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                       <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
