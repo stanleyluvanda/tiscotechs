@@ -709,7 +709,7 @@ const canShowAds = Boolean(item);
                     {description && (
                       
                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">
+                        <h2 className="text-lg font-semibold text-[#4B1F6F]">
                           Scholarship Description
                         </h2>
                         <div className="mt-3">
@@ -744,7 +744,7 @@ const canShowAds = Boolean(item);
                     {eligibility && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                       <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">Eligibility</h2>
+                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Eligibility</h2>
                         <div className="mt-3">
                           <RichHtml html={eligibility} />
                         </div>
@@ -754,7 +754,7 @@ const canShowAds = Boolean(item);
                     {benefits && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                         <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">Benefits</h2>
+                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Benefits</h2>
                         <div className="mt-3">
                           <RichHtml html={benefits} />
                         </div>
@@ -764,7 +764,7 @@ const canShowAds = Boolean(item);
                     {howToApply && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                       <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold">How to Apply</h2>
+                        <h2 className="text-lg font-semibold text-[#4B1F6F]">How to Apply</h2>
                         <div className="mt-3">
                           <RichHtml html={howToApply} />
                         </div>
