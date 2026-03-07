@@ -744,7 +744,7 @@ const canShowAds = Boolean(item);
                     {eligibility && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                       <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Eligibility</h2>
+                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Eligibility & Requirements</h2>
                         <div className="mt-3">
                           <RichHtml html={eligibility} />
                         </div>
