@@ -526,6 +526,7 @@ const canShowAds = Boolean(item);
     eligibility,
     benefits,
     howToApply,
+    additionalInformation,
     imageUrl,
     imageData,
     providerLogoUrl,
@@ -770,7 +771,21 @@ const canShowAds = Boolean(item);
                         </div>
                       </section>
                     )}
+
+                    {additionalInformation && (
+  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+    <h2 className="text-lg font-semibold text-[#4B1F6F]">
+      Additional Information
+    </h2>
+    <div className="mt-3">
+      <RichHtml html={additionalInformation} />
+    </div>
+  </section>
+)}
+
+
                   </div>
+
 
                   <aside className="space-y-6">
                     {bannerSrc && (

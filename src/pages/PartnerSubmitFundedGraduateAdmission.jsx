@@ -127,6 +127,17 @@ function getPartnerEmail() {
   }
 }
 
+function formatDateForDisplay(value) {
+  if (!value) return "";
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function PartnerSubmitFundedGraduateAdmission() {
   const [form, setForm] = useState({
     title: "",
@@ -136,7 +147,10 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     level: "",
     field: "",
     fundingType: [],
+    deadlineMode: "single",
     deadline: "",
+    deadlineOpen: "",
+    deadlineClose: "",
     link: "",
     partnerApplyUrl: "",
 
@@ -144,6 +158,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     eligibility: "",
     benefits: "",
     howToApply: "",
+    additionalInformation: "",
 
     amount: "",
     notes: "",
@@ -444,11 +459,13 @@ export default function PartnerSubmitFundedGraduateAdmission() {
   const eligHostRef = useRef(null);
   const beneHostRef = useRef(null);
   const howHostRef = useRef(null);
+  const additionalHostRef = useRef(null);
 
   const descQuillRef = useRef(null);
   const eligQuillRef = useRef(null);
   const beneQuillRef = useRef(null);
   const howQuillRef = useRef(null);
+  const additionalQuillRef = useRef(null);
 
   useEffect(() => {
     const init = (host, key, placeholder) => {
@@ -470,8 +487,9 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     eligQuillRef.current = init(eligHostRef.current, "eligibility", "Who qualifies? Add bullet points for clarity.");
     beneQuillRef.current = init(beneHostRef.current, "benefits", "What is funded? Tuition, stipend, etc.");
     howQuillRef.current = init(howHostRef.current, "howToApply", "Steps to apply. Include links if needed.");
+    additionalQuillRef.current = init(additionalHostRef.current,"additionalInformation","Add any extra information applicants should know.");
 
-    ["description", "eligibility", "benefits", "howToApply"].forEach((k) =>
+    ["description", "eligibility", "benefits", "howToApply","additionalInformation"].forEach((k) =>
       setForm((f) => ({ ...f, [k]: f[k] ?? "" }))
     );
 
@@ -480,6 +498,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       eligQuillRef.current = null;
       beneQuillRef.current = null;
       howQuillRef.current = null;
+      additionalQuillRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -523,6 +542,29 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       return;
     }
 
+    let finalDeadline = "";
+
+if (form.deadlineMode === "single") {
+  finalDeadline = form.deadline
+    ? formatDateForDisplay(form.deadline)
+    : "";
+} else {
+  const openText = form.deadlineOpen
+    ? formatDateForDisplay(form.deadlineOpen)
+    : "";
+  const closeText = form.deadlineClose
+    ? formatDateForDisplay(form.deadlineClose)
+    : "";
+
+  if (openText && closeText) {
+    finalDeadline = `${openText} – ${closeText}`;
+  } else if (openText) {
+    finalDeadline = `Opens ${openText}`;
+  } else if (closeText) {
+    finalDeadline = `Closes ${closeText}`;
+  }
+}
+
     const payload = {
       // ✅ the differentiator
       contentType: "FUNDED_GRAD_ADMISSION",
@@ -533,7 +575,8 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       level: form.level,
       field: form.field,
       fundingType: form.fundingType,
-      deadline: form.deadline,
+      /*deadline: form.deadline,*/
+      deadline: finalDeadline,
       link: form.link,
       partnerApplyUrl: form.partnerApplyUrl,
 
@@ -541,6 +584,8 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       eligibility: form.eligibility,
       benefits: form.benefits,
       howToApply: form.howToApply,
+      additionalInformation: form.additionalInformation,
+
 
       amount: form.amount,
       notes: form.notes,
@@ -609,6 +654,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       eligibility: "",
       benefits: "",
       howToApply: "",
+      additionalInformation: "",
       amount: "",
       notes: "",
       imageUrl: "",
@@ -636,7 +682,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       logoImportTimerRef.current = null;
     }
 
-    [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef].forEach((r) => {
+    [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef,additionalQuillRef].forEach((r) => {
       if (r.current) r.current.setContents([]);
     });
   }
@@ -763,7 +809,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
                   </select>
                 </label>
 
-                <label className="block">
+                {/*<label className="block">
                   <div className="text-sm font-medium">Deadline</div>
                   <input
                     type="date"
@@ -772,7 +818,90 @@ export default function PartnerSubmitFundedGraduateAdmission() {
                     onChange={onChange}
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
-                </label>
+                </label>*/}
+
+                {/*<label className="block">
+  <div className="text-sm font-medium">Deadline</div>
+  <input
+    type="text"
+    name="deadline"
+    value={form.deadline}
+    onChange={onChange}
+    placeholder="e.g. December 1, 2026 – January 15, 2027"
+    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  />
+  <p className="mt-1 text-xs text-slate-500">
+    You may enter a single deadline or an application window.
+  </p>
+</label>*/}
+
+<div className="block md:col-span-2">
+  <div className="text-sm font-medium">Deadline</div>
+
+  <div className="mt-2 flex flex-wrap gap-4">
+    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+      <input
+        type="radio"
+        name="deadlineMode"
+        value="single"
+        checked={form.deadlineMode === "single"}
+        onChange={onChange}
+      />
+      <span>Single deadline</span>
+    </label>
+
+    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+      <input
+        type="radio"
+        name="deadlineMode"
+        value="range"
+        checked={form.deadlineMode === "range"}
+        onChange={onChange}
+      />
+      <span>Open and close deadline</span>
+    </label>
+  </div>
+
+  {form.deadlineMode === "single" ? (
+    <div className="mt-3">
+      <input
+        type="date"
+        name="deadline"
+        value={form.deadline}
+        onChange={onChange}
+        className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+      />
+    </div>
+  ) : (
+    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label className="block">
+        <div className="text-xs text-slate-600 mb-1">Opening date</div>
+        <input
+          type="date"
+          name="deadlineOpen"
+          value={form.deadlineOpen}
+          onChange={onChange}
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="block">
+        <div className="text-xs text-slate-600 mb-1">Closing date</div>
+        <input
+          type="date"
+          name="deadlineClose"
+          value={form.deadlineClose}
+          onChange={onChange}
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </label>
+    </div>
+  )}
+
+  <p className="mt-2 text-xs text-slate-500">
+    Choose either one final deadline or an application window.
+  </p>
+</div>
 
                 <label className="block">
                   <div className="text-sm font-medium">Provider URL</div>
@@ -950,7 +1079,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
               </div>
 
               {/* Editors */}
-              <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+              {/*<div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div>
                   <div className="text-sm font-medium">Gradute Program Description</div>
                   <div
@@ -986,9 +1115,56 @@ export default function PartnerSubmitFundedGraduateAdmission() {
                     style={{ minHeight: 160 }}
                   />
                 </div>
-              </div>
+              </div>*/}
 
-              <label className="block">
+              <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+  <div>
+    <div className="text-sm font-medium">Gradute Program Description</div>
+    <div
+      ref={descHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 180 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">Admission Eligibility</div>
+    <div
+      ref={eligHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">Benefits / Funding Details</div>
+    <div
+      ref={beneHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">How to Apply</div>
+    <div
+      ref={howHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">Additional Information (optional)</div>
+    <div
+      ref={additionalHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+</div>
+
+              {/*<label className="block">
                 <div className="text-sm font-medium">Notes (internal)</div>
                 <textarea
                   name="notes"
@@ -997,7 +1173,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
                   rows="3"
                   className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                 />
-              </label>
+              </label>*/}
 
               <div className="pt-2">
                 <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
@@ -1005,9 +1181,9 @@ export default function PartnerSubmitFundedGraduateAdmission() {
                 </button>
               </div>
 
-              <div className="text-[11px] text-slate-500">
+              {/*<div className="text-[11px] text-slate-500">
                 API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
-              </div>
+              </div>*/}
             </form>
           </div>
         </div>

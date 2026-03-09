@@ -146,7 +146,7 @@ function getPartnerEmail() {
 }
 
 export default function PartnerSubmitScholarship() {
-  const [form, setForm] = useState({
+  /*const [form, setForm] = useState({
     title: "",
     provider: "",
     continent: "All", // UI only; not sent
@@ -169,34 +169,55 @@ export default function PartnerSubmitScholarship() {
     // image fields
     imageUrl: "", // hosted URL (preferred if present)
     imageData: "", // base64 data URL from local upload (fallback)
-  });
+  });*/
 
-  /*const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
-  const [uploadingImg, setUploadingImg] = useState(false);
-  const [imgPreview, setImgPreview] = useState("");
+  const [form, setForm] = useState({
+  title: "",
+  provider: "",
+  continent: "All",
+  country: "Multiple",
+  level: "",
+  field: "",
+  fundingType: [],
+  deadline: "",
+  link: "",
+  partnerApplyUrl: "",
+  description: "",
+  eligibility: "",
+  benefits: "",
+  howToApply: "",
+  additionalInformation: "",
+  amount: "",
+  notes: "",
+  imageUrl: "",
+  imageData: "",
+  providerLogoUrl: "",
+  providerLogoData: "",
+});
 
-  const partnerEmail = getPartnerEmail();
-
-  // ✅ Step A: states + helper for "paste link => CloudFront"
-  const [importingHosted, setImportingHosted] = useState(false);
-  const pendingHostedRef = useRef(""); // latest external URL being imported
-  // ✅ NEW: provider logo "paste link => CloudFront"
-  const [importingLogoHosted, setImportingLogoHosted] = useState(false);
-  const pendingLogoHostedRef = useRef("");
-  const logoImportTimerRef = useRef(null);
-  const lastLogoImportedRef = useRef("");*/
+  
 
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [uploadingImg, setUploadingImg] = useState(false);
   const [imgPreview, setImgPreview] = useState("");
+  
 
   // ✅ NEW: provider logo upload state
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoPreview, setLogoPreview] = useState("");
+  // ✅ NEW: searchable field-of-study dropdown state
+  const [fieldQuery, setFieldQuery] = useState("");
+  const [showFieldMenu, setShowFieldMenu] = useState(false);
 
   const partnerEmail = getPartnerEmail();
+
+  // ✅ NEW: filtered field-of-study options
+const filteredFields = useMemo(() => {
+  const q = String(fieldQuery || "").trim().toLowerCase();
+  if (!q) return FIELDS_OF_STUDY;
+  return FIELDS_OF_STUDY.filter((f) => f.toLowerCase().includes(q));
+}, [fieldQuery]);
 
   // ✅ Step A: states + helper for "paste link => CloudFront"
   const [importingHosted, setImportingHosted] = useState(false);
@@ -484,11 +505,13 @@ const onChange = (e) => {
   const eligHostRef = useRef(null);
   const beneHostRef = useRef(null);
   const howHostRef = useRef(null);
+  const additionalHostRef = useRef(null);
 
   const descQuillRef = useRef(null);
   const eligQuillRef = useRef(null);
   const beneQuillRef = useRef(null);
   const howQuillRef = useRef(null);
+  const additionalQuillRef = useRef(null);
 
   // Initialize Quill editors once (guard against React StrictMode double-invoke)
   useEffect(() => {
@@ -531,16 +554,23 @@ const onChange = (e) => {
       "howToApply",
       "Steps to apply. You can insert links to external sites."
     );
+    additionalQuillRef.current = init(
+      additionalHostRef.current,
+     "additionalInformation",
+     "Add any extra information applicants should know."
+    );
 
-    ["description", "eligibility", "benefits", "howToApply"].forEach((k) =>
+    ["description", "eligibility", "benefits", "howToApply","additionalInformation"].forEach((k) =>
       setForm((f) => ({ ...f, [k]: f[k] ?? "" }))
     );
+    
 
     return () => {
       descQuillRef.current = null;
       eligQuillRef.current = null;
       beneQuillRef.current = null;
       howQuillRef.current = null;
+       additionalQuillRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -654,10 +684,7 @@ const onChange = (e) => {
 
 
 
-
-
-
-    const payload = {
+    /*const payload = {
       contentType: "SCHOLARSHIP", // ✅ ADD THIS
       title: form.title,
       provider: form.provider,
@@ -683,7 +710,33 @@ const onChange = (e) => {
       partnerEmail: String(partnerEmail),
       createdAt: Date.now(),
       status: "pending",
-    };
+    };*/
+  const payload = {
+  contentType: "SCHOLARSHIP",
+  title: form.title,
+  provider: form.provider,
+  country: form.country,
+  level: form.level,
+  field: form.field,
+  fundingType: form.fundingType,
+  deadline: form.deadline,
+  link: form.link,
+  partnerApplyUrl: form.partnerApplyUrl,
+  description: form.description,
+  eligibility: form.eligibility,
+  benefits: form.benefits,
+  howToApply: form.howToApply,
+  additionalInformation: form.additionalInformation,
+  amount: form.amount,
+  notes: form.notes,
+  imageUrl: imgUrl,
+  imageData: form.imageData || "",
+  providerLogoUrl: logoUrl,
+  providerLogoData: form.providerLogoData || "",
+  partnerEmail: String(partnerEmail),
+  createdAt: Date.now(),
+  status: "pending",
+};
 
     // 1) Try backend first if API_BASE present
     if (API_BASE) {
@@ -725,7 +778,7 @@ const onChange = (e) => {
   };
 
   function resetFormAndEditors() {
-    setForm({
+    /*setForm({
       title: "",
       provider: "",
       continent: "All",
@@ -746,7 +799,30 @@ const onChange = (e) => {
       imageData: "",
       providerLogoUrl: "",
       providerLogoData: "",
-    });
+    });*/
+    setForm({
+  title: "",
+  provider: "",
+  continent: "All",
+  country: "Multiple",
+  level: "",
+  field: "",
+  fundingType: [],
+  deadline: "",
+  link: "",
+  partnerApplyUrl: "",
+  description: "",
+  eligibility: "",
+  benefits: "",
+  howToApply: "",
+  additionalInformation: "",
+  amount: "",
+  notes: "",
+  imageUrl: "",
+  imageData: "",
+  providerLogoUrl: "",
+  providerLogoData: "",
+});
     setImgPreview("");
     lastImportedRef.current = "";
     pendingHostedRef.current = "";
@@ -762,7 +838,7 @@ const onChange = (e) => {
       importTimerRef.current = null;
     }
 
-    [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef].forEach((r) => {
+    [descQuillRef, eligQuillRef, beneQuillRef, howQuillRef,additionalQuillRef].forEach((r) => {
       if (r.current) r.current.setContents([]);
     });
   }
@@ -878,7 +954,7 @@ const onChange = (e) => {
                 </label>
 
                 {/* Field of Study */}
-                <label className="block">
+                {/*<label className="block">
                   <div className="text-sm font-medium">Field of Study</div>
                   <select
                     name="field"
@@ -893,7 +969,91 @@ const onChange = (e) => {
                       </option>
                     ))}
                   </select>
-                </label>
+                </label>*/}
+
+                {/*<label className="block">
+  <div className="text-sm font-medium">Field of Study</div>
+
+  <input
+    name="field"
+    list="fields-of-study-options"
+    value={form.field}
+    onChange={onChange}
+    placeholder="Select or type field of study"
+    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  />
+
+  <datalist id="fields-of-study-options">
+    {FIELDS_OF_STUDY.map((f) => (
+      <option key={f} value={f} />
+    ))}
+  </datalist>
+</label>*/}
+
+<label className="block relative">
+  <div className="text-sm font-medium">Field of Study</div>
+
+  <input
+    type="text"
+    value={fieldQuery || form.field}
+    onFocus={() => {
+      setFieldQuery(form.field || "");
+      setShowFieldMenu(true);
+    }}
+    onChange={(e) => {
+      const v = e.target.value;
+      setFieldQuery(v);
+      setForm((f) => ({ ...f, field: v }));
+      setShowFieldMenu(true);
+    }}
+    onBlur={() => {
+      setTimeout(() => setShowFieldMenu(false), 150);
+    }}
+    placeholder="Select or type field of study"
+    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  />
+
+  {showFieldMenu && (
+    <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-md border border-slate-300 bg-white shadow-lg">
+      <button
+        type="button"
+        onMouseDown={() => {
+          setForm((f) => ({ ...f, field: "" }));
+          setFieldQuery("");
+          setShowFieldMenu(false);
+        }}
+        className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+      >
+        — Clear selection —
+      </button>
+
+      {filteredFields.map((f) => (
+        <button
+          key={f}
+          type="button"
+          onMouseDown={() => {
+            setForm((prev) => ({ ...prev, field: f }));
+            setFieldQuery(f);
+            setShowFieldMenu(false);
+          }}
+          className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+        >
+          {f}
+        </button>
+      ))}
+
+      {fieldQuery.trim() && !FIELDS_OF_STUDY.includes(fieldQuery.trim()) && (
+        <div className="border-t border-slate-200 px-3 py-2 text-sm text-slate-600 bg-slate-50">
+          Use typed field: <span className="font-medium">{fieldQuery.trim()}</span>
+        </div>
+      )}
+    </div>
+  )}
+</label>
+
+
+
+
 
                 <label className="block">
                   <div className="text-sm font-medium">Deadline</div>
@@ -1128,7 +1288,7 @@ const onChange = (e) => {
               </div>
 
               {/* Editors */}
-              <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+              {/*<div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div>
                   <div className="text-sm font-medium">Scholarship Description</div>
                   <div
@@ -1164,9 +1324,56 @@ const onChange = (e) => {
                     style={{ minHeight: 160 }}
                   />
                 </div>
-              </div>
+              </div>*/}
 
-              <label className="block">
+              <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
+  <div>
+    <div className="text-sm font-medium">Scholarship Description</div>
+    <div
+      ref={descHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 180 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">Eligibility (HTML ok)</div>
+    <div
+      ref={eligHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">Benefits (HTML ok)</div>
+    <div
+      ref={beneHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+    <div className="text-sm font-medium">How to Apply (HTML ok)</div>
+    <div
+      ref={howHostRef}
+      className="mt-2 bg-white border border-slate-300 rounded"
+      style={{ minHeight: 160 }}
+    />
+  </div>
+
+  <div>
+  <div className="text-sm font-medium">Additional Information (HTML ok)</div>
+  <div
+    ref={additionalHostRef}
+    className="mt-2 bg-white border border-slate-300 rounded"
+    style={{ minHeight: 160 }}
+  />
+</div>
+</div>
+
+              {/*<label className="block">
                 <div className="text-sm font-medium">Notes (internal)</div>
                 <textarea
                   name="notes"
@@ -1175,7 +1382,7 @@ const onChange = (e) => {
                   rows="3"
                   className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                 />
-              </label>
+              </label>*/}
 
               <div className="pt-2">
                 <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
@@ -1184,9 +1391,9 @@ const onChange = (e) => {
               </div>
 
               {/* Helpful footer for debugging */}
-              <div className="text-[11px] text-slate-500">
+              {/*<div className="text-[11px] text-slate-500">
                 API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
-              </div>
+              </div>*/}
             </form>
           </div>
         </div>

@@ -251,27 +251,6 @@ async function loadAllScholarshipsForPartner(partner) {
     return readLocal();
   }
 
-  // Otherwise: always try API first (works across browsers/devices),
-  // and only fall back to local if API fails.
-  /*try {
-    const params = new URLSearchParams();
-    if (partnerEmail) params.set("partnerEmail", partnerEmail);
-    else if (partnerId) params.set("partnerId", partnerId);
-
-    const url = `${API_BASE}/api/scholarships?` + params.toString();
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data = await res.json();
-    const list = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
-
-    return list.map(normalizeScholarship);
-  } catch (e) {
-    console.warn("[PartnerWelcome] API fetch failed, falling back to local:", e);
-    return readLocal();
-  }
-}*/
 
 try {
     const baseParams = new URLSearchParams();
@@ -466,21 +445,7 @@ export default function PartnerWelcome() {
 const [loadingScholarships, setLoadingScholarships] = useState(false);
 const [schErr, setSchErr] = useState("");
 
-  /*useEffect(() => {
-    let alive = true;
-    const load = async () => {
-      const list = await loadAllScholarshipsForPartner(user || {});
-      if (alive) setAllScholarships(list);
-    };
-    if (user) load();
-    const onStorage = () => load();
-    window.addEventListener("storage", onStorage);
-    return () => {
-      alive = false;
-      window.removeEventListener("storage", onStorage);
-    };
-  }, [user]);*/
-
+ 
   useEffect(() => {
   let alive = true;
   let inFlight = false;
@@ -745,15 +710,7 @@ const [schErr, setSchErr] = useState("");
         }
       }
 
-      // 3) Update local user + hashes (including updated photo/logo)
-      /*const updated = {
-        ...(user || {}),
-        ...form,
-        email: trimmedEmail,
-        // also keep canonical fields
-        logoUrl: String(form.photo || "").trim(),
-      };*/
-
+     
 
       // 3) Persist profile updates to backend (THIS was missing)
 const backendUser = await apiUpdatePartnerProfile({
@@ -1059,28 +1016,54 @@ const updated = {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">Quick tips</h3>
-                  <ul className="mt-2 space-y-1.5 text-xs text-slate-600">
-                    <li>• Clear, simple eligibility helps more students apply.</li>
-                    <li>• Add an apply link that works on mobile and desktop.</li>
-                    <li>• Keep deadlines accurate to build trust.</li>
-                  </ul>
-                </div>
-              </div>
-            </aside>
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
+  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
+    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+      Scholarship Posting Quick Tips
+    </span>
+  </h3>
+
+  <ul className="mt-2 space-y-3 text-xs text-slate-700">
+  <li className="flex items-start gap-2">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+      ✓
+    </span>
+    <span>Add your organization’s official logo (Company or University logo) to clearly identify the scholarship provider and build credibility with applicants.</span>
+  </li>
+
+  <li className="flex items-start gap-2">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+      ✓
+    </span>
+    <span>Include a scholarship banner image to visually highlight the opportunity and attract student attention.</span>
+  </li>
+
+  <li className="flex items-start gap-2">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+      ✓
+    </span>
+    <span>Provide a direct link to the official scholarship webpage so applicants can access full details and submit their application.</span>
+  </li>
+
+  <li className="flex items-start gap-2">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+      ✓
+    </span>
+    <span>Include a link to the organization’s official website to help applicants verify the scholarship provider.</span>
+  </li>
+</ul>
+</div>
+</div>
+  </aside>
+
+            
+
+           
 
             {/* CENTER */}
             <main className="col-span-12 md:col-span-1">
               <div className="rounded-2xl bg-white shadow-sm border border-slate-200 flex flex-col h-full">
-                {/*<div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
-                  <Link
-                    to="/partner/submit-scholarship"
-                    className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
-                  >
-                    Post new scholarship
-                  </Link>
-                </div>*/}
+               
                 <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
   <div className="flex items-center gap-2">
     <Link
@@ -1249,14 +1232,53 @@ const updated = {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl bg-indigo-600 text-white shadow-sm p-4">
-                  <h3 className="text-sm font-semibold">Make your scholarship stand out</h3>
-                  <ul className="mt-2 space-y-1.5 text-xs text-indigo-100">
-                    <li>• Use a clear title students understand instantly.</li>
-                    <li>• Mention key fields of study or regions.</li>
-                    <li>• Add a short 2–3 sentence summary.</li>
-                  </ul>
-                </div>
+               
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
+  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
+    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+      Funded Program Posting Quick Tips
+    </span>
+  </h3>
+
+  <ul className="mt-2 space-y-3 text-xs text-slate-700">
+    <li className="flex items-start gap-2">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+        ✓
+      </span>
+      <span>
+        Add your University’s official logo (University logo) to clearly identify the scholarship provider and build credibility with applicants.
+      </span>
+    </li>
+
+    <li className="flex items-start gap-2">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+        ✓
+      </span>
+      <span>
+        Include a Program banner image to visually highlight the opportunity and attract student attention.
+      </span>
+    </li>
+
+    <li className="flex items-start gap-2">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+        ✓
+      </span>
+      <span>
+        Provide a direct link to the official program webpage so applicants can access full details and submit their application.
+      </span>
+    </li>
+
+    <li className="flex items-start gap-2">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+        ✓
+      </span>
+      <span>
+        Include a link to the University’s official website to help applicants verify University/College.
+      </span>
+    </li>
+  </ul>
+</div>
+
               </div>
             </aside>
           </div>

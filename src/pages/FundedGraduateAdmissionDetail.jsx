@@ -466,6 +466,7 @@ export default function FundedGraduateAdmissionDetail() {
     eligibility,
     benefits,
     howToApply,
+    additionalInformation,
     imageUrl,
     imageData,
     providerLogoUrl,
@@ -614,6 +615,28 @@ export default function FundedGraduateAdmissionDetail() {
                       </section>
                     )}
 
+                    {bannerSrc && (
+  <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+    <button
+      type="button"
+      onClick={() => setShowBanner(true)}
+      className="block w-full text-left"
+      title="Click to enlarge"
+    >
+      <img
+        src={bannerSrc}
+        alt={`${provider || title} banner`}
+        /*className="w-full h-auto object-contain bg-white"*/
+        className="w-full h-auto object-cover bg-white"
+        loading="lazy"
+      />
+    </button>
+    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+      Click image to enlarge
+    </div>
+  </section>
+)}
+
                     {eligibility && (
                       /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
                       <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
@@ -643,6 +666,17 @@ export default function FundedGraduateAdmissionDetail() {
                         </div>
                       </section>
                     )}
+
+                    {additionalInformation && (
+                    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
+                         <h2 className="text-lg font-semibold">Additional Information</h2>
+                           <div className="mt-3">
+                               <RichHtml html={additionalInformation} />
+                       </div>
+                   </section>
+                    )}
+
+
                   </div>
 
                   <aside className="space-y-6">

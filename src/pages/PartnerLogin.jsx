@@ -135,7 +135,7 @@ export default function PartnerLogin() {
     };
   }
 
-  useEffect(() => {
+  {/*useEffect(() => {
     let cancelled = false;
 
     function renderWidget() {
@@ -188,7 +188,109 @@ export default function PartnerLogin() {
         } catch {}
       }
     };
-  }, [SITE_KEY, mode]);
+  }, [SITE_KEY, mode]);*/}
+
+  useEffect(() => {
+  if (mode !== "login") return;
+
+  let cancelled = false;
+  let pollId = null;
+
+  function renderWidget() {
+    if (cancelled) return;
+    if (!turnstileRef.current) return;
+    if (!window.turnstile || typeof window.turnstile.render !== "function") return;
+
+    if (widgetIdRef.current && window.turnstile.remove) {
+      try {
+        window.turnstile.remove(widgetIdRef.current);
+      } catch {}
+      widgetIdRef.current = null;
+    }
+
+    // clear stale markup before re-render
+    try {
+      turnstileRef.current.innerHTML = "";
+    } catch {}
+
+    widgetIdRef.current = window.turnstile.render(turnstileRef.current, {
+      sitekey: SITE_KEY,
+      theme: "light",
+      action: "partner-login",
+      retry: "auto",
+      "refresh-expired": "auto",
+      callback: (token) => {
+        setTurnToken(token || "");
+        setTurnReady(!!token);
+        setErr("");
+        try {
+          sessionStorage.setItem("partnerTurnstileToken", token || "");
+        } catch {}
+        try {
+          window.onPartnerTurnstileSuccess?.(token);
+        } catch {}
+      },
+      "expired-callback": () => {
+        setTurnToken("");
+        setTurnReady(false);
+        try {
+          sessionStorage.removeItem("partnerTurnstileToken");
+        } catch {}
+      },
+      "error-callback": () => {
+        setTurnToken("");
+        setTurnReady(false);
+        try {
+          sessionStorage.removeItem("partnerTurnstileToken");
+        } catch {}
+      },
+    });
+  }
+
+  function ensureScriptAndRender() {
+    if (window.turnstile && typeof window.turnstile.render === "function") {
+      renderWidget();
+      return;
+    }
+
+    const existing = document.querySelector(
+      'script[src^="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+    );
+
+    if (!existing) {
+      const s = document.createElement("script");
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      s.async = true;
+      s.defer = true;
+      s.onload = () => {
+        if (!cancelled) renderWidget();
+      };
+      document.head.appendChild(s);
+    }
+
+    // also poll briefly in case script tag already exists but has not finished loading
+    pollId = window.setInterval(() => {
+      if (window.turnstile && typeof window.turnstile.render === "function") {
+        window.clearInterval(pollId);
+        pollId = null;
+        renderWidget();
+      }
+    }, 250);
+  }
+
+  ensureScriptAndRender();
+
+  return () => {
+    cancelled = true;
+    if (pollId) window.clearInterval(pollId);
+    if (widgetIdRef.current && window.turnstile?.remove) {
+      try {
+        window.turnstile.remove(widgetIdRef.current);
+      } catch {}
+      widgetIdRef.current = null;
+    }
+  };
+}, [SITE_KEY, mode]);
 
   /* ====== FORGOT STATE ====== */
   const [forgotEmail, setForgotEmail] = useState("");
@@ -411,13 +513,22 @@ export default function PartnerLogin() {
                 />
               </label>
 
-              <div className="pt-1">
+              {/*<div className="pt-1">
                 <div ref={turnstileRef} />
                 {!turnReady && (
                   <p className="mt-2 text-xs text-slate-500">
                     Human verification will appear here. If it doesn’t, refresh the page.
                   </p>
                 )}
+              </div>*/}
+
+              <div className="pt-1">
+               <div ref={turnstileRef} />
+                {!turnReady && (
+                 <p className="mt-2 text-xs text-slate-500">
+                   Human verification is loading…
+                 </p>
+               )}
               </div>
 
               <button type="submit" className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90">
