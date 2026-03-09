@@ -479,16 +479,17 @@ export default function FundedGraduateAdmissionDetail() {
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <style>{`
-        .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
-        .rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
-        .rich-html li { display: list-item; margin: 0.25rem 0; }
-        .rich-html p { margin: 0.5rem 0; }
+        .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.2rem 0 0.35rem; }
+.rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.15rem 0 0.25rem; }
+.rich-html li { display: list-item; margin: 0.12rem 0; }
+.rich-html p { margin: 0.12rem 0; }
         .rich-html a { text-decoration: underline; }
       `}</style>
 
       <div className="flex-1">
         <div className="mx-auto w-full max-w-[1400px] px-4">
-          <div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">
+          {/*</div><div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">*/}
+          <div className="grid grid-cols-1 2xl:grid-cols-[140px_minmax(0,1120px)_140px] 2xl:gap-6 items-start">
             {/* LEFT ADS */}
             <aside className="hidden 2xl:block pt-8">
               <div className="space-y-4">
@@ -601,83 +602,102 @@ export default function FundedGraduateAdmissionDetail() {
               </div>
 
               <div className="max-w-5xl mx-auto px-4 pb-16">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-6">
-                    {description && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
-                        <h2 className="text-lg font-semibold">
-                          Program Description
-                        </h2>
-                        <div className="mt-3">
-                          <RichHtml html={description} />
-                        </div>
-                      </section>
-                    )}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">
+  <div className="min-w-0 space-y-2 lg:-ml-4">
+  {description && (
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        Program Description
+      </h2>
+      <div className="mt-2">
+        <RichHtml html={description} />
+      </div>
+    </section>
+  )}
 
-                    {bannerSrc && (
-  <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-    <button
-      type="button"
-      onClick={() => setShowBanner(true)}
-      className="block w-full text-left"
-      title="Click to enlarge"
-    >
-      <img
-        src={bannerSrc}
-        alt={`${provider || title} banner`}
-        /*className="w-full h-auto object-contain bg-white"*/
-        className="w-full h-auto object-cover bg-white"
-        loading="lazy"
-      />
-    </button>
-    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-      Click image to enlarge
-    </div>
-  </section>
-)}
+  {bannerSrc && (
+    <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden md:ml-4">
+      <button
+        type="button"
+        onClick={() => setShowBanner(true)}
+        className="block w-full text-left"
+        title="Click to enlarge"
+      >
+        <img
+          src={bannerSrc}
+          alt={`${provider || title} banner`}
+          className="w-full h-auto object-cover bg-white"
+          loading="lazy"
+        />
+      </button>
+      <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+        Click image to enlarge
+      </div>
+    </section>
+  )}
 
-                    {eligibility && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
-                        <h2 className="text-lg font-semibold">Program Eligibility & Requirements</h2>
-                        <div className="mt-3">
-                          <RichHtml html={eligibility} />
-                        </div>
-                      </section>
-                    )}
+  {eligibility && (
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        Program Eligibility & Requirements
+      </h2>
+      <div className="mt-2">
+        <RichHtml html={eligibility} />
+      </div>
+    </section>
+  )}
 
-                    {benefits && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
-                        <h2 className="text-lg font-semibold">Funding Benefits</h2>
-                        <div className="mt-3">
-                          <RichHtml html={benefits} />
-                        </div>
-                      </section>
-                    )}
+  {benefits && (
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        Funding Benefits
+      </h2>
+      <div className="mt-2">
+        <RichHtml html={benefits} />
+      </div>
+    </section>
+  )}
 
-                    {howToApply && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
-                        <h2 className="text-lg font-semibold">How to Apply</h2>
-                        <div className="mt-3">
-                          <RichHtml html={howToApply} />
-                        </div>
-                      </section>
-                    )}
+  {howToApply && (
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        How to Apply
+      </h2>
+      <div className="mt-2">
+        <RichHtml html={howToApply} />
+      </div>
+    </section>
+  )}
 
-                    {additionalInformation && (
-                    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">
-                         <h2 className="text-lg font-semibold">Additional Information</h2>
-                           <div className="mt-3">
-                               <RichHtml html={additionalInformation} />
-                       </div>
-                   </section>
-                    )}
+  {additionalInformation && (
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        Additional Information
+      </h2>
+      <div className="mt-2">
+        <RichHtml html={additionalInformation} />
+      </div>
+    </section>
+  )}
+</div>
 
 
-                  </div>
+                  
 
                   <aside className="space-y-6">
                     {bannerSrc && (
