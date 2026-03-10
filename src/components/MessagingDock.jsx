@@ -779,7 +779,7 @@ function myOnlineNow() {
   ) : null}
   <span
     className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
-      isOnline(userId) ? "bg-green-500" : "bg-slate-300"
+      myOnlineNow() ? "bg-emerald-500" : "bg-slate-300"
     }`}
   />
 </div>
