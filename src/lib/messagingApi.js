@@ -87,3 +87,24 @@ export async function markRead(payload) {
   // Keep same route + payload
   return http("POST", `/api/messaging/markRead`, payload);
 }
+
+export async function heartbeatPresence({ userId, scopeKey = "" }) {
+  const uid = pickStr(userId);
+  if (!uid) throw new Error("MISSING_USERID");
+
+  return http("POST", `/api/messaging/presence/heartbeat`, {
+    userId: uid,
+    scopeKey: pickStr(scopeKey),
+  });
+}
+
+export async function getPresence({ userIds = [] }) {
+  const ids = Array.isArray(userIds)
+    ? userIds.map((x) => pickStr(x)).filter(Boolean)
+    : [];
+
+  if (!ids.length) return { ok: true, presence: {} };
+
+  const qs = `?userIds=${encodeURIComponent(ids.join(","))}`;
+  return http("GET", `/api/messaging/presence${qs}`);
+}

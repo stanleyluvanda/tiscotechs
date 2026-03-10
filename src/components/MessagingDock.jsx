@@ -6,8 +6,19 @@ import {
   listThreads,
   markRead,
   sendMessage,
+  heartbeatPresence,
+  getPresence,
 } from "../lib/messagingApi";
 import AttachmentUploader from "./upload/AttachmentUploader";
+
+
+function safeParse(json) {
+  try {
+    return JSON.parse(json || "");
+  } catch {
+    return null;
+  }
+}
 
 /* ---------------- Helpers ---------------- */
 function safeStr(x) {
@@ -116,6 +127,28 @@ function resolveHeaderSubtitle({ myRole, active, roleByUserId }) {
     : "Lecturer";
 }
 
+
+
+/* ---------------- Local presence (same-browser only) ---------------- */
+const PRESENCE_KEY = "presence__byUserId";
+
+function touchPresence(userId) {
+  const id = normalizeUserId(userId);
+  if (!id) return;
+
+  const m = safeParse(localStorage.getItem(PRESENCE_KEY)) || {};
+  m[id] = Date.now();
+  localStorage.setItem(PRESENCE_KEY, JSON.stringify(m));
+}
+
+function isOnline(userId) {
+  const id = normalizeUserId(userId);
+  if (!id) return false;
+
+  const m = safeParse(localStorage.getItem(PRESENCE_KEY)) || {};
+  return Date.now() - (m[id] || 0) < 5 * 60 * 1000;
+}
+
 export default function MessagingDock({ me }) {
   // (1) ✅ normalize MY userId used everywhere (threads, markRead, fromUserId)
   const userId = normalizeUserId(
@@ -134,10 +167,14 @@ export default function MessagingDock({ me }) {
   const [tab, setTab] = useState("focused"); // focused | other (reserved)
   const [q, setQ] = useState("");
 
-  const [people, setPeople] = useState([]);
+  /*const [people, setPeople] = useState([]);
   // ✅ ADD THIS RIGHT HERE
   const [roleByUserId, setRoleByUserId] = useState(() => new Map());
-  const [threads, setThreads] = useState([]);
+  const [threads, setThreads] = useState([]);*/
+const [people, setPeople] = useState([]);
+const [roleByUserId, setRoleByUserId] = useState(() => new Map());
+const [presenceByUserId, setPresenceByUserId] = useState({});
+const [threads, setThreads] = useState([]);
 
   // { threadId, otherUserId, otherName, otherAvatarUrl, otherProgram? }
   const [active, setActive] = useState(null);
@@ -179,6 +216,15 @@ export default function MessagingDock({ me }) {
     if (myRole === "lecturer") return "student";
     return "lecturer";
   }, [myRole]);
+
+  useEffect(() => {
+  if (!userId) return;
+
+  touchPresence(userId);
+  const t = setInterval(() => touchPresence(userId), 60000);
+
+  return () => clearInterval(t);
+}, [userId]);
 
   async function refreshThreads() {
     if (!userId) return;
@@ -248,6 +294,49 @@ async function refreshRoleDirectory() {
     // ignore; badges will just be best-effort
   }
 }
+
+
+
+async function refreshPresence(extraUserIds = []) {
+  try {
+    const ids = new Set();
+
+    ids.add(userId);
+
+    for (const p of people || []) {
+      const id = normalizeUserId(p?.userId || p?.email);
+      if (id) ids.add(id);
+    }
+
+    for (const t of threads || []) {
+      const id = normalizeUserId(t?.otherUserId);
+      if (id) ids.add(id);
+    }
+
+    for (const id of extraUserIds || []) {
+      const v = normalizeUserId(id);
+      if (v) ids.add(v);
+    }
+
+    const arr = Array.from(ids).filter(Boolean);
+    if (!arr.length) return;
+
+    const data = await getPresence({ userIds: arr });
+    setPresenceByUserId(data?.presence || {});
+  } catch {
+    // keep UI quiet
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 
   async function openConversation(thread) {
@@ -532,6 +621,44 @@ async function refreshRoleDirectory() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.threadId]);
 
+  // ✅ ADD THIS BLOCK RIGHT HERE
+useEffect(() => {
+  if (!open) return;
+  refreshPresence(active?.otherUserId ? [active.otherUserId] : []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [open, people, threads, active?.otherUserId]);
+
+
+  useEffect(() => {
+  if (!userId || !scopeKey) return;
+
+  let cancelled = false;
+
+  const run = async () => {
+    try {
+      await heartbeatPresence({ userId, scopeKey });
+      if (!cancelled) {
+        await refreshPresence(active?.otherUserId ? [active.otherUserId] : []);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  run();
+  const t = setInterval(run, 60000);
+
+  return () => {
+    cancelled = true;
+    clearInterval(t);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [userId, scopeKey, active?.otherUserId]);
+
+
+
+
+
   /* ✅ ADD THIS EFFECT RIGHT HERE (auto-scroll to newest unread message) */
 useEffect(() => {
   const targetId = pendingScrollMessageIdRef.current;
@@ -585,6 +712,15 @@ const unreadCountsByRole = useMemo(() => {
   return { lecturers, students };
 }, [threads, roleByUserId]);
 
+// ✅ ADD THESE TWO HELPERS RIGHT HERE
+function isOnlineNow(id) {
+  const row = presenceByUserId?.[normalizeUserId(id)];
+  return Boolean(row?.isOnline);
+}
+
+function myOnlineNow() {
+  return isOnlineNow(userId);
+}
 
 
   if (!userId || !myRole || !scopeKey) return null;
@@ -597,11 +733,22 @@ const unreadCountsByRole = useMemo(() => {
           onClick={() => setOpen(true)}
           className="flex items-center gap-2 rounded-full bg-white shadow-lg border border-slate-200 px-3 py-2"
         >
-          <div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
+          {/*<div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
             {me?.avatarUrl ? (
               <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
             ) : null}
-          </div>
+          </div>*/}
+          <div className="relative w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
+  {me?.avatarUrl ? (
+    <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
+  ) : null}
+  <span
+    className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
+      /*isOnline(userId) ? "bg-green-500" : "bg-slate-300"*/
+      myOnlineNow() ? "bg-emerald-500" : "bg-slate-300"
+    }`}
+  />
+</div>
           <span className="font-semibold">Messaging</span>
           {/*{unseen > 0 && <span className="ml-1 w-2 h-2 rounded-full bg-emerald-600" />}*/}
           {unseen > 0 ? (
@@ -621,11 +768,21 @@ const unreadCountsByRole = useMemo(() => {
           {/* header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
+              {/*<div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
                 {me?.avatarUrl ? (
                   <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : null}
-              </div>
+              </div>*/}
+              <div className="relative w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
+  {me?.avatarUrl ? (
+    <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
+  ) : null}
+  <span
+    className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
+      isOnline(userId) ? "bg-green-500" : "bg-slate-300"
+    }`}
+  />
+</div>
               <div className="font-semibold">Messaging</div>
               {unseen > 0 && <span className="w-2 h-2 rounded-full bg-emerald-600" />}
             </div>
@@ -707,7 +864,7 @@ const unreadCountsByRole = useMemo(() => {
                   className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                    {/*<div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
                       {p.avatarUrl ? (
                         <img
                           src={p.avatarUrl}
@@ -717,10 +874,30 @@ const unreadCountsByRole = useMemo(() => {
                       ) : null}
 
                       {/* ✅ unread dot */}
-                      {hasUnread ? (
+                      {/*{hasUnread ? (
                         <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white" />
                       ) : null}
-                    </div>
+                    </div>*/}
+                    <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+  {p.avatarUrl ? (
+    <img
+      src={p.avatarUrl}
+      alt=""
+      className="w-full h-full object-cover"
+    />
+  ) : null}
+
+  {hasUnread ? (
+    <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white" />
+  ) : null}
+
+  <span
+    className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
+      /*isOnline(p.userId || p.email) ? "bg-green-500" : "bg-slate-300"*/
+      isOnlineNow(p.userId || p.email) ? "bg-emerald-500" : "bg-slate-300"
+    }`}
+  />
+</div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -770,7 +947,7 @@ const unreadCountsByRole = useMemo(() => {
           {/* chat header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+              {/*<div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
                 {active.otherAvatarUrl || active.avatarUrl ? (
                   <img
                     src={active.otherAvatarUrl || active.avatarUrl}
@@ -780,7 +957,27 @@ const unreadCountsByRole = useMemo(() => {
                 ) : (
                   <div className="w-full h-full" />
                 )}
-              </div>
+              </div>*/}
+              <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
+  {active.otherAvatarUrl || active.avatarUrl ? (
+    <img
+      src={active.otherAvatarUrl || active.avatarUrl}
+      alt=""
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full" />
+  )}
+
+  <span
+    className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
+      /*isOnline(active.otherUserId) ? "bg-green-500" : "bg-slate-300"*/
+      isOnlineNow(active?.otherUserId) ? "bg-emerald-500" : "bg-slate-300"
+    }`}
+  />
+</div>
+
+
 
               <div className="min-w-0">
                 <div className="font-semibold truncate">{active.otherName || "Conversation"}</div>
@@ -831,7 +1028,7 @@ const unreadCountsByRole = useMemo(() => {
                       <div className="w-full">
                         <div className="flex items-start gap-2">
                           {/* avatar */}
-                          <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
+                          {/*<div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
                             {mine ? (
                               me?.avatarUrl ? (
                                 <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -843,7 +1040,33 @@ const unreadCountsByRole = useMemo(() => {
                                 className="w-full h-full object-cover"
                               />
                             ) : null}
-                          </div>
+                          </div>*/}
+
+                          <div className="relative w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
+  {mine ? (
+    me?.avatarUrl ? (
+      <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
+    ) : null
+  ) : active?.otherAvatarUrl ? (
+    <img
+      src={active.otherAvatarUrl}
+      alt=""
+      className="w-full h-full object-cover"
+    />
+  ) : null}
+
+  <span
+    className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-white ${
+      mine
+        ? isOnline(userId)
+          ? "bg-green-500"
+          : "bg-slate-300"
+        : isOnline(active?.otherUserId)
+        ? "bg-green-500"
+        : "bg-slate-300"
+    }`}
+  />
+</div>
 
                           <div className="min-w-0 text-left">
                             {/* name + role + date (single line) */}
