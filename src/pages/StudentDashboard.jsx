@@ -1266,12 +1266,6 @@ const files = mergedFiles.filter((a) => {
 });
 
 
-
-
-
-
-
-
   // show a delete button ONLY for student-authored posts by me
   const canDelete = post.authorType === "student" && post.author === (currentUser?.name || "");
 
