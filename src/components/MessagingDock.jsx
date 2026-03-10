@@ -590,7 +590,7 @@ const unreadCountsByRole = useMemo(() => {
   if (!userId || !myRole || !scopeKey) return null;
 
   return (
-    <div className="fixed bottom-4 right-40 z-50">
+      <div className="fixed bottom-4 right-[160px] z-50">
       {/* collapsed pill */}
       {!open && (
         <button
@@ -616,7 +616,8 @@ const unreadCountsByRole = useMemo(() => {
 
       {/* expanded tray: list-only dock */}
       {open && (
-        <div className="w-[320px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+        /*<div className="w-[320px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">*/
+        <div className="w-[320px] max-w-[calc(100vw-24px)] h-[min(540px,calc(100vh-110px))] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
           {/* header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2">
@@ -765,6 +766,7 @@ const unreadCountsByRole = useMemo(() => {
       {/* separate chat window next to dock (LinkedIn-style) */}
       {chatOpen && active && (
         <div className="fixed bottom-4 right-[485px] z-50 w-[650px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+        
           {/* chat header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2 min-w-0">
