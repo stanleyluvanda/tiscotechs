@@ -128,27 +128,6 @@ function resolveHeaderSubtitle({ myRole, active, roleByUserId }) {
 }
 
 
-
-/* ---------------- Local presence (same-browser only) ---------------- */
-const PRESENCE_KEY = "presence__byUserId";
-
-function touchPresence(userId) {
-  const id = normalizeUserId(userId);
-  if (!id) return;
-
-  const m = safeParse(localStorage.getItem(PRESENCE_KEY)) || {};
-  m[id] = Date.now();
-  localStorage.setItem(PRESENCE_KEY, JSON.stringify(m));
-}
-
-function isOnline(userId) {
-  const id = normalizeUserId(userId);
-  if (!id) return false;
-
-  const m = safeParse(localStorage.getItem(PRESENCE_KEY)) || {};
-  return Date.now() - (m[id] || 0) < 5 * 60 * 1000;
-}
-
 export default function MessagingDock({ me }) {
   // (1) ✅ normalize MY userId used everywhere (threads, markRead, fromUserId)
   const userId = normalizeUserId(
@@ -217,14 +196,6 @@ const [threads, setThreads] = useState([]);
     return "lecturer";
   }, [myRole]);
 
-  useEffect(() => {
-  if (!userId) return;
-
-  touchPresence(userId);
-  const t = setInterval(() => touchPresence(userId), 60000);
-
-  return () => clearInterval(t);
-}, [userId]);
 
   async function refreshThreads() {
     if (!userId) return;
@@ -733,11 +704,7 @@ function myOnlineNow() {
           onClick={() => setOpen(true)}
           className="flex items-center gap-2 rounded-full bg-white shadow-lg border border-slate-200 px-3 py-2"
         >
-          {/*<div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
-            {me?.avatarUrl ? (
-              <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : null}
-          </div>*/}
+          
           <div className="relative w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
   {me?.avatarUrl ? (
     <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -864,20 +831,7 @@ function myOnlineNow() {
                   className="w-full text-left px-3 py-2 hover:bg-slate-50 border-b border-slate-100"
                 >
                   <div className="flex items-center gap-2">
-                    {/*<div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                      {p.avatarUrl ? (
-                        <img
-                          src={p.avatarUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      ) : null}
-
-                      {/* ✅ unread dot */}
-                      {/*{hasUnread ? (
-                        <span className="absolute -right-0.5 -top-0.5 w-3 h-3 rounded-full bg-emerald-600 border-2 border-white" />
-                      ) : null}
-                    </div>*/}
+                   
                     <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
   {p.avatarUrl ? (
     <img
@@ -947,17 +901,7 @@ function myOnlineNow() {
           {/* chat header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
             <div className="flex items-center gap-2 min-w-0">
-              {/*<div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                {active.otherAvatarUrl || active.avatarUrl ? (
-                  <img
-                    src={active.otherAvatarUrl || active.avatarUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full" />
-                )}
-              </div>*/}
+              
               <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
   {active.otherAvatarUrl || active.avatarUrl ? (
     <img
@@ -1027,20 +971,7 @@ function myOnlineNow() {
                     >
                       <div className="w-full">
                         <div className="flex items-start gap-2">
-                          {/* avatar */}
-                          {/*<div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
-                            {mine ? (
-                              me?.avatarUrl ? (
-                                <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
-                              ) : null
-                            ) : active?.otherAvatarUrl ? (
-                              <img
-                                src={active.otherAvatarUrl}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : null}
-                          </div>*/}
+                          
 
                           <div className="relative w-8 h-8 rounded-full bg-slate-200 overflow-hidden shrink-0">
   {mine ? (
@@ -1055,17 +986,19 @@ function myOnlineNow() {
     />
   ) : null}
 
+
   <span
-    className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-white ${
-      mine
-        ? isOnline(userId)
-          ? "bg-green-500"
-          : "bg-slate-300"
-        : isOnline(active?.otherUserId)
-        ? "bg-green-500"
-        : "bg-slate-300"
-    }`}
-  />
+  className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-white ${
+    mine
+      ? myOnlineNow()
+      : isOnlineNow(active?.otherUserId)
+      ? "bg-emerald-500"
+      : "bg-slate-300"
+  }`}
+/>
+
+
+
 </div>
 
                           <div className="min-w-0 text-left">
