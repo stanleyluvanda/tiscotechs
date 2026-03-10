@@ -58,6 +58,64 @@ function isImageAttachment(a) {
   );
 }
 
+function messageKey(m) {
+  return safeStr(m?.messageId || m?.sk || "");
+}
+
+function sortPeopleWithUnreadFirst(arr, threads) {
+  const list = Array.isArray(arr) ? arr.slice() : [];
+
+  return list.sort((a, b) => {
+    const ta = threadForPerson(threads, a?.userId || a?.email);
+    const tb = threadForPerson(threads, b?.userId || b?.email);
+
+    const ua = Number(ta?.unreadCount || 0);
+    const ub = Number(tb?.unreadCount || 0);
+
+    if (ua > 0 && ub <= 0) return -1;
+    if (ub > 0 && ua <= 0) return 1;
+
+    const la = Number(ta?.lastAt || ta?.updatedAt || 0);
+    const lb = Number(tb?.lastAt || tb?.updatedAt || 0);
+    if (lb !== la) return lb - la;
+
+    return safeStr(a?.fullName).localeCompare(safeStr(b?.fullName));
+  });
+}
+
+function resolveDisplayRole({ mine, myRole, me, active, roleByUserId }) {
+  if (mine) {
+    if (myRole === "lecturer") return "Lecturer";
+    return "Student";
+  }
+
+  const activeRole = safeStr(active?.otherRole).toLowerCase();
+  if (activeRole === "lecturer") return "Lecturer";
+  if (activeRole === "student") return "Student";
+
+  const otherId = normalizeUserId(active?.otherUserId);
+  const mapped = safeStr(roleByUserId?.get(otherId)).toLowerCase();
+  if (mapped === "lecturer") return "Lecturer";
+  if (mapped === "student") return "Student";
+
+  if (myRole === "lecturer") return "Student";
+  return "Lecturer";
+}
+
+function resolveHeaderSubtitle({ myRole, active, roleByUserId }) {
+  const activeRole = safeStr(active?.otherRole).toLowerCase();
+  const otherId = normalizeUserId(active?.otherUserId);
+  const mapped = safeStr(roleByUserId?.get(otherId)).toLowerCase();
+  const role = activeRole || mapped;
+
+  if (role === "student") return safeStr(active?.otherProgram) || "Student";
+  if (role === "lecturer") return "Lecturer";
+
+  return myRole === "lecturer"
+    ? safeStr(active?.otherProgram) || "Student"
+    : "Lecturer";
+}
+
 export default function MessagingDock({ me }) {
   // (1) ✅ normalize MY userId used everywhere (threads, markRead, fromUserId)
   const userId = normalizeUserId(
@@ -108,8 +166,13 @@ export default function MessagingDock({ me }) {
   const [attUrl, setAttUrl] = useState("");
   const [attName, setAttName] = useState("");
 
+  /*const pollRef = useRef(null);
+  const convoPollRef = useRef(null);*/
   const pollRef = useRef(null);
   const convoPollRef = useRef(null);
+  const messagesScrollRef = useRef(null);
+  const messageRefs = useRef(new Map());
+  const pendingScrollMessageIdRef = useRef("");
 
   const otherRole = useMemo(() => {
     if (myRole === "student") return "lecturer";
@@ -128,16 +191,19 @@ export default function MessagingDock({ me }) {
     if (!scopeKey || !myRole) return;
     /*const data = await listPeople({ scopeKey, role: otherRole, q: search });*/
     const data = await listPeople({ scopeKey, role: listRole, q: search });
-    /*setPeople(data.people || []);*/
-    const arr = data.people || [];
+    
 
-// ✅ if student is viewing Students tab, remove "me" from the list
-const filtered =
-  myRole === "student" && tab === "other"
-    ? arr.filter((p) => normalizeUserId(p?.userId || p?.email) !== userId)
-    : arr;
+const arr = data.people || [];
 
-setPeople(filtered);
+    // ✅ if student is viewing Students tab, remove "me" from the list
+    const filtered =
+      myRole === "student" && tab === "other"
+        ? arr.filter((p) => normalizeUserId(p?.userId || p?.email) !== userId)
+        : arr;
+
+    setPeople(sortPeopleWithUnreadFirst(filtered, threads));
+
+
   }
 
   const listRole = useMemo(() => {
@@ -214,6 +280,7 @@ async function refreshRoleDirectory() {
       merged.otherRole =
         safeStr(thread?.otherRole) ||
         safeStr(prev?.otherRole) ||
+        safeStr(roleByUserId.get(normalizeUserId(thread?.otherUserId || prev?.otherUserId))) ||
         "";
 
       // normalize otherUserId if present
@@ -224,13 +291,24 @@ async function refreshRoleDirectory() {
     });
 
     setMsgs([]);
+    messageRefs.current = new Map();
+    pendingScrollMessageIdRef.current = "";
 
     const threadId = safeStr(thread?.threadId);
     if (!threadId) return;
 
     try {
       const data = await getConversation({ threadId, limit: 50 });
-      setMsgs(data.messages || []);
+      const incoming = Array.isArray(data?.messages) ? data.messages : [];
+      setMsgs(incoming);
+
+      const unreadCount = Number(thread?.unreadCount || 0);
+      if (unreadCount > 0 && incoming.length > 0) {
+        const ordered = incoming.slice().reverse(); // oldest -> newest for rendered order
+        const unreadSlice = ordered.slice(-unreadCount);
+        const target = unreadSlice[unreadSlice.length - 1] || null; // newest unread
+        pendingScrollMessageIdRef.current = messageKey(target);
+      }
     } catch {
       setMsgs([]);
     }
@@ -401,13 +479,7 @@ async function refreshRoleDirectory() {
     }
   }
 
-  // initial load when opened
-  /*useEffect(() => {
-    if (!open) return;
-    refreshThreads();
-    refreshPeople(q);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open,tab]);*/
+  
 
   useEffect(() => {
   if (!open) return;
@@ -417,13 +489,14 @@ async function refreshRoleDirectory() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [open, tab]);
 
-  // search debounce
+  
+
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => refreshPeople(q), 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, open]);
+  }, [q, open, threads]);
 
   // threads polling (badge across devices)
   useEffect(() => {
@@ -458,6 +531,18 @@ async function refreshRoleDirectory() {
     return () => clearInterval(convoPollRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active?.threadId]);
+
+  /* ✅ ADD THIS EFFECT RIGHT HERE (auto-scroll to newest unread message) */
+useEffect(() => {
+  const targetId = pendingScrollMessageIdRef.current;
+  if (!targetId) return;
+
+  const el = messageRefs.current.get(targetId);
+  if (el && typeof el.scrollIntoView === "function") {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    pendingScrollMessageIdRef.current = "";
+  }
+}, [msgs]);
 
   const unseen = useMemo(() => {
     return (threads || []).reduce((acc, t) => acc + (t.unreadCount || 0), 0);
@@ -697,15 +782,10 @@ const unreadCountsByRole = useMemo(() => {
 
               <div className="min-w-0">
                 <div className="font-semibold truncate">{active.otherName || "Conversation"}</div>
-                {/*<div className="text-xs text-slate-500 truncate">
-                  {myRole === "student" ? "Lecturer" : safeStr(active.otherProgram) || "Student"}
-                </div>*/}
-
-                <div className="text-xs text-slate-500 truncate">
-                {safeStr(active?.otherRole) === "student"
-                 ? safeStr(active?.otherProgram) || "Student"
-                : "Lecturer"}
-                  </div>
+                
+                  <div className="text-xs text-slate-500 truncate">
+                  {resolveHeaderSubtitle({ myRole, active, roleByUserId })}
+                </div>
 
               </div>
             </div>
@@ -720,7 +800,9 @@ const unreadCountsByRole = useMemo(() => {
           </div>
 
           {/* messages (LinkedIn rows, not bubbles) */}
-          <div className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">
+            <div
+            ref={messagesScrollRef}
+            className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">
             {msgs.length === 0 ? (
               <div className="text-sm text-slate-500">
                 No messages yet. Send the first message to start this conversation.
@@ -733,8 +815,15 @@ const unreadCountsByRole = useMemo(() => {
                   const mine = normalizeUserId(m?.fromUserId) === userId;
 
                   return (
-                    <div
+                    
+                     <div
                       key={m.messageId || m.sk || `${m.createdAt || ""}`}
+                      ref={(el) => {
+                        const k = messageKey(m);
+                        if (!k) return;
+                        if (el) messageRefs.current.set(k, el);
+                        else messageRefs.current.delete(k);
+                      }}
                       className={`flex ${mine ? "justify-end" : "justify-start"}`}
                     >
                       <div className="w-full">
@@ -764,15 +853,14 @@ const unreadCountsByRole = useMemo(() => {
                               </span>
 
                               <span className="text-slate-400">•</span>
-
-                              <span>
-                                {mine
-                                  ? myRole === "lecturer"
-                                    ? "Lecturer"
-                                    : safeStr(me?.program) || "Student"
-                                  : myRole === "lecturer"
-                                  ? safeStr(active?.otherProgram) || "Student"
-                                  : "Lecturer"}
+                               <span>
+                                {resolveDisplayRole({
+                                  mine,
+                                  myRole,
+                                  me,
+                                  active,
+                                  roleByUserId,
+                                })}
                               </span>
 
                               <span className="text-slate-400">•</span>
