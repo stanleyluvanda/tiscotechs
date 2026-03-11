@@ -554,7 +554,9 @@ const canShowAds = Boolean(item);
                  </div>
 
   
-             <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+             {/*<div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">*/}
+  <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
   <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
     <div className="flex flex-col sm:flex-row sm:items-start gap-4">
       {logo ? (
