@@ -518,17 +518,17 @@ export default function FundedGraduateAdmissionDetail() {
                   ← Back to Funded Graduate Admission
                 </Link>
               </div>*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-3 sm:pt-4 lg:pt-5 pb-1">
-                  <Link
-                 to="/funded-graduate-admission"
-                    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
-                       >
-                     ← Back to Funded Graduate Admission
-                      </Link>
-                      </div>
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-6 sm:pt-8 lg:pt-10 pb-2">
+  <Link
+    to="/funded-graduate-admission"
+    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+  >
+    ← Back to Funded Graduate Admission
+  </Link>
+</div>
 
-              {/*<div className="max-w-5xl mx-auto px-4 py-6">*/}
-               <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
+<div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
+               {/*</div><div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">*/}
                 {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-6">*/}
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
                   {/*<div className="flex items-start gap-4">*/}
@@ -539,7 +539,7 @@ export default function FundedGraduateAdmissionDetail() {
                    <img
                         src={logo}
                    alt={`${provider || "University"} logo`}
-                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-3"
+                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
                      loading="lazy"
                     onError={(e) => {
                         e.currentTarget.style.display = "none";
