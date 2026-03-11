@@ -518,7 +518,7 @@ export default function FundedGraduateAdmissionDetail() {
                   ← Back to Funded Graduate Admission
                 </Link>
               </div>*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-6 sm:pt-8 lg:pt-10 pb-2">
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-8 sm:pt-10 lg:pt-12 pb-2">
   <Link
     to="/funded-graduate-admission"
     className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
