@@ -327,28 +327,6 @@ export default function ScholarshipDetail() {
   const [recs, setRecs] = useState([]);
 
 
-
-
-
-  // 🔵 Track scholarship interactions (fire-and-forget)
-  /*const trackScholarship = (sid, type) => {
-    try {
-      if (!API_BASE || !sid) return;
-
-      fetch(
-        `${API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type }),
-          keepalive: true, // survives navigation
-        }
-      ).catch(() => {});
-    } catch {
-      // never break UI
-    }
-  };*/
-
   // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
 const trackScholarship = (sid, type) => {
   try {
@@ -548,8 +526,9 @@ const canShowAds = Boolean(item);
 
       <div className="flex-1">
         {/* ✅ Side ads ONLY on 2xl+ so center feed never gets squeezed */}
-        <div className="mx-auto w-full max-w-[1400px] px-4">
-          <div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">
+        
+  <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
+  <div className="grid grid-cols-1 2xl:grid-cols-[160px_minmax(0,1024px)_160px] 2xl:gap-6 items-start">
             {/* LEFT ADS (2nd ad frozen) */}
             <aside className="hidden 2xl:block pt-8">
               <div className="space-y-4">
@@ -564,162 +543,122 @@ const canShowAds = Boolean(item);
 
             {/* CENTER (unchanged layout/dimensions) */}
             <main className="min-w-0">
-              <div className="max-w-5xl mx-auto px-4 pt-8">
-                <Link
-                  to="/scholarship"
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  ← Back to Scholarships
-                </Link>
-              </div>
+             
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
+                    <Link
+                   to="/scholarship"
+                    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+                   >
+                     ← Back to Scholarships
+                  </Link>
+                 </div>
 
-              <div className="max-w-5xl mx-auto px-4 py-6">
-                {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">
-                  <h1 className="text-2xl font-bold">{title}</h1>
-                  <p className="mt-1 text-slate-600">
-                    <span className="font-medium">{provider}</span>
-                    {country ? ` • ${country}` : ""}
-                    {level ? ` • ${level}` : ""}
-                    {field ? ` • ${field}` : ""}
-                  </p>*/}
+  
+             <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
+    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+      {logo ? (
+        <img
+          src={logo}
+          alt={`${provider || "Provider"} logo`}
+          className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : null}
 
+      <div className="min-w-0 flex-1">
+        <h1 className="text-xl sm:text-2xl font-bold leading-snug break-words">
+          {title}
+        </h1>
 
-                  {/*</div><div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/}
-                  {/*<div className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">*/}
-                    {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/50 shadow-none p-6">*/}
-                    <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-6">
-  <div className="flex items-start gap-4">
-    {logo ? (
-      <img
-        src={logo}
-        alt={`${provider || "Provider"} logo`}
-        /*className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-        className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+        <p className="mt-1 text-sm sm:text-base text-slate-600 leading-6">
+          <span className="font-medium">{provider}</span>
+          {country ? ` • ${country}` : ""}
+          {level ? ` • ${level}` : ""}
+          {field ? ` • ${field}` : ""}
+        </p>
+      </div>
+    </div>
 
-        loading="lazy"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    ) : null}
+    <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
+      {Array.isArray(fundingType) && fundingType.length > 0 && (
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="text-slate-500">Funding:</span>
+          <span className="inline-flex flex-wrap gap-1">
+            {fundingType.map((f) => (
+              <span
+                key={f}
+                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
+              >
+                {f}
+              </span>
+            ))}
+          </span>
+        </span>
+      )}
 
-    <div className="min-w-0">
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p className="mt-1 text-slate-600">
-        <span className="font-medium">{provider}</span>
-        {country ? ` • ${country}` : ""}
-        {level ? ` • ${level}` : ""}
-        {field ? ` • ${field}` : ""}
-      </p>
+      {amount && (
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="text-slate-500">Amount:</span>
+          <span className="font-medium">{amount}</span>
+        </span>
+      )}
+
+      {deadline && (
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="text-slate-500">Deadline:</span>
+          <span className="font-medium break-words">{deadline}</span>
+        </span>
+      )}
+    </div>
+
+    <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
+      {partnerApplyUrl && (
+        <a
+          href={partnerApplyUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackScholarship(id, "apply")}
+          className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+        >
+          Apply Now
+        </a>
+      )}
+
+      {link && (
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackScholarship(id, "website")}
+          className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+        >
+          Visit website
+        </a>
+      )}
     </div>
   </div>
+</div>
+             
+  <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
+  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
+    <div className="min-w-0 space-y-6">     
 
+  {description && (
+  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+    Scholarship Description
+  </h2>
+  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+    <RichHtml html={description} />
+  </div>
+</section>
+        )}
 
-
-
-
-
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                    {Array.isArray(fundingType) && fundingType.length > 0 && (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-slate-500">Funding:</span>
-                        <span className="inline-flex flex-wrap gap-1">
-                          {fundingType.map((f) => (
-                            <span
-                              key={f}
-                              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
-                            >
-                              {f}
-                            </span>
-                          ))}
-                        </span>
-                      </span>
-                    )}
-                    {amount && (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-slate-500">Amount:</span>
-                        <span className="font-medium">{amount}</span>
-                      </span>
-                    )}
-                    {deadline && (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-slate-500">Deadline:</span>
-                        <span className="font-medium">{deadline}</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-4 flex gap-3">
-                    {/*{partnerApplyUrl && (
-                      <a
-                        href={partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                      >
-                        Apply Now
-                      </a>
-                    )}*/}
-
-
-
-                    {partnerApplyUrl && (
-                     <a
-                     href={partnerApplyUrl}
-                     target="_blank"
-                      rel="noopener noreferrer"
-                       onClick={() => trackScholarship(id, "apply")}
-                     className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                      >
-                  Apply Now
-                  </a>
-                     )}
-
-
-
-                    {/*{link && (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-                      >
-                        Visit website
-                      </a>
-                    )}*/}
-
-                    {link && (
-                       <a
-                     href={link}
-                        target="_blank"
-                      rel="noopener noreferrer"
-                     onClick={() => trackScholarship(id, "website")}
-                     className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
-                       >
-                       Visit website
-                      </a>
-                       )}
-
-                  </div>
-                </div>
-              </div>
-
-              <div className="max-w-5xl mx-auto px-4 pb-16">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 space-y-6">
-                    {description && (
-                      
-                     <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold text-[#4B1F6F]">
-                          Scholarship Description
-                        </h2>
-                        <div className="mt-3">
-                          <RichHtml html={description} />
-                        </div>
-                      </section>
-                    )}
-
-                    {bannerSrc && (
+  {bannerSrc && (
   <section className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
     <button
       type="button"
@@ -742,52 +681,52 @@ const canShowAds = Boolean(item);
 
 
 
-                    {eligibility && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Eligibility & Requirements</h2>
-                        <div className="mt-3">
-                          <RichHtml html={eligibility} />
-                        </div>
-                      </section>
-                    )}
-
-                    {benefits && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                        <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold text-[#4B1F6F]">Benefits</h2>
-                        <div className="mt-3">
-                          <RichHtml html={benefits} />
-                        </div>
-                      </section>
-                    )}
-
-                    {howToApply && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-lg font-semibold text-[#4B1F6F]">How to Apply</h2>
-                        <div className="mt-3">
-                          <RichHtml html={howToApply} />
-                        </div>
-                      </section>
-                    )}
-
-                    {additionalInformation && (
+  {eligibility && (
   <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-    <h2 className="text-lg font-semibold text-[#4B1F6F]">
-      Additional Information
-    </h2>
-    <div className="mt-3">
-      <RichHtml html={additionalInformation} />
-    </div>
-  </section>
+  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+    Eligibility & Requirements
+  </h2>
+  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+    <RichHtml html={eligibility} />
+  </div>
+</section>
 )}
 
+  {benefits && (
+  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+    Benefits
+  </h2>
+  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+    <RichHtml html={benefits} />
+  </div>
+</section>
+)}
 
-                  </div>
+{howToApply && (
+<section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+    How to Apply
+  </h2>
+  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+    <RichHtml html={howToApply} />
+  </div>
+</section>
+  )}
 
-
-                  <aside className="space-y-6">
+{additionalInformation && (
+  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+    Additional Information
+  </h2>
+  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+    <RichHtml html={additionalInformation} />
+  </div>
+</section>
+)}
+</div>
+                  {/*<aside className="space-y-6">*/}
+                  <aside className="space-y-6 lg:pl-2">
                     {bannerSrc && (
                       
                         <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
@@ -842,17 +781,6 @@ const canShowAds = Boolean(item);
                             </>
                           )}
                         </dl>
-
-                        {/*{partnerApplyUrl && (
-                          <a
-                            href={partnerApplyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                          >
-                            Apply Now
-                          </a>
-                        )}*/}
 
                         {partnerApplyUrl && (
                          <a
