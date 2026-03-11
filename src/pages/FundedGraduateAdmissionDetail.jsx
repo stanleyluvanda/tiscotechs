@@ -510,14 +510,22 @@ export default function FundedGraduateAdmissionDetail() {
             {/*<main className="min-w-0">*/}
             <main className="min-w-0 w-full">
               {/*<div className="max-w-5xl mx-auto px-4 pt-8">*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-5 sm:pt-6 lg:pt-8">
+              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 pt-5 sm:pt-6 lg:pt-8">
                 <Link
                   to="/funded-graduate-admission"
                   className="text-blue-600 hover:underline text-sm"
                 >
                   ← Back to Funded Graduate Admission
                 </Link>
-              </div>
+              </div>*/}
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-3 sm:pt-4 lg:pt-5 pb-1">
+                  <Link
+                 to="/funded-graduate-admission"
+                    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+                       >
+                     ← Back to Funded Graduate Admission
+                      </Link>
+                      </div>
 
               {/*<div className="max-w-5xl mx-auto px-4 py-6">*/}
                <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
@@ -526,16 +534,21 @@ export default function FundedGraduateAdmissionDetail() {
                   {/*<div className="flex items-start gap-4">*/}
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {logo ? (
-                      <img
+                      
+
+                   <img
                         src={logo}
-                        alt={`${provider || "University"} logo`}
-                        /*className="h-18 w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
+                   alt={`${provider || "University"} logo`}
+                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
+                     loading="lazy"
+                    onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                            }}
+                    />
+
+
+
+
                     ) : null}
 
                     <div className="min-w-0">
