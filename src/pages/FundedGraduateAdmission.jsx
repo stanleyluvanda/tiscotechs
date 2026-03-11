@@ -638,8 +638,6 @@ export default function FundedGraduateAdmission() {
                         <img
                           src={logo}
                           alt={`${s.provider || "University"} logo`}
-                          /*className="h-12 w-12 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-                          /*className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
                           className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
                           loading="lazy"
                           onError={(e) => {
@@ -649,20 +647,8 @@ export default function FundedGraduateAdmission() {
                       ) : null}
 
                       <div className="min-w-0">
-                        {/*<div className="text-lg font-semibold">{s.title}</div>*/}
-                        {/*<div className="text-base sm:text-lg font-semibold leading-snug">{s.title}</div>*/}
                         <div className="text-base sm:text-lg font-semibold leading-snug break-words">{s.title}</div>
-                        {/*<div className="mt-0.5 text-sm text-slate-600">
-                          {s.provider}
-                          {s.country ? ` • ${s.country}` : ""}
-                          {s.level ? ` • ${s.level}` : ""}
-                          {s.field ? ` • ${s.field}` : ""}
-                          {fundingStr ? ` • ${fundingStr}` : ""}
-                        </div>*/}
-
-
-
-                        {/*</div><div className="mt-1.5 text-sm text-slate-600">*/}
+                       
                         <div className="mt-1 text-xs sm:text-sm text-slate-600 leading-6">
   {s.provider ? (
     <span className="font-semibold text-purple-800">{s.provider}</span>
@@ -680,33 +666,29 @@ export default function FundedGraduateAdmission() {
     <span className="font-semibold text-purple-700">{" • "}{s.field}</span>
   ) : null}
 
-  {/*{fundingStr ? <span>{" • "}{fundingStr}</span> : null}*/}
   {fundingStr ? <span className="font-semibold text-blue-900">{" • "}{fundingStr}</span> : null}
 </div>
+</div>
+</div>
 
-                      </div>
-                    </div>
+                   
 
-                    {/*<div className="flex flex-col items-end gap-2 shrink-0">*/}
-                    {/*</div><div className="flex flex-col items-start sm:items-end gap-2 shrink-0">*/}
-                    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0 sm:w-[220px] md:w-[250px]">
+  <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+  {s.amount ? (
+    <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold whitespace-nowrap">
+      Funding: {s.amount}
+    </div>
+  ) : null}
+</div>
+</div>
+    {s.deadline && (
+  <div className="mt-2 text-xs text-slate-500 leading-5 sm:text-right">
+    Deadline: {s.deadline}
+  </div>
+)}
 
-                      {s.amount ? (
-                        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-                          Funding: {s.amount}
-                        </div>
-                      ) : null}
-                      {s.deadline && (
-                        /*<div className="text-xs text-slate-500">Deadline: {s.deadline}</div>*/
-                        <div className="text-xs text-slate-500 leading-5 whitespace-normal break-words sm:max-w-[220px] md:max-w-[250px] sm:text-right">Deadline: {s.deadline}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/*{snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}*/}
+                 
                   {snippet && <p className="mt-3 text-sm leading-6 text-slate-700">{snippet}</p>}
-
-                  {/*<div className="mt-3 flex flex-wrap gap-2">*/}
                   <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
                     <Link
                       to={`/funded-graduate-admission/${s.id}`}
