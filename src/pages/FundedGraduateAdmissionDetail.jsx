@@ -17,10 +17,14 @@ const API_BASE = (
 function RichHtml({ html }) {
   if (!html) return null;
   return (
-    <div
+    /*<div
       className="rich-html prose-sm max-w-none"
       dangerouslySetInnerHTML={{ __html: html }}
-    />
+    />*/
+    <div
+  className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words"
+  dangerouslySetInnerHTML={{ __html: html }}
+/>
   );
 }
 
@@ -487,9 +491,9 @@ export default function FundedGraduateAdmissionDetail() {
       `}</style>
 
       <div className="flex-1">
-        <div className="mx-auto w-full max-w-[1400px] px-4">
-          {/*</div><div className="grid grid-cols-1 2xl:grid-cols-[200px_minmax(0,1024px)_200px] 2xl:gap-6 items-start">*/}
-          <div className="grid grid-cols-1 2xl:grid-cols-[140px_minmax(0,1120px)_140px] 2xl:gap-6 items-start">
+        
+        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 lg:px-5">
+        <div className="grid grid-cols-1 2xl:grid-cols-[140px_minmax(0,1120px)_140px] gap-4 2xl:gap-6 items-start">
             {/* LEFT ADS */}
             <aside className="hidden 2xl:block pt-8">
               <div className="space-y-4">
@@ -503,8 +507,10 @@ export default function FundedGraduateAdmissionDetail() {
             </aside>
 
             {/* CENTER */}
-            <main className="min-w-0">
-              <div className="max-w-5xl mx-auto px-4 pt-8">
+            {/*<main className="min-w-0">*/}
+            <main className="min-w-0 w-full">
+              {/*<div className="max-w-5xl mx-auto px-4 pt-8">*/}
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-5 sm:pt-6 lg:pt-8">
                 <Link
                   to="/funded-graduate-admission"
                   className="text-blue-600 hover:underline text-sm"
@@ -513,18 +519,18 @@ export default function FundedGraduateAdmissionDetail() {
                 </Link>
               </div>
 
-              <div className="max-w-5xl mx-auto px-4 py-6">
-                {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6">*/}
-                {/*<div className="rounded-2xl bg-slate-50 border border-transparent shadow-none p-6">*/}
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-6">
-                  <div className="flex items-start gap-4">
+              {/*<div className="max-w-5xl mx-auto px-4 py-6">*/}
+               <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
+                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-6">*/}
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
+                  {/*<div className="flex items-start gap-4">*/}
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {logo ? (
                       <img
                         src={logo}
                         alt={`${provider || "University"} logo`}
-                        /*className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-                        /*className="h-14 w-14 shrink-0 rounded bg-slate-50 border border-transparent object-contain p-1"*/
-                        className="h-18 w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+                        /*className="h-18 w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
+                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
                         loading="lazy"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
@@ -533,8 +539,11 @@ export default function FundedGraduateAdmissionDetail() {
                     ) : null}
 
                     <div className="min-w-0">
-                      <h1 className="text-2xl font-bold">{title}</h1>
-                      <p className="mt-1 text-slate-600">
+                      {/*<h1 className="text-2xl font-bold">{title}</h1>
+                      <p className="mt-1 text-slate-600">*/}
+                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">{title}
+                        </h1>
+                      <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
                         <span className="font-medium">{provider}</span>
                         {country ? ` • ${country}` : ""}
                         {level ? ` • ${level}` : ""}
@@ -543,7 +552,8 @@ export default function FundedGraduateAdmissionDetail() {
                     </div>
                   </div>
 
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                  {/*</div><div className="mt-3 flex flex-wrap items-center gap-3 text-sm">*/}
+                  <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
                       <span className="inline-flex items-center gap-2">
                         <span className="text-slate-500">Funding:</span>
@@ -573,14 +583,16 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
                   </div>
 
-                  <div className="mt-4 flex gap-3">
+                  {/*<div className="mt-4 flex gap-3">*/}
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3">
                     {partnerApplyUrl && (
                       <a
                         href={partnerApplyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackItem(id, "apply")}
-                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                        /*className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"*/
+                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
                       >
                         Apply Now
                       </a>
@@ -592,7 +604,8 @@ export default function FundedGraduateAdmissionDetail() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackItem(id, "website")}
-                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"
+                        /*className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"*/
+                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
                       >
                         Visit website
                       </a>
@@ -601,11 +614,15 @@ export default function FundedGraduateAdmissionDetail() {
                 </div>
               </div>
 
-              <div className="max-w-5xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">
-  <div className="min-w-0 space-y-2 lg:-ml-4">
+              {/*</main><div className="max-w-5xl mx-auto px-4 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">*/}
+  <div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
+  <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-5 lg:gap-6">
+  {/*<div className="min-w-0 space-y-2 lg:-ml-4">*/}
+  <div className="min-w-0 space-y-3 lg:space-y-2">
   {description && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
         className="text-2xl font-semibold text-[#4B1F6F]"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
@@ -619,7 +636,8 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {bannerSrc && (
-    <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden md:ml-4">
+    /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden md:ml-4">*/
+    <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
       <button
         type="button"
         onClick={() => setShowBanner(true)}
@@ -640,7 +658,8 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {eligibility && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
         className="text-2xl font-semibold text-[#4B1F6F]"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
@@ -654,7 +673,8 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {benefits && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
         className="text-2xl font-semibold text-[#4B1F6F]"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
@@ -668,7 +688,8 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {howToApply && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
         className="text-2xl font-semibold text-[#4B1F6F]"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
@@ -682,9 +703,11 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {additionalInformation && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">
+    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
-        className="text-2xl font-semibold text-[#4B1F6F]"
+        /*className="text-2xl font-semibold text-[#4B1F6F]"*/
+        className="text-xl sm:text-2xl font-semibold text-[#4B1F6F] leading-tight"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
       >
         Additional Information
@@ -699,7 +722,8 @@ export default function FundedGraduateAdmissionDetail() {
 
                   
 
-                  <aside className="space-y-6">
+                  {/*<aside className="space-y-6">*/}
+                  <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <button
@@ -721,15 +745,23 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     )}
 
-                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">
-                        <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
+                    {/*<div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">*/}
+                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
+                      {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">*/}
+                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
+                        {/*<h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
                             At a glance
                           </span>
+                        </h3>*/}
+                        <h3 className="text-base font-semibold -mx-4 sm:-mx-5 lg:-mx-6 -mt-4 sm:-mt-5 lg:-mt-6 mb-4">
+                          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
+                        At a glance
+                            </span>
                         </h3>
 
-                        <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
+                        {/*<dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">*/}
+                        <dl className="mt-3 text-sm text-slate-700 text-left mx-auto w-full max-w-xs break-words">
                           <dt className="font-medium">University</dt>
                           <dd className="mb-3">{provider || "-"}</dd>
 
@@ -759,7 +791,8 @@ export default function FundedGraduateAdmissionDetail() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => trackItem(id, "apply")}
-                            className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                            /*className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"*/
+                            className="mt-2 inline-block w-full sm:w-auto rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
                           >
                             Apply Now
                           </a>
@@ -783,7 +816,8 @@ export default function FundedGraduateAdmissionDetail() {
                               <Link
                                 key={sid}
                                 to={`/funded-graduate-admission/${encodeURIComponent(sid)}`}
-                                className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
+                                /*className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"*/
+                                className="block px-4 sm:px-5 py-4 text-emerald-700 hover:bg-slate-50 break-words"
                               >
                                 <span className="font-semibold">{label}</span>
                               </Link>
@@ -820,7 +854,8 @@ export default function FundedGraduateAdmissionDetail() {
           role="dialog"
           aria-modal="true"
         >
-          <div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+          {/*<div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>*/}
+          <div className="max-w-5xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
             <div className="rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="text-sm font-semibold text-slate-700">
@@ -834,7 +869,8 @@ export default function FundedGraduateAdmissionDetail() {
                   Close
                 </button>
               </div>
-              <div className="p-3 bg-slate-50">
+              {/*<div className="p-3 bg-slate-50">*/}
+              <div className="p-2 sm:p-3 bg-slate-50 max-h-[75vh] overflow-auto">
                 <img
                   src={bannerSrc}
                   alt={`${provider || title} banner enlarged`}
