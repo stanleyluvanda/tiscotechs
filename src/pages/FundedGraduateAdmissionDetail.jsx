@@ -539,7 +539,7 @@ export default function FundedGraduateAdmissionDetail() {
                    <img
                         src={logo}
                    alt={`${provider || "University"} logo`}
-                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
+                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-3"
                      loading="lazy"
                     onError={(e) => {
                         e.currentTarget.style.display = "none";
