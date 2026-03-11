@@ -155,6 +155,7 @@ export default function Navbar() {
   /*const [user, setUser] = useState(() => loadActiveUser());*/
   const [user, setUser] = useState(() => loadNavbarUser());
   const [open, setOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef(null);
 
   // heights
@@ -187,7 +188,7 @@ export default function Navbar() {
   /*useEffect(() => { setUser(loadActiveUser()); }, [location.pathname, location.search]);*/
   useEffect(() => { setUser(loadNavbarUser()); }, [location.pathname, location.search]);
   // close menu on outside/esc
-  useEffect(() => {
+  /*useEffect(() => {
     const onDown = (e) => {
       if (e.key === "Escape") setOpen(false);
       if (!menuRef.current) return;
@@ -199,7 +200,24 @@ export default function Navbar() {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onDown);
     };
-  }, [open]);
+  }, [open]);*/
+
+  useEffect(() => {
+  const onDown = (e) => {
+    if (e.key === "Escape") {
+      setOpen(false);
+      setMobileNavOpen(false);
+    }
+    if (!menuRef.current) return;
+    if (open && !menuRef.current.contains(e.target)) setOpen(false);
+  };
+  document.addEventListener("mousedown", onDown);
+  document.addEventListener("keydown", onDown);
+  return () => {
+    document.removeEventListener("mousedown", onDown);
+    document.removeEventListener("keydown", onDown);
+  };
+}, [open]);
 
   /*const role = (user?.role || "").toLowerCase();
   const dashboardPath = role === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard";*/
@@ -277,12 +295,19 @@ const dashboardPath =
       }}
       className="border-b border-black/5 text-white"
     >
-      <div
+      {/*<div
         className="h-full px-3 md:px-5 flex items-center gap-3"
         style={{ fontFamily: '"Open Sans", Arial, sans-serif' }}
-      >
+      >*/}
+
+     <div
+  className="h-full px-3 md:px-5 flex items-center gap-2 md:gap-3"
+  style={{ fontFamily: '"Open Sans", Arial, sans-serif' }}
+>
+
         {/* LEFT: logo + brand (tight together) */}
-        <Link to="/home" className="flex items-center gap-2 min-w-0">
+        {/*<Link to="/home" className="flex items-center gap-2 min-w-0">*/}
+        <Link to="/home" className="flex items-center gap-2 min-w-0 shrink-0">
           <img
             src="/images/1754280544595.jpeg"
             alt="ScholarsKnowledge logo"
@@ -296,7 +321,7 @@ const dashboardPath =
 
         {/* CENTER: nav (Partner after About) */}
         {/*<nav className="flex-1 flex items-center justify-center gap-1 md:gap-2 lg:gap-3">*/}
-        <nav className="flex-1 flex items-center justify-center gap-0.5 md:gap-1 lg:gap-2">
+        {/*<nav className="flex-1 flex items-center justify-center gap-0.5 md:gap-1 lg:gap-2">
           <NavLink to="/home" className={link}>Home</NavLink>
           <NavLink to="/about" className={link}>About</NavLink>
           <NavLink to="/partner" className={link}>Partner</NavLink>
@@ -306,11 +331,38 @@ const dashboardPath =
           <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
-        </nav>
+        </nav>*/}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-0.5 md:gap-1 lg:gap-2 overflow-x-auto">
+  <NavLink to="/home" className={link}>Home</NavLink>
+  <NavLink to="/about" className={link}>About</NavLink>
+  <NavLink to="/partner" className={link}>Partner</NavLink>
+  <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
+  <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
+  <NavLink to="/funded-graduate-admission" className={link}>Funded Graduate Admission</NavLink>
+  <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
+  <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
+  <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
+</nav>
 
         {/* RIGHT: globe + auth (single Log in) */}
-        <div className="ml-auto flex items-center gap-3">
-          <SpinningGlobe />
+        {/*</div><div className="ml-auto flex items-center gap-3">*/}
+        <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
+
+          <button
+  type="button"
+  onClick={() => setMobileNavOpen((v) => !v)}
+  className="md:hidden inline-flex items-center justify-center rounded-md px-2 py-1 text-white hover:bg-white/10"
+  aria-label="Open menu"
+  aria-expanded={mobileNavOpen}
+>
+  <span className="text-xl leading-none">☰</span>
+</button>
+
+          {/*<SpinningGlobe />*/}
+          <div className="hidden sm:block">
+            <SpinningGlobe size={32} />
+       </div>
+
           {!user ? (
             <Link
               to="/login"
@@ -326,7 +378,8 @@ const dashboardPath =
                 aria-haspopup="menu"
                 aria-expanded={open}
               >
-                <span className="hidden md:block text-sm font-medium">Me ▾</span>
+                {/*<span className="hidden md:block text-sm font-medium">Me ▾</span>*/}
+                <span className="hidden lg:block text-sm font-medium">Me ▾</span>
                 <Avatar url={user.photoUrl} name={user.name || "User"} />
               </button>
 
@@ -378,6 +431,33 @@ const dashboardPath =
             </div>
           )}
         </div>
+
+        {mobileNavOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-[#0A4595] border-t border-white/10 shadow-lg">
+            <div className="px-3 py-3 flex flex-col">
+              <NavLink to="/home" className={link} onClick={() => setMobileNavOpen(false)}>Home</NavLink>
+              <NavLink to="/about" className={link} onClick={() => setMobileNavOpen(false)}>About</NavLink>
+              <NavLink to="/partner" className={link} onClick={() => setMobileNavOpen(false)}>Partner</NavLink>
+              <NavLink to="/edufinancing" className={link} onClick={() => setMobileNavOpen(false)}>EduFinancing</NavLink>
+              <NavLink to="/study-in-us" className={link} onClick={() => setMobileNavOpen(false)}>Study in The U.S</NavLink>
+              <NavLink to="/funded-graduate-admission" className={link} onClick={() => setMobileNavOpen(false)}>Funded Graduate Admission</NavLink>
+              <NavLink to="/scholarships" className={link} onClick={() => setMobileNavOpen(false)}>Scholarships Directory</NavLink>
+              <NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>
+              <NavLink to="/lecturer-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Lecturer Sign Up</NavLink>
+
+              {!user && (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="mt-2 rounded-full bg-white text-[#0A4595] px-4 py-2 text-sm font-semibold text-center hover:bg-white/90"
+                >
+                  Log in
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -398,9 +478,11 @@ const dashboardPath =
       className="border-b border-black/5"
     >
       {/* Full-width ad area (drop your Google Ad tag into #ad-banner) */}
-      <div id="ad-banner" className="h-full w-full flex items-center justify-center">
+      {/*</div><div id="ad-banner" className="h-full w-full flex items-center justify-center">*/}
+      <div id="ad-banner" className="hidden md:flex h-full w-full items-center justify-center">
         {/* Placeholder; replace with Ad script/ins element */}
-        <div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">
+        {/*</div><div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">*/}
+          <div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">
           Banner Ad Slot (728×90 / responsive)
         </div>
       </div>
@@ -412,7 +494,8 @@ const dashboardPath =
       {createPortal(NavbarBar, document.body)}
       {createPortal(BannerStrip, document.body)}
       {/* Spacer pushes content below fixed bars */}
-      <div style={{ height: TOTAL_H }} />
+      {/*<div style={{ height: TOTAL_H }} />*/}
+      <div className="h-[56px] md:h-[152px]" />
     </>
   );
 }
