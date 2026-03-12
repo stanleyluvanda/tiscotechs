@@ -604,11 +604,36 @@ function ExpandableText({ text, initialChars = 180, className = "" }) {
 }
 
 
-function ExpandableHtml({ html, initialChars=280 }) {
+/*function ExpandableHtml({ html, initialChars=280 }) {
   const [open,setOpen]=useState(false); const plain=stripHtml(html); const tooLong=plain.length>initialChars; const shortHtml=plain.slice(0,initialChars)+(tooLong?"…":"");
   return <div className="mt-3 text-slate-800 prose-sm max-w-none">{open||!tooLong?<div dangerouslySetInnerHTML={{__html:html}}/>:<div>{shortHtml}</div>}{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="mt-1 text-blue-600 text-sm hover:underline">{open?"Read less":"Read more"}</button>}</div>;
-}
+}*/
 
+function ExpandableHtml({ html, initialChars = 280 }) {
+  const [open, setOpen] = useState(false);
+  const plain = stripHtml(html);
+  const tooLong = plain.length > initialChars;
+  const shortHtml = plain.slice(0, initialChars) + (tooLong ? "…" : "");
+
+  return (
+    <div className="mt-3 text-slate-800 max-w-none [&_p]:my-2 [&_strong]:font-semibold [&_br]:leading-6">
+      {open || !tooLong ? (
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+      ) : (
+        <div>{shortHtml}</div>
+      )}
+
+      {tooLong && (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="mt-1 text-blue-600 text-sm hover:underline"
+        >
+          {open ? "Read less" : "Read more"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 
 
@@ -1663,6 +1688,82 @@ function formatTimeAgo(input) {
 }
 
 
+/* ================== AI-BLOCK ================== */
+const AI_BASE = (import.meta.env.VITE_AI_API_BASE || "").replace(/\/+$/, "");
+
+async function callAssistAI(action, text) {
+  const res = await fetch(`${AI_BASE}/api/ai`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ action, text }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data?.error || "AI request failed");
+  }
+
+  return String(data?.result || "");
+}
+
+/*function sanitizeSimpleAiHtml(html = "") {
+  return String(html || "")
+    .replace(/<(?!\/?(p|strong|br)\b)[^>]*>/gi, "")
+    .trim();
+}*/
+function sanitizeSimpleAiHtml(html = "") {
+  return String(html || "")
+    .replace(/<(?!\/?(p|strong|br|ul|li)\b)[^>]*>/gi, "")
+    .trim();
+}
+
+function splitTextIntoChunks(text = "", maxChars = 3500) {
+  const clean = String(text || "").replace(/\r\n/g, "\n").trim();
+  if (!clean) return [];
+
+  const paragraphs = clean.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const chunks = [];
+  let current = "";
+
+  for (const para of paragraphs) {
+    const candidate = current ? `${current}\n\n${para}` : para;
+
+    if (candidate.length <= maxChars) {
+      current = candidate;
+    } else {
+      if (current) chunks.push(current);
+      current = para;
+    }
+  }
+
+  if (current) chunks.push(current);
+
+  return chunks;
+}
+
+async function callAssistAIChunked(action, text) {
+  const source = String(text || "").trim();
+  if (!source) return "";
+
+  const chunks = splitTextIntoChunks(source, 3500);
+
+  if (chunks.length <= 1) {
+    return await callAssistAI(action, source);
+  }
+
+  const results = [];
+  for (const chunk of chunks) {
+    const part = await callAssistAI(action, chunk);
+    results.push(String(part || "").trim());
+  }
+
+  return results.join("\n\n");
+}
+
+
 /* ================== MAIN ================== */
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -2416,17 +2517,6 @@ function normalizeCommentFromBackend(c) {
 
   return { ...base, replies };
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3249,7 +3339,10 @@ useEffect(() => {
   const [composerTitle,setComposerTitle] = useState("");
   const [bookTitle, setBookTitle] = useState("");              // NEW: for Academic Books
   const [toFaculty,setToFaculty]=useState(false);
-
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiResult, setAiResult] = useState("");
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiMode, setAiMode] = useState("text"); // "text" | "html"
   // ⬇️ NEW: S3-backed attachments from AttachmentUploader
   // Shape: [{ url, key, fileName, size, mime, type }]
   const [attachments, setAttachments] = useState([]);
@@ -3580,7 +3673,10 @@ async function submitReport() {
   // Create post (and send to backend API)
   const onPost = async (e) => {
     e.preventDefault();
-    const html = (editorRef.current?.innerHTML || "").trim();
+    /*const html = (editorRef.current?.innerHTML || "").trim();*/
+    const html = String(editorRef.current?.innerHTML || "")
+  .replace(/\u00A0/g, " ")
+  .trim();
 
     // Only lecturers can post Video (guard in student dashboard)
     if (composerType === "Video") {
@@ -4626,43 +4722,210 @@ const feedCombined = useMemo(() => {
                   suppressContentEditableWarning
                 />
 
+                     {/* AI-BLOCK IN COMPOSER */}
+<div className="mt-3 flex flex-wrap items-center gap-2">
+  <button
+    type="button"
+    onClick={async () => {
+      try {
+        const sourceText = String(editorRef.current?.innerText || "").trim();
+        if (!sourceText) return;
 
+        setAiBusy(true);
+        setAiResult("");
+        setAiMode("html");
 
+        /*const improved = await callAssistAI("improve-writing", sourceText);*/
+        const improved = await callAssistAIChunked("improve-writing", sourceText);
 
-                 {/* S3-backed attachments (images + documents) */}
-                <div className="mt-3">
-                  <AttachmentUploader
-                    role="student"
-                    folder="student-posts"
-                    maxFiles={5}
-                    value={attachments}
-                    onChange={setAttachments}
-                  />
-                </div>
+        setAiResult(sanitizeSimpleAiHtml(improved));
+        setAiOpen(true);
+      } catch (e) {
+        setAiResult(`AI error: ${e.message || "Unable to improve writing."}`);
+        setAiOpen(true);
+      } finally {
+        setAiBusy(false);
+      }
+    }}
+    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
+    disabled={aiBusy}
+  >
+    {aiBusy ? "Working..." : "Improve writing"}
+  </button>
 
+  <button
+    type="button"
+    onClick={async () => {
+      try {
+        const sourceText = String(editorRef.current?.innerText || "").trim();
+        if (!sourceText) return;
 
+        setAiBusy(true);
+        setAiResult("");
+        setAiMode("html");
 
-                <div className="mt-3 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={()=>{ 
-                      setComposerOpen(false);
-                      if (editorRef.current) editorRef.current.innerHTML=""; 
-                      setAttachments([]);
-                      setComposerType("Notes"); 
-                      setToFaculty(false); 
-                      setComposerTitle(""); 
-                      setBookTitle(""); 
-                    }}
+        /*const summary = await callAssistAI("summarize", sourceText);*/
+        const summary = await callAssistAIChunked("summarize", sourceText);
 
-                    className="rounded-full border border-slate-100 px-4 py-2 text-sm hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
-                    Post
-                  </button>
-                </div>
+        /*setAiResult(summary);*/
+        setAiResult(sanitizeSimpleAiHtml(summary));
+        setAiOpen(true);
+      } catch (e) {
+        setAiResult(`AI error: ${e.message || "Unable to summarize."}`);
+        setAiOpen(true);
+      } finally {
+        setAiBusy(false);
+      }
+    }}
+    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
+    disabled={aiBusy}
+  >
+    Summarize
+  </button>
+
+  <button
+    type="button"
+    onClick={async () => {
+      try {
+        const sourceText = String(editorRef.current?.innerText || "").trim();
+        if (!sourceText) return;
+
+        setAiBusy(true);
+        setAiResult("");
+        setAiMode("html");
+
+        /*const formatted = await callAssistAI("format-subheadings", sourceText);*/
+        const formatted = await callAssistAIChunked("format-subheadings", sourceText);
+
+        setAiResult(sanitizeSimpleAiHtml(formatted));
+        setAiOpen(true);
+      } catch (e) {
+        setAiMode("text");
+        setAiResult(`AI error: ${e.message || "Unable to format subheadings."}`);
+        setAiOpen(true);
+      } finally {
+        setAiBusy(false);
+      }
+    }}
+    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
+    disabled={aiBusy}
+  >
+    Format subheadings
+  </button>
+
+  {/* S3-backed attachments (images + documents) */}
+  <div className="shrink-0">
+    <AttachmentUploader
+      role="student"
+      folder="student-posts"
+      maxFiles={5}
+      value={attachments}
+      onChange={setAttachments}
+      compactOnly
+    />
+  </div>
+
+  <div className="ml-auto flex items-center gap-2">
+    <button
+      type="button"
+      onClick={() => {
+        setComposerOpen(false);
+        if (editorRef.current) editorRef.current.innerHTML = "";
+        setAttachments([]);
+        setComposerType("Notes");
+        setToFaculty(false);
+        setComposerTitle("");
+        setBookTitle("");
+        setAiOpen(false);
+        setAiResult("");
+      }}
+      className="rounded-full border border-slate-100 px-4 py-2 text-sm hover:bg-slate-50"
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="rounded-full bg-blue-600 text-white px-4 py-1 text-sm font-semibold hover:bg-blue-700"
+    >
+      Post
+    </button>
+  </div>
+</div>
+
+{/* ✅ ADD THE PREVIEW BLOCK RIGHT HERE */}
+{attachments?.length > 0 ? (
+  <div className="mt-2">
+    <AttachmentUploader
+      role="student"
+      folder="student-posts"
+      maxFiles={5}
+      value={attachments}
+      onChange={setAttachments}
+      previewOnly
+    />
+  </div>
+) : null}
+
+{aiOpen && aiResult ? (
+  <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+    <div className="mb-2 flex items-center justify-between">
+      <div className="font-semibold">AI suggestion</div>
+      <button
+        type="button"
+        onClick={() => {
+          setAiOpen(false);
+          setAiResult("");
+        }}
+        className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100"
+      >
+        Close
+      </button>
+    </div>
+
+    {aiMode === "html" ? (
+      <div
+        /*className="prose prose-sm max-w-none"*/
+        className="max-w-none [&_p]:my-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_li]:my-1"
+        dangerouslySetInnerHTML={{ __html: sanitizeSimpleAiHtml(aiResult) }}
+      />
+    ) : (
+      <div className="whitespace-pre-wrap">{aiResult}</div>
+    )}
+
+    <button
+      type="button"
+      onClick={() => {
+        if (!editorRef.current) return;
+
+        if (aiMode === "html") {
+          editorRef.current.innerHTML =
+            sanitizeSimpleAiHtml(aiResult) || "<p><br/></p>";
+          return;
+        }
+
+        const esc = (s) =>
+          String(s || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+
+        const html = String(aiResult || "")
+          .replace(/\r\n/g, "\n")
+          .split(/\n{2,}/)
+          .map((para) => `<p>${para.split("\n").map(esc).join("<br/>")}</p>`)
+          .join("");
+
+        editorRef.current.innerHTML = html || "<p><br/></p>";
+      }}
+      className="mt-2 rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+    >
+      Use this text
+    </button>
+  </div>
+) : null}
               </form>
             )}
           </Card>
