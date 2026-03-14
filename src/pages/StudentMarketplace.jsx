@@ -1893,7 +1893,7 @@ const filtered = visibleItems
       <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
         {/* LEFT: Filters */}
         <aside className="space-y-4 pb-32">
-          <Card square>
+          {/*<Card square>
             <CardHeader title="Student Marketplace" square />
             <CardBody>
               <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
@@ -1902,7 +1902,55 @@ const filtered = visibleItems
                 {feedLoading ? "Refreshing listings…" : "\u00A0"}
               </div>
             </CardBody>
-          </Card>
+          </Card>*/}
+          <Card square>
+  <CardHeader
+    title={
+      <span className="inline-flex items-center gap-2">
+        <svg
+  viewBox="0 0 24 24"
+  className="h-7 w-7 shrink-0"
+  aria-hidden="true"
+>
+  <path
+    d="M2.75 4.5h2.1l1.05 5.1a1.8 1.8 0 0 0 1.76 1.4h8.2a1.8 1.8 0 0 0 1.74-1.31l1.2-4.19H6.2"
+    fill="none"
+    stroke="#0071CE"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <circle cx="9.2" cy="17.4" r="1.7" fill="#0071CE" />
+  <circle cx="16.4" cy="17.4" r="1.7" fill="#0071CE" />
+  <path
+    d="M8.1 14.2h8.7"
+    stroke="#0071CE"
+    strokeWidth="1.7"
+    strokeLinecap="round"
+  />
+</svg>
+
+        <span>Student Marketplace</span>
+
+        <span
+          aria-hidden="true"
+          className="text-2lg font-extrabold leading-none"
+          style={{ color: "#16A34A" }}
+        >
+          $
+        </span>
+      </span>
+    }
+    square
+  />
+  <CardBody>
+    <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
+    {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
+    <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
+      {feedLoading ? "Refreshing listings…" : "\u00A0"}
+    </div>
+  </CardBody>
+</Card>
 
           <Card square>
             <CardHeader title="My listings" square />
@@ -2627,7 +2675,30 @@ const filtered = visibleItems
         {/* RIGHT: Tips / rules */}
         <aside className="space-y-4 pb-32">
           <Card square>
-            <CardHeader title="Marketplace Safety tips" square />
+             <Card square>
+             
+            <CardHeader
+  title={
+    <span className="inline-flex items-center gap-2">
+      <img
+        src="/images/Start business.webp"
+        alt="Business icon"
+        className="h-7 w-7 shrink-0 object-contain"
+      />
+      <span>Start your Business Today</span>
+    </span>
+  }
+  square
+/>
+<CardBody>
+  <p
+    className="text-sm text-slate-800 rounded-md px-3 py-2"
+    style={{ backgroundColor: "#F4D000" }}
+  >
+    Are passionate about business? Start listing your business now.
+  </p>
+</CardBody>
+            {/*<CardHeader title="Marketplace Safety tips" square />
             <CardBody>
               <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
                 <li>Meet on campus in public places.</li>
@@ -2635,15 +2706,36 @@ const filtered = visibleItems
                 <li>Check items before you pay.</li>
                 <li>Avoid scam or suspecious conversation.</li>
               </ul>
-            </CardBody>
+            </CardBody>*/}
+
+            <CardHeader
+  title={
+    <span className="inline-flex items-center gap-2">
+      <img
+        src="/images/Studentmarketsafety.jpg"
+        alt="Warning"
+        className="h-6 w-6 shrink-0 object-contain"
+      />
+      <span>Marketplace Safety tips</span>
+      <img
+        src="/images/Studentmarketsafety1.png"
+        alt="Safety"
+        className="h-6 w-6 shrink-0 object-contain"
+      />
+    </span>
+  }
+  square
+/>
+<CardBody>
+  <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
+    <li>Meet on campus in public places.</li>
+    <li>Do not pay or send any money to anybody.</li>
+    <li>Check items before you pay.</li>
+    <li>Avoid scam or suspecious conversation.</li>
+  </ul>
+</CardBody>
           </Card>
-          <Card square>
-            <CardHeader title="Community rules" square />
-            <CardBody>
-              <p className="text-sm text-slate-700">
-                No illegal goods, weapons, counterfeit items, or academic misconduct services.
-              </p>
-            </CardBody>
+          
           </Card>
 
           <GoogleSidebarAd />
