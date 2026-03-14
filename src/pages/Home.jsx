@@ -123,7 +123,7 @@ export default function Home() {
 </section>
 
       {/* 4) Three pillars (centered titles) */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
+      {/*<section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
         <h2 className="text-3xl font-bold text-slate-900 text-center">How we move learning forward.</h2>
         <div className="mt-8 grid md:grid-cols-3 gap-6">
           <Pillar
@@ -142,7 +142,37 @@ export default function Home() {
             centered
           />
         </div>
-      </section>
+      </section>*/}
+      {/* 4) Three pillars (centered titles) */}
+<section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
+  <h2 className="text-3xl font-bold text-slate-900 text-center">
+    How we move learning forward.
+  </h2>
+
+  <div className="mt-8 grid md:grid-cols-3 gap-6">
+    <Pillar
+      image="/images/Empoering learners.png"
+      imageAlt="Students learning together"
+      title="Empower Learners."
+      text="Enable students and lecturers to focus on meaningful learning while technology simplifies routine academic tasks."
+      centered
+    />
+    <Pillar
+      image="/images/Streamline  academics.jpeg"
+      imageAlt="Organized academic workflow"
+      title="Streamline Academics."
+      text="From notes to workflows, ScholarsKnowledge organizes academic materials and reduces friction in teaching and learning."
+      centered
+    />
+    <Pillar
+      image="/images/How we forward learning.jpg"
+      imageAlt="Learning insights and analytics"
+      title="Insight-Driven Learning."
+      text="Transform academic activity into actionable insights that guide smarter decisions and better outcomes."
+      centered
+    />
+  </div>
+</section>
 
       {/* ✅ NEW:  Funded graduate programs opportunities for international students (with background image + 4 StoryCards) */}
 <section
@@ -555,14 +585,33 @@ const cardsStudents = [
 }
 
 
-function Pillar({ title, text, centered = false }) {
+function Pillar({ image, imageAlt, title, text, centered = false }) {
   return (
     <div className="p-6 rounded-2xl border border-slate-200 bg-white">
-      <h3 className={`text-lg font-semibold text-slate-900 ${centered ? "text-center" : ""}`}>{title}</h3>
-      <p className={`mt-1 text-slate-600 ${centered ? "text-center" : ""}`}>{text}</p>
+      {image ? (
+        <div className="w-full h-44 mb-5 overflow-hidden rounded-xl">
+          <img
+            src={image}
+            alt={imageAlt || title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+
+      <h3 className={`text-lg font-semibold text-slate-900 ${centered ? "text-center" : ""}`}>
+        {title}
+      </h3>
+
+      <p className={`mt-1 text-slate-600 ${centered ? "text-center" : ""}`}>
+        {text}
+      </p>
     </div>
   );
 }
+
+
+
 
 function StoryCard({ image, title, linkTo, linkText }) {
   return (

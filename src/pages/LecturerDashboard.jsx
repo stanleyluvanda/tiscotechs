@@ -4494,11 +4494,11 @@ async function clearNotificationsServerBacked() {
 
               setAiBusy(true);
               setAiResult("");
-              setAiMode("text");
+              setAiMode("html");
               setAiMenuOpen(false);
 
               const result = await callAssistAIChunked("create-key-points", sourceText);
-              setAiResult(result);
+              setAiResult(sanitizeSimpleAiHtml(result));
               setAiOpen(true);
             } catch (e) {
               setAiMode("text");
@@ -4593,11 +4593,11 @@ async function clearNotificationsServerBacked() {
 
               setAiBusy(true);
               setAiResult("");
-              setAiMode("text");
+              setAiMode("html");
               setAiMenuOpen(false);
 
               const result = await callAssistAIChunked("simplify-explanation", sourceText);
-              setAiResult(result);
+              setAiResult(sanitizeSimpleAiHtml(result));
               setAiOpen(true);
             } catch (e) {
               setAiMode("text");
