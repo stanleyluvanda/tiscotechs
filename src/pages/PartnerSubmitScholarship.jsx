@@ -5,6 +5,7 @@ import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // ⬅️ local fallback helper
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+import { Link } from "react-router-dom";
 
 // Normalize API base (empty string if not set) and strip trailing slashes
 // IMPORTANT: Partner scholarship submission must hit the Scholarships API.
@@ -145,6 +146,17 @@ function getPartnerEmail() {
   }
 }
 
+function formatDateForDisplay(value) {
+  if (!value) return "";
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function PartnerSubmitScholarship() {
   /*const [form, setForm] = useState({
     title: "",
@@ -178,9 +190,15 @@ export default function PartnerSubmitScholarship() {
   country: "Multiple",
   level: "",
   field: "",
-  fundingType: [],
+  /*fundingType: [],
   deadline: "",
-  link: "",
+  link: "",*/
+  fundingType: [],
+deadlineMode: "single",
+deadline: "",
+deadlineOpen: "",
+deadlineClose: "",
+link: "",
   partnerApplyUrl: "",
   description: "",
   eligibility: "",
@@ -681,7 +699,27 @@ const onChange = (e) => {
     );
     return;
   }
+  
+  let finalDeadline = "";
 
+if (form.deadlineMode === "single") {
+  finalDeadline = form.deadline ? formatDateForDisplay(form.deadline) : "";
+} else {
+  const openText = form.deadlineOpen
+    ? formatDateForDisplay(form.deadlineOpen)
+    : "";
+  const closeText = form.deadlineClose
+    ? formatDateForDisplay(form.deadlineClose)
+    : "";
+
+  if (openText && closeText) {
+    finalDeadline = `${openText} – ${closeText}`;
+  } else if (openText) {
+    finalDeadline = `Opens ${openText}`;
+  } else if (closeText) {
+    finalDeadline = `Closes ${closeText}`;
+  }
+}
 
 
     /*const payload = {
@@ -719,7 +757,8 @@ const onChange = (e) => {
   level: form.level,
   field: form.field,
   fundingType: form.fundingType,
-  deadline: form.deadline,
+  /*deadline: form.deadline,*/
+  deadline: finalDeadline,
   link: form.link,
   partnerApplyUrl: form.partnerApplyUrl,
   description: form.description,
@@ -807,9 +846,15 @@ const onChange = (e) => {
   country: "Multiple",
   level: "",
   field: "",
-  fundingType: [],
+  /*fundingType: [],
   deadline: "",
-  link: "",
+  link: "",*/
+  fundingType: [],
+deadlineMode: "single",
+deadline: "",
+deadlineOpen: "",
+deadlineClose: "",
+link: "",
   partnerApplyUrl: "",
   description: "",
   eligibility: "",
@@ -880,7 +925,7 @@ const onChange = (e) => {
               {/* Top grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
-                  <div className="text-sm font-medium">Title *</div>
+                  <div className="text-sm font-medium">Scholarship Title *</div>
                   <input
                     name="title"
                     value={form.title}
@@ -891,7 +936,7 @@ const onChange = (e) => {
                 </label>
 
                 <label className="block">
-                  <div className="text-sm font-medium">Provider *</div>
+                  <div className="text-sm font-medium">Provider/University *</div>
                   <input
                     name="provider"
                     value={form.provider}
@@ -1055,7 +1100,7 @@ const onChange = (e) => {
 
 
 
-                <label className="block">
+                {/*<label className="block">
                   <div className="text-sm font-medium">Deadline</div>
                   <input
                     type="date"
@@ -1064,7 +1109,74 @@ const onChange = (e) => {
                     onChange={onChange}
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
-                </label>
+                </label>*/}
+                <div className="block md:col-span-2">
+  <div className="text-sm font-medium">Deadline</div>
+
+  <div className="mt-2 flex flex-wrap gap-4">
+    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+      <input
+        type="radio"
+        name="deadlineMode"
+        value="single"
+        checked={form.deadlineMode === "single"}
+        onChange={onChange}
+      />
+      <span>Single deadline</span>
+    </label>
+
+    <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+      <input
+        type="radio"
+        name="deadlineMode"
+        value="range"
+        checked={form.deadlineMode === "range"}
+        onChange={onChange}
+      />
+      <span>Open and close deadline</span>
+    </label>
+  </div>
+
+  {form.deadlineMode === "single" ? (
+    <div className="mt-3">
+      <input
+        type="date"
+        name="deadline"
+        value={form.deadline}
+        onChange={onChange}
+        className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+      />
+    </div>
+  ) : (
+    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label className="block">
+        <div className="text-xs text-slate-600 mb-1">Opening date</div>
+        <input
+          type="date"
+          name="deadlineOpen"
+          value={form.deadlineOpen}
+          onChange={onChange}
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="block">
+        <div className="text-xs text-slate-600 mb-1">Closing date</div>
+        <input
+          type="date"
+          name="deadlineClose"
+          value={form.deadlineClose}
+          onChange={onChange}
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </label>
+    </div>
+  )}
+
+  <p className="mt-2 text-xs text-slate-500">
+    Choose either one final deadline or an application window.
+  </p>
+</div>
 
                 <label className="block">
                   <div className="text-sm font-medium">Provider URL</div>
@@ -1183,20 +1295,12 @@ const onChange = (e) => {
 </div>
 
 
-
-
-
-
-
-
-
-
               {/* Logo/Banner */}
               <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
                 <div className="text-sm font-medium">Scholarship Banner</div>
                 <p className="mt-1 text-xs text-slate-600">
                   Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
-                  the details page.
+                  the Scholarship details page.
                 </p>
 
                 {/* URL input */}
