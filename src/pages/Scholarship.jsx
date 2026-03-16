@@ -477,7 +477,7 @@ const trackScholarship = (id, type) => {
 
       <p
         /*className="mt-2 text-sm md:text-base font-medium text-white/90"*/
-        className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-3xl"
+        className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"
         style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
       >
         Explore verified scholarships and funding opportunities offered by universities,
