@@ -425,11 +425,13 @@ export default function FundedGraduateAdmission() {
 
                 <p
                   /*className="mt-2 text-sm md:text-base font-medium text-white/90"*/
-                  className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-3xl"
+                  className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"
                   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
                 >
-                  Explore funded graduate admissions offered directly by universities worldwide.
-                </p>
+                  {/*Explore fully or partially funded graduate admissions offered directly by universities worldwide.*/}
+                  Explore funded graduate admissions offered directly by universities worldwide, including programs that provide full or partial financial support for master's and doctoral studies across a wide range of academic disciplines and research fields,and reduce overall graduate cost
+                  </p>
+                  
               </div>
             </div>
           </div>
