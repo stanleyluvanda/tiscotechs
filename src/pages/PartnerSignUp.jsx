@@ -228,7 +228,7 @@ const payload = {
 
              {/* S3 Logo uploader (FIRST) */}
             <div className="space-y-1">
-              <span className="text-sm text-slate-700 font-medium">Upload Organization Logo</span>
+              <span className="text-sm text-slate-700 font-medium">Upload Organization Logo from file or use logo URL link</span>
               <SingleImageUploader value={logo} onChange={setLogo} folder="partner-logos" />
             </div>
 
