@@ -126,16 +126,7 @@ export default function PartnerSignUp() {
       const logoUrl = (logo || form.logoUrl || "").trim();
       const bannerUrl = (banner || "").trim();
 
-      // ✅ API-first payload (DynamoDB source of truth)
-      /*const payload = {
-        email,
-        passwordHash,
-        role: "partner",
-        orgName: form.orgName.trim(),
-        contactName: form.contactName.trim(),
-        photo: logoUrl,
-        banner: bannerUrl,
-      };*/
+     
 
       // ✅ API-first payload (DynamoDB source of truth)
 const payload = {
@@ -241,6 +232,36 @@ const payload = {
               <SingleImageUploader value={logo} onChange={setLogo} folder="partner-logos" />
             </div>
 
+            {/* Optional URL */}
+<label className="block">
+  <span className="block text-sm text-slate-600 mb-1">Logo URL (optional)</span>
+  <input
+    name="logoUrl"
+    value={form.logoUrl}
+    onChange={onChange}
+    className="w-full border rounded px-3 py-2"
+    placeholder="https://example.edu/logo.png"
+  />
+
+  {/* Preview if a link is provided */}
+  {String(form.logoUrl || "").trim() && (
+    <div className="mt-3 flex items-center gap-3">
+      <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
+        <img
+          src={String(form.logoUrl || "").trim()}
+          alt="Logo preview"
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            // hide broken image without affecting any other logic
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+      <span className="text-xs text-slate-500">Preview from the logo URL.</span>
+    </div>
+  )}
+</label>
+
             {/* ORG NAME */}
             <label className="block">
               <span className="block text-sm text-slate-600 mb-1">Organization / University *</span>
@@ -278,35 +299,7 @@ const payload = {
               />
             </label>
 
-            {/* Optional URL */}
-<label className="block">
-  <span className="block text-sm text-slate-600 mb-1">Logo URL (optional)</span>
-  <input
-    name="logoUrl"
-    value={form.logoUrl}
-    onChange={onChange}
-    className="w-full border rounded px-3 py-2"
-    placeholder="https://example.edu/logo.png"
-  />
-
-  {/* Preview if a link is provided */}
-  {String(form.logoUrl || "").trim() && (
-    <div className="mt-3 flex items-center gap-3">
-      <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
-        <img
-          src={String(form.logoUrl || "").trim()}
-          alt="Logo preview"
-          className="h-full w-full object-cover"
-          onError={(e) => {
-            // hide broken image without affecting any other logic
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
-      <span className="text-xs text-slate-500">Preview from the logo URL.</span>
-    </div>
-  )}
-</label>
+            
 
             {/* PASSWORD */}
             <label className="block">
