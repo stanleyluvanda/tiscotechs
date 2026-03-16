@@ -158,31 +158,6 @@ function formatDateForDisplay(value) {
 }
 
 export default function PartnerSubmitScholarship() {
-  /*const [form, setForm] = useState({
-    title: "",
-    provider: "",
-    continent: "All", // UI only; not sent
-    country: "Multiple",
-    level: "",
-    field: "",
-    fundingType: [],
-    deadline: "",
-    link: "",
-    partnerApplyUrl: "",
-    // Rich HTML captured from Quill editors:
-    description: "",
-    eligibility: "",
-    benefits: "",
-    howToApply: "",
-    // Optional amount (shows publicly if provided)
-    amount: "",
-    // Internal notes (not public)
-    notes: "",
-    // image fields
-    imageUrl: "", // hosted URL (preferred if present)
-    imageData: "", // base64 data URL from local upload (fallback)
-  });*/
-
   const [form, setForm] = useState({
   title: "",
   provider: "",
@@ -1392,43 +1367,6 @@ link: "",
               </div>
 
               {/* Editors */}
-              {/*<div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-                <div>
-                  <div className="text-sm font-medium">Scholarship Description</div>
-                  <div
-                    ref={descHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 180 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">Eligibility (HTML ok)</div>
-                  <div
-                    ref={eligHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">Benefits (HTML ok)</div>
-                  <div
-                    ref={beneHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">How to Apply (HTML ok)</div>
-                  <div
-                    ref={howHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-              </div>*/}
 
               <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
   <div>
@@ -1477,16 +1415,6 @@ link: "",
 </div>
 </div>
 
-              {/*<label className="block">
-                <div className="text-sm font-medium">Notes (internal)</div>
-                <textarea
-                  name="notes"
-                  value={form.notes}
-                  onChange={onChange}
-                  rows="3"
-                  className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                />
-              </label>*/}
 
               <div className="pt-2">
                 <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">

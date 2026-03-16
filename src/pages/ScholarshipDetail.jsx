@@ -576,12 +576,23 @@ const canShowAds = Boolean(item);
           {title}
         </h1>
 
-        <p className="mt-1 text-sm sm:text-base text-slate-600 leading-6">
-          <span className="font-medium">{provider}</span>
-          {country ? ` • ${country}` : ""}
-          {level ? ` • ${level}` : ""}
-          {field ? ` • ${field}` : ""}
-        </p>
+      
+        <div className="mt-1">
+  <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6">
+    {provider}
+    {country ? ` • ${country}` : ""}
+  </div>
+
+  {(level || field) && (
+    <div className="text-sm sm:text-base text-slate-600 leading-6">
+      {level ? level : ""}
+      {field ? `${level ? " • " : ""}${field}` : ""}
+    </div>
+  )}
+</div>
+
+
+
       </div>
     </div>
 
@@ -761,24 +772,24 @@ const canShowAds = Boolean(item);
                         </h3>
 
                         <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
-                          <dt className="font-medium">Provider</dt>
+                          <dt className="font-bold">Provider/University</dt>
                           <dd className="mb-3">{provider || "-"}</dd>
 
-                          <dt className="font-medium">Country</dt>
+                          <dt className="font-bold">Country</dt>
                           <dd className="mb-3">{country || "-"}</dd>
 
-                          <dt className="font-medium">Level</dt>
+                          <dt className="font-bold">Level</dt>
                           <dd className="mb-3">{level || "-"}</dd>
 
-                          <dt className="font-medium">Field</dt>
+                          <dt className="font-bold">Field</dt>
                           <dd className="mb-3">{field || "-"}</dd>
 
-                          <dt className="font-medium">Deadline</dt>
+                          <dt className="font-bold">Deadline</dt>
                           <dd className="mb-3">{deadline || "-"}</dd>
 
                           {amount && (
                             <>
-                              <dt className="font-medium">Max Amount</dt>
+                              <dt className="font-bold">Max Amount</dt>
                               <dd className="mb-3">{amount}</dd>
                             </>
                           )}

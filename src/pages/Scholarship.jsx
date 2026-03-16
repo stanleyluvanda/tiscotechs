@@ -680,71 +680,73 @@ const trackScholarship = (id, type) => {
 
               return (
                 <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
-                  {/*<div className="flex items-start justify-between gap-4">*/}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    {/*<div className="min-w-0">
-                      <div className="text-lg font-semibold">{s.title}</div>
-                      <div className="mt-0.5 text-sm text-slate-600">
-                        {s.provider}
-                        {s.country ? ` • ${s.country}` : ""}
-                        {s.level ? ` • ${s.level}` : ""}
-                        {s.field ? ` • ${s.field}` : ""}
-                        {fundingStr ? ` • ${fundingStr}` : ""}
-                      </div>
-                    </div>*/}
+                  <div className="flex flex-col gap-2">
+  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+    <div className="min-w-0 flex items-start gap-3 flex-1">
+      {logo ? (
+        <img
+          src={logo}
+          alt={`${s.provider || "Provider"} logo`}
+          className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : null}
 
-                    {/*</div><div className="min-w-0 flex items-start gap-3">*/}
-                    <div className="min-w-0 flex items-start gap-3 flex-1">
-    {logo ? (
-  <img
-    src={logo}
-    alt={`${s.provider || "Provider"} logo`}
-    /*className="h-12 w-12 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-    /*className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
-    className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-    loading="lazy"
-    onError={(e) => {
-      e.currentTarget.style.display = "none";
-    }}
-  />
-) : null}
+      <div className="min-w-0">
+        <div className="text-base sm:text-lg font-semibold leading-snug">
+          {s.title}
+        </div>
 
-    <div className="min-w-0">
-      {/*<div className="text-lg font-semibold">{s.title}</div>*/}
-      <div className="text-base sm:text-lg font-semibold leading-snug">{s.title}</div>
-      {/*<div className="mt-0.5 text-sm text-slate-600">
-        {s.provider}
-        {s.country ? ` • ${s.country}` : ""}
-        {s.level ? ` • ${s.level}` : ""}
-        {s.field ? ` • ${s.field}` : ""}
-        {fundingStr ? ` • ${fundingStr}` : ""}
-      </div>*/}
+        <div className="mt-1 text-sm sm:text-base leading-6">
+          {s.provider ? (
+            <span className="font-semibold text-[#46166B]">{s.provider}</span>
+          ) : null}
 
-      {/*<div className="mt-0.5 text-sm text-slate-600">*/}
-      <div className="mt-1 text-xs sm:text-sm text-slate-600 leading-6">
-  {s.provider ? (
-    <span className="font-semibold text-purple-800">{s.provider}</span>
-  ) : null}
+          {s.country ? (
+            <span className="font-semibold text-[#46166B]">{" • "}{s.country}</span>
+          ) : null}
+        </div>
+      </div>
+    </div>
 
-  {s.country ? (
-    <span className="font-semibold text-purple-700">{" • "}{s.country}</span>
-  ) : null}
+    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+      {s.amount ? (
+        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+          Reward: {s.amount}
+        </div>
+      ) : null}
 
-  {s.level ? (
-    <span className="font-semibold text-purple-700">{" • "}{s.level}</span>
-  ) : null}
-
-  {s.field ? (
-    <span className="font-semibold text-purple-700">{" • "}{s.field}</span>
-  ) : null}
-
-  {/*{fundingStr ? <span>{" • "}{fundingStr}</span> : null}*/}
-  {fundingStr ? <span className="font-semibold text-blue-900">{" • "}{fundingStr}</span> : null}
-</div>
-
+      {s.deadline && (
+        <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
+      )}
     </div>
   </div>
 
+  {(s.level || s.field || fundingStr) ? (
+    <div className="w-full text-xs sm:text-sm text-slate-600 leading-6">
+      {s.level ? (
+        <span className="font-semibold text-purple-700">{s.level}</span>
+      ) : null}
+
+      {s.field ? (
+        <span className="font-semibold text-purple-700">
+          {s.level ? " • " : ""}
+          {s.field}
+        </span>
+      ) : null}
+
+      {fundingStr ? (
+        <span className="font-semibold text-blue-900">
+          {(s.level || s.field) ? " • " : ""}
+          {fundingStr}
+        </span>
+      ) : null}
+    </div>
+  ) : null}
+</div>
 
 
 
@@ -757,8 +759,8 @@ const trackScholarship = (id, type) => {
 
 
 
-                    {/*</div><div className="flex flex-col items-end gap-2 shrink-0">*/}
-                    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
+                   {/*</li> {/*</div><div className="flex flex-col items-end gap-2 shrink-0">*/}
+                    {/*<div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
                       {s.amount ? (
                         <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
                           Reward: {s.amount}
@@ -768,7 +770,7 @@ const trackScholarship = (id, type) => {
                         <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
                       )}
                     </div>
-                  </div>
+                  </div>*/}
 
                   {/* Description snippet */}
                   {/*{snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}*/}
