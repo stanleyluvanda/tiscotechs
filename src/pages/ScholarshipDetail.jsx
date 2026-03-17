@@ -708,7 +708,7 @@ const canShowAds = Boolean(item);
   {benefits && (
   <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
   <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    Benefits
+    Funding and Benefits
   </h2>
   <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
     <RichHtml html={benefits} />
@@ -719,7 +719,7 @@ const canShowAds = Boolean(item);
 {howToApply && (
 <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
   <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    How to Apply
+    How to submit Application
   </h2>
   <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
     <RichHtml html={howToApply} />
