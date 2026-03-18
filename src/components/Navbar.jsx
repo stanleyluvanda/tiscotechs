@@ -1,4 +1,4 @@
-// src/components/Navbar.jsx 
+// src/components/Navbar.jsx  
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
@@ -50,9 +50,6 @@ function loadNavbarUser() {
   };
 }
 
-
-
-
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const a = (parts[0]?.[0] || "U").toUpperCase();
@@ -68,7 +65,6 @@ function clearAuthStateKeepData() {
   }
 }
 
-
 async function logoutEverywhere() {
   try { await signOut({ global: true }); } catch {}
   try {
@@ -81,17 +77,6 @@ async function logoutEverywhere() {
     });
   } catch {}
 }
-
-
-
-
-
-
-
-
-
-
-
 
 /* ---------- Avatar ---------- */
 function Avatar({ url, name }) {
@@ -138,21 +123,14 @@ function SpinningGlobe({ size = 36 }) {
 }
 
 /* ---------- NavLink style ---------- */
-/*const link = ({ isActive }) =>
-  "px-3 py-2 rounded-md text-sm font-semibold transition " +
-  (isActive ? "bg-white/10 text-white" : "text-white/90 hover:bg-white/10");*/
 const link = ({ isActive }) =>
-  "px-2 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition " +
+  "px-1.5 py-1.5 rounded-md text-[13px] font-semibold whitespace-nowrap transition " +
   (isActive ? "bg-white/10 text-white" : "text-white/90 hover:bg-white/10");
-
-
-
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  /*const [user, setUser] = useState(() => loadActiveUser());*/
   const [user, setUser] = useState(() => loadNavbarUser());
   const [open, setOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -163,34 +141,29 @@ export default function Navbar() {
   const STRIP_H = 96; // banner height
   const TOTAL_H = NAV_H + STRIP_H;
 
-  // keep auth fresh
-  /*useEffect(() => {
-    const onStorage = () => setUser(loadNavbarUser());
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);*/
+  useEffect(() => {
+    const refresh = () => setUser(loadNavbarUser());
+
+    // Other tabs/windows
+    window.addEventListener("storage", refresh);
+
+    // Same tab (manual logout, auto logout, any forced refresh)
+    window.addEventListener("auth:changed", refresh);
+
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("auth:changed", refresh);
+    };
+  }, []);
+
+  useEffect(() => { setUser(loadNavbarUser()); }, [location.pathname, location.search]);
 
   useEffect(() => {
-  const refresh = () => setUser(loadNavbarUser());
-
-  // Other tabs/windows
-  window.addEventListener("storage", refresh);
-
-  // Same tab (manual logout, auto logout, any forced refresh)
-  window.addEventListener("auth:changed", refresh);
-
-  return () => {
-    window.removeEventListener("storage", refresh);
-    window.removeEventListener("auth:changed", refresh);
-  };
-}, []);
-
-  /*useEffect(() => { setUser(loadActiveUser()); }, [location.pathname, location.search]);*/
-  useEffect(() => { setUser(loadNavbarUser()); }, [location.pathname, location.search]);
-  // close menu on outside/esc
-  /*useEffect(() => {
     const onDown = (e) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        setMobileNavOpen(false);
+      }
       if (!menuRef.current) return;
       if (open && !menuRef.current.contains(e.target)) setOpen(false);
     };
@@ -200,60 +173,27 @@ export default function Navbar() {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onDown);
     };
-  }, [open]);*/
-
-  useEffect(() => {
-  const onDown = (e) => {
-    if (e.key === "Escape") {
-      setOpen(false);
-      setMobileNavOpen(false);
-    }
-    if (!menuRef.current) return;
-    if (open && !menuRef.current.contains(e.target)) setOpen(false);
-  };
-  document.addEventListener("mousedown", onDown);
-  document.addEventListener("keydown", onDown);
-  return () => {
-    document.removeEventListener("mousedown", onDown);
-    document.removeEventListener("keydown", onDown);
-  };
-}, [open]);
-
-  /*const role = (user?.role || "").toLowerCase();
-  const dashboardPath = role === "lecturer" ? "/lecturer/dashboard" : "/student/dashboard";*/
+  }, [open]);
 
   const role = (user?.role || "").toLowerCase();
-const dashboardPath =
-  role === "partner"
-    ? "/partner/welcome"
-    : role === "lecturer"
-      ? "/lecturer/dashboard"
-      : "/student/dashboard";
+  const dashboardPath =
+    role === "partner"
+      ? "/partner/welcome"
+      : role === "lecturer"
+        ? "/lecturer/dashboard"
+        : "/student/dashboard";
 
   // When user clicks "Edit My Profile", we send them to dashboard with a flag
   const profileEditPath = `${dashboardPath}?editProfile=1`;
 
-  /*const handleLogout = () => {
-    const roleParam = role === "lecturer" ? "lecturer" : "student";
-    clearAuthStateKeepData();
-    setUser(null);
-    setOpen(false);
-    window.dispatchEvent(new Event("auth:changed"));
-    navigate(`/login?role=${roleParam}`);
-  };*/
-
-  /*const handleLogout = () => {
+  const handleLogout = async () => {
     const roleParam =
       role === "lecturer" ? "lecturer" : role === "partner" ? "partner" : "student";
 
-    // clear existing auth
-    clearAuthStateKeepData();
+    // ✅ important: actually sign out from Amplify/Cognito AND clear storage keys
+    await logoutEverywhere();
 
-    // ✅ partner session cleanup (safe; only affects partner)
-    try {
-      localStorage.removeItem("partnerAuth");
-    } catch {}
-
+    // keep your existing UI cleanup behavior
     setUser(null);
     setOpen(false);
     window.dispatchEvent(new Event("auth:changed"));
@@ -261,24 +201,7 @@ const dashboardPath =
     // route by role
     if (role === "partner") navigate("/partner/login");
     else navigate(`/login?role=${roleParam}`);
-  };*/
-
-  const handleLogout = async () => {
-  const roleParam =
-    role === "lecturer" ? "lecturer" : role === "partner" ? "partner" : "student";
-
-  // ✅ important: actually sign out from Amplify/Cognito AND clear storage keys
-  await logoutEverywhere();
-
-  // keep your existing UI cleanup behavior
-  setUser(null);
-  setOpen(false);
-  window.dispatchEvent(new Event("auth:changed"));
-
-  // route by role
-  if (role === "partner") navigate("/partner/login");
-  else navigate(`/login?role=${roleParam}`);
-};
+  };
 
   /* ===================== FIXED NAVBAR (portal) ===================== */
   const NavbarBar = (
@@ -295,18 +218,12 @@ const dashboardPath =
       }}
       className="border-b border-black/5 text-white"
     >
-      {/*<div
-        className="h-full px-3 md:px-5 flex items-center gap-3"
+      <div
+        className="h-full px-3 md:px-5 flex items-center gap-2 md:gap-3"
         style={{ fontFamily: '"Open Sans", Arial, sans-serif' }}
-      >*/}
-
-     <div
-  className="h-full px-3 md:px-5 flex items-center gap-2 md:gap-3"
-  style={{ fontFamily: '"Open Sans", Arial, sans-serif' }}
->
+      >
 
         {/* LEFT: logo + brand (tight together) */}
-        {/*<Link to="/home" className="flex items-center gap-2 min-w-0">*/}
         <Link to="/home" className="flex items-center gap-2 min-w-0 shrink-0">
           <img
             src="/images/1754280544595.jpeg"
@@ -320,48 +237,35 @@ const dashboardPath =
         </Link>
 
         {/* CENTER: nav (Partner after About) */}
-        {/*<nav className="flex-1 flex items-center justify-center gap-1 md:gap-2 lg:gap-3">*/}
-        {/*<nav className="flex-1 flex items-center justify-center gap-0.5 md:gap-1 lg:gap-2">
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1 overflow-x-auto">
           <NavLink to="/home" className={link}>Home</NavLink>
           <NavLink to="/about" className={link}>About</NavLink>
           <NavLink to="/partner" className={link}>Partner</NavLink>
           <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
           <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
-          <NavLink to="/funded-graduate-admission" className={link}> Funded Graduate Admission</NavLink>
+          <NavLink to="/stem-programs" className={link}>STEM Programs</NavLink>
+          <NavLink to="/funded-graduate-admission" className={link}>Funded Graduate Programs</NavLink>
           <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
-        </nav>*/}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-0.5 md:gap-1 lg:gap-2 overflow-x-auto">
-  <NavLink to="/home" className={link}>Home</NavLink>
-  <NavLink to="/about" className={link}>About</NavLink>
-  <NavLink to="/partner" className={link}>Partner</NavLink>
-  <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
-  <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
-  <NavLink to="/funded-graduate-admission" className={link}>Funded Graduate Admission</NavLink>
-  <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
-  <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
-  <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
-</nav>
+        </nav>
 
         {/* RIGHT: globe + auth (single Log in) */}
-        {/*</div><div className="ml-auto flex items-center gap-3">*/}
         <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
 
           <button
-  type="button"
-  onClick={() => setMobileNavOpen((v) => !v)}
-  className="md:hidden inline-flex items-center justify-center rounded-md px-2 py-1 text-white hover:bg-white/10"
-  aria-label="Open menu"
-  aria-expanded={mobileNavOpen}
->
-  <span className="text-xl leading-none">☰</span>
-</button>
+            type="button"
+            onClick={() => setMobileNavOpen((v) => !v)}
+            className="md:hidden inline-flex items-center justify-center rounded-md px-2 py-1 text-white hover:bg-white/10"
+            aria-label="Open menu"
+            aria-expanded={mobileNavOpen}
+          >
+            <span className="text-xl leading-none">☰</span>
+          </button>
 
-          {/*<SpinningGlobe />*/}
           <div className="hidden sm:block">
             <SpinningGlobe size={32} />
-       </div>
+          </div>
 
           {!user ? (
             <Link
@@ -378,7 +282,6 @@ const dashboardPath =
                 aria-haspopup="menu"
                 aria-expanded={open}
               >
-                {/*<span className="hidden md:block text-sm font-medium">Me ▾</span>*/}
                 <span className="hidden lg:block text-sm font-medium">Me ▾</span>
                 <Avatar url={user.photoUrl} name={user.name || "User"} />
               </button>
@@ -440,6 +343,7 @@ const dashboardPath =
               <NavLink to="/partner" className={link} onClick={() => setMobileNavOpen(false)}>Partner</NavLink>
               <NavLink to="/edufinancing" className={link} onClick={() => setMobileNavOpen(false)}>EduFinancing</NavLink>
               <NavLink to="/study-in-us" className={link} onClick={() => setMobileNavOpen(false)}>Study in The U.S</NavLink>
+              <NavLink to="/stem-programs" className={link} onClick={() => setMobileNavOpen(false)}>STEM Programs</NavLink>
               <NavLink to="/funded-graduate-admission" className={link} onClick={() => setMobileNavOpen(false)}>Funded Graduate Admission</NavLink>
               <NavLink to="/scholarships" className={link} onClick={() => setMobileNavOpen(false)}>Scholarships Directory</NavLink>
               <NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>
@@ -477,12 +381,8 @@ const dashboardPath =
       }}
       className="border-b border-black/5"
     >
-      {/* Full-width ad area (drop your Google Ad tag into #ad-banner) */}
-      {/*</div><div id="ad-banner" className="h-full w-full flex items-center justify-center">*/}
       <div id="ad-banner" className="hidden md:flex h-full w-full items-center justify-center">
-        {/* Placeholder; replace with Ad script/ins element */}
-        {/*</div><div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">*/}
-          <div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">
+        <div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">
           Banner Ad Slot (728×90 / responsive)
         </div>
       </div>
@@ -493,8 +393,6 @@ const dashboardPath =
     <>
       {createPortal(NavbarBar, document.body)}
       {createPortal(BannerStrip, document.body)}
-      {/* Spacer pushes content below fixed bars */}
-      {/*<div style={{ height: TOTAL_H }} />*/}
       <div className="h-[56px] md:h-[152px]" />
     </>
   );

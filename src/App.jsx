@@ -4,7 +4,6 @@
 //import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
-
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Partner from "./pages/Partner.jsx";
@@ -51,6 +50,7 @@ import FundedGraduateAdmission from "./pages/FundedGraduateAdmission.jsx";
 import FundedGraduateAdmissionDetail from "./pages/FundedGraduateAdmissionDetail.jsx";
 import PartnerSubmitFundedGraduateAdmission from "./pages/PartnerSubmitFundedGraduateAdmission.jsx";
 import AdminFundedGraduateAdmissionList from "./pages/AdminFundedGraduateAdmissionList.jsx";
+import STEMPrograms from "./pages/STEMPrograms";
 
 // ❌ Remove this import to avoid clash with inline stub
 // import StudyInUSPage from "./pages/StudyInUS.jsx";
@@ -208,9 +208,10 @@ export default function App() {
         <Route path="/student-marketplace" element={<StudentMarketplace />} />
         </Route>
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/stem-programs" element={<STEMPrograms />} />
         
-         
 
+    
 
         {/* contact & features */}
       

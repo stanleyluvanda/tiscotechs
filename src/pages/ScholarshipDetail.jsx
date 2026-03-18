@@ -325,6 +325,7 @@ export default function ScholarshipDetail() {
 
   // ✅ recommendations
   const [recs, setRecs] = useState([]);
+  const [showAllTips, setShowAllTips] = useState(false);
 
 
   // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
@@ -808,6 +809,103 @@ const canShowAds = Boolean(item);
                            )}
                       </div>
                     </div>
+
+
+  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+  <div className="bg-slate-100 px-5 py-4">
+    <h4 className="text-lg font-bold text-slate-900 text-center">
+      Scholarship Tips for International Students
+    </h4>
+  </div>
+
+  <div className="p-4 space-y-3">
+    {[
+      {
+        heading: "📝 Start Early and Stay Organized",
+        text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
+      },
+      {
+        heading: "🌍 Understand Eligibility Requirements",
+        text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
+      },
+      {
+        heading: "🧾 Prepare Strong Documents",
+        text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
+      },
+      {
+        heading: "✍️ Write a Compelling Personal Statement",
+        text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
+      },
+      {
+        heading: "🧑‍🏫 Secure Strong Recommendations",
+        text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
+      },
+      {
+        heading: "🎯 Tailor Every Application",
+        text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
+      },
+      {
+        heading: "💬 Show Leadership and Impact",
+        text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
+      },
+      {
+        heading: "💡 Be Clear About Your Goals",
+        text: "Explain your academic path and how it connects to long-term impact and career objectives.",
+      },
+      {
+        heading: "🔍 Proofread Carefully",
+        text: "Review your application for clarity and errors. Ask others to check your work before submission.",
+      },
+      {
+        heading: "📤 Submit Before the Deadline",
+        text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
+      },
+      {
+        heading: "📚 Apply to Multiple Scholarships",
+        text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
+      },
+      {
+        heading: "🤝 Stay Professional",
+        text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
+      },
+      {
+        heading: "🔄 Keep Trying",
+        text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
+      },
+    ]
+      .slice(0, showAllTips ? 13 : 5)
+      .map((tip, idx) => (
+        <div
+          key={idx}
+          className="rounded-xl bg-white border border-slate-200 px-4 py-3"
+        >
+          <p className="font-semibold text-slate-900 text-sm sm:text-base">
+            {tip.heading}
+          </p>
+          <p className="text-sm text-slate-700 mt-1 leading-6">
+            {tip.text}
+          </p>
+        </div>
+      ))}
+
+    <button
+      type="button"
+      onClick={() => setShowAllTips((v) => !v)}
+      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+    >
+      {showAllTips ? "Show fewer tips" : "Show more tips"}
+    </button>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
 
                     {recs.length > 0 && (
                       /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/

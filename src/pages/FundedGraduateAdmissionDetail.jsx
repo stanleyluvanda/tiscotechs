@@ -293,6 +293,7 @@ export default function FundedGraduateAdmissionDetail() {
 
   const [showBanner, setShowBanner] = useState(false);
   const [recs, setRecs] = useState([]);
+  const [showAllProgramTips, setShowAllProgramTips] = useState(false);
 
   // Track interactions (same endpoint, separate gate key namespace)
   const trackItem = (sid, type) => {
@@ -812,6 +813,95 @@ export default function FundedGraduateAdmissionDetail() {
                         )}
                       </div>
                     </div>
+
+  {/*<div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+  <div className="bg-slate-100 px-5 py-4">
+    <h4 className="text-lg font-bold text-slate-900 text-center">
+      Graduate Program Selection Tips for International Students
+    </h4>
+  </div>
+
+  <div className="p-4 space-y-3">
+    {[
+      {
+        heading: "🎯 Align Programs with Your Long-Term career Goals",
+        text: "Select programs that directly support your academic interests and career direction rather than choosing based only on rankings or popularity.",
+      },
+      {
+        heading: "🔬 Explore STEM Opportunities",
+        text: "Consider STEM-designated programs such as Data Science, Computer Science, Engineering, AI, Public Health, or Biotechnology, which often offer stronger funding, research access, and extended post-study work opportunities in countries like the USA.",
+      },
+      {
+        heading: "💰 Evaluate Total University/College/Departmental Financial Support",
+        text: "Assess full funding details including tuition coverage, stipends, research assistantships, health insurance, and cost of living to determine financial sustainability.",
+      },
+      
+      {
+        heading: "📊 Look at Industry Demand and Skills",
+        text: "Prioritize programs that teach high-demand skills such as coding, data analysis, machine learning, sustainability, or healthcare systems to improve employability.",
+      },
+      {
+        heading: "🌍 Consider Location and Ecosystem",
+        text: "Choose universities located in regions with strong industry presence, innovation hubs, or research ecosystems that support internships and networking.",
+      },
+      {
+        heading: "📄 Understand Admission Competitiveness",
+        //text: "Check GPA expectations, required tests, and prerequisites to ensure you are applying strategically to programs where you have a realistic chance.",
+      },
+      {
+        heading: "📈 Review Graduate Outcomes",
+        text: "Analyze employment rates, alumni career paths, and whether graduates secure jobs, research positions, or further academic opportunities.",
+      },
+      {
+        heading: "🤝 Evaluate International Student Support",
+        text: "Strong support systems such as visa guidance, career services, mentoring, and academic advising are essential for adapting successfully.",
+      },
+      
+      {
+        heading: "📍 Check Visa and Work Opportunities",
+        text: "Review student visa policies, part-time work allowances, and post-study work options, especially for STEM graduates who often have extended opportunities.",
+      },
+      {
+        heading: "⚖️ Compare Multiple Offers Carefully",
+        text: "Evaluate all offers holistically—funding, faculty fit, location, STEM designation, and long-term value—before making a final decision.",
+      },
+    ]
+      .slice(0, showAllProgramTips ? 13 : 5)
+      .map((tip, idx) => (
+        <div
+          key={idx}
+          className="rounded-xl bg-white border border-slate-200 px-4 py-3"
+        >
+          <p className="font-semibold text-slate-900 text-sm sm:text-base">
+            {tip.heading}
+          </p>
+          <p className="text-sm text-slate-700 mt-1 leading-6">
+            {tip.text}
+          </p>
+        </div>
+      ))}
+
+    <button
+      type="button"
+      onClick={() => setShowAllProgramTips((v) => !v)}
+      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+    >
+      {showAllProgramTips ? "Show fewer tips" : "Show more tips"}
+    </button>
+  </div>
+</div>*/}
+
+
+
+
+
+
+
+
+
+
+
+
 
                     {recs.length > 0 && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
