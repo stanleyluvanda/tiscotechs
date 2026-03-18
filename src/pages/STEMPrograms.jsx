@@ -145,9 +145,9 @@ export default function STEMPrograms() {
               STEM-Eligible Fields of Study (DHS CIP Code Categories)
             </div>
 
-            <h1 className="mt-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold leading-tight break-words">
-                 STEM Programs for International Students
-           </h1>
+           <h1 className="mt-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold leading-tight whitespace-normal sm:whitespace-nowrap">
+  STEM Programs for International Students
+</h1>
 
             <p className="mt-4 max-w-6xl text-xs sm:text-sm md:text-base lg:text-lg leading-6 md:leading-7 text-white/90 text-justify">
               For international students exploring U.S. study opportunities, some academic
