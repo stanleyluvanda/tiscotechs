@@ -139,15 +139,15 @@ export default function STEMPrograms() {
   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.10),transparent_30%)]" />
 
   {/*<div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-10 md:py-14 lg:py-16">*/}
-  <div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-24 pb-10 md:pt-14 md:pb-14 lg:pt-16 lg:pb-16">
+  <div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-26 pb-10 md:pt-14 md:pb-14 lg:pt-16 lg:pb-16">
     <div className="mx-auto max-w-5xl">
             <div className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs sm:text-sm font-semibold text-white/95">
               STEM-Eligible Fields of Study (DHS CIP Code Categories)
             </div>
 
-            <h1 className="mt-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold leading-tight whitespace-nowrap">
-              STEM Programs for International Students
-            </h1>
+            <h1 className="mt-4 text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold leading-tight break-words">
+                 STEM Programs for International Students
+           </h1>
 
             <p className="mt-4 max-w-6xl text-xs sm:text-sm md:text-base lg:text-lg leading-6 md:leading-7 text-white/90 text-justify">
               For international students exploring U.S. study opportunities, some academic
