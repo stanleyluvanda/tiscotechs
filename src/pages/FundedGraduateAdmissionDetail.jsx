@@ -705,7 +705,6 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {additionalInformation && (
-    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
     <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
       <h2
         /*className="text-2xl font-semibold text-[#4B1F6F]"*/
@@ -719,10 +718,77 @@ export default function FundedGraduateAdmissionDetail() {
       </div>
     </section>
   )}
+
+  <div className="pt-2 sm:pt-3">
+  <div className="border-t border-slate-200 pt-4 sm:pt-5">
+    {/*<h4 className="text-sm sm:text-base font-bold text-center text-[#0A4595] underline underline-offset-4">*/}
+    <h4 className="text-base sm:text-xl font-bold text-center text-[#0A4595] underline underline-offset-4">
+      Tips for Program Selection
+    </h4>
+
+    <div className="mt-4 space-y-3">
+      {[
+        {
+          heading: "Confirm the true funding scope",
+          text: "Review the offer carefully to see whether it covers tuition only or also includes living expenses, insurance, research support, and the full duration of study. A program described as funded may still leave significant costs for the student.",
+        },
+        {
+          heading: "Prioritize fit over name recognition",
+          text: "A well-known university is not always the best choice. The stronger option is the one that aligns clearly with your academic background, professional goals, research interests, and long-term direction after graduation.",
+        },
+        {
+          heading: "Examine faculty and supervision quality",
+          text: "For research-based programs, faculty fit matters greatly. Look at supervisor interests, publications, current projects, and lab activity. Strong academic alignment can shape mentorship quality, funding continuity, and publication opportunities.",
+        },
+        {
+          heading: "Measure affordability beyond tuition",
+          text: "Even where tuition is covered, daily life can still be expensive. Compare housing, food, transportation, insurance, and local living costs before deciding. A more affordable city may provide a stronger and more sustainable student experience.",
+        },
+        {
+          heading: "Understand the obligations behind support",
+          text: "Some funding packages include teaching, grading, research, or departmental service responsibilities. Clarify the expected workload early so you can judge whether the balance between funding and academic pressure is realistic.",
+        },
+        {
+          heading: "Assess value through outcomes",
+          text: "Look beyond admission and ask what the program leads to. Strong options usually offer research exposure, practical training, internships, alumni networks, and credible career pathways that continue to add value after graduation.",
+        },
+      ].map((tip, idx) => (
+        <div key={idx} className="px-0">
+          <p className="text-[13px] sm:text-sm font-semibold text-[#163b66]">
+            {idx + 1}. {tip.heading}
+          </p>
+          <p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
+            {tip.text}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
 </div>
 
 
-                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+             
 
                   {/*<aside className="space-y-6">*/}
                   <aside className="space-y-5 lg:space-y-6">
@@ -797,6 +863,8 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     </div>
 
+                    
+                    
                     {recs.length > 0 && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <div className="bg-slate-100 px-5 py-4">
