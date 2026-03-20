@@ -18,7 +18,7 @@ export default function TermsOfUse() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">1. Eligibility</h2>
       <p className="mb-4">
-        You must be at least 13 years old to use the Services. By using the Site, you
+        You must be a university/College student or Lecturer and above 18 years old to use the Services. By using the Site, you
         represent that you meet this requirement and are legally able to enter into these
         Terms.
       </p>

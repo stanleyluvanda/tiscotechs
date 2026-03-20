@@ -1,5 +1,6 @@
 // src/pages/ScholarshipDetail.jsx
-import { useEffect, useState } from "react";
+//import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
@@ -16,9 +17,23 @@ const API_BASE = (
   ""
 ).replace(/\/+$/, "");
 
+const AI_API_BASE = (
+  import.meta.env.VITE_SCHOLARSHIP_AI_API_BASE || ""
+).replace(/\/+$/, "");
+
 /* Render server-provided HTML (or partner HTML).
    If you later accept untrusted HTML, sanitize it first. */
 function RichHtml({ html }) {
+  if (!html) return null;
+  return (
+    <div
+      className="rich-html prose-sm max-w-none"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function HtmlResult({ html }) {
   if (!html) return null;
   return (
     <div
@@ -326,6 +341,14 @@ export default function ScholarshipDetail() {
   // ✅ recommendations
   const [recs, setRecs] = useState([]);
   const [showAllTips, setShowAllTips] = useState(false);
+  // ✅ AI quick summary
+  const [aiSummary, setAiSummary] = useState("");
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  // ✅ AI simplified steps
+const [aiSteps, setAiSteps] = useState("");
+const [aiStepsLoading, setAiStepsLoading] = useState(false);
+const [showAiSteps, setShowAiSteps] = useState(false);
+
 
 
   // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
@@ -415,6 +438,11 @@ const trackScholarship = (sid, type) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [showBanner]);
 
+
+
+
+  
+
   // ✅ STRICT "You may also like"
   useEffect(() => {
     let alive = true;
@@ -474,6 +502,133 @@ const trackScholarship = (sid, type) => {
     };
   }, [item]);
 
+
+  const scholarshipPayload = useMemo(() => {
+  if (!item?.id) return null;
+
+  return {
+    id: item.id,
+    title: item.title || "",
+    country: item.country || "",
+    level: item.level || "",
+    deadline: item.deadline || "",
+    description: item.description || "",
+    eligibility: item.eligibility || "",
+    benefits: item.benefits || "",
+    howToApply: item.howToApply || "",
+  };
+}, [item]);
+
+
+useEffect(() => {
+  let cancelled = false;
+
+  async function loadAiSummary() {
+    if (!AI_API_BASE || !scholarshipPayload?.id) return;
+
+    try {
+      setAiSummaryLoading(true);
+
+      const res = await fetch(`${AI_API_BASE}/api/scholarships/ai`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        /*body: JSON.stringify({
+          action: "get-scholarship-summary",
+          scholarship: scholarshipPayload,
+        }),*/
+        body: JSON.stringify({
+  action: "generate-summary",
+  id: scholarshipPayload.id,
+  title: scholarshipPayload.title,
+  country: scholarshipPayload.country,
+  level: scholarshipPayload.level,
+  deadline: scholarshipPayload.deadline,
+  description: scholarshipPayload.description,
+  eligibility: scholarshipPayload.eligibility,
+  benefits: scholarshipPayload.benefits,
+  howToApply: scholarshipPayload.howToApply,
+}),
+      });
+
+      if (!res.ok) {
+        throw new Error(`AI summary HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (!cancelled) {
+        setAiSummary(data?.result || "");
+      }
+    } catch (err) {
+      console.error("AI summary failed:", err);
+      if (!cancelled) {
+        setAiSummary("");
+      }
+    } finally {
+      if (!cancelled) {
+        setAiSummaryLoading(false);
+      }
+    }
+  }
+
+  loadAiSummary();
+
+  return () => {
+    cancelled = true;
+  };
+}, [scholarshipPayload]);
+
+async function handleSimplifySteps() {
+  if (!AI_API_BASE || !scholarshipPayload?.id) return;
+
+  // If already generated and visible, just hide
+  if (aiSteps && showAiSteps) {
+    setShowAiSteps(false);
+    return;
+  }
+
+  // If already generated but hidden, just show again
+  if (aiSteps && !showAiSteps) {
+    setShowAiSteps(true);
+    return;
+  }
+
+  try {
+    setAiStepsLoading(true);
+
+    const res = await fetch(`${AI_API_BASE}/api/scholarships/ai`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "simplify-application-steps",
+        scholarship: scholarshipPayload,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`AI steps HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    setAiSteps(data?.result || "");
+    setShowAiSteps(true);
+  } catch (err) {
+    console.error("AI simplified steps failed:", err);
+    setAiSteps("");
+    setShowAiSteps(false);
+  } finally {
+    setAiStepsLoading(false);
+  }
+}
+
+
+
+
+
   if (err) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -514,6 +669,8 @@ const canShowAds = Boolean(item);
 
   const bannerSrc = imageUrl || imageData || "";
   const logo = providerLogoUrl || providerLogoData || "";
+
+  
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -659,7 +816,30 @@ const canShowAds = Boolean(item);
              
   <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
   <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
-    <div className="min-w-0 space-y-6">     
+    <div className="min-w-0 space-y-2"> 
+
+  <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        Quick Summary
+      </h2>
+      {/*<span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-[#0A4595]">
+        Scholarship AI
+      </span>*/}
+    </div>
+
+    <div className="mt-3 text-sm sm:text-base leading-7">
+      {aiSummaryLoading ? (
+        <p className="text-slate-600">Generating summary...</p>
+      ) : aiSummary ? (
+        <HtmlResult html={aiSummary} />
+      ) : (
+        <p className="text-slate-600">
+          AI summary is not available for this scholarship yet.
+        </p>
+      )}
+    </div>
+  </section>
 
   {description && (
   <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
@@ -711,7 +891,7 @@ const canShowAds = Boolean(item);
   <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
     Funding and Benefits
   </h2>
-  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+  <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
     <RichHtml html={benefits} />
   </div>
 </section>
@@ -722,9 +902,48 @@ const canShowAds = Boolean(item);
   <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
     How to submit Application
   </h2>
-  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+  <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
     <RichHtml html={howToApply} />
   </div>
+
+  <div className="mt-4 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
+    {/*</div><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">*/}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div>
+        <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
+          Simplified Application Steps
+        </h3>
+        <p className="mt-0.5 text-sm text-slate-600">
+          Turn the application instructions into a shorter checklist.
+        </p>
+      </div>
+
+      <button
+  type="button"
+  onClick={handleSimplifySteps}
+  disabled={aiStepsLoading}
+  className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
+>
+  {aiStepsLoading
+    ? "Working..."
+    : aiSteps && showAiSteps
+    ? "Hide Steps"
+    : aiSteps && !showAiSteps
+    ? "Show Steps"
+    : "Simplify Steps"}
+</button>
+ </div>
+
+<div className="mt-3 text-sm sm:text-base leading-6">
+  {showAiSteps && aiSteps ? (
+    <HtmlResult html={aiSteps} />
+  ) : null}
+</div>
+</div>
+
+
+
+
 </section>
   )}
 
