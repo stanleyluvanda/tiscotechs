@@ -732,6 +732,14 @@ export default function FundedGraduateAdmissionDetail() {
           heading: "Confirm the true funding scope",
           text: "Review the offer carefully to see whether it covers tuition only or also includes living expenses, insurance, research support, and the full duration of study. A program described as funded may still leave significant costs for the student.",
         },
+
+        {
+  heading: "Consider STEM designation and confirm with admissions",
+  text: "Where possible, prioritize programs that fall under STEM-designated fields, as they may offer extended practical training opportunities after graduation depending on visa regulations. If you are unsure whether your program qualifies, review the ",
+  linkText: "STEM Programs page",
+  linkUrl: "/stem-programs",
+  extra: " for guidance, and always confirm details directly with the university’s admissions or program office before making a final decision.",
+},
         {
           heading: "Prioritize fit over name recognition",
           text: "A well-known university is not always the best choice. The stronger option is the one that aligns clearly with your academic background, professional goals, research interests, and long-term direction after graduation.",
@@ -757,9 +765,27 @@ export default function FundedGraduateAdmissionDetail() {
           <p className="text-[13px] sm:text-sm font-semibold text-[#163b66]">
             {idx + 1}. {tip.heading}
           </p>
-          <p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
+          {/*<p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
             {tip.text}
-          </p>
+          </p>*/}
+          <p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
+  {tip.text}
+  {tip.linkText && (
+    <>
+      <Link
+        to={tip.linkUrl}
+        className="text-[#0A4595] font-semibold hover:underline"
+      >
+        {tip.linkText}
+      </Link>
+      {tip.extra}
+    </>
+  )}
+</p>
+
+
+
+
         </div>
       ))}
     </div>
