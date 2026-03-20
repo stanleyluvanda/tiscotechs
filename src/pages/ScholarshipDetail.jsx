@@ -821,7 +821,7 @@ const canShowAds = Boolean(item);
   <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
     <div className="flex items-center justify-between gap-3">
       <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-        Quick Summary
+        Quick scholarship Summary
       </h2>
       {/*<span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-[#0A4595]">
         Scholarship AI
@@ -911,7 +911,7 @@ const canShowAds = Boolean(item);
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
       <div>
         <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
-          Simplified Application Steps
+          Summarized & Simplified Application Steps
         </h3>
         <p className="mt-0.5 text-sm text-slate-600">
           Turn the application instructions into a shorter checklist.

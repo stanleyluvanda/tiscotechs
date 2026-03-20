@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 
 export default function GoogleSidebarAd({
-  slot = "4919459228",
+  slot = "2515946722",
   label = "Sponsored",
   className = "",
   minHeight = 250, // reserve space to prevent layout shift

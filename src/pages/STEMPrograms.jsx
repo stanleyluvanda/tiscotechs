@@ -2,6 +2,7 @@
 
 import Footer from "../components/Footer.jsx";
 import { Link } from "react-router-dom";
+import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 const stemCards = [
   {
@@ -97,16 +98,17 @@ const stemCards = [
   },
 ];
 
-function AdRail({ id }) {
+function AdRail({ slot }) {
   return (
     <aside className="hidden xl:block xl:w-[160px] 2xl:w-[180px] shrink-0">
       <div className="sticky top-[170px]">
-        {/* Invisible reserved rail space for future Google side ads */}
-        <div
-          id={id}
-          className="w-full min-h-[600px]"
-          aria-hidden="true"
-          style={{ background: "transparent" }}
+        <GoogleSidebarAd
+          slot={slot}
+          label=""
+          minHeight={600}
+          className="w-full"
+          enabled={true}
+          keepPlaceholder={true}
         />
       </div>
     </aside>
@@ -169,7 +171,7 @@ export default function STEMPrograms() {
       {/* Main layout with invisible ad rails */}
       <div className="mx-auto max-w-[1500px] px-3 sm:px-4 lg:px-6 py-8 md:py-10">
         <div className="flex items-start gap-4 xl:gap-6">
-          <AdRail id="stem-left-rail-ad" />
+          <AdRail slot="2515946722" />
 
           <main className="min-w-0 flex-1">
             {/* Intro card */}
@@ -337,7 +339,7 @@ export default function STEMPrograms() {
             />
           </main>
 
-          <AdRail id="stem-right-rail-ad" />
+          <AdRail slot="2515946722" />
         </div>
       </div>
 
