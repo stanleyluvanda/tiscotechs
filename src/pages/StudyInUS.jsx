@@ -19,7 +19,7 @@ function Section({ title, children }) {
     >
       <h2 className="text-3xl font-bold text-[#4B1F73]">{title}</h2>
 
-      <div className="mt-4 text-[18px] leading-8 text-slate-800">
+      <div className="mt-4 text-[18px] leading-8 text-slate-800 text-justify">
         {children}
       </div>
     </section>

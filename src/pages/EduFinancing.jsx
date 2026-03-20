@@ -22,15 +22,15 @@ export default function EduFinancing() {
   
 
   // ✅ Premium “glass” cards: no border at rest, subtle outline only on hover
-  const cardClass =
-    "rounded-2xl border border-transparent bg-white/80 backdrop-blur " +
-    "p-6 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
-    "hover:shadow-md transition";
+const cardClass =
+  "rounded-2xl border border-transparent bg-white/80 backdrop-blur " +
+  "p-6 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
+  "hover:shadow-md transition text-justify";
 
-  const miniCardClass =
-    "rounded-xl border border-transparent bg-white/80 backdrop-blur " +
-    "p-4 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
-    "hover:shadow-md transition";
+const miniCardClass =
+  "rounded-xl border border-transparent bg-white/80 backdrop-blur " +
+  "p-4 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
+  "hover:shadow-md transition text-justify"; 
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#f9fbff] via-white to-[#f2f6ff]">
@@ -223,9 +223,6 @@ export default function EduFinancing() {
       university‑funded programs represent a realistic and strategic pathway to securing partial or full financial support while gaining valuable academic or research experience.
     </p>
   </div>
-
-
-
 </div>
 
             </section>
@@ -444,7 +441,8 @@ export default function EduFinancing() {
   <span className="font-medium"> MPOWER Financing</span> and trusted global scholarship providers, we guide you toward credible funding opportunities and practical tools that support both your academic journey and long‑term goals.
 </p>
 
-<ul className="mt-4 space-y-2 text-slate-700">
+{/*<ul className="mt-4 space-y-2 text-slate-700">*/}
+<ul className="mt-4 space-y-2 text-slate-700 text-justify">
   <li className="flex gap-2">
     <span className="text-[#0076CE]">•</span> Access curated, verified scholarships tailored to international students.
   </li>

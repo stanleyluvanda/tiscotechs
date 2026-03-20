@@ -17,12 +17,9 @@ const API_BASE = (
 function RichHtml({ html }) {
   if (!html) return null;
   return (
-    /*<div
-      className="rich-html prose-sm max-w-none"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />*/
+   
     <div
-  className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words"
+  className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words text-justify"
   dangerouslySetInnerHTML={{ __html: html }}
 />
   );
@@ -508,17 +505,8 @@ export default function FundedGraduateAdmissionDetail() {
             </aside>
 
             {/* CENTER */}
-            {/*<main className="min-w-0">*/}
             <main className="min-w-0 w-full">
-              {/*<div className="max-w-5xl mx-auto px-4 pt-8">*/}
-              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 pt-5 sm:pt-6 lg:pt-8">
-                <Link
-                  to="/funded-graduate-admission"
-                  className="text-blue-600 hover:underline text-sm"
-                >
-                  ← Back to Funded Graduate Admission
-                </Link>
-              </div>*/}
+             
               <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-8 sm:pt-10 lg:pt-12 pb-2">
   <Link
     to="/funded-graduate-admission"
@@ -529,8 +517,6 @@ export default function FundedGraduateAdmissionDetail() {
 </div>
 
 <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
-               {/*</div><div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">*/}
-                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-6">*/}
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
                   {/*<div className="flex items-start gap-4">*/}
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -650,26 +636,28 @@ export default function FundedGraduateAdmissionDetail() {
   )}
 
   {bannerSrc && (
-    /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden md:ml-4">*/
-    <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setShowBanner(true)}
-        className="block w-full text-left"
-        title="Click to enlarge"
-      >
-        <img
-          src={bannerSrc}
-          alt={`${provider || title} banner`}
-          className="w-full h-auto object-cover bg-white"
-          loading="lazy"
-        />
-      </button>
-      <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-        Click image to enlarge
-      </div>
-    </section>
-  )}
+  <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">
+    <button
+      type="button"
+      onClick={() => setShowBanner(true)}
+      className="block w-full text-left"
+      title="Click to enlarge"
+    >
+      <img
+        src={bannerSrc}
+        alt={`${provider || title} banner`}
+        className="w-full h-auto object-contain bg-white"
+        loading="lazy"
+      />
+    </button>
+    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+      Click image to enlarge
+    </div>
+  </section>
+)}
+
+
+
 
   {eligibility && (
     /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
@@ -759,15 +747,10 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     )}
 
-                    {/*<div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">*/}
+                    
                     <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
                       {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">*/}
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
-                        {/*<h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
-                          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
-                            At a glance
-                          </span>
-                        </h3>*/}
                         <h3 className="text-base font-semibold -mx-4 sm:-mx-5 lg:-mx-6 -mt-4 sm:-mt-5 lg:-mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
                         At a glance
@@ -813,95 +796,6 @@ export default function FundedGraduateAdmissionDetail() {
                         )}
                       </div>
                     </div>
-
-  {/*<div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-  <div className="bg-slate-100 px-5 py-4">
-    <h4 className="text-lg font-bold text-slate-900 text-center">
-      Graduate Program Selection Tips for International Students
-    </h4>
-  </div>
-
-  <div className="p-4 space-y-3">
-    {[
-      {
-        heading: "🎯 Align Programs with Your Long-Term career Goals",
-        text: "Select programs that directly support your academic interests and career direction rather than choosing based only on rankings or popularity.",
-      },
-      {
-        heading: "🔬 Explore STEM Opportunities",
-        text: "Consider STEM-designated programs such as Data Science, Computer Science, Engineering, AI, Public Health, or Biotechnology, which often offer stronger funding, research access, and extended post-study work opportunities in countries like the USA.",
-      },
-      {
-        heading: "💰 Evaluate Total University/College/Departmental Financial Support",
-        text: "Assess full funding details including tuition coverage, stipends, research assistantships, health insurance, and cost of living to determine financial sustainability.",
-      },
-      
-      {
-        heading: "📊 Look at Industry Demand and Skills",
-        text: "Prioritize programs that teach high-demand skills such as coding, data analysis, machine learning, sustainability, or healthcare systems to improve employability.",
-      },
-      {
-        heading: "🌍 Consider Location and Ecosystem",
-        text: "Choose universities located in regions with strong industry presence, innovation hubs, or research ecosystems that support internships and networking.",
-      },
-      {
-        heading: "📄 Understand Admission Competitiveness",
-        //text: "Check GPA expectations, required tests, and prerequisites to ensure you are applying strategically to programs where you have a realistic chance.",
-      },
-      {
-        heading: "📈 Review Graduate Outcomes",
-        text: "Analyze employment rates, alumni career paths, and whether graduates secure jobs, research positions, or further academic opportunities.",
-      },
-      {
-        heading: "🤝 Evaluate International Student Support",
-        text: "Strong support systems such as visa guidance, career services, mentoring, and academic advising are essential for adapting successfully.",
-      },
-      
-      {
-        heading: "📍 Check Visa and Work Opportunities",
-        text: "Review student visa policies, part-time work allowances, and post-study work options, especially for STEM graduates who often have extended opportunities.",
-      },
-      {
-        heading: "⚖️ Compare Multiple Offers Carefully",
-        text: "Evaluate all offers holistically—funding, faculty fit, location, STEM designation, and long-term value—before making a final decision.",
-      },
-    ]
-      .slice(0, showAllProgramTips ? 13 : 5)
-      .map((tip, idx) => (
-        <div
-          key={idx}
-          className="rounded-xl bg-white border border-slate-200 px-4 py-3"
-        >
-          <p className="font-semibold text-slate-900 text-sm sm:text-base">
-            {tip.heading}
-          </p>
-          <p className="text-sm text-slate-700 mt-1 leading-6">
-            {tip.text}
-          </p>
-        </div>
-      ))}
-
-    <button
-      type="button"
-      onClick={() => setShowAllProgramTips((v) => !v)}
-      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-    >
-      {showAllProgramTips ? "Show fewer tips" : "Show more tips"}
-    </button>
-  </div>
-</div>*/}
-
-
-
-
-
-
-
-
-
-
-
-
 
                     {recs.length > 0 && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">

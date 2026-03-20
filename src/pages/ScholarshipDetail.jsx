@@ -27,7 +27,7 @@ function RichHtml({ html }) {
   if (!html) return null;
   return (
     <div
-      className="rich-html prose-sm max-w-none"
+      className="rich-html prose-sm max-w-none text-justify"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -1116,15 +1116,6 @@ const canShowAds = Boolean(item);
     </button>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
 
                     {recs.length > 0 && (
                       /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/
