@@ -2695,7 +2695,7 @@ const filtered = visibleItems
     className="text-sm text-slate-800 rounded-md px-3 py-2"
     style={{ backgroundColor: "#F4D000" }}
   >
-    Are passionate about business? Start listing your business now.
+    Are you passionate about business? Start listing your business now.
   </p>
 </CardBody>
             {/*<CardHeader title="Marketplace Safety tips" square />

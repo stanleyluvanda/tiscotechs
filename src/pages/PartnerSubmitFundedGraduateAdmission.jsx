@@ -94,12 +94,14 @@ async function importHostedUrlToCloudfront(url) {
 }
 
 /** Graduate-only levels */
-const LEVEL_OPTIONS = ["Masters", "PhD", "Masters / PhD"];
+const LEVEL_OPTIONS = ["Masters","Bachelor/Masters","MSc", "Undergraduate/Postgraduate","PhD", "Masters / PhD"];
 
 const FUNDING_OPTIONS = [
   "Full Funding",
   "Partial Funding",
   "Tuition Only",
+  "Accommodation",
+  "Living expenses",
   "Monthly Stipend",
   "Research Assistantship",
   "Teaching Assistantship",
@@ -151,6 +153,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     deadline: "",
     deadlineOpen: "",
     deadlineClose: "",
+    deadlineManualText: "",
     link: "",
     partnerApplyUrl: "",
 
@@ -179,7 +182,8 @@ export default function PartnerSubmitFundedGraduateAdmission() {
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoPreview, setLogoPreview] = useState("");
-
+  const [fieldQuery, setFieldQuery] = useState("");
+  const [showFieldMenu, setShowFieldMenu] = useState(false);
   const partnerEmail = getPartnerEmail();
 
   const [importingHosted, setImportingHosted] = useState(false);
@@ -370,6 +374,15 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     setForm((f) => ({ ...f, providerLogoData: "", providerLogoUrl: "" }));
   };
 
+  /*const countryOptions = useMemo(() => {
+    if (form.continent === "All") {
+      const set = new Set();
+      for (const list of Object.values(REGIONS)) list.forEach((c) => set.add(c));
+      return ["Multiple", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+    }
+    return ["Multiple", ...(REGIONS[form.continent] || [])];
+  }, [form.continent]);*/
+
   const countryOptions = useMemo(() => {
     if (form.continent === "All") {
       const set = new Set();
@@ -378,6 +391,12 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     }
     return ["Multiple", ...(REGIONS[form.continent] || [])];
   }, [form.continent]);
+
+  const filteredFields = useMemo(() => {
+    const q = String(fieldQuery || "").trim().toLowerCase();
+    if (!q) return FIELDS_OF_STUDY;
+    return FIELDS_OF_STUDY.filter((f) => f.toLowerCase().includes(q));
+  }, [fieldQuery]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -542,7 +561,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
       return;
     }
 
-    let finalDeadline = "";
+    /*let finalDeadline = "";
 
 if (form.deadlineMode === "single") {
   finalDeadline = form.deadline
@@ -563,7 +582,38 @@ if (form.deadlineMode === "single") {
   } else if (closeText) {
     finalDeadline = `Closes ${closeText}`;
   }
-}
+}*/
+
+let finalDeadline = "";
+
+    if (form.deadlineMode === "single") {
+      finalDeadline = form.deadline
+        ? formatDateForDisplay(form.deadline)
+        : "";
+    } else {
+      const openText = form.deadlineOpen
+        ? formatDateForDisplay(form.deadlineOpen)
+        : "";
+      const closeText = form.deadlineClose
+        ? formatDateForDisplay(form.deadlineClose)
+        : "";
+      const manualText = String(form.deadlineManualText || "").trim();
+
+      if (openText && closeText) {
+        finalDeadline = `${openText} – ${closeText}`;
+      } else if (openText) {
+        finalDeadline = `Opens ${openText}`;
+      } else if (closeText) {
+        finalDeadline = `Closes ${closeText}`;
+      }
+
+      if (manualText) {
+        finalDeadline = finalDeadline
+          ? `${finalDeadline} • ${manualText}`
+          : manualText;
+      }
+    }
+
 
     const payload = {
       // ✅ the differentiator
@@ -646,8 +696,15 @@ if (form.deadlineMode === "single") {
       country: "Multiple",
       level: "",
       field: "",
-      fundingType: [],
+      /*fundingType: [],
       deadline: "",
+      link: "",*/
+      fundingType: [],
+      deadlineMode: "single",
+      deadline: "",
+      deadlineOpen: "",
+      deadlineClose: "",
+      deadlineManualText: "",
       link: "",
       partnerApplyUrl: "",
       description: "",
@@ -672,6 +729,8 @@ if (form.deadlineMode === "single") {
     lastLogoImportedRef.current = "";
     pendingLogoHostedRef.current = "";
     setImportingLogoHosted(false);
+    setFieldQuery("");
+    setShowFieldMenu(false);
 
     if (importTimerRef.current) {
       clearTimeout(importTimerRef.current);
@@ -792,7 +851,7 @@ if (form.deadlineMode === "single") {
                   </select>
                 </label>
 
-                <label className="block">
+                {/*<label className="block">
                   <div className="text-sm font-medium">Field of Study</div>
                   <select
                     name="field"
@@ -807,6 +866,66 @@ if (form.deadlineMode === "single") {
                       </option>
                     ))}
                   </select>
+                </label>*/}
+                <label className="block relative">
+                  <div className="text-sm font-medium">Field of Study</div>
+
+                  <input
+                    type="text"
+                    value={fieldQuery || form.field}
+                    onFocus={() => {
+                      setFieldQuery(form.field || "");
+                      setShowFieldMenu(true);
+                    }}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFieldQuery(v);
+                      setForm((f) => ({ ...f, field: v }));
+                      setShowFieldMenu(true);
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setShowFieldMenu(false), 150);
+                    }}
+                    placeholder="Select or type field of study"
+                    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+                  />
+
+                  {showFieldMenu && (
+                    <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-md border border-slate-300 bg-white shadow-lg">
+                      <button
+                        type="button"
+                        onMouseDown={() => {
+                          setForm((f) => ({ ...f, field: "" }));
+                          setFieldQuery("");
+                          setShowFieldMenu(false);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                      >
+                        — Clear selection —
+                      </button>
+
+                      {filteredFields.map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onMouseDown={() => {
+                            setForm((prev) => ({ ...prev, field: f }));
+                            setFieldQuery(f);
+                            setShowFieldMenu(false);
+                          }}
+                          className="block w-full px-3 py-2 text-left text-sm hover:bg-slate-50"
+                        >
+                          {f}
+                        </button>
+                      ))}
+
+                      {fieldQuery.trim() && !FIELDS_OF_STUDY.includes(fieldQuery.trim()) && (
+                        <div className="border-t border-slate-200 px-3 py-2 text-sm text-slate-600 bg-slate-50">
+                          Use typed field: <span className="font-medium">{fieldQuery.trim()}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </label>
 
                 {/*<label className="block">
@@ -873,6 +992,7 @@ if (form.deadlineMode === "single") {
       />
     </div>
   ) : (
+    
     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
       <label className="block">
         <div className="text-xs text-slate-600 mb-1">Opening date</div>
@@ -892,6 +1012,20 @@ if (form.deadlineMode === "single") {
           name="deadlineClose"
           value={form.deadlineClose}
           onChange={onChange}
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="block md:col-span-2">
+        <div className="text-xs text-slate-600 mb-1">
+          Additional deadline text (optional)
+        </div>
+        <input
+          type="text"
+          name="deadlineManualText"
+          value={form.deadlineManualText}
+          onChange={onChange}
+          placeholder="e.g., Open annually, Ongoing (Annual), Cycle: 2026–2027"
           className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
         />
       </label>

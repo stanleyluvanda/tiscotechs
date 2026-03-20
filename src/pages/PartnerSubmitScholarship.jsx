@@ -118,6 +118,8 @@ const FUNDING_OPTIONS = [
   "Partial Funding",
   "Tuition Only",
   "Monthly Stipend",
+  "Accommodation",
+  "Living Expenses",
   "Research Assistantship",
   "Teaching Assistantship",
   "Fellowship",
@@ -173,6 +175,7 @@ deadlineMode: "single",
 deadline: "",
 deadlineOpen: "",
 deadlineClose: "",
+deadlineManualText: "",
 link: "",
   partnerApplyUrl: "",
   description: "",
@@ -675,7 +678,7 @@ const onChange = (e) => {
     return;
   }
   
-  let finalDeadline = "";
+  /*let finalDeadline = "";
 
 if (form.deadlineMode === "single") {
   finalDeadline = form.deadline ? formatDateForDisplay(form.deadline) : "";
@@ -693,6 +696,34 @@ if (form.deadlineMode === "single") {
     finalDeadline = `Opens ${openText}`;
   } else if (closeText) {
     finalDeadline = `Closes ${closeText}`;
+  }
+}*/
+
+let finalDeadline = "";
+
+if (form.deadlineMode === "single") {
+  finalDeadline = form.deadline ? formatDateForDisplay(form.deadline) : "";
+} else {
+  const openText = form.deadlineOpen
+    ? formatDateForDisplay(form.deadlineOpen)
+    : "";
+  const closeText = form.deadlineClose
+    ? formatDateForDisplay(form.deadlineClose)
+    : "";
+  const manualText = String(form.deadlineManualText || "").trim();
+
+  if (openText && closeText) {
+    finalDeadline = `${openText} – ${closeText}`;
+  } else if (openText) {
+    finalDeadline = `Opens ${openText}`;
+  } else if (closeText) {
+    finalDeadline = `Closes ${closeText}`;
+  }
+
+  if (manualText) {
+    finalDeadline = finalDeadline
+      ? `${finalDeadline} • ${manualText}`
+      : manualText;
   }
 }
 
@@ -792,28 +823,6 @@ if (form.deadlineMode === "single") {
   };
 
   function resetFormAndEditors() {
-    /*setForm({
-      title: "",
-      provider: "",
-      continent: "All",
-      country: "Multiple",
-      level: "",
-      field: "",
-      fundingType: [],
-      deadline: "",
-      link: "",
-      partnerApplyUrl: "",
-      description: "",
-      eligibility: "",
-      benefits: "",
-      howToApply: "",
-      amount: "",
-      notes: "",
-      imageUrl: "",
-      imageData: "",
-      providerLogoUrl: "",
-      providerLogoData: "",
-    });*/
     setForm({
   title: "",
   provider: "",
@@ -829,6 +838,8 @@ deadlineMode: "single",
 deadline: "",
 deadlineOpen: "",
 deadlineClose: "",
+deadlineManualText: "",
+link: "",
 link: "",
   partnerApplyUrl: "",
   description: "",
@@ -1123,29 +1134,46 @@ link: "",
       />
     </div>
   ) : (
-    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-      <label className="block">
-        <div className="text-xs text-slate-600 mb-1">Opening date</div>
-        <input
-          type="date"
-          name="deadlineOpen"
-          value={form.deadlineOpen}
-          onChange={onChange}
-          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-        />
-      </label>
 
-      <label className="block">
-        <div className="text-xs text-slate-600 mb-1">Closing date</div>
-        <input
-          type="date"
-          name="deadlineClose"
-          value={form.deadlineClose}
-          onChange={onChange}
-          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
-        />
-      </label>
+   
+  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+  <label className="block">
+    <div className="text-xs text-slate-600 mb-1">Opening date</div>
+    <input
+      type="date"
+      name="deadlineOpen"
+      value={form.deadlineOpen}
+      onChange={onChange}
+      className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+    />
+  </label>
+
+  <label className="block">
+    <div className="text-xs text-slate-600 mb-1">Closing date</div>
+    <input
+      type="date"
+      name="deadlineClose"
+      value={form.deadlineClose}
+      onChange={onChange}
+      className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+    />
+  </label>
+
+  <label className="block md:col-span-2">
+    <div className="text-xs text-slate-600 mb-1">
+      Additional deadline text (optional)
     </div>
+    <input
+      type="text"
+      name="deadlineManualText"
+      value={form.deadlineManualText}
+      onChange={onChange}
+      placeholder="e.g., Open annually, Ongoing (Annual), Cycle: 2026–2027"
+      className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+    />
+  </label>
+</div>
+
   )}
 
   <p className="mt-2 text-xs text-slate-500">
