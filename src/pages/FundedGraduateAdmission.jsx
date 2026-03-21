@@ -424,13 +424,13 @@ export default function FundedGraduateAdmission() {
             {/*</div><div className="relative z-10 mx-auto max-w-[1400px] px-4 py-3 md:py-4">*/}
             <div className="relative z-10 mx-auto max-w-[1400px] px-3 sm:px-4 py-3 md:py-4">
               <div className="mx-auto max-w-[1056px]">
+                
                 <h2
-                  /*className="text-2xl md:text-3xl font-extrabold text-white leading-tight"*/
-                  className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight"
-                  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
-                >
-                  Funded-graduate programs opportunities for international students
-                </h2>
+  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-nowrap"
+  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+>
+  University-Funded programs opportunities for international students
+</h2>
 
                 <p
                   /*className="mt-2 text-sm md:text-base font-medium text-white/90"*/
@@ -438,7 +438,7 @@ export default function FundedGraduateAdmission() {
                   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
                 >
                   {/*Explore fully or partially funded graduate admissions offered directly by universities worldwide.*/}
-                  Explore funded graduate admissions offered directly by universities worldwide, including programs that provide full or partial financial support for master's and doctoral studies across a wide range of academic disciplines and research fields,and reduce overall graduate cost
+                  Explore funded academic programs offered directly by universities worldwide, including programs that provide full or partial financial support for Bachelor,master's, and doctoral studies across a wide range of academic disciplines and research fields,and reduce overall graduate cost
                   </p>
                   
               </div>

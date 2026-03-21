@@ -1,3 +1,4 @@
+//src/pages/Home.jsx
 import { useState } from "react"; 
 import { Link } from "react-router-dom";
 
@@ -59,7 +60,7 @@ export default function Home() {
     {/* Right: hero visual */}
     <div className="relative">
       <img
-        src="/images/Welcome.png"
+        src="/images/welcome.webp"
         alt="AI campus illustration"
         className="w-full rounded-2xl shadow-md"
       />
@@ -68,26 +69,9 @@ export default function Home() {
   </div>
 </section>
 
-
-      {/* 2) TABS + CARDS */}
+{/* 2) TABS + CARDS */}
       <SectionTabs />
 
-      {/* 3) Testimonial with logo (Mpower card links to EduInfo) */}
-      {/*<section className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
-        <Link
-          to="/eduinfo"
-          className="block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0"
-          title="Learn more in EduInfo"
-        >
-          <div className="p-6 md:p-10 bg-white grid md:grid-cols-[100px_1fr] gap-6 items-center">
-            <img src="/images/mpower.png" alt="Mpower Financing logo" className="w-20 h-20 object-contain opacity-80" />
-            <blockquote className="text-lg text-slate-800">
-              “ScholarsKnowledge partners with MPOWER Financing to help international students access trusted financial solutions.”
-              <div className="mt-2 text-sm text-slate-500">— Learn More</div>
-            </blockquote>
-          </div>
-        </Link>
-      </section>*/}
 
       {/* 3) MPOWER section (corporate background + card links to EduInfo) */}
 <section
@@ -112,6 +96,7 @@ export default function Home() {
           src="/images/mpower.png"
           alt="Mpower Financing logo"
           className="w-24 h-24 object-contain opacity-90"
+          loading="lazy"
         />
         <blockquote className="text-lg text-slate-800">
           “ScholarsKnowledge partners with MPOWER Financing to help international students access trusted financial solutions.”
@@ -151,21 +136,21 @@ export default function Home() {
 
   <div className="mt-8 grid md:grid-cols-3 gap-6">
     <Pillar
-      image="/images/Empoering learners.png"
+      image="/images/Empoering learners.webp"
       imageAlt="Students learning together"
       title="Empower Learners."
       text="Enable students and lecturers to focus on meaningful learning while technology simplifies routine academic tasks."
       centered
     />
     <Pillar
-      image="/images/Streamline  academics.jpg"
+      image="/images/Streamline  academics.webp"
       imageAlt="Organized academic workflow"
       title="Streamline Academics."
       text="From notes to workflows, ScholarsKnowledge organizes academic materials and reduces friction in teaching and learning."
       centered
     />
     <Pillar
-      image="/images/How we forward learning.jpg"
+      image="/images/How we forward learning.webp"
       imageAlt="Learning insights and analytics"
       title="Insight-Driven Learning."
       text="Transform academic activity into actionable insights that guide smarter decisions and better outcomes."
@@ -178,7 +163,7 @@ export default function Home() {
 <section
   className="relative overflow-hidden"
   style={{
-    backgroundImage: "url('/images/Scholarship.png')",
+    backgroundImage: "url('/images/scholarship.webp')",
     backgroundSize: "cover",
     backgroundPosition: "center",
   }}
@@ -235,7 +220,7 @@ export default function Home() {
           <p className="mt-2 text-slate-600 text-center">Explore how universities and learning communities leverage ScholarsKnowledge to achieve their goals.</p>
           <div className="mt-6 grid md:grid-cols-3 gap-6">
             <StoryCard
-  image="/images/Submit scholarships.png"
+  image="/images/Submit scholarships.webp"
   title="Scholarships Providers"
   linkTo="/partner/signup"
   linkText="Submit a Scholarship"
@@ -265,7 +250,7 @@ export default function Home() {
 <section
   className="relative overflow-hidden"
   style={{
-    backgroundImage: "url('/images/scholarships-destinations-bg.png')",
+    backgroundImage: "url('/images/scholarships-destinations-bg.webp')",
     backgroundSize: "cover",
     backgroundPosition: "center",
   }}
@@ -412,19 +397,19 @@ function SectionTabs() {
     tag: "Lectures",
     title: "Notes,Assignments & Questions",
     text: "Share academics,Engage your students, and Boost academic productivity",
-    image: "/images/Lectures.png",
+    image: "/images/Lectures.webp",
   },
   {
     tag: "Global & University Academic Platforms",
     title: "Student-Lecturer Academic Interaction",
     text: "Interact locally and globally,initiate Topics,Comment and Reply academic Interactive threads.",
-    image: "/images/studentimage.png",
+    image: "/images/studentimage.webp",
   },
   {
     tag: "Lecturers Management",
     title: "Manage your Academic Materials Inventory",
     text: "Save your lectural notes,Academic books,Assigments for now and future use.",
-    image: "/images/academic-material-management.jpg",
+    image: "/images/academic-material-management.webp",
   },
 ];
 
@@ -433,13 +418,13 @@ const cardsStudents = [
     tag: "Students",
     title: "We are Your Study Hub",
     text: "Notes, Assigments,past papers,Announcements and help—organized by Academic program.",
-    image: "/images/for-student1.jpg",
+    image: "/images/for-student1.webp",
   },
   {
     tag: "University & Global Academic Platforms",
     title: "Local & Global students Interaction",
     text: "Post, share, and comment across academic fields.",
-    image: "/images/for-students.jpg",
+    image: "/images/for-students.webp",
   },
   {
     tag: "Student Market Platform",
@@ -482,13 +467,13 @@ const cardsStudents = [
       tag: "Scholarships",
       title: "Explore Scholarships directly from Provider Institutions and Organizations",
       text: "ScholarKnowledge partners with Scholarship providers Educational institutions,Universities and Organization .",
-      image: "/images/scholarship-edufinancing.jpg",
+      image: "/images/scholarship-edufinancing.webp",
     },
     {
       tag: "College Budgeting",
       title: "Optimize your College Financing strategies",
       text: "Educational Loans+Scholarships+Private Saving=Optimal Financing Strategy",
-      image: "/images/scholarship.jpg",
+      image: "/images/scholarship.webp",
     },
   ];
 
@@ -497,19 +482,19 @@ const cardsStudents = [
       tag: "Scholarship Institutions",
       title: "Submit and Manage Scholarships",
       text: "Universities,Colleges,Institutions and organizations can publish verified scholarships directly to students.",
-      image: "/images/Submit scholarships.png",
+      image: "/images/Submit scholarships.webp",
     },
     {
       tag: "Education Loan Partners",
       title: "Student Loan Partnerships",
       text: "ScholarsKnowledge partners with MPOWER Financing to offer trusted loan access to global students.",
-      image: "/images/mpower-financing.png",
+      image: "/images/mpower-financing.webp",
     },
     {
       tag: "University & Colleges Collaborations",
       title: "Expand Student Opportunities",
       text: "Universities and Colleges collaborate with ScholarsKnowledge to give students access to shared Academic resources locally and  worldwide.",
-      image: "/images/collaboration image.png",
+      image: "/images/collaboration image.webp",
     },
   ];
 
@@ -549,7 +534,12 @@ const cardsStudents = [
             key={`${c.tag}-${c.title}`}
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition"
           >
-            <img src={c.image} alt="" className="w-full h-40 object-cover" />
+            <img
+             src={c.image}
+                alt=""
+                className="w-full h-40 object-cover"
+                loading="lazy"
+            />
             <div className="p-5 text-center">
               <div className="text-xs uppercase tracking-wide text-slate-500">{c.tag}</div>
               <h3 className="mt-1 text-lg font-semibold">{c.title}</h3>
@@ -596,7 +586,14 @@ function StoryCard({ image, title, linkTo, linkText }) {
   return (
     /*<div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">*/
     <div className="rounded-2xl bg-white overflow-hidden">
-      <img src={image} alt="" className="w-full h-40 object-cover" />
+      {/*<img src={image} alt="" className="w-full h-40 object-cover" />*/}
+      <img
+  src={image}
+  alt=""
+  className="w-full h-40 object-cover"
+  loading="lazy"
+/>
+
       <div className="p-4 text-center">
         <div className="font-semibold">{title}</div>
         {/* Centered CTAs for these three cards */}
