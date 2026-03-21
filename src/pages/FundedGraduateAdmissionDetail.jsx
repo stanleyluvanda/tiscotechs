@@ -561,7 +561,8 @@ export default function FundedGraduateAdmissionDetail() {
     ) : null}
 
     {provider ? (
-      <div className="min-w-0 text-base font-semibold text-slate-900 leading-snug break-words">
+      /*<div className="min-w-0 text-base font-semibold text-slate-900 leading-snug break-words">*/
+      <div className="min-w-0 text-lg font-bold text-[#4B1F6F] leading-snug break-words">
         {provider}
       </div>
     ) : null}
