@@ -112,18 +112,6 @@ async function fetchLecturerProfileFromServer(email) {
   return data;
 }
 
-/*async function updateLecturerProfileOnServer(patch) {
-  const resp = await fetch(
-    "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com/api/auth/lecturer/update-profile",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    }
-  );
-  return resp.json();
-}*/
-
 const AUTH_BASE = "https://eovdrymvq3.execute-api.us-east-1.amazonaws.com";
 
 async function updateLecturerProfile(patch, me) {
@@ -315,31 +303,11 @@ function normalizePhoto(remote, fallback = "") {
   );
 }
 
-/*function safeSetLecturerPosts(nextPosts) {
-  try {
-    const slim = Array.isArray(nextPosts)
-      ? nextPosts.map(stripPostForStorage)
-      : nextPosts;
-    localStorage.setItem("lecturerPosts", JSON.stringify(slim));
-  } catch (e) {
-    console.warn("[LecturerDashboard] Could not persist lecturerPosts:", e);
-    // Optional: last resort — keep at least something small
-    try {
-      localStorage.setItem("lecturerPosts", "[]");
-    } catch {}
-  }
-}*/
-
-
-
 function safeSetLecturerPosts(nextPosts) {
   // ✅ backend is source of truth now — don't persist in localStorage
   // This helper is kept only so existing calls don't crash.
   return Array.isArray(nextPosts) ? nextPosts : [];
 }
-
-
-
 
 // ✅ PASTE HELPERS HERE
 function getExt(name = "") {
@@ -430,17 +398,6 @@ function kindBadge(kind) {
     </span>
   );
 }
-
-
-
-
-// read only the admin-created video posts (raw read helper)
-/*function readVideoPosts() {
-  const arr = safeParse(localStorage.getItem("videoPosts")) || [];
-  return Array.isArray(arr) ? arr : [];
-}*/
-
-
 
 function initials(name = "") {
   const [a = "", b = ""] = name.trim().split(/\s+/);
@@ -660,36 +617,6 @@ function AttachmentImage({ att, className="", onClick, enlarge=false }) {
     />
   );
 }
-/*function AttachmentLink({ att }) {
-  const url = useAttachmentUrl(att, true);
-
-  // ✅ show real name for both backend shapes
-  const name = att?.fileName || att?.name || "file";
-  const badge = kindBadge(fileKind(att));
-
-  if (!url) {
-    return (
-      <span className="inline-flex items-center gap-2 text-slate-500">
-        {badge}
-        <span className="break-all">{name}</span>
-      </span>
-    );
-  }
-
-  return (
-    <a
-      href={url}
-      download={name}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="underline inline-flex items-center gap-2"
-      title={name}
-    >
-      {badge}
-      <span className="break-all">{name}</span>
-    </a>
-  );
-}*/
 
 
 function AttachmentLink({ att }) {
@@ -1155,13 +1082,6 @@ useEffect(() => {
   }
 }, [notifications]);
 
-
-
-
-
-
-
-
   // --- Notification avatar helpers (UI-only) ---
   function initialsFromName(name) {
     const s = String(name || "").trim();
@@ -1191,8 +1111,6 @@ useEffect(() => {
       ""
     );
   }
-
-  
 
   // ✅ PASTE THIS BLOCK RIGHT HERE (still inside LecturerDashboard(), before the polling useEffect)
 const notifLecturer =
@@ -1439,22 +1357,6 @@ useEffect(() => {
   }, []);
 
 
-
-
-
-
-  /* Posts state — use 'lecturerPosts' to honor StudentDashboard reader */
-  /*const [posts, setPosts] = useState(() => {
-    const stored = safeParse(localStorage.getItem("lecturerPosts"));
-    return stored && Array.isArray(stored) ? stored : seeded;
-  });
-  useEffect(() => { 
-   //localStorage.setItem("lecturerPosts", JSON.stringify(posts));
-   safeSetLecturerPosts(posts);
-    window.dispatchEvent(new Event("lecturerPosts:updated"));
-  }, [posts]);*/
-
-
   /* Posts state — backend is source of truth now */
 const [posts, setPosts] = useState(() => seeded);
 
@@ -1492,11 +1394,6 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
     });
 
     // ensure any local-only comments also stay (and merge their replies)
-    /*return Array.from(map.values()).map(c => ({
-      ...c,
-      replies: mergeReplies(c?.replies, c?.replies),
-    }));*/
-
     return Array.from(map.values()).map(c => ({
   ...c,
   replies: mergeReplies(c?.replies, []),
@@ -1535,15 +1432,6 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
     let cancelled = false;
 
     async function loadFromServer() {
-      /*const remote = await fetchLecturerPostsFromServer();*/
-    
-      /*if (!remote || cancelled) return;
-
-      // If server has posts, prefer those; otherwise keep local seeded examples
-      if (remote.length) {
-        //setPosts(remote);
-        setPosts(prev => mergeRemoteIntoLocal(prev, remote));
-      }*/
       const { posts: remotePosts } = await fetchLecturerPostsFromServer({ limit: 20 });
 if (!remotePosts || cancelled) return;
 
@@ -1564,35 +1452,6 @@ if (remotePosts.length) {
     };
   }, []);
 
-
-  // RIGHT-CARD: Admin videos for lecturers only (not lecturers' own posts)
-/*const [adminLecturerVideos, setAdminLecturerVideos] = useState([]);
-
-useEffect(() => {
-  const sync = () => {
-    const all = readVideoPosts();
-    const filtered = all
-      .filter(
-        (p) =>
-          p &&
-          p.type === "video" &&
-          p.createdByRole === "admin" &&
-          (p.audience === "lecturers" || p.audience === "both")
-      )
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setAdminLecturerVideos(filtered);
-  };
-
-  sync();
-  const onStorage = (e) => { if (!e || e.key === "videoPosts") sync(); };
-  const onUpdated = () => sync();
-  window.addEventListener("storage", onStorage);
-  window.addEventListener("videoPosts:updated", onUpdated);
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener("videoPosts:updated", onUpdated);
-  };
-}, []);*/
 
 // RIGHT-CARD: Admin videos for lecturers (SERVER-backed, cross-browser)
 const [adminLecturerVideos, setAdminLecturerVideos] = useState([]);
@@ -1633,8 +1492,6 @@ useEffect(() => {
 }, []);
 
 const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT HERE
-
-
 
 
   /* Filters + composer state */
@@ -1733,95 +1590,6 @@ return c - 1;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idleWarning]);
 
-  /* Banner/Avatar upload (compressed & normalized + broadcast) */
-  /*const onPickBanner = async (e) => {
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-    const dataUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
-    setUser((u) => {
-      const next = { ...u, bannerUrl: dataUrl };
-      next.country = normalizeCountry(next.country || "");
-      next.countryCode = ensureCountryCode(next.country, next.countryCode);
-      saveAndBroadcastUser(next);
-      return next;
-    });
-  };*/
-
-  /* Banner/Avatar upload (compressed & normalized + broadcast + server persist) */
-/*const onPickBanner = async (e) => {
-  const f = e.target.files?.[0];
-  if (!f || !f.type.startsWith("image/")) return;
-
-  const bannerUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
-
-  try {
-    // ONLY set UI after server accepts
-    await updateLecturerProfile({ bannerUrl }, me);
-
-    // re-fetch profile to confirm it persisted
-    const email = String(me?.email || "").trim().toLowerCase();
-    const fresh = email ? await fetchLecturerProfileFromServer(email) : null;
-    const remote = fresh?.user || fresh;
-
-    if (remote) {
-      setMe(remote);
-      setUser((u) => {
-        const next = {
-          ...u,
-          ...remote,
-          bannerUrl: remote.bannerUrl ?? bannerUrl,
-          photoUrl: remote.photoUrl ?? u.photoUrl,
-          avatarUrl: remote.photoUrl ?? remote.avatarUrl ?? u.avatarUrl,
-        };
-        saveAndBroadcastUser(next);
-        return next;
-      });
-    }
-  } catch (e2) {
-    console.error("update-profile failed:", e2);
-    alert("Banner failed to save. Check console/network.");
-  } finally {
-    e.target.value = "";
-  }
-};*/
-/*const onPickBanner = async (e) => {
-  const f = e.target.files?.[0];
-  if (!f || !f.type.startsWith("image/")) return;
-
-  const bannerUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
-
-  try {
-    // ✅ Use user (always has email) as identity source
-    await updateLecturerProfile({ bannerUrl }, user);
-
-    // ✅ Always refetch using user.email (not me.email)
-    const email = String(user?.email || "").trim().toLowerCase();
-    const fresh = email ? await fetchLecturerProfileFromServer(email) : null;
-    const remote = fresh?.user || fresh;
-
-    if (remote) {
-      setMe(remote);
-      setUser((u) => {
-        const next = {
-          ...u,
-          ...remote,
-
-          // ✅ normalize what your UI renders
-          bannerUrl: remote.bannerUrl ?? bannerUrl,
-          photoUrl: remote.photoUrl ?? remote.avatarUrl ?? u.photoUrl,
-          avatarUrl: remote.photoUrl ?? remote.avatarUrl ?? u.avatarUrl,
-        };
-        saveAndBroadcastUser(next);
-        return next;
-      });
-    }
-  } catch (e2) {
-    console.error("update-profile failed:", e2);
-    alert("Banner failed to save. Check console/network.");
-  } finally {
-    e.target.value = "";
-  }
-};*/
 // ============================================================
   // CloudFront upload helper (Banner/Avatar) — LecturerDashboard
   // ============================================================
@@ -1917,31 +1685,6 @@ function safeName(name = "file") {
   const n = String(name || "file").trim() || "file";
   return n.replace(/[/\\]+/g, "_");
 }
-
-/*async function uploadDataUrlToCloudFront({ dataUrl, name, mime, folder }) {
-  const blob = dataURLtoBlobSafe(dataUrl);
-  const contentType = mime || blob.type || "application/octet-stream";
-  const fileName = safeName(name || `file_${Date.now()}`);
-
-  const { publicUrl, key } = await uploadBlobToCloudFront({
-    blob,
-    fileName,
-    contentType,
-    folder,
-  });
-
-  return {
-    id: key || `cf_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    name: fileName,
-    fileName,
-    mime: contentType,
-    url: publicUrl,     // ✅ students can click/download
-    s3Url: publicUrl,   // optional alias
-    key,
-    size: blob.size || 0,
-  };
-}*/
-
 
 
 async function uploadItemToCloudFront({ item, fallbackName, fallbackMime, folder }) {
@@ -2099,99 +1842,6 @@ const onPickBanner = async (e) => {
   }
 };
 
-
-  /*const onPickAvatar = async (e) => {
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-    const dataUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
-    setUser((u) => {
-      const next = { ...u, photoUrl: dataUrl };
-      next.country = normalizeCountry(next.country || "");
-      next.countryCode = ensureCountryCode(next.country, next.countryCode);
-      saveAndBroadcastUser(next);
-      return next;
-    });
-  };*/
-
-  /*const onPickAvatar = async (e) => {
-  const f = e.target.files?.[0];
-  if (!f || !f.type.startsWith("image/")) return;
-
-  const photoUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
-
-  try {
-    await updateLecturerProfile({ photoUrl }, me);
-
-    const email = String(me?.email || "").trim().toLowerCase();
-    const fresh = email ? await fetchLecturerProfileFromServer(email) : null;
-    const remote = fresh?.user || fresh;
-
-    if (remote) {
-      setMe(remote);
-      setUser((u) => {
-        const next = {
-          ...u,
-          ...remote,
-          photoUrl: remote.photoUrl ?? photoUrl,
-          avatarUrl: remote.photoUrl ?? remote.avatarUrl ?? u.avatarUrl,
-          bannerUrl: remote.bannerUrl ?? u.bannerUrl,
-        };
-        saveAndBroadcastUser(next);
-        return next;
-      });
-    }
-  } catch (e2) {
-    console.error("update-profile failed:", e2);
-    alert("Avatar failed to save. Check console/network.");
-  } finally {
-    e.target.value = "";
-  }
-};*/
-/*const onPickAvatar = async (e) => {
-  const f = e.target.files?.[0];
-  if (!f || !f.type.startsWith("image/")) return;
-
-  const photoUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
-
-  try {
-    // ✅ Use user (always has email) as identity source
-    await updateLecturerProfile({ photoUrl }, user);
-
-    // ✅ Always refetch using user.email (not me.email)
-    const email = String(user?.email || "").trim().toLowerCase();
-    const fresh = email ? await fetchLecturerProfileFromServer(email) : null;
-    const remote = fresh?.user || fresh;
-
-    if (remote) {
-      setMe(remote);
-
-      const remotePhoto = userPhoto(remote) || photoUrl; // accept aliases
-      const remoteBanner =
-        remote.bannerUrl ||
-        remote.bannerURL ||
-        remote.profile?.bannerUrl ||
-        remote.profile?.bannerURL ||
-        "";
-
-      setUser((u) => {
-        const next = {
-          ...u,
-          ...remote,
-          photoUrl: remotePhoto,
-          avatarUrl: remotePhoto,
-          bannerUrl: remoteBanner || u.bannerUrl,
-        };
-        saveAndBroadcastUser(next);
-        return next;
-      });
-    }
-  } catch (e2) {
-    console.error("update-profile failed:", e2);
-    alert("Avatar failed to save. Check console/network.");
-  } finally {
-    e.target.value = "";
-  }
-};*/
 const onPickAvatar = async (e) => {
   const f = e.target.files?.[0];
   if (!f || !f.type.startsWith("image/")) return;
@@ -2287,68 +1937,7 @@ const onPickAvatar = async (e) => {
     setDocFiles((arr) => [...arr, ...mapped]);
     e.target.value = "";
   };
-  /*const handlePaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData?.getData("text/plain") || "";
-    if (document.queryCommandSupported("insertText")) {
-      document.execCommand("insertText", false, text);
-    } else {
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return;
-      sel.deleteFromDocument();
-      sel.getRangeAt(0).insertNode(document.createTextNode(text));
-    }
-  };*/
-
-  /*const handlePaste = (e) => {
-  e.preventDefault();
-
-  const cb = e.clipboardData || window.clipboardData;
-  const text = cb?.getData("text/plain") || "";
-
-  // Normalize line endings
-  const normalized = String(text).replace(/\r\n/g, "\n");
-
-  // Escape HTML special chars
-  const esc = (s) =>
-    String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-
-  // Convert:
-  // - blank lines => paragraph breaks
-  // - single newline => <br/>
-  const html = normalized
-    .split(/\n{2,}/g)
-    .map((para) => para.split("\n").map(esc).join("<br/>"))
-    .map((p) => `<p>${p || "<br/>"}</p>`)
-    .join("");
-
-  // Insert HTML at cursor (keeps paragraphs)
-  if (document.queryCommandSupported?.("insertHTML")) {
-    document.execCommand("insertHTML", false, html);
-    return;
-  }
-
-  // Fallback: manual range insert
-  const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
-  sel.deleteFromDocument();
-
-  const range = sel.getRangeAt(0);
-  const container = document.createElement("div");
-  container.innerHTML = html;
-
-  const frag = document.createDocumentFragment();
-  while (container.firstChild) frag.appendChild(container.firstChild);
-
-  range.insertNode(frag);
-  range.collapse(false);
-};*/
-
+  
 const handlePaste = async (e) => {
   try {
     const cb = e.clipboardData || window.clipboardData;
@@ -2445,11 +2034,6 @@ const handlePaste = async (e) => {
 };
 
 
-
-
-
-
-
   /* ---- Auth store shim (align with StudentDashboard) ---- */
   function getAuthRecord(userId) {
     const map = safeParse(localStorage.getItem("authUsersById")) || {};
@@ -2493,50 +2077,6 @@ const handlePaste = async (e) => {
   }, [user]);
 
 
-
-  // Helper: take AttachmentUploader items and split into images vs other files
-/*function splitS3Attachments(list = []) {
-  const imgs = [];
-  const files = [];
-
-  list.forEach((att) => {
-    if (!att) return;
-
-    const mime = att.mime || att.type || "";
-    const isImage = att.kind === "image" || mime.startsWith("image/");
-
-    const base = {
-      id:
-        att.id ||
-        att.key ||
-        `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      name: att.name || "file",
-      mime: mime || "application/octet-stream",
-      url: att.url,
-    };
-
-    if (isImage) {
-      // 👈 make sure images have kind:"image" and a thumb
-      imgs.push({
-        ...base,
-        kind: "image",
-        // StudentDashboard treats attachments with a thumb as images
-        thumb: att.thumb || att.previewUrl || att.url,
-      });
-    } else {
-      files.push({
-        ...base,
-        kind: "file",
-      });
-    }
-  });
-
-  return { imgs, files };
-}*/
-
-
-
-
 // Helper: take AttachmentUploader items and split into images vs other files
 function pickBestFileName(att) {
   // Try common filename fields first
@@ -2576,31 +2116,6 @@ function splitS3Attachments(list = []) {
 
     const fileName = pickBestFileName(att);
 
-    /*const base = {
-      id:
-        att.id ||
-        att.key ||
-        `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      name: fileName,          // ✅ UI uses this
-      fileName: fileName,      // ✅ Student + Lecturer dashboards
-      mime: mime || "application/octet-stream",
-      url: att.url,
-      key: att.key,
-    };*/
-
-
-  /*const base = {
-  id: att.id || 
-  att.key || 
-  `att_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-  name: bestFileName(att),      // ✅ normalized real name
-  fileName: bestFileName(att),  // ✅ also store as fileName (your UI prefers this)
-  mime: mime || "application/octet-stream",
-  url: att.url,
-  key: att.key,
-  size: att.size || att.bytes || att.contentLength || 0, // ✅ optional if present
-};*/
-
 const base = {
   id:
     att.id ||
@@ -2631,11 +2146,6 @@ const base = {
 
   return { imgs, files };
 }
-
-
-
-
-
 
 
    /* Create post (supports all types including Video)-ADDED */
@@ -2931,11 +2441,6 @@ async function ensureThreadLoadedForPost(post) {
   await Promise.all(ids.map((id) => ensureThreadLoadedForPostId(id)));
 }
 
-
-
-
-
-
   /* Like/Comment/Reply — sync across multi-program siblings */
   const toggleLikeBy = (postOrId) => {
     setPosts((p) => {
@@ -2950,10 +2455,6 @@ async function ensureThreadLoadedForPost(post) {
       });
     });
   };
-
-  
-  
-
 
 const addComment = async (postId, text, images = [], files = []) => {
   const trimmed = String(text || "").trim();
@@ -3048,106 +2549,7 @@ const addComment = async (postId, text, images = [], files = []) => {
     }
   });
 };
-  // Optional: quick debug line so you can confirm fanout count
-  /*console.log("[comment fanout] siblings:", siblingIds);
-};*/
-
-  /*const addReply = async (postId, commentId, text, images = [], files = []) => {
-  const trimmed = String(text || "").trim();
-  if (!trimmed && images.length === 0 && files.length === 0) return;
-
-  const { imgDescs, fileDescs } = await persistAttachments(images, files);
-
-  if (!postId || !commentId) {
-    // fallback local-only
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) =>
-        c.id === commentId
-          ? {
-              ...c,
-              replies: [
-                ...(c.replies || []),
-                {
-                  id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-                  postId,
-                  commentId,
-                  authorId: user.id,
-                  authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-                  authorPhoto: user.photoUrl,
-                  authorProgram: user.faculty,
-                  text: trimmed,
-                  images: imgDescs,
-                  files: fileDescs,
-                  createdAt: Date.now(),
-                  updatedAt: Date.now(),
-                },
-              ],
-            }
-          : c
-      ),
-    }));
-    return;
-  }
-
-  try {
-    const resp = await postReplyToServer({
-      postId,
-      commentId,
-      text: trimmed,
-      images: imgDescs,
-      files: fileDescs,
-      authorId: user.id,
-      authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-      authorPhoto: user.photoUrl,
-      authorProgram: user.faculty,
-    });
-
-    const serverReply = resp?.reply;
-
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) =>
-        c.id === commentId
-          ? { ...c, replies: [serverReply, ...(c.replies || [])] }
-          : c
-      ),
-    }));
-  } catch (err) {
-    console.error("[LecturerDashboard] addReply failed:", err);
-
-    // fallback local-only
-    updatePostById(postId, (x) => ({
-      ...x,
-      comments: (x.comments || []).map((c) =>
-        c.id === commentId
-          ? {
-              ...c,
-              replies: [
-                ...(c.replies || []),
-                {
-                  id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-                  postId,
-                  commentId,
-                  authorId: user.id,
-                  authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-                  authorPhoto: user.photoUrl,
-                  authorProgram: user.faculty,
-                  text: trimmed,
-                  images: imgDescs,
-                  files: fileDescs,
-                  createdAt: Date.now(),
-                  updatedAt: Date.now(),
-                },
-              ],
-            }
-          : c
-      ),
-    }));
-  }
-};*/
-
-
+  
 
 function findPostIdThatOwnsComment(postsList, fallbackPostId, commentId) {
   if (!commentId) return fallbackPostId;
@@ -3198,16 +2600,6 @@ function resolveVisiblePostKeyFromNotification(n, allPosts = [], visiblePosts = 
   // Fallback: just use rawPostId
   return rawPostId;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 function getCommentByIdInPosts(postsList, commentId) {
@@ -3375,26 +2767,7 @@ const replyLogicalId = `rl_${Date.now()}_${Math.random().toString(36).slice(2, 1
         c.id === cid
           ? {
               ...c,
-              /*replies: [
-                {
-                  id: optimisticId,
-                  __pending: true,
-                  postId: pid,
-                  commentId: cid,
-                  logicalId, // optional on reply
-                  authorId: user.id,
-                  authorName: `${user.title ? user.title + " " : ""}${user.name}`,
-                  authorPhoto: user.photoUrl,
-                  authorProgram: user.faculty,
-                  text: trimmed,
-                  images: cfImages,
-                  files: cfFiles,
-                  createdAt: Date.now(),
-                  updatedAt: Date.now(),
-                },
-                ...(c.replies || []),
-              ],*/
-
+              
               replies: [
   ...(c.replies || []),
   {
@@ -3449,21 +2822,7 @@ const replyLogicalId = `rl_${Date.now()}_${Math.random().toString(36).slice(2, 1
     const { pid, cid, resp } = r.value || {};
     const serverReply = resp?.reply;
 
-    {/*if (serverReply?.id) {
-      updatePostById(pid, (x) => ({
-        ...x,
-        comments: (x.comments || []).map((c) =>
-          c.id === cid
-            ? {
-                ...c,
-                replies: (c.replies || []).map((rr) =>
-                  rr.id === optimisticId ? serverReply : rr
-                ),
-              }
-            : c
-        ),
-      }));*/}
-
+    
       if (serverReply?.id) {
   // ✅ Ensure the server reply keeps the shared logical id (so dedupe works)
   const patchedReply = serverReply.logicalId
@@ -3505,21 +2864,6 @@ const replyLogicalId = `rl_${Date.now()}_${Math.random().toString(36).slice(2, 1
   console.log("[reply fanout] targets:", targets);
 };
 
-
-
-
-
-
-
-  /* Delete post */
-  /*const deletePost = (post) => {
-    const ok = window.confirm("Delete this post for all students? This cannot be undone.");
-    if (!ok) return;
-    const key = post.multiGroupId || post.id;
-    setPosts((p) =>
-      post.multiGroupId ? p.filter(x => x.multiGroupId !== key) : p.filter(x => x.id !== key)
-    );
-  };*/
 
   /* Delete post (server + UI) */
 const deletePost = async (post) => {
@@ -3602,17 +2946,7 @@ if (Array.isArray(remotePosts)) {
       } else {
         const base = arr[0];
         const multiPrograms = Array.from(new Set(arr.map(a => a.authorProgram))).sort();
-        /*const allC = [];
-        arr.forEach(a => (a.comments||[]).forEach(c => allC.push(c)));
-        const cMap = new Map();
-        allC.forEach(c=> { if(!cMap.has(c.id)) cMap.set(c.id, c); });
-        const rep = {
-          ...base,
-          multiGroupId: key,
-          multiPrograms,
-          displayProgramLabel: `Multiple programs (${multiPrograms.length})${base.targetYear ? ` • ${base.targetYear}` : ""}`,
-          comments: Array.from(cMap.values()),
-        };*/
+        
 
         const allC = [];
 arr.forEach(a => (a.comments || []).forEach(c => allC.push(c)));
@@ -3656,24 +2990,7 @@ const rep = {
   const clearPrograms = () => setSelectedPrograms([]);
 
 
-  // ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
-  /*async function loadNotifications() {
-    try {
-      const res = await fetch("/api/notifications/mine", {
-        credentials: "include",
-      });
-      if (!res.ok) return;
-
-      const data = await res.json();
-      const list = Array.isArray(data) ? data : data.items || [];
-
-      setNotifications(list);
-      setUnseenCount(list.filter((n) => !n.read).length);
-    } catch (e) {
-      console.error("loadNotifications failed", e);
-    }
-  }*/
-
+  
   function notifActionLabel(n) {
   const t = String(n?.type || n?.eventType || n?.kind || "").toLowerCase();
   if (t.includes("reply")) return "replied";
@@ -3797,27 +3114,6 @@ async function onClickNotification(n) {
   }
 }
 
-/*async function handleNotificationClick(n) {
-  // 1) Mark read (uses your existing safe code)
-  await onClickNotification(n);
-
-  // 2) Resolve which rendered post card to jump to (handles merged multi-program)
-  const key = resolveVisiblePostKeyFromNotification(n, posts, filtered);
-  if (!key) return;
-
-  // 3) Force-open comments for that card
-  setForceOpenKey(key);
-
-  // 4) Scroll to it
-  requestAnimationFrame(() => {
-    const el = document.getElementById(`post-${key}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-
-  // Optional: close tray after click (comment out if you want it to stay open)
-  setNotifOpen(false);
-}*/
-
 async function handleNotificationClick(n) {
   try {
     // mark read (safe)
@@ -3872,73 +3168,6 @@ const rawPostId = notifTargetPostId(n);
     console.error("[notif] handleNotificationClick failed", e);
   }
 }
-
-/*async function handleNotificationClick(n) {
-  try {
-    // 1) mark read (safe)
-    await onClickNotification(n);
-
-    // IMPORTANT: do NOT close the tray here
-    // setNotifOpen(false);
-
-    // 2) map notification -> visible card key (handles merged multi-program)
-    const key = resolveVisiblePostKeyFromNotification(n, posts, filtered);
-    if (!key) return;
-
-    // 3) force comments open on that merged card
-    setForceOpenKey(key);
-
-    // 4) make sure thread(s) are loaded before scrolling (so anchors exist)
-    const visible =
-      (filtered || []).find((p) => (p?.multiGroupId || p?.id) === key) || null;
-    if (visible) {
-      await ensureThreadLoadedForPost(visible);
-    }
-
-    // 5) targets from notification
-    const rawPostId = notifTargetPostId(n);
-    const commentId = notifTargetCommentId(n);
-    const replyId = notifTargetReplyId(n);
-
-    // 6) scroll (reply -> comment -> post), try both rawPostId and key
-    requestAnimationFrame(() => {
-      const postIdsToTry = Array.from(
-        new Set([rawPostId, key].filter(Boolean))
-      );
-
-      // A) Reply anchor (most specific)
-      if (replyId && commentId) {
-        for (const pid of postIdsToTry) {
-          const rEl = document.getElementById(`rpl-${pid}-${commentId}-${replyId}`);
-          if (rEl?.scrollIntoView) {
-            rEl.scrollIntoView({ behavior: "smooth", block: "start" });
-            return;
-          }
-        }
-      }
-
-      // B) Comment anchor
-      if (commentId) {
-        for (const pid of postIdsToTry) {
-          const cEl = document.getElementById(`cmt-${pid}-${commentId}`);
-          if (cEl?.scrollIntoView) {
-            cEl.scrollIntoView({ behavior: "smooth", block: "start" });
-            return;
-          }
-        }
-      }
-
-      // C) Fallback: post wrapper
-      const el = document.getElementById(`post-${key}`);
-      if (el?.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  } catch (e) {
-    console.error("[notif] handleNotificationClick failed", e);
-  }
-}*/
-
-
-
 
 // ✅ Clear read notifications on the SERVER (so refresh doesn't bring them back)
 async function clearNotificationsServerBacked() {
@@ -4296,95 +3525,6 @@ async function clearNotificationsServerBacked() {
 ></div>
 
 {/* AI-BLOCK IN COMPOSER */}
-{/*<div className="mt-3 flex flex-wrap items-center gap-2">*/}
-  {/*<button
-    type="button"
-    onClick={async () => {
-      try {
-        const sourceText = String(editorRef.current?.innerText || "").trim();
-        if (!sourceText) return;
-
-        setAiBusy(true);
-        setAiResult("");
-        setAiMode("html");
-
-        const improved = await callAssistAIChunked("improve-writing", sourceText);
-
-        setAiResult(sanitizeSimpleAiHtml(improved));
-        setAiOpen(true);
-      } catch (e) {
-        setAiMode("text");
-        setAiResult(`AI error: ${e.message || "Unable to improve writing."}`);
-        setAiOpen(true);
-      } finally {
-        setAiBusy(false);
-      }
-    }}
-    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
-    disabled={aiBusy}
-  >
-    {aiBusy ? "Working..." : "Improve writing"}
-  </button>
-
-  <button
-    type="button"
-    onClick={async () => {
-      try {
-        const sourceText = String(editorRef.current?.innerText || "").trim();
-        if (!sourceText) return;
-
-        setAiBusy(true);
-        setAiResult("");
-        setAiMode("html");
-
-        const summary = await callAssistAIChunked("summarize", sourceText);
-
-        setAiResult(sanitizeSimpleAiHtml(summary));
-        setAiOpen(true);
-      } catch (e) {
-        setAiMode("text");
-        setAiResult(`AI error: ${e.message || "Unable to summarize."}`);
-        setAiOpen(true);
-      } finally {
-        setAiBusy(false);
-      }
-    }}
-    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
-    disabled={aiBusy}
-  >
-    Summarize
-  </button>
-
-  <button
-    type="button"
-    onClick={async () => {
-      try {
-        const sourceText = String(editorRef.current?.innerText || "").trim();
-        if (!sourceText) return;
-
-        setAiBusy(true);
-        setAiResult("");
-        setAiMode("html");
-
-        const formatted = await callAssistAIChunked("format-subheadings", sourceText);
-
-        setAiResult(sanitizeSimpleAiHtml(formatted));
-        setAiOpen(true);
-      } catch (e) {
-        setAiMode("text");
-        setAiResult(`AI error: ${e.message || "Unable to format subheadings."}`);
-        setAiOpen(true);
-      } finally {
-        setAiBusy(false);
-      }
-    }}
-    className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
-    disabled={aiBusy}
-  >
-    Format subheadings
-  </button>*/}
-
-
   <div className="mt-3 flex flex-wrap items-center gap-2">
   <div className="relative">
     <button
@@ -4663,57 +3803,6 @@ async function clearNotificationsServerBacked() {
 </div>
 
 
-{/*<div className="shrink-0">
-    <AttachmentUploader
-      value={composerAttachments}
-      onChange={(next) => setComposerAttachments(dedupeAttachments(next))}
-      maxFiles={5}
-      maxSizeMB={10}
-      folder="lecturer-posts"
-      label="Images & files"
-      helperText="Up to 5 items • max 10 MB each. Images, PDFs, docs, slides."
-      compactOnly
-    />
-  </div>
-
-  <div className="ml-auto flex items-center gap-2">
-    <button
-      type="button"
-      onClick={() => {
-        setComposerOpen(false);
-        if (editorRef.current) editorRef.current.innerHTML = "";
-        setComposerTitle("");
-        setImagePreviews([]);
-        setDocFiles([]);
-        setComposerAttachments([]);
-        setComposerLinks([]);
-        setComposerType("Notes");
-        setToFaculty(false);
-        setSelectedPrograms([]);
-        setTargetYear("");
-        setComposerVideoUrl("");
-        setAiOpen(false);
-        setAiResult("");
-      }}
-      className="rounded-full border border-slate-100 px-4 py-2 text-sm hover:bg-slate-50"
-    >
-      Cancel
-    </button>
-
-    <button
-      type="submit"
-      className="rounded-full bg-blue-600 text-white px-4 py-1 text-sm font-semibold hover:bg-blue-700"
-    >
-      Post
-    </button>
-  </div>
-</div>*/}
-
-  
-
-
- 
-
 {composerAttachments?.length > 0 ? (
   <div className="mt-2">
     <AttachmentUploader
@@ -4885,26 +3974,6 @@ async function clearNotificationsServerBacked() {
 )}
 </Card>
 
-
-          {/*<Card className="overflow-hidden">
-            <div className="font-semibold text-slate-900 text-center">Students’ Messages</div>
-            <p className="text-sm text-slate-600 mt-1 text-center">
-              Read and respond to students’ questions.
-            </p>
-            <div className="mt-3 flex items-center justify-center gap-3">
-              <Link
-                to="/lecturer/messages"
-                className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-              >
-                Open Messages
-              </Link>
-              {unreadStudentMsgs > 0 && (
-                <span className="inline-flex items-center justify-center px-2 py-1 text-xs rounded-full bg-red-600 text-white">
-                  ({unreadStudentMsgs})
-                </span>
-              )}
-            </div>
-          </Card>*/}
 
           {/* Students' links: quick links under Students’ Messages */}
               <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
@@ -5337,18 +4406,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [forceOpenComments]);
 
-
-
-
-
-
-
-
-
-
-
-  
-
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
   const openLightbox = (items = [], index = 0) => {
     if (!Array.isArray(items) || items.length === 0) return;
@@ -5360,11 +4417,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
     if (len <= 1) return l;
     return { ...l, index: (l.index + dir + len) % len };
   });
-
-
-
- 
-
 
 
   useEffect(()=> {
@@ -5624,8 +4676,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
      
      
 
-
-
 {/* add comment */}
       <form
   onSubmit={(e) => {
@@ -5643,12 +4693,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
     
   className="flex flex-col gap-2"
   >
-
-
-            {/*<div className="flex items-start gap-2">
-  <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
-
-  <div className="flex-1">*/}
 
     <div className="flex items-start gap-2">
   <div className="shrink-0">
@@ -5687,15 +4731,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
   }}
   // ✅ REPLACE ONLY THIS onPaste BLOCK (end)
 
-
-
-
-
-
-
-
-
-
       placeholder="Write a comment on this post…"
       rows={1}
       onInput={(e) => {
@@ -5718,35 +4753,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
   </button>
 </div>
 {/* ✅ Preview (only shows formatting when paste provided HTML) */}
-{/*{(cmtHtml || cmt)?.trim?.() && (
-  <div className="pl-10">
-    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
-      <div className="text-xs text-slate-500 mb-2">Preview</div>   
-
-      {cmtHtml ? ( 
-        <div className="prose prose-sm max-w-none prose-headings:font-bold prose-strong:font-bold">
-          <div dangerouslySetInnerHTML={{ __html: cmtHtml }} />
-        </div>
-        
-      ) : (
-        renderTextWithHeadings((cmt || "").replace(/\r\n/g, "\n"))
-      )}
-    </div>
-  </div>
-)}*/}
-
-
-            
-              {/*<label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📷
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
-              </label>
-              <label className="text-xs px-2 py-1 border border-slate-200 rounded cursor-pointer">📎
-                <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
-              </label>
-              <button className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
-                Post
-              </button>
-            </div>*/}
 
             {(cmtImages.length>0 || cmtFiles.length>0) && (
               <div className="pl-10 space-y-2">
@@ -5784,49 +4790,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
 }
 
 
-
-
-
-/*function CommentThread({ comment, onAddReply }) {
-  const [reply,setReply]=useState("");
-  const [replyImages,setReplyImages]=useState([]); // [{name,dataUrl}]
-  const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
-
-  const [replyHtml, setReplyHtml] = useState("");   // ✅ add
-   const replyRef = useRef(null);                   // ✅ add
-
-  const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
-  const openLightbox = (items = [], index = 0) => {
-    if (!Array.isArray(items) || items.length === 0) return;
-    setLightbox({ open:true, items:items.slice(), index: Math.max(0, Math.min(index, items.length - 1)) });
-  };
-  const closeLightbox = () => setLightbox(l => ({ ...l, open:false }));
-  const step = (dir) => setLightbox(l => {
-    const len = l.items?.length || 0;
-    if (len <= 1) return l;
-    return { ...l, index: (l.index + dir + len) % len };
-  });
-  useEffect(()=> {
-    if (!lightbox.open) return;
-    const onKey = (e) => {
-      if (e.key === "ArrowRight") step(1);
-      else if (e.key === "ArrowLeft") step(-1);
-      else if (e.key === "Escape") closeLightbox();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [lightbox.open]); // eslint-disable-line
-
-
-  useEffect(() => {
-  const el = replyRef.current;
-  if (!el) return;
-  el.style.height = "0px";
-  el.style.height = el.scrollHeight + "px";
-}, [reply]);*/
-
-
-
 // --- render-time reply dedupe (prevents UI duplicates) ---
 function dedupeRepliesForRender(replies = []) {
   const out = [];
@@ -5855,12 +4818,6 @@ function dedupeRepliesForRender(replies = []) {
   out.sort((a, b) => (Number(a?.createdAt) || 0) - (Number(b?.createdAt) || 0));
   return out;
 }
-
-
-
-
-
-
 
 
 function CommentThread({ comment, onAddReply }) {
@@ -6014,51 +4971,6 @@ function CommentThread({ comment, onAddReply }) {
   const replies = dedupeRepliesForRender(comment.replies || []);
   return replies.length > 0 ? (
     <div className="mt-2 pl-6 space-y-2">
-      {/*{replies.map((r) => (
-        <div key={r.id} className="flex items-start gap-2">
-          <Avatar size="sm" url={r.authorPhoto} name={r.author} />
-          <div>*/}
-
-            {/*{replies.map((r) => (
-  <div key={r.id} className="flex items-start gap-2">
-    <div className="shrink-0">
-      <Avatar size="sm" url={r.authorPhoto} name={r.author} />
-    </div>
-
-    <div className="min-w-0 flex-1">
-            <div className="font-medium text-slate-800">
-              {displayWithTitle(r.author, "", "")}
-            </div>
-            <div className="text-xs text-slate-500 mb-1">{r.authorProgram || ""}</div>
-            <ExpandableText text={r.text} />
-
-            {r.images?.length > 0 && (
-              <div className="mt-2">
-                <ImageGrid
-                  images={r.images}
-                  onOpen={(idx) => openLightbox(r.images, idx)}
-                  max={3}
-                  tileClass="h-24"
-                  cols="grid-cols-2 md:grid-cols-3"
-                />
-              </div>
-            )}
-
-            {r.files?.length > 0 && (
-              <ul className="mt-2 space-y-1">
-                {r.files.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    📎 <AttachmentLink att={f} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : null;
-})()}*/}
 
 
  {replies.map((r) => {
@@ -6085,13 +4997,6 @@ function CommentThread({ comment, onAddReply }) {
         <div className="font-bold text-slate-900">
           {displayWithTitle(replyAuthorName, "", replyAuthorName)}
         </div>
-
-        {/*<div className="text-xs text-slate-500 mb-1">{r.authorProgram || ""}</div>*/}
-  {/*{r.authorProgram ? (
-  <div className="text-xs font-bold text-blue-800 mb-1">
-    {r.authorProgram}
-  </div>
-) : null}*/}
 
 {(r?.authorProgram || r?.createdAt) ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
@@ -6121,15 +5026,7 @@ function CommentThread({ comment, onAddReply }) {
           </div>
         )}
 
-       {/*{r.files?.length > 0 && (
-          <ul className="mt-2 space-y-1">
-            {r.files.map((f, i) => (
-              <li key={i} className="flex items-center gap-2">
-                📎 <AttachmentLink att={f} />
-              </li>
-            ))}
-          </ul>         
-)}*/}
+       
 {r.files?.filter((f) => !String(f?.mime || "").toLowerCase().startsWith("image/")).length > 0 && (
   <ul className="mt-2 space-y-1">
     {r.files
@@ -6141,10 +5038,6 @@ function CommentThread({ comment, onAddReply }) {
       ))}
   </ul>
 )}
-
-
-
-
       </div>
     </div>
   );
@@ -6267,14 +5160,6 @@ function CommentThread({ comment, onAddReply }) {
 }}
 
 
-
-
-
-
-
-
-
-
         placeholder="Write a reply…"
         rows={1}
         onInput={(e) => {
@@ -6340,22 +5225,6 @@ function CommentThread({ comment, onAddReply }) {
 
 /* ---------- Expandable text/html ---------- */
 function stripHtml(s = "") { const div = document.createElement("div"); div.innerHTML = s; return (div.textContent || div.innerText || "").trim(); }
-/*function ExpandableText({ text, initialChars = 180 }) {
-  const [open, setOpen] = useState(false);
-  if (!text) return null;
-  const tooLong = text.length > initialChars;
-  const shown = open || !tooLong ? text : text.slice(0, initialChars) + "…";
-  return (
-    <div className="mt-1 text-slate-800">
-      <span>{shown}</span>
-      {tooLong && (
-        <button onClick={() => setOpen((v) => !v)} className="ml-2 text-blue-600 hover:underline">
-          {open ? "Read less" : "Read more"}
-        </button>
-      )}
-    </div>
-  );
-}*/
 
 /* ---------- Expandable text/html ---------- */
 

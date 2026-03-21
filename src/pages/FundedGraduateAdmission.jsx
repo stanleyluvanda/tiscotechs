@@ -385,17 +385,26 @@ export default function FundedGraduateAdmission() {
   const canShowAds = !loading && items.length >= 4;
 
   return (
-    /*<div className="mx-auto w-full px-4 pt-0 pb-8">
-      <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">*/
   <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8">
-  <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-4 xl:gap-6">  
+  <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-4 xl:gap-6"> 
+
         {/* LEFT ADS */}
-        <aside className="hidden xl:block w-[200px] shrink-0">
-          <div className="space-y-4">
-            {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
-          </div>
-        </aside>
+<aside className="hidden xl:block w-[200px] shrink-0">
+  <div className="space-y-4">
+    <GoogleSidebarAd
+      slot="2515946722"
+      enabled={canShowAds}
+      keepPlaceholder={true}
+    />
+    <div className="sticky top-[140px]">
+      <GoogleSidebarAd
+        slot="2515946722"
+        enabled={canShowAds}
+        keepPlaceholder={true}
+      />
+    </div>
+  </div>
+</aside>
 
         {/* CENTER FEED */}
         {/*<main className="w-full max-w-[1056px] shrink-0">*/}
@@ -420,7 +429,7 @@ export default function FundedGraduateAdmission() {
                   className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight"
                   style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
                 >
-                  Funded graduate programs opportunities for international students
+                  Funded-graduate programs opportunities for international students
                 </h2>
 
                 <p
@@ -746,13 +755,23 @@ export default function FundedGraduateAdmission() {
           )}
         </main>
 
-        {/* RIGHT ADS */}
-        <aside className="hidden xl:block w-[200px] shrink-0">
-          <div className="space-y-4">
-            {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
-          </div>
-        </aside>
+       {/* RIGHT ADS */}
+<aside className="hidden xl:block w-[200px] shrink-0">
+  <div className="space-y-4">
+    <GoogleSidebarAd
+      slot="2515946722"
+      enabled={canShowAds}
+      keepPlaceholder={true}
+    />
+    <div className="sticky top-[140px]">
+      <GoogleSidebarAd
+        slot="2515946722"
+        enabled={canShowAds}
+        keepPlaceholder={true}
+      />
+    </div>
+  </div>
+</aside>
       </div>
     </div>
   );

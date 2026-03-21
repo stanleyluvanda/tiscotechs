@@ -518,11 +518,8 @@ export default function FundedGraduateAdmissionDetail() {
 
 <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
-                  {/*<div className="flex items-start gap-4">*/}
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  {/*<div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {logo ? (
-                      
-
                    <img
                         src={logo}
                    alt={`${provider || "University"} logo`}
@@ -533,26 +530,78 @@ export default function FundedGraduateAdmissionDetail() {
                             }}
                     />
 
-
-
-
                     ) : null}
 
                     <div className="min-w-0">
-                      {/*<h1 className="text-2xl font-bold">{title}</h1>
-                      <p className="mt-1 text-slate-600">*/}
-                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">{title}
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
+                       {title}
                         </h1>
-                      <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
+                       <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
                         <span className="font-medium">{provider}</span>
-                        {country ? ` • ${country}` : ""}
-                        {level ? ` • ${level}` : ""}
-                        {field ? ` • ${field}` : ""}
-                      </p>
-                    </div>
-                  </div>
+                      {country ? ` • ${country}` : ""}
+                      {level ? ` • ${level}` : ""}
+                      {field ? ` • ${field}` : ""}
+                           </p>
+                       </div>
+                    </div>*/}
 
-                  {/*</div><div className="mt-3 flex flex-wrap items-center gap-3 text-sm">*/}
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+  {/* Mobile only: logo + university name */}
+  <div className="flex items-center gap-3 sm:hidden">
+    {logo ? (
+      <img
+        src={logo}
+        alt={`${provider || "University"} logo`}
+        className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+        loading="lazy"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    ) : null}
+
+    {provider ? (
+      <div className="min-w-0 text-base font-semibold text-slate-900 leading-snug break-words">
+        {provider}
+      </div>
+    ) : null}
+  </div>
+
+  {/* Desktop / tablet existing layout */}
+  {logo ? (
+    <img
+      src={logo}
+      alt={`${provider || "University"} logo`}
+      className="hidden sm:block h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
+      loading="lazy"
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+    />
+  ) : null}
+
+  <div className="min-w-0">
+    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
+      {title}
+    </h1>
+    <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
+      <span className="hidden sm:inline font-medium">{provider}</span>
+      <span className="hidden sm:inline">
+        {country ? ` • ${country}` : ""}
+        {level ? ` • ${level}` : ""}
+        {field ? ` • ${field}` : ""}
+      </span>
+
+      <span className="sm:hidden">
+        {country || ""}
+        {level ? ` • ${level}` : ""}
+        {field ? ` • ${field}` : ""}
+      </span>
+    </p>
+  </div>
+</div>
+
+                  
                   <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
                       <span className="inline-flex items-center gap-2">
