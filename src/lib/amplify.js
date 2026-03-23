@@ -13,28 +13,15 @@ const redirectOut =
   String(import.meta.env.VITE_COGNITO_REDIRECT_SIGNOUT || "").trim() ||
   "http://localhost:5176/login";
 
-const SCOPES = ["openid", "email", "profile"];
-
 Amplify.configure({
   Auth: {
-    userPoolId,
-    userPoolWebClientId: clientId,
-    oauth: {
-      domain,
-      scope: SCOPES,
-      scopes: SCOPES,
-      redirectSignIn: [redirectIn],
-      redirectSignOut: [redirectOut],
-      responseType: "code",
-    },
     Cognito: {
       userPoolId,
       userPoolClientId: clientId,
       loginWith: {
         oauth: {
           domain,
-          scope: SCOPES,
-          scopes: SCOPES,
+          scopes: ["openid", "email", "profile"],
           redirectSignIn: [redirectIn],
           redirectSignOut: [redirectOut],
           responseType: "code",
