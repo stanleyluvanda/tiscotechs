@@ -69,6 +69,76 @@ export default function Home() {
   </div>
 </section>
 
+{/* ✅ Social links just below hero content */}
+ <div className="relative max-w-7xl mx-auto px-4 lg:px-8 pb-8 pt-1">
+    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+  <a
+    href="https://www.facebook.com/profile.php?id=61579563119393"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Facebook"
+    title="Facebook"
+    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
+  >
+    f
+  </a>
+
+  <a
+    href="https://www.youtube.com/@scholarsknowledge5765"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="YouTube"
+    title="YouTube"
+    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="h-4 w-4"
+    >
+      <path d="M21.8 8.001a2.75 2.75 0 0 0-1.936-1.946C18.137 5.5 12 5.5 12 5.5s-6.137 0-7.864.555A2.75 2.75 0 0 0 2.2 8.001 28.44 28.44 0 0 0 1.75 12c0 1.352.15 2.688.45 3.999a2.75 2.75 0 0 0 1.936 1.946C5.863 18.5 12 18.5 12 18.5s6.137 0 7.864-.555a2.75 2.75 0 0 0 1.936-1.946c.3-1.311.45-2.647.45-3.999 0-1.352-.15-2.688-.45-3.999ZM10 15.5v-7l6 3.5-6 3.5Z" />
+    </svg>
+  </a>
+</div>
+</div>
+
+{/* ✅ Fixed social icons on right margin */}
+      <div className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2">
+        <a
+          href="https://www.facebook.com/profile.php?id=61579563119393"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Facebook"
+          title="Facebook"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
+        >
+          f
+        </a>
+
+        <a
+          href="https://www.youtube.com/@scholarsknowledge5765"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="YouTube"
+          title="YouTube"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="h-4 w-4"
+          >
+            <path d="M21.8 8.001a2.75 2.75 0 0 0-1.936-1.946C18.137 5.5 12 5.5 12 5.5s-6.137 0-7.864.555A2.75 2.75 0 0 0 2.2 8.001 28.44 28.44 0 0 0 1.75 12c0 1.352.15 2.688.45 3.999a2.75 2.75 0 0 0 1.936 1.946C5.863 18.5 12 18.5 12 18.5s6.137 0 7.864-.555a2.75 2.75 0 0 0 1.936-1.946c.3-1.311.45-2.647.45-3.999 0-1.352-.15-2.688-.45-3.999ZM10 15.5v-7l6 3.5-6 3.5Z" />
+          </svg>
+        </a>
+      </div>
+
+
+
+
+
 {/* 2) TABS + CARDS */}
       <SectionTabs />
 

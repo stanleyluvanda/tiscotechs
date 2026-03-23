@@ -389,23 +389,26 @@ export default function FundedGraduateAdmission() {
   <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-4 xl:gap-6"> 
 
         {/* LEFT ADS */}
-<aside className="hidden xl:block w-[200px] shrink-0">
-  <div className="space-y-4">
+<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+  <GoogleSidebarAd
+    slot="2515946722"
+    enabled={canShowAds}
+    keepPlaceholder={true}
+    minHeight={450}
+  />
+
+  <div
+    className="mt-8 sticky top-[280px] overflow-hidden"
+    style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
+  >
     <GoogleSidebarAd
       slot="2515946722"
       enabled={canShowAds}
       keepPlaceholder={true}
+      minHeight={450}
     />
-    <div className="sticky top-[140px]">
-      <GoogleSidebarAd
-        slot="2515946722"
-        enabled={canShowAds}
-        keepPlaceholder={true}
-      />
-    </div>
   </div>
 </aside>
-
         {/* CENTER FEED */}
         {/*<main className="w-full max-w-[1056px] shrink-0">*/}
         <main className="w-full min-w-0 max-w-[1056px] shrink">
@@ -757,20 +760,25 @@ export default function FundedGraduateAdmission() {
         </main>
 
        {/* RIGHT ADS */}
-<aside className="hidden xl:block w-[200px] shrink-0">
-  <div className="space-y-4">
+{/*<aside className="hidden xl:block w-[200px] shrink-0 pt-[150px]">*/}
+<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+  <GoogleSidebarAd
+    slot="2515946722"
+    enabled={canShowAds}
+    keepPlaceholder={true}
+    minHeight={450}
+  />
+
+  <div
+    className="mt-8 sticky top-[280px] overflow-hidden"
+    style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
+  >
     <GoogleSidebarAd
       slot="2515946722"
       enabled={canShowAds}
       keepPlaceholder={true}
+      minHeight={450}
     />
-    <div className="sticky top-[140px]">
-      <GoogleSidebarAd
-        slot="2515946722"
-        enabled={canShowAds}
-        keepPlaceholder={true}
-      />
-    </div>
   </div>
 </aside>
       </div>

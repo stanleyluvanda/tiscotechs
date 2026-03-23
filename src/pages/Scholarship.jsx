@@ -423,11 +423,32 @@ const trackScholarship = (id, type) => {
       <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">*/
         <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8">
         <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-4 xl:gap-6">
+
         {/* LEFT ADS (hidden on small screens) */}
-        <aside className="hidden xl:block w-[200px] shrink-0">
+        {/*<aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}
             <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
+          </div>
+        </aside>*/}
+        <aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+          <GoogleSidebarAd
+            slot="2515946722"
+            enabled={canShowAds}
+            keepPlaceholder={true}
+            minHeight={450}
+          />
+        
+          <div
+            className="mt-8 sticky top-[280px] overflow-hidden"
+            style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
+          >
+            <GoogleSidebarAd
+              slot="2515946722"
+              enabled={canShowAds}
+              keepPlaceholder={true}
+              minHeight={450}
+            />
           </div>
         </aside>
 
@@ -825,12 +846,37 @@ const trackScholarship = (id, type) => {
         </main>
 
         {/* RIGHT ADS (hidden on small screens) */}
-        <aside className="hidden xl:block w-[200px] shrink-0">
+        {/*<aside className="hidden xl:block w-[200px] shrink-0">
           <div className="space-y-4">
             {canShowAds && <GoogleSidebarAd />}
             <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
           </div>
-        </aside>
+        </aside>*/}
+      
+<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+  <GoogleSidebarAd
+    slot="2515946722"
+    enabled={canShowAds}
+    keepPlaceholder={true}
+    minHeight={450}
+  />
+
+  <div
+    className="mt-8 sticky top-[280px] overflow-hidden"
+    style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
+  >
+    <GoogleSidebarAd
+      slot="2515946722"
+      enabled={canShowAds}
+      keepPlaceholder={true}
+      minHeight={450}
+    />
+  </div>
+</aside>
+
+
+
+
       </div>
     </div>
   );

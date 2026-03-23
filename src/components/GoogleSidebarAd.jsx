@@ -5,9 +5,9 @@ export default function GoogleSidebarAd({
   slot = "2515946722",
   label = "Sponsored",
   className = "",
-  minHeight = 250, // reserve space to prevent layout shift
-  enabled = true, // ✅ NEW: gate ads on content-ready pages only
-  keepPlaceholder = true, // ✅ NEW: keep the card space when disabled (prevents squeeze/jump)
+  minHeight = 250,
+  enabled = true,
+  keepPlaceholder = true,
 }) {
   const adRef = useRef(null);
   const pushedSlotRef = useRef(null);
@@ -18,26 +18,26 @@ export default function GoogleSidebarAd({
     const el = adRef.current;
     if (!el) return;
 
-    // If we already initialized this exact slot for this <ins>, do nothing
+    // Do not push again if AdSense already initialized this node
+    if (el.getAttribute("data-adsbygoogle-status")) return;
+
+    // Extra local guard for this slot
     if (pushedSlotRef.current === slot) return;
 
-    // If slot changes, reset the <ins> before pushing again
-    el.innerHTML = "";
-    el.removeAttribute("data-adsbygoogle-status");
+    // Only run if AdSense is actually available
+    if (!window.adsbygoogle || !Array.isArray(window.adsbygoogle)) return;
 
     try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      window.adsbygoogle.push({});
       pushedSlotRef.current = slot;
     } catch (e) {
       console.log("Google sidebar ad error:", e);
     }
   }, [slot, enabled]);
 
-  // ✅ If not enabled, don't render AdSense <ins> at all (policy-safe)
   if (!enabled) {
     if (!keepPlaceholder) return null;
 
-    // Optional placeholder: keeps layout stable but contains no ad code.
     return (
       <div
         className={"bg-[#f3f6fb] p-0 w-full " + className}
@@ -45,7 +45,8 @@ export default function GoogleSidebarAd({
         aria-hidden="true"
       >
         {label && (
-          <div className="text-xs font-semibold text-slate-500 mb-2 text-center">
+          /*<div className="text-xs font-semibold text-slate-500 mb-2 text-center">*/
+            <div className="text-[10px] font-medium text-slate-400 mb-1 text-center">
             {label}
           </div>
         )}
