@@ -30,8 +30,8 @@ import PartnerLogin from "./pages/PartnerLogin.jsx";
 
 import Contact from "./pages/Contact.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
-import TermsOfUse from "./pages/TermsOfUse.jsx";
-import AuthCallback from "./pages/AuthCallback.jsx";*/
+import TermsOfUse from "./pages/TermsOfUse.jsx";*/
+import AuthCallback from "./pages/AuthCallback.jsx";
 
 import Home from "./pages/Home.jsx";
 
@@ -52,7 +52,7 @@ const PartnerLogin = lazy(() => import("./pages/PartnerLogin.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse.jsx"));
-const AuthCallback = lazy(() => import("./pages/AuthCallback.jsx"));
+/*const AuthCallback = lazy(() => import("./pages/AuthCallback.jsx"));*/
 
 
 // Lazy-loaded pages
