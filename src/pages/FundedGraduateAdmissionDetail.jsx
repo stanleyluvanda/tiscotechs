@@ -554,6 +554,7 @@ export default function FundedGraduateAdmissionDetail() {
         alt={`${provider || "University"} logo`}
         className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
         loading="lazy"
+        decoding="async"
         onError={(e) => {
           e.currentTarget.style.display = "none";
         }}
@@ -575,6 +576,7 @@ export default function FundedGraduateAdmissionDetail() {
       alt={`${provider || "University"} logo`}
       className="hidden sm:block h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
       loading="lazy"
+      decoding="async"
       onError={(e) => {
         e.currentTarget.style.display = "none";
       }}
@@ -698,6 +700,7 @@ export default function FundedGraduateAdmissionDetail() {
         alt={`${provider || title} banner`}
         className="w-full h-auto object-contain bg-white"
         loading="lazy"
+        decoding="async"
       />
     </button>
     <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
@@ -881,6 +884,7 @@ export default function FundedGraduateAdmissionDetail() {
                             alt={`${provider || title} banner`}
                             className="w-full h-auto object-contain bg-white"
                             loading="lazy"
+                            decoding="async"
                           />
                         </button>
                         <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
@@ -1016,6 +1020,7 @@ export default function FundedGraduateAdmissionDetail() {
                   src={bannerSrc}
                   alt={`${provider || title} banner enlarged`}
                   className="w-full h-auto object-contain rounded-lg bg-white"
+                  decoding="async"
                 />
               </div>
             </div>

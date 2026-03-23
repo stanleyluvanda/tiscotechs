@@ -13,7 +13,7 @@ import {
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 
-import Home from "./pages/Home.jsx";
+/*import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
 import Partner from "./pages/Partner.jsx";
 import EduFinancing from "./pages/EduFinancing.jsx";
@@ -31,7 +31,29 @@ import PartnerLogin from "./pages/PartnerLogin.jsx";
 import Contact from "./pages/Contact.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfUse from "./pages/TermsOfUse.jsx";
-import AuthCallback from "./pages/AuthCallback.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";*/
+
+import Home from "./pages/Home.jsx";
+
+const About = lazy(() => import("./pages/About.jsx"));
+const Partner = lazy(() => import("./pages/Partner.jsx"));
+const EduFinancing = lazy(() => import("./pages/EduFinancing.jsx"));
+
+const StudentSignUp = lazy(() => import("./pages/StudentSignUp.jsx"));
+const LecturerSignUp = lazy(() => import("./pages/LecturerSignUp.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const ForgotStart = lazy(() => import("./pages/ForgotStart.jsx"));
+const ForgotVerify = lazy(() => import("./pages/ForgotVerify.jsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
+
+const PartnerSignUp = lazy(() => import("./pages/PartnerSignUp.jsx"));
+const PartnerLogin = lazy(() => import("./pages/PartnerLogin.jsx"));
+
+const Contact = lazy(() => import("./pages/Contact.jsx"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
+const TermsOfUse = lazy(() => import("./pages/TermsOfUse.jsx"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback.jsx"));
+
 
 // Lazy-loaded pages
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard.jsx"));

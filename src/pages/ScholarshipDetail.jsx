@@ -723,6 +723,7 @@ const canShowAds = Boolean(item);
           alt={`${provider || "Provider"} logo`}
           className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
@@ -865,6 +866,7 @@ const canShowAds = Boolean(item);
         alt={`${provider || title} banner`}
         className="w-full h-auto object-contain bg-white"
         loading="lazy"
+        decoding="async"
       />
     </button>
     <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
@@ -974,6 +976,7 @@ const canShowAds = Boolean(item);
                             alt={`${provider || title} banner`}
                             className="w-full h-auto object-contain bg-white"
                             loading="lazy"
+                            decoding="async"
                           />
                         </button>
                         <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
@@ -1190,6 +1193,7 @@ const canShowAds = Boolean(item);
                   src={bannerSrc}
                   alt={`${provider || title} banner enlarged`}
                   className="w-full h-auto object-contain rounded-lg bg-white"
+                  decoding="async"
                 />
               </div>
             </div>

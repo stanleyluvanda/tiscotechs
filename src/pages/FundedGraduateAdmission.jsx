@@ -413,7 +413,7 @@ export default function FundedGraduateAdmission() {
           <div
             className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
             style={{
-              backgroundImage: "url(/images/Scholarship.png)",
+              backgroundImage: "url(/images/Scholarship1.webp)",
               backgroundSize: "cover",
               backgroundPosition: "left center",
               backgroundRepeat: "no-repeat",
@@ -651,6 +651,7 @@ export default function FundedGraduateAdmission() {
                           alt={`${s.provider || "University"} logo`}
                           className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
                           loading="lazy"
+                          decoding="async"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}

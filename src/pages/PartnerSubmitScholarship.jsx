@@ -159,6 +159,59 @@ function formatDateForDisplay(value) {
   });
 }
 
+async function optimizeImageFile(file, { maxWidth = 1600, maxHeight = 1600, quality = 0.8 } = {}) {
+  if (!file || !file.type.startsWith("image/")) return file;
+
+  // Keep SVG unchanged
+  if (file.type === "image/svg+xml") return file;
+
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+
+  const width = img.width || 0;
+  const height = img.height || 0;
+  if (!width || !height) return file;
+
+  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+  const targetWidth = Math.round(width * ratio);
+  const targetHeight = Math.round(height * ratio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b), "image/webp", quality);
+  });
+
+  if (!blob) return file;
+
+  const baseName = String(file.name || "image")
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^\w.\-]+/g, "_");
+
+  return new File([blob], `${baseName}.webp`, {
+    type: "image/webp",
+    lastModified: Date.now(),
+  });
+}
+
 export default function PartnerSubmitScholarship() {
   const [form, setForm] = useState({
   title: "",
@@ -305,7 +358,7 @@ const onPickLogo = async (e) => {
     }
 
     // ✅ CloudFront upload path (same endpoint you already use)
-    const safeName = (file.name || "logo").replace(/[^\w.\-]+/g, "_");
+    /*const safeName = (file.name || "logo").replace(/[^\w.\-]+/g, "_");
     const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
 
     const uploadUrl = j?.uploadUrl;
@@ -316,7 +369,29 @@ const onPickLogo = async (e) => {
     await putFileToS3(uploadUrl, file);
 
     setLogoPreview(publicUrl);
-    setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));
+    setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));*/
+
+const optimizedFile = await optimizeImageFile(file, {
+  maxWidth: 512,
+  maxHeight: 512,
+  quality: 0.82,
+});
+
+const safeName = (optimizedFile.name || "logo.webp").replace(/[^\w.\-]+/g, "_");
+const j = await getUploadUrl({
+  fileName: safeName,
+  contentType: optimizedFile.type || "image/webp",
+});
+
+const uploadUrl = j?.uploadUrl;
+const publicUrl = j?.publicUrl;
+
+if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+
+await putFileToS3(uploadUrl, optimizedFile);
+
+setLogoPreview(publicUrl);
+setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));
   } catch (err2) {
     console.error(err2);
     setErr(String(err2?.message || err2 || "Logo upload failed. Please try again."));
@@ -479,23 +554,6 @@ const onChange = (e) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   /** ===== Quill editors (four) — host refs & instances ===== */
   const descHostRef = useRef(null);
   const eligHostRef = useRef(null);
@@ -603,7 +661,7 @@ const onChange = (e) => {
       }
 
       // ✅ CloudFront upload path
-      const safeName = (file.name || "image").replace(/[^\w.\-]+/g, "_");
+      /*const safeName = (file.name || "image").replace(/[^\w.\-]+/g, "_");
       const j = await getUploadUrl({ fileName: safeName, contentType: file.type });
 
       const uploadUrl = j?.uploadUrl;
@@ -615,7 +673,32 @@ const onChange = (e) => {
 
       // Save ONLY CloudFront URL
       setImgPreview(publicUrl);
-      setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));
+      setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));*/
+
+  const optimizedFile = await optimizeImageFile(file, {
+  maxWidth: 1600,
+  maxHeight: 900,
+  quality: 0.8,
+});
+
+const safeName = (optimizedFile.name || "image.webp").replace(/[^\w.\-]+/g, "_");
+const j = await getUploadUrl({
+  fileName: safeName,
+  contentType: optimizedFile.type || "image/webp",
+});
+
+const uploadUrl = j?.uploadUrl;
+const publicUrl = j?.publicUrl;
+
+if (!uploadUrl || !publicUrl) throw new Error("Missing uploadUrl/publicUrl from backend.");
+
+await putFileToS3(uploadUrl, optimizedFile);
+
+// Save ONLY CloudFront URL
+setImgPreview(publicUrl);
+setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));
+
+
     } catch (err2) {
       console.error(err2);
       setErr(String(err2?.message || err2 || "Image upload failed. Please try again."));
@@ -678,26 +761,6 @@ const onChange = (e) => {
     return;
   }
   
-  /*let finalDeadline = "";
-
-if (form.deadlineMode === "single") {
-  finalDeadline = form.deadline ? formatDateForDisplay(form.deadline) : "";
-} else {
-  const openText = form.deadlineOpen
-    ? formatDateForDisplay(form.deadlineOpen)
-    : "";
-  const closeText = form.deadlineClose
-    ? formatDateForDisplay(form.deadlineClose)
-    : "";
-
-  if (openText && closeText) {
-    finalDeadline = `${openText} – ${closeText}`;
-  } else if (openText) {
-    finalDeadline = `Opens ${openText}`;
-  } else if (closeText) {
-    finalDeadline = `Closes ${closeText}`;
-  }
-}*/
 
 let finalDeadline = "";
 
@@ -727,34 +790,6 @@ if (form.deadlineMode === "single") {
   }
 }
 
-
-    /*const payload = {
-      contentType: "SCHOLARSHIP", // ✅ ADD THIS
-      title: form.title,
-      provider: form.provider,
-      country: form.country,
-      level: form.level,
-      field: form.field,
-      fundingType: form.fundingType,
-      deadline: form.deadline,
-      link: form.link,
-      partnerApplyUrl: form.partnerApplyUrl,
-      description: form.description,
-      eligibility: form.eligibility,
-      benefits: form.benefits,
-      howToApply: form.howToApply,
-      amount: form.amount,
-      notes: form.notes,
-      // ✅ image: prefer hosted URL if provided; otherwise data URL
-      imageUrl: imgUrl,
-      imageData: form.imageData || "",
-      // ✅ NEW: provider logo (CloudFront URL preferred; base64 fallback)
-      providerLogoUrl: logoUrl,
-      providerLogoData: form.providerLogoData || "",
-      partnerEmail: String(partnerEmail),
-      createdAt: Date.now(),
-      status: "pending",
-    };*/
   const payload = {
   contentType: "SCHOLARSHIP",
   title: form.title,
@@ -839,7 +874,6 @@ deadline: "",
 deadlineOpen: "",
 deadlineClose: "",
 deadlineManualText: "",
-link: "",
 link: "",
   partnerApplyUrl: "",
   description: "",
@@ -985,41 +1019,7 @@ link: "",
                 </label>
 
                 {/* Field of Study */}
-                {/*<label className="block">
-                  <div className="text-sm font-medium">Field of Study</div>
-                  <select
-                    name="field"
-                    value={form.field}
-                    onChange={onChange}
-                    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                  >
-                    <option value="">— Select —</option>
-                    {FIELDS_OF_STUDY.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </select>
-                </label>*/}
-
-                {/*<label className="block">
-  <div className="text-sm font-medium">Field of Study</div>
-
-  <input
-    name="field"
-    list="fields-of-study-options"
-    value={form.field}
-    onChange={onChange}
-    placeholder="Select or type field of study"
-    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-  />
-
-  <datalist id="fields-of-study-options">
-    {FIELDS_OF_STUDY.map((f) => (
-      <option key={f} value={f} />
-    ))}
-  </datalist>
-</label>*/}
+                
 
 <label className="block relative">
   <div className="text-sm font-medium">Field of Study</div>
@@ -1082,20 +1082,6 @@ link: "",
   )}
 </label>
 
-
-
-
-
-                {/*<label className="block">
-                  <div className="text-sm font-medium">Deadline</div>
-                  <input
-                    type="date"
-                    name="deadline"
-                    value={form.deadline}
-                    onChange={onChange}
-                    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                  />
-                </label>*/}
                 <div className="block md:col-span-2">
   <div className="text-sm font-medium">Deadline</div>
 

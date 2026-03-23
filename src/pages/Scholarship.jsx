@@ -413,13 +413,6 @@ const trackScholarship = (id, type) => {
 };
 
 
-
-
-
-
-
-
-
   // ✅ AdSense content gate: only show ads when there is real publisher content
   const canShowAds = !loading && items.length >= 4;
 
@@ -439,21 +432,15 @@ const trackScholarship = (id, type) => {
         </aside>
 
         {/* CENTER FEED (keeps EXACT same dimension as before) */}
-        {/*<main className="w-full max-w-[1056px] shrink-0">*/}
+        
         <main className="w-full min-w-0 max-w-[1056px] shrink">
-          {/*<h2 className="text-3xl font-bold">
-            Scholarships & Funding Opportunities for International students
-          </h2>
-          <p className="mt-1 text-blue-900">
-            Explore verified scholarship and funding opportunities offered by partner universities,
-            foundations, governments, and accredited external providers worldwide.
-          </p>*/}
-
+          
          {/* FULL-WIDTH (viewport) header banner (NO card) */}
 <div
   className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
   style={{
-    backgroundImage: "url(/images/Scholarship.png)", // <-- your banner
+    //backgroundImage: "url(/images/Scholarship.png)", // <-- your banner
+    backgroundImage: "url(/images/Scholarship1.webp)",
     backgroundSize: "cover",
     backgroundPosition: "left center",
     backgroundRepeat: "no-repeat",
@@ -689,6 +676,7 @@ const trackScholarship = (id, type) => {
           alt={`${s.provider || "Provider"} logo`}
           className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}

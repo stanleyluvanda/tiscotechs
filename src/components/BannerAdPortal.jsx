@@ -1,82 +1,81 @@
 // src/components/BannerAdPortal.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-//import { useLocation } from "react-router-dom";
-import GoogleBannerAd from "./GoogleBannerAd";
 import { useLocation, useInRouterContext } from "react-router-dom";
+import GoogleBannerAd from "./GoogleBannerAd";
 
 /**
- * ✅ AdSense-safe banner portal
- * - Renders ONLY on approved public routes
- * - Never renders on login, dashboards, messages, or empty pages
- * - Prevents global ad injection
+ * AdSense-safe banner portal
+ * - Renders only on approved routes
+ * - Never renders on login, forgot-password, messages, admin forms, etc.
+ * - Uses the existing #ad-banner host without changing backend or layout logic
  */
 
-const ALLOWED_ROUTES = [
-  "/",                         // Home (public)
-  "/scholarships",             // Scholarship list
-  "/scholarship/",             // Scholarship detail (prefix)
+const EXACT_ROUTES = new Set([
+  "/home",
+  "/scholarship",
   "/study-in-us",
-  "/edu-financing",
-
-  // ✅ Authenticated but content-rich pages
-  "/student-dashboard",
-  "/lecturer-dashboard",
+  "/edufinancing",
+  "/funded-graduate-admission",
+  "/marketplace",
   "/student-marketplace",
-  "/global-academic-platform",
-  "/university-academic-platform",
+  "/platform/global",
+  "/platform/university",
+]);
+
+const PREFIX_ROUTES = [
+  "/scholarship/",
+  "/funded-graduate-admission/",
 ];
 
 export default function BannerAdPortal({ canShow = true }) {
-  //const { pathname } = useLocation();
   const inRouter = useInRouterContext();
-const pathname = inRouter ? useLocation().pathname : "";
+  const pathname = inRouter ? useLocation().pathname : "";
   const [host, setHost] = useState(null);
   const containerRef = useRef(null);
 
-  // 🔒 Route whitelist check
-  const isAllowedRoute = ALLOWED_ROUTES.some((r) =>
-    r.endsWith("/") ? pathname.startsWith(r) : pathname === r
-  );
+  const isAllowedRoute = useMemo(() => {
+    if (!pathname) return false;
+    if (EXACT_ROUTES.has(pathname)) return true;
+    return PREFIX_ROUTES.some((prefix) => pathname.startsWith(prefix));
+  }, [pathname]);
 
-  // ❌ Hard stop if not allowed
-  /*if (!isAllowedRoute || !canShow) {
-    return null;
-  }*/
-  // 🚫 Hide banner container on disallowed pages
-useEffect(() => {
-  const el = document.getElementById("ad-banner");
-  if (!el) return;
-
-  if (!isAllowedRoute || !canShow) {
-    el.style.display = "none";
-  } else {
-    el.style.display = "";
-  }
-}, [isAllowedRoute, canShow]);
-
-if (!inRouter || !isAllowedRoute || !canShow) {
-  return null;
-}
-
-  // Find banner host AFTER route is approved
   useEffect(() => {
     const el = document.getElementById("ad-banner");
-    if (el) setHost(el);
-  }, []);
+    if (!el) return;
+
+    if (!inRouter || !isAllowedRoute || !canShow) {
+      el.style.display = "none";
+      setHost(null);
+      return;
+    }
+
+    el.style.display = "";
+    setHost(el);
+  }, [inRouter, isAllowedRoute, canShow]);
 
   useEffect(() => {
     if (!host || !containerRef.current) return;
 
-    // Hide any static placeholders inside #ad-banner
+    const hiddenSiblings = [];
+
     Array.from(host.children).forEach((child) => {
       if (child !== containerRef.current) {
+        hiddenSiblings.push(child);
         child.style.display = "none";
       }
     });
+
+    return () => {
+      hiddenSiblings.forEach((child) => {
+        child.style.display = "";
+      });
+    };
   }, [host]);
 
-  if (!host) return null;
+  if (!inRouter || !isAllowedRoute || !canShow || !host) {
+    return null;
+  }
 
   return createPortal(
     <div
