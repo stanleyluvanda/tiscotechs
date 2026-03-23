@@ -3,28 +3,24 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth";
 
-function apiBase() {
-  const pick = (...vals) => {
-    for (const v of vals) {
-      const s = String(v || "").trim();
-      if (s) return s;
-    }
-    return "";
-  };
-
-  const raw = pick(
-    import.meta.env.VITE_AUTH_API_BASE,
-    import.meta.env.VITE_API_BASE,
-    import.meta.env.VITE_API_URL
-  );
-
-  return raw ? raw.replace(/\/+$/, "") : "";
-}
-
 async function getMyNameFromAmplify() {
-  const session = await fetchAuthSession().catch(() => null);
+  let session = null;
+  try {
+    session = await fetchAuthSession();
+    console.log("[AuthCallback] getMyNameFromAmplify session OK:", session);
+  } catch (err) {
+    console.error("[AuthCallback] getMyNameFromAmplify fetchAuthSession FAILED:", err);
+  }
+
   const p = session?.tokens?.idToken?.payload || {};
-  const attrs = await fetchUserAttributes().catch(() => null);
+
+  let attrs = null;
+  try {
+    attrs = await fetchUserAttributes();
+    console.log("[AuthCallback] getMyNameFromAmplify attrs OK:", attrs);
+  } catch (err) {
+    console.error("[AuthCallback] getMyNameFromAmplify fetchUserAttributes FAILED:", err);
+  }
 
   const name =
     (attrs && (attrs.name || attrs.given_name || attrs["custom:name"])) ||
@@ -42,7 +38,15 @@ async function getMyEmailFromAmplify() {
 
   while (Date.now() < deadline) {
     // 1) Try token payload
-    const session = await fetchAuthSession().catch(() => null);
+    let session = null;
+    try {
+      session = await fetchAuthSession();
+      console.log("[AuthCallback] fetchAuthSession OK:", session);
+    } catch (err) {
+      console.error("[AuthCallback] fetchAuthSession FAILED:", err);
+      throw err; // ✅ do not swallow the real error
+    }
+
     const idToken = session?.tokens?.idToken;
 
     if (idToken?.payload) {
@@ -54,17 +58,31 @@ async function getMyEmailFromAmplify() {
         idToken.payload.username ||
         "";
 
-      // NOTE: only return if it looks like an email
+      console.log("[AuthCallback] token payload keys:", last.tokenKeys);
+      console.log("[AuthCallback] emailFromToken:", emailFromToken);
+
       if (String(emailFromToken).includes("@")) {
         return String(emailFromToken).trim().toLowerCase();
       }
     }
 
     // 2) Try attributes
-    const attrs = await fetchUserAttributes().catch(() => null);
+    let attrs = null;
+    try {
+      attrs = await fetchUserAttributes();
+      console.log("[AuthCallback] fetchUserAttributes OK:", attrs);
+    } catch (err) {
+      console.error("[AuthCallback] fetchUserAttributes FAILED:", err);
+      throw err; // ✅ do not swallow the real error
+    }
+
     if (attrs) {
       last.attrKeys = Object.keys(attrs || {});
       const emailFromAttrs = attrs.email || attrs["custom:email"] || "";
+
+      console.log("[AuthCallback] attribute keys:", last.attrKeys);
+      console.log("[AuthCallback] emailFromAttrs:", emailFromAttrs);
+
       if (emailFromAttrs) return String(emailFromAttrs).trim().toLowerCase();
     }
 
@@ -75,20 +93,6 @@ async function getMyEmailFromAmplify() {
   throw new Error("MISSING_EMAIL_FROM_GOOGLE");
 }
 
-/*async function fetchProfileByEmail(email) {
-  const base = apiBase();
-  const url = `${base}/api/auth/profile?email=${encodeURIComponent(email)}`;
-
-  const res = await fetch(url, { method: "GET", credentials: "include" });
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok || !data?.ok) {
-    const err = data?.error || res.statusText || "PROFILE_LOOKUP_FAILED";
-    throw new Error(err);
-  }
-  return data; // { ok, userId, role, profile, user }
-}*/
-
 async function fetchProfileByEmail(email) {
   const pick = (...vals) => {
     for (const v of vals) {
@@ -98,30 +102,35 @@ async function fetchProfileByEmail(email) {
     return "";
   };
 
-  // ✅ Profile endpoint lives on eovdrymvq3
   const raw = pick(
-    import.meta.env.VITE_PROFILE_API_BASE,  // <-- NEW (eovdrymvq3)
-    import.meta.env.VITE_RESET_API_BASE,    // optional fallback (also eovdrymvq3 in your envs)
-    import.meta.env.VITE_POSTS_API_BASE     // optional fallback (also eovdrymvq3)
+    import.meta.env.VITE_PROFILE_API_BASE,
+    import.meta.env.VITE_RESET_API_BASE,
+    import.meta.env.VITE_POSTS_API_BASE
   );
 
   const base = raw ? raw.replace(/\/+$/, "") : "";
   const url = `${base}/api/auth/profile?email=${encodeURIComponent(email)}`;
 
+  console.log("[AuthCallback] fetchProfileByEmail URL:", url);
+
   const res = await fetch(url, { method: "GET", credentials: "include" });
   const data = await res.json().catch(() => ({}));
+
+  console.log("[AuthCallback] fetchProfileByEmail status:", res.status);
+  console.log("[AuthCallback] fetchProfileByEmail data:", data);
 
   if (!res.ok || !data?.ok) {
     const err = data?.error || res.statusText || "PROFILE_LOOKUP_FAILED";
     throw new Error(err);
   }
-  return data; // { ok, userId, role, profile, user }
+
+  return data;
 }
 
 function routeForRole(role) {
   const r = String(role || "").toLowerCase();
   if (r === "lecturer") return "/lecturer/dashboard";
-  if (r === "partner") return "/partner-welcome"; // keep/change to your actual partner route
+  if (r === "partner") return "/partner/welcome"; // ✅ fixed route
   return "/student/dashboard";
 }
 
@@ -133,29 +142,30 @@ export default function AuthCallback() {
     (async () => {
       let email = "";
       try {
-        // 1) Ensure Amplify finishes the Hosted UI redirect session
+        console.log("[AuthCallback] callback started");
+        console.log("[AuthCallback] current URL:", window.location.href);
+
         email = await getMyEmailFromAmplify();
+        console.log("[AuthCallback] resolved email:", email);
+
         if (!email) throw new Error("MISSING_EMAIL_FROM_GOOGLE");
 
         setMsg("Loading your profile...");
 
-        // 2) Resolve role/profile from DynamoDB via your AuthHandler endpoint
         const out = await fetchProfileByEmail(email);
+        console.log("[AuthCallback] profile lookup result:", out);
 
-        // 3) Keep your current app logic working (dashboards expect currentUser)
         const user = out.user || { email, role: out.role, ...(out.profile || {}) };
 
-        // Store in both (your app uses sessionStorage + localStorage fallback)
         sessionStorage.setItem("currentUser", JSON.stringify(user));
         localStorage.setItem("currentUser", JSON.stringify(user));
 
-        // 4) Go to correct dashboard
+        console.log("[AuthCallback] navigating to:", routeForRole(out.role));
         navigate(routeForRole(out.role), { replace: true });
       } catch (e) {
         const errMsg = String(e?.message || e);
-        console.error("AuthCallback error:", e);
+        console.error("[AuthCallback] FINAL ERROR:", e);
 
-        // ✅ If they authenticated with Google but do NOT have a profile yet:
         if (errMsg === "NO_ACCOUNT") {
           const oauthRole =
             (sessionStorage.getItem("oauthRole") || "student").toLowerCase() ===
@@ -163,11 +173,12 @@ export default function AuthCallback() {
               ? "lecturer"
               : "student";
 
-          // optional: prefill name on signup page too
           let fullName = "";
           try {
             fullName = await getMyNameFromAmplify();
-          } catch {}
+          } catch (nameErr) {
+            console.error("[AuthCallback] getMyNameFromAmplify FAILED:", nameErr);
+          }
 
           const qs =
             `?oauth=1` +
@@ -184,9 +195,7 @@ export default function AuthCallback() {
         }
 
         setMsg(`Login failed: ${errMsg}`);
-
-        // optional: send them back to login after a moment
-        setTimeout(() => navigate("/login", { replace: true }), 1200);
+        setTimeout(() => navigate("/login", { replace: true }), 2000);
       }
     })();
   }, [navigate]);
