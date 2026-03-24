@@ -1,8 +1,15 @@
 // src/pages/AdminScholarshipList.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { listScholarships, updateScholarship, deleteScholarship } from "../utils/scholarshipsApi";
+import {
+  listScholarships,
+  updateScholarship,
+  deleteScholarship,
+} from "../utils/scholarshipsApi";
 import useNoIndex from "../lib/useNoIndex";
+
+const CT_SCH = "SCHOLARSHIP";
+const CT_FEL = "FELLOWSHIP";
 
 /* ---- Simple modal for “Preview” ---- */
 function Modal({ open, onClose, title, children }) {
@@ -33,7 +40,7 @@ function Modal({ open, onClose, title, children }) {
   );
 }
 
-/* Safe HTML print (server already stores HTML for description/eligibility/benefits/howToApply) */
+/* Safe HTML print */
 function RichHtml({ html }) {
   if (!html) return null;
   return <div className="prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: html }} />;
@@ -57,15 +64,12 @@ function orgLabel(item) {
   );
 }
 
-// ✅ ADD THIS helper right here (before export default)
 function isExpiredByDeadline(deadline) {
   const d = String(deadline || "").trim();
   if (!d) return false;
 
-  // Try common formats: YYYY-MM-DD, YYYY/MM/DD, MM/DD/YYYY, etc.
   let ts = Date.parse(d);
 
-  // If it looks like YYYY-MM-DD, force end-of-day local time so it expires after the day finishes
   if (!Number.isFinite(ts) && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
     ts = Date.parse(`${d}T23:59:59`);
   }
@@ -74,31 +78,62 @@ function isExpiredByDeadline(deadline) {
   return ts < Date.now();
 }
 
+function typeLabel(item) {
+  return String(item?.contentType || CT_SCH).toUpperCase() === CT_FEL
+    ? "Fellowship"
+    : "Scholarship";
+}
 
-
+function publicViewPath(item) {
+  return String(item?.contentType || CT_SCH).toUpperCase() === CT_FEL
+    ? `/fellowship/${item.id}`
+    : `/scholarship/${item.id}`;
+}
 
 export default function AdminScholarshipList() {
   useNoIndex();
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("pending"); // default to pending
+  const [status, setStatus] = useState("pending");
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  // ✅ Preview modal state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState(null);
 
   async function load() {
     setLoading(true);
     setErr("");
+
     try {
-      const { items, total } = await listScholarships({ q, status, page, pageSize });
-      setItems(Array.isArray(items) ? items : []);
-      setTotal(Number(total || 0));
+      const common = {
+        q,
+        status,
+        page: 1,
+        pageSize: 1000,
+      };
+
+      const [schRes, felRes] = await Promise.all([
+        listScholarships({ ...common, contentType: CT_SCH }),
+        listScholarships({ ...common, contentType: CT_FEL }),
+      ]);
+
+      const schItems = Array.isArray(schRes?.items) ? schRes.items : [];
+      const felItems = Array.isArray(felRes?.items) ? felRes.items : [];
+
+      const merged = [...schItems, ...felItems].sort((a, b) => {
+        const ta = Number(a?.createdAt || 0);
+        const tb = Number(b?.createdAt || 0);
+        if (tb !== ta) return tb - ta;
+        return String(b?.id || "").localeCompare(String(a?.id || ""));
+      });
+
+      setItems(merged);
+      setTotal(merged.length);
     } catch (e) {
       setErr(e.message || "Failed to load");
     } finally {
@@ -108,14 +143,26 @@ export default function AdminScholarshipList() {
 
   useEffect(() => {
     load();
-    /* eslint-disable-next-line */
-  }, [q, status, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, status]);
+
+  const pagedItems = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return items.slice(start, start + pageSize);
+  }, [items, page]);
+
+  useEffect(() => {
+    const totalPagesNow = Math.max(1, Math.ceil(total / pageSize));
+    if (page > totalPagesNow) {
+      setPage(totalPagesNow);
+    }
+  }, [total, page]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   async function setStatusAction(id, next) {
     try {
-      await updateScholarship(id, { status: next }); // API or local fallback
+      await updateScholarship(id, { status: next });
       await load();
     } catch (e) {
       alert("Failed to update: " + e.message);
@@ -123,9 +170,9 @@ export default function AdminScholarshipList() {
   }
 
   async function remove(id) {
-    if (!confirm("Delete this scholarship?")) return;
+    if (!confirm("Delete this item?")) return;
     try {
-      await deleteScholarship(id); // API or local fallback
+      await deleteScholarship(id);
       await load();
     } catch (e) {
       alert("Failed to delete: " + e.message);
@@ -139,7 +186,6 @@ export default function AdminScholarshipList() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Local CSS for bullet lists in preview */}
       <style>{`
         .prose-sm ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
         .prose-sm ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
@@ -186,10 +232,12 @@ export default function AdminScholarshipList() {
 
       {loading && <div className="mt-6 text-slate-600">Loading…</div>}
       {err && <div className="mt-6 text-red-600">Error: {err}</div>}
-      {!loading && !err && items.length === 0 && <div className="mt-6 text-slate-600">No results.</div>}
+      {!loading && !err && pagedItems.length === 0 && (
+        <div className="mt-6 text-slate-600">No results.</div>
+      )}
 
       <ul className="mt-6 grid gap-3">
-        {items.map((s) => (
+        {pagedItems.map((s) => (
           <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -203,52 +251,47 @@ export default function AdminScholarshipList() {
                     ? ` • ${Array.isArray(s.fundingType) ? s.fundingType.join(", ") : s.fundingType}`
                     : ""}
                 </div>
-                {/*<div className="mt-1 text-xs">
-                  <span className="px-2 py-0.5 rounded-full border text-slate-700">
-                    Status: <b>{s.status || "pending"}</b>
-                  </span>
-                  {s.deadline && <span className="ml-2 text-slate-500">Deadline: {s.deadline}</span>}
+
+                <div className="mt-1 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full border text-slate-700">
+                      Status: <b>{s.status || "pending"}</b>
+                    </span>
+
+                    <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700 whitespace-nowrap">
+                      Type: {typeLabel(s)}
+                    </span>
+
+                    {s.deadline ? (
+                      <span className="text-slate-500 whitespace-nowrap">
+                        Deadline: {s.deadline}
+                      </span>
+                    ) : null}
+
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
+                      Views: {num(s?.views)}
+                    </span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
+                      Apply: {num(s?.applyClicks)}
+                    </span>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
+                      Website: {num(s?.websiteClicks)}
+                    </span>
+
+                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-800 max-w-full truncate">
+                      Org: {orgLabel(s)}
+                    </span>
+
+                    {isExpiredByDeadline(s?.deadline) ? (
+                      <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 whitespace-nowrap">
+                        Expired
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
-              </div>*/}
-
-              <div className="mt-1 text-xs">
-  <div className="flex flex-wrap items-center gap-2">
-    <span className="px-2 py-0.5 rounded-full border text-slate-700">
-      Status: <b>{s.status || "pending"}</b>
-    </span>
-
-    {s.deadline ? (
-      <span className="text-slate-500 whitespace-nowrap">Deadline: {s.deadline}</span>
-    ) : null}
-
-    {/* ✅ Stats pills */}
-    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
-      Views: {num(s?.views)}
-    </span>
-    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
-      Apply: {num(s?.applyClicks)}
-    </span>
-    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] text-slate-700 whitespace-nowrap">
-      Website: {num(s?.websiteClicks)}
-    </span>
-
-    {/* ✅ Organization / University label */}
-    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-800 max-w-full truncate">
-      Org: {orgLabel(s)}
-    </span>
-    {isExpiredByDeadline(s?.deadline) ? (
-  <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 whitespace-nowrap">
-    Expired
-  </span>
-) : null}
-
-  </div>
-   </div> 
-   </div>
-
+              </div>
 
               <div className="flex flex-col items-end gap-2">
-                {/* ✅ Row 1: Edit/Delete + new Preview/View */}
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -259,7 +302,7 @@ export default function AdminScholarshipList() {
                   </button>
 
                   <Link
-                    to={`/scholarship/${s.id}`}
+                    to={publicViewPath(s)}
                     className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
                   >
                     View
@@ -280,7 +323,6 @@ export default function AdminScholarshipList() {
                   </button>
                 </div>
 
-                {/* Row 2: Approve/Reject/Mark Pending (unchanged) */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => setStatusAction(s.id, "approved")}
@@ -329,7 +371,6 @@ export default function AdminScholarshipList() {
         </div>
       )}
 
-      {/* ✅ Preview modal */}
       <Modal
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
@@ -346,7 +387,11 @@ export default function AdminScholarshipList() {
 
             {previewItem.description && (
               <section>
-                <h4 className="text-base font-semibold">Scholarship Description</h4>
+                <h4 className="text-base font-semibold">
+                  {String(previewItem?.contentType || CT_SCH).toUpperCase() === CT_FEL
+                    ? "Fellowship Description"
+                    : "Scholarship Description"}
+                </h4>
                 <div className="mt-2">
                   <RichHtml html={previewItem.description} />
                 </div>
@@ -380,7 +425,6 @@ export default function AdminScholarshipList() {
               </section>
             )}
 
-            {/* ✅ Internal notes (admin-only in Preview) */}
             {previewItem.notes ? (
               <section>
                 <h4 className="text-base font-semibold">Notes (internal)</h4>

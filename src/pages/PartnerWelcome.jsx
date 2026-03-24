@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import { isVerified } from "../lib/verifyGate";
 import VerifyGate from "../components/VerifyGate";
 
-
 async function apiUpdatePartnerProfile(payload) {
   const res = await fetch(`${AUTH_BASE}/api/auth/partner/update-profile`, {
     method: "POST",
@@ -21,7 +20,6 @@ async function apiUpdatePartnerProfile(payload) {
 }
 
 /* ---------- API base (scholarships, etc.) ---------- */
-// Prefer a dedicated scholarships base if you have it, otherwise use your existing vars.
 const API_BASE = (
   import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
@@ -29,19 +27,22 @@ const API_BASE = (
   "http://localhost:5000"
 ).replace(/\/+$/, "");
 
-/* Are we running in "serverless/local only" mode?
-   IMPORTANT: default to FALSE so we use the real API unless you explicitly turn this on. */
+/* Are we running in "serverless/local only" mode? */
 const SERVERLESS =
   String(import.meta.env.VITE_SERVERLESS_MODE ?? "false").toLowerCase() === "true";
 
-/* ---------- Auth API base (email + password reset + partner profile) ---------- */
-// ✅ PartnerWelcome must use PartnerAuthAPI, not the generic auth base.
+/* ---------- Auth API base ---------- */
 const AUTH_BASE = (
-  import.meta.env.VITE_PARTNER_API_BASE || // ✅ your PartnerAuthAPI (Amplify env var you already have)
+  import.meta.env.VITE_PARTNER_API_BASE ||
   import.meta.env.VITE_API_BASE ||
   import.meta.env.VITE_API_URL ||
   "http://localhost:5001"
 ).replace(/\/+$/, "");
+
+/* ---------- Content types ---------- */
+const CT_SCH = "SCHOLARSHIP";
+const CT_FEL = "FELLOWSHIP";
+const CT_FGA = "FUNDED_GRAD_ADMISSION";
 
 /* ---------- Helpers ---------- */
 function safeParse(json) {
@@ -65,7 +66,6 @@ function setPartner(p) {
   window.dispatchEvent(new Event("storage"));
 }
 
-/** hash helper (same as Login / PartnerLogin) */
 async function sha256Hex(str) {
   const enc = new TextEncoder().encode(str);
   const buf = await crypto.subtle.digest("SHA-256", enc);
@@ -74,7 +74,6 @@ async function sha256Hex(str) {
     .join("");
 }
 
-/* ---------- Email change helper ---------- */
 async function apiChangePartnerEmail(oldEmail, newEmail, currentPassword) {
   const body = {
     email: oldEmail,
@@ -100,10 +99,9 @@ async function apiChangePartnerEmail(oldEmail, newEmail, currentPassword) {
     }
     throw new Error("Could not update email. Please try again.");
   }
-  return data; // { ok: true, email, role, oldEmail }
+  return data;
 }
 
-/* ---------- NEW: Partner profile persistence (logo/banner + org fields) ---------- */
 async function partnerGetProfile(email) {
   const res = await fetch(`${AUTH_BASE}/api/auth/partner/get-profile`, {
     method: "POST",
@@ -134,7 +132,6 @@ async function partnerUpdateProfile(payload) {
   return data.user || {};
 }
 
-/* ---------- Keep local 'partners' in sync with login ---------- */
 function syncLocalPartnerRecords(updatedUser, originalEmail) {
   if (!updatedUser) return;
 
@@ -142,7 +139,6 @@ function syncLocalPartnerRecords(updatedUser, originalEmail) {
   const newEmail = (updatedUser.email || "").trim().toLowerCase();
   const oldEmail = (originalEmail || "").trim().toLowerCase();
 
-  // 1) partners array (used by PartnerLogin.jsx)
   const partners = safeParse(localStorage.getItem("partners")) || [];
   const idx = partners.findIndex((p) => {
     const pid = String(p.id || "").trim();
@@ -163,7 +159,6 @@ function syncLocalPartnerRecords(updatedUser, originalEmail) {
     }
   }
 
-  // 2) optional partnersById map
   const map = safeParse(localStorage.getItem("partnersById")) || {};
   if (idKey && map[idKey]) {
     map[idKey] = { ...map[idKey], ...updatedUser };
@@ -175,47 +170,58 @@ function syncLocalPartnerRecords(updatedUser, originalEmail) {
   }
 }
 
-/** Clean HTML -> plain text for compact list snippets */
 function stripHtml(html = "") {
   const el = document.createElement("div");
   el.innerHTML = html;
   return (el.textContent || el.innerText || "").trim();
 }
+
 function truncate(s = "", n = 180) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
 
-/** Normalize a scholarship into the fields we display */
 function normalizeScholarship(s = {}) {
+  const contentType = String(s.contentType || CT_SCH).toUpperCase();
+
   return {
     id: s.id || s.scholarshipId || `sch_${Math.random().toString(36).slice(2)}`,
-    title: s.title || s.name || "Untitled Scholarship",
+    title: s.title || s.name || "Untitled Listing",
     deadline: s.deadline || s.closeDate || s.dueDate || "",
     createdAt: s.createdAt || s.postedAt || s.created || s.timestamp || Date.now(),
     status: (s.status || "Open").toString(),
     partnerId: s.partnerId || s.ownerId || s.postedById || "",
     partnerEmail: (s.partnerEmail || s.postedByEmail || s.email || "").toLowerCase(),
     postedByEmail: (s.postedByEmail || s.email || "").toLowerCase(),
-    orgName: s.orgName || s.organization || s.university || "",
+    orgName: s.orgName || s.organization || s.university || s.provider || "",
     description: s.description || s.summary || "",
     amount: s.amount || s.value || "",
     link: s.link || s.applyLink || s.url || "",
-
-    // ✅ NEW: engagement counters (from DynamoDB fields)
+    contentType,
     views: Number(s.views || 0),
     applyClicks: Number(s.applyClicks || 0),
     websiteClicks: Number(s.websiteClicks || 0),
-
   };
 }
 
-/** Decide the avatar URL from user object (signup should store one of these) */
 function getPartnerAvatar(user) {
   if (!user) return "";
   return user.photo || user.logo || user.logoUrl || user.avatar || user.avatarUrl || "";
 }
 
-/** Try API first for this partner's items, then fall back to localStorage */
+function listingTypeLabel(item) {
+  const ct = String(item?.contentType || CT_SCH).toUpperCase();
+  if (ct === CT_FEL) return "Fellowship";
+  if (ct === CT_FGA) return "Funded Admission";
+  return "Scholarship";
+}
+
+function listingPublicPath(item) {
+  const ct = String(item?.contentType || CT_SCH).toUpperCase();
+  if (ct === CT_FEL) return `/fellowship/${item.id}`;
+  if (ct === CT_FGA) return `/funded-graduate-admission/${item.id}`;
+  return `/scholarship/${item.id}`;
+}
+
 async function loadAllScholarshipsForPartner(partner) {
   const partnerEmail = (
     partner?.email ||
@@ -227,9 +233,8 @@ async function loadAllScholarshipsForPartner(partner) {
   const partnerId = String(partner?.id || "");
 
   const readLocal = () => {
-    // 🔗 Read from the unified local store plus legacy keys
     const keys = [
-      "scholarships_local", // matches scholarshipsApi + PartnerSubmit fallback
+      "scholarships_local",
       "partnerScholarships",
       "scholarships",
       "postedScholarships",
@@ -246,18 +251,15 @@ async function loadAllScholarshipsForPartner(partner) {
     return merged.map(normalizeScholarship);
   };
 
-  // If you explicitly run serverless mode, stay local-only.
   if (SERVERLESS) {
     return readLocal();
   }
 
-
-try {
+  try {
     const baseParams = new URLSearchParams();
     if (partnerEmail) baseParams.set("partnerEmail", partnerEmail);
     else if (partnerId) baseParams.set("partnerId", partnerId);
 
-    // Helper: fetch one content type (keeps backend filtering intact)
     const fetchByType = async (ct) => {
       const p = new URLSearchParams(baseParams);
       p.set("contentType", ct);
@@ -276,15 +278,14 @@ try {
       return list;
     };
 
-    // Fetch both types and merge (so PartnerWelcome shows both again)
-    const [sch, funded] = await Promise.all([
-      fetchByType("SCHOLARSHIP"),
-      fetchByType("FUNDED_GRAD_ADMISSION"),
+    const [sch, fel, funded] = await Promise.all([
+      fetchByType(CT_SCH),
+      fetchByType(CT_FEL),
+      fetchByType(CT_FGA),
     ]);
 
-    const merged = [...(sch || []), ...(funded || [])];
+    const merged = [...(sch || []), ...(fel || []), ...(funded || [])];
 
-    // De-dupe by id (safe)
     const seen = new Set();
     const unique = [];
     for (const it of merged) {
@@ -301,17 +302,11 @@ try {
   }
 }
 
-
-
-
-
-
 export default function PartnerWelcome() {
   const nav = useNavigate();
   const [user, setUser] = useState(() => getPartner());
   const [originalEmail] = useState(() => user?.email || "");
 
-  // -------- VerifyGate state for partner email --------
   const emailForGate = (user?.email || user?.userEmail || user?.username || "").toLowerCase();
   const [verified, setVerified] = useState(() => (emailForGate ? isVerified(emailForGate) : false));
 
@@ -320,16 +315,12 @@ export default function PartnerWelcome() {
       setVerified(false);
       return;
     }
-    // ✅ If we already flipped to verified in this session, don't let the effect
-    // overwrite it back to false due to storage timing.
     setVerified((prev) => (prev ? true : isVerified(emailForGate)));
   }, [emailForGate]);
 
   const [editOpen, setEditOpen] = useState(false);
   const [msg, setMsg] = useState("");
 
-
-  // ✅ Per-scholarship breakdown modal
   const [statsOpen, setStatsOpen] = useState(false);
   const [statsItem, setStatsItem] = useState(null);
 
@@ -337,6 +328,7 @@ export default function PartnerWelcome() {
     setStatsItem(sch || null);
     setStatsOpen(true);
   }
+
   function closeStatsModal() {
     setStatsOpen(false);
     setStatsItem(null);
@@ -347,10 +339,8 @@ export default function PartnerWelcome() {
     return Number.isFinite(n) ? n : 0;
   }
 
-
   const initialAvatar = getPartnerAvatar(user);
 
-  // Profile form state (includes photo/logo)
   const [form, setForm] = useState(() => ({
     orgName: user?.orgName || "",
     contactName: user?.contactName || "",
@@ -360,7 +350,6 @@ export default function PartnerWelcome() {
     photo: initialAvatar || "",
   }));
 
-  // ✅ NEW: load persisted profile (logo/banner + fields) once per email
   const [profileLoadedFor, setProfileLoadedFor] = useState("");
 
   useEffect(() => {
@@ -372,24 +361,19 @@ export default function PartnerWelcome() {
         const email = (user?.email || "").trim().toLowerCase();
         if (!email) return;
 
-        // Avoid re-loading repeatedly for same email
         if (profileLoadedFor === email) return;
 
         const u = await partnerGetProfile(email);
         if (cancelled) return;
 
-        // Map backend -> local fields without breaking existing ones
         const next = {
           ...user,
-          // keep your existing names, but also accept backend names:
           orgName: u.orgName ?? u.organization ?? user?.orgName ?? "",
           contactName: u.contactName ?? user?.contactName ?? "",
           phone: u.phone ?? user?.phone ?? "",
           website: u.website ?? user?.website ?? "",
-          // Persisted URLs (preferred)
           logoUrl: u.logoUrl ?? user?.logoUrl ?? "",
           bannerUrl: u.bannerUrl ?? user?.bannerUrl ?? "",
-          // Keep legacy fields too (UI reads "photo" via getPartnerAvatar)
           photo: u.logoUrl ?? user?.photo ?? user?.logoUrl ?? "",
           email: (u.email || email).toLowerCase(),
         };
@@ -397,7 +381,6 @@ export default function PartnerWelcome() {
         setPartner(next);
         setUser(next);
 
-        // Update the edit form so UI displays persisted values
         setForm((f) => ({
           ...f,
           orgName: next.orgName || "",
@@ -405,14 +388,12 @@ export default function PartnerWelcome() {
           email: next.email || f.email || "",
           phone: next.phone || "",
           website: next.website || "",
-          // Keep your existing "photo" field as the logo URL (or empty)
           photo: (next.photo || next.logoUrl || "").trim(),
         }));
 
         setProfileLoadedFor(email);
       } catch (e) {
         console.warn("[PartnerWelcome] get-profile failed:", e);
-        // do not block UI
         setProfileLoadedFor((user?.email || "").trim().toLowerCase() || "");
       }
     }
@@ -422,82 +403,68 @@ export default function PartnerWelcome() {
     return () => {
       cancelled = true;
     };
-    // We intentionally depend on user?.email and profileLoadedFor only
   }, [user?.email, profileLoadedFor]);
 
-  // Password fields
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwErr, setPwErr] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Scholarships (center panel)
   const [allScholarships, setAllScholarships] = useState([]);
 
-
   const partnerKey = useMemo(() => {
-  const email = (user?.email || user?.userEmail || user?.username || "").trim().toLowerCase();
-  const id = String(user?.id || user?.userId || "").trim();
-  return email || id || "";
-}, [user?.email, user?.userEmail, user?.username, user?.id, user?.userId]);
+    const email = (user?.email || user?.userEmail || user?.username || "").trim().toLowerCase();
+    const id = String(user?.id || user?.userId || "").trim();
+    return email || id || "";
+  }, [user?.email, user?.userEmail, user?.username, user?.id, user?.userId]);
 
-const [loadingScholarships, setLoadingScholarships] = useState(false);
-const [schErr, setSchErr] = useState("");
+  const [loadingScholarships, setLoadingScholarships] = useState(false);
+  const [schErr, setSchErr] = useState("");
 
- 
   useEffect(() => {
-  let alive = true;
-  let inFlight = false;
+    let alive = true;
+    let inFlight = false;
 
-  const load = async () => {
-    if (!partnerKey) return;
-    if (inFlight) return; // ✅ prevents stacked fetches
-    inFlight = true;
+    const load = async () => {
+      if (!partnerKey) return;
+      if (inFlight) return;
+      inFlight = true;
 
-    setSchErr("");
-    setLoadingScholarships(true);
+      setSchErr("");
+      setLoadingScholarships(true);
 
-    try {
-      const list = await loadAllScholarshipsForPartner(user || {});
-      if (alive) setAllScholarships(Array.isArray(list) ? list : []);
-    } catch (e) {
-      if (alive) setSchErr(e?.message || "Failed to load scholarships");
-    } finally {
-      inFlight = false;
-      if (alive) setLoadingScholarships(false);
-    }
-  };
+      try {
+        const list = await loadAllScholarshipsForPartner(user || {});
+        if (alive) setAllScholarships(Array.isArray(list) ? list : []);
+      } catch (e) {
+        if (alive) setSchErr(e?.message || "Failed to load listings");
+      } finally {
+        inFlight = false;
+        if (alive) setLoadingScholarships(false);
+      }
+    };
 
-  load();
-
-  // ✅ only respond to our own storage broadcasts (optional, but cleaner)
-  const onStorage = (e) => {
-    if (e?.key && e.key !== "partnerAuth") return;
     load();
-  };
 
-  window.addEventListener("storage", onStorage);
-  return () => {
-    alive = false;
-    window.removeEventListener("storage", onStorage);
-  };
-  // ✅ critical: do NOT depend on entire user object
-}, [partnerKey]); 
+    const onStorage = (e) => {
+      if (e?.key && e.key !== "partnerAuth") return;
+      load();
+    };
 
+    window.addEventListener("storage", onStorage);
+    return () => {
+      alive = false;
+      window.removeEventListener("storage", onStorage);
+    };
+  }, [partnerKey]);
 
-
-
-
-
-
-
-  // Filter “mine”
   const myScholarships = useMemo(() => {
     if (!user) return [];
     const uId = user.id || "";
     const uEmail = (user.email || user.userEmail || user.username || "").toLowerCase();
     const uOrg = (user.orgName || "").trim().toLowerCase();
+
     return allScholarships
       .filter((s) => {
         const byId = s.partnerId && String(s.partnerId) === String(uId);
@@ -511,17 +478,16 @@ const [schErr, setSchErr] = useState("");
   }, [allScholarships, user]);
 
   const clickTotals = useMemo(() => {
-  return myScholarships.reduce(
-    (acc, s) => {
-      acc.views += Number(s.views || 0);
-      acc.apply += Number(s.applyClicks || 0);
-      acc.website += Number(s.websiteClicks || 0);
-      return acc;
-    },
-    { views: 0,apply: 0, website: 0 }
-  );
-}, [myScholarships]);
-
+    return myScholarships.reduce(
+      (acc, s) => {
+        acc.views += Number(s.views || 0);
+        acc.apply += Number(s.applyClicks || 0);
+        acc.website += Number(s.websiteClicks || 0);
+        return acc;
+      },
+      { views: 0, apply: 0, website: 0 }
+    );
+  }, [myScholarships]);
 
   const totalPosted = myScholarships.length;
   const pendingCount = myScholarships.filter((s) => {
@@ -533,9 +499,10 @@ const [schErr, setSchErr] = useState("");
     return st.includes("approved");
   }).length;
 
-
   const { totalViews, totalApplyClicks, totalWebsiteClicks } = useMemo(() => {
-    let v = 0, a = 0, w = 0;
+    let v = 0,
+      a = 0,
+      w = 0;
     for (const s of myScholarships) {
       v += Number(s?.views || 0);
       a += Number(s?.applyClicks || 0);
@@ -544,20 +511,11 @@ const [schErr, setSchErr] = useState("");
     return { totalViews: v, totalApplyClicks: a, totalWebsiteClicks: w };
   }, [myScholarships]);
 
-
-
-
-
-
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  // handle avatar/logo file change in EDIT modal
-  // NOTE: this still creates a data URL preview. Your "best practice" flow
-  // should upload to S3 and set form.photo to the returned URL. This code
-  // remains unchanged to avoid breaking your current UI.
   const onAvatarFileChange = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -584,7 +542,8 @@ const [schErr, setSchErr] = useState("");
 
     try {
       const emailChanging = (form.email || "") !== (user?.email || "");
-      const wantsPwChange = newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;
+      const wantsPwChange =
+        newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;
 
       const trimmedEmail = (form.email || "").trim().toLowerCase();
       const oldEmail = (originalEmail || user?.email || "").trim().toLowerCase();
@@ -622,7 +581,6 @@ const [schErr, setSchErr] = useState("");
         }
       }
 
-      // 1) Email change
       if (emailChanging) {
         if (!currentPw) {
           setPwErr("Please enter your current password to change email.");
@@ -631,7 +589,6 @@ const [schErr, setSchErr] = useState("");
         await apiChangePartnerEmail(oldEmail, trimmedEmail, currentPw);
       }
 
-      // 2) Password change (real DynamoDB update)
       if (wantsPwChange) {
         try {
           const resp = await fetch(`${AUTH_BASE}/api/auth/change-password`, {
@@ -660,26 +617,21 @@ const [schErr, setSchErr] = useState("");
         }
       }
 
-      // ✅ NEW (B): Persist profile/logo globally in DynamoDB
-      // Note: your backend expects { email, userId, logoUrl, bannerUrl, phone, website, contactName, organization }
-      // We map orgName -> organization, photo -> logoUrl
       if (!SERVERLESS) {
         const payload = {
           email: trimmedEmail,
-          userId: user?.id || user?.userId || "", // IMPORTANT
+          userId: user?.id || user?.userId || "",
           logoUrl: String(form.photo || "").trim(),
-          bannerUrl: String(user?.bannerUrl || "").trim(), // no UI field yet, keep existing
+          bannerUrl: String(user?.bannerUrl || "").trim(),
           phone: String(form.phone || "").trim(),
           website: String(form.website || "").trim(),
           contactName: String(form.contactName || "").trim(),
           organization: String(form.orgName || "").trim(),
         };
 
-        // If userId missing, don't hard-crash; just warn (keeps existing logic intact)
         if (payload.userId) {
           const persisted = await partnerUpdateProfile(payload);
 
-          // Merge persisted fields back (source of truth)
           const merged = {
             ...(user || {}),
             orgName: persisted.orgName ?? persisted.organization ?? payload.organization,
@@ -692,7 +644,6 @@ const [schErr, setSchErr] = useState("");
             photo: (persisted.logoUrl ?? payload.logoUrl) || (user?.photo || ""),
           };
 
-          // Update local state + storage so other parts of UI immediately reflect
           setPartner(merged);
           setUser(merged);
 
@@ -710,27 +661,22 @@ const [schErr, setSchErr] = useState("");
         }
       }
 
-     
+      const backendUser = await apiUpdatePartnerProfile({
+        email: trimmedEmail,
+        userId: user?.userId || user?.id,
+        organization: form.orgName,
+        contactName: form.contactName,
+        phone: form.phone,
+        website: form.website,
+        logoUrl: form.photo || "",
+      });
 
-      // 3) Persist profile updates to backend (THIS was missing)
-const backendUser = await apiUpdatePartnerProfile({
-  email: trimmedEmail,
-  userId: user?.userId || user?.id, // authorization guard
-  organization: form.orgName,
-  contactName: form.contactName,
-  phone: form.phone,
-  website: form.website,
-  logoUrl: form.photo || "", // 🔥 THIS is the key
-});
-
-// 4) Update local state from backend truth
-const updated = {
-  ...(user || {}),
-  ...backendUser,
-  orgName: backendUser.organization,
-  photo: backendUser.logoUrl,
-};
-
+      const updated = {
+        ...(user || {}),
+        ...backendUser,
+        orgName: backendUser.organization,
+        photo: backendUser.logoUrl,
+      };
 
       if (wantsPwChange) {
         updated.passwordHash = await sha256Hex(newPw);
@@ -761,7 +707,6 @@ const updated = {
     nav("/partner/login", { replace: true });
   };
 
-  // --------- If not logged in ----------
   if (!user) {
     return (
       <div className="min-h-[calc(100vh-0px)] bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
@@ -775,7 +720,6 @@ const updated = {
     );
   }
 
-  // --------- VerifyGate ----------
   if (emailForGate && !verified) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
@@ -806,15 +750,14 @@ const updated = {
     );
   }
 
-  // --------- MAIN DASHBOARD ----------
   const initials =
-    (user?.orgName || "P")[0]?.toUpperCase() + (user?.contactName || "K")[0]?.toUpperCase();
+    (user?.orgName || "P")[0]?.toUpperCase() +
+    (user?.contactName || "K")[0]?.toUpperCase();
   const avatarUrl = getPartnerAvatar(user);
   const verificationLabel = verified ? "Verified partner" : "Email not verified";
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
-      {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-indigo-50/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -831,123 +774,115 @@ const updated = {
         </div>
       </header>
 
-    {/* Body */}
-<div className="flex-1">
-  <div className="mx-auto max-w-7xl px-2 lg:px-8 py-2 space-y-4">
-    {/* Overview strip (aligned with 3-column layout below) */}
-    {/*<div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)_240px] gap-3 items-stretch">*/}
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_260px] gap-4 items-stretch">
-      {/* LEFT: Organization summary card */}
-      <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center gap-2.5">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={user?.orgName || "Organization logo"}
-            className="h-9 w-9 rounded-full object-cover border border-white shadow-sm"
-          />
-        ) : (
-          <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600/90 text-white text-sm font-semibold">
-            {initials}
-          </div>
-        )}
+      <div className="flex-1">
+        <div className="mx-auto max-w-7xl px-2 lg:px-8 py-2 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_260px] gap-4 items-stretch">
+            <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center gap-2.5">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={user?.orgName || "Organization logo"}
+                  className="h-9 w-9 rounded-full object-cover border border-white shadow-sm"
+                />
+              ) : (
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600/90 text-white text-sm font-semibold">
+                  {initials}
+                </div>
+              )}
 
-        <div className="min-w-0">
-          <div className="text-[11px] text-slate-500 leading-tight">Organization</div>
-          <div className="text-sm font-semibold text-slate-900 truncate leading-tight">
-            {user?.orgName || "Your organization"}
-          </div>
-          <div className="text-[11px] text-slate-500 truncate leading-tight">
-            {user?.email || "No email set"}
-          </div>
-        </div>
-      </div>
-
-      {/* CENTER: wrap the two center cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full w-full">
-        {/* Scholarships stats card */}
-        <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2.5">
-          <div className="flex justify-between gap-2 text-[11px] text-slate-500 leading-tight">
-            <span className="flex-1 whitespace-nowrap">Posted</span>
-            <span className="flex-1 text-center whitespace-nowrap">Pending</span>
-            <span className="flex-1 text-right whitespace-nowrap">Approved</span>
-          </div>
-
-          <div className="flex items-end justify-between gap-4">
-            <div className="flex-1">
-              <div className="mt-1 text-2xl font-bold text-slate-900 leading-none">
-                {totalPosted}
-              </div>
-            </div>
-            <div className="flex-1 text-center">
-              <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
-                {pendingCount}
-              </div>
-            </div>
-            <div className="flex-1 text-right">
-              <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
-                {approvedCount}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scholarship clicks stats card */}
-        <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2">
-          <div className="text-[11px] text-slate-500 leading-tight text-center">Scholarship clicks stats</div>
-
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
-              <div className="text-[11px] text-slate-500 leading-tight">Views</div>
-              <div className="text-xl font-bold text-slate-900 leading-none">
-                {clickTotals.views}
+              <div className="min-w-0">
+                <div className="text-[11px] text-slate-500 leading-tight">Organization</div>
+                <div className="text-sm font-semibold text-slate-900 truncate leading-tight">
+                  {user?.orgName || "Your organization"}
+                </div>
+                <div className="text-[11px] text-slate-500 truncate leading-tight">
+                  {user?.email || "No email set"}
+                </div>
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
-              <div className="text-[11px] text-slate-500 leading-tight">Clicks on Apply</div>
-              <div className="text-xl font-bold text-slate-900 leading-none">
-                {clickTotals.apply}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full w-full">
+              <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2.5">
+                <div className="flex justify-between gap-2 text-[11px] text-slate-500 leading-tight">
+                  <span className="flex-1 whitespace-nowrap">Posted</span>
+                  <span className="flex-1 text-center whitespace-nowrap">Pending</span>
+                  <span className="flex-1 text-right whitespace-nowrap">Approved</span>
+                </div>
+
+                <div className="flex items-end justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="mt-1 text-2xl font-bold text-slate-900 leading-none">
+                      {totalPosted}
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center">
+                    <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
+                      {pendingCount}
+                    </div>
+                  </div>
+                  <div className="flex-1 text-right">
+                    <div className="mt-1 text-xl font-semibold text-slate-900 leading-none">
+                      {approvedCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2">
+                <div className="text-[11px] text-slate-500 leading-tight text-center">
+                  Listing clicks stats
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+                    <div className="text-[11px] text-slate-500 leading-tight">Views</div>
+                    <div className="text-xl font-bold text-slate-900 leading-none">
+                      {clickTotals.views}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+                    <div className="text-[11px] text-slate-500 leading-tight">Clicks on Apply</div>
+                    <div className="text-xl font-bold text-slate-900 leading-none">
+                      {clickTotals.apply}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+                    <div className="text-[11px] text-slate-500 leading-tight">Website visits</div>
+                    <div className="text-xl font-bold text-slate-900 leading-none">
+                      {clickTotals.website}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-0.5 text-[11px] text-slate-500 leading-tight text-center">
+                  Totals across all your listings.
+                </div>
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-1.5">
-              <div className="text-[11px] text-slate-500 leading-tight">Website visits</div>
-              <div className="text-xl font-bold text-slate-900 leading-none">
-                {clickTotals.website}
+            <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2.5">
+              <div className="min-w-0">
+                <div className="text-[11px] text-slate-500 leading-tight">Account status</div>
+                <div className="text-sm font-semibold text-slate-900 leading-tight">
+                  {verificationLabel}
+                </div>
+                <div className="text-[11px] text-slate-500 leading-tight">
+                  Keep your info up to date for students.
+                </div>
               </div>
+
+              <button
+                onClick={() => setEditOpen(true)}
+                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 shrink-0"
+              >
+                Edit
+              </button>
             </div>
           </div>
 
-          <div className="mt-0.5 text-[11px] text-slate-500 leading-tight text-center">
-            Totals across all your scholarships.
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT: Account status card */}
-      <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2.5">
-        <div className="min-w-0">
-          <div className="text-[11px] text-slate-500 leading-tight">Account status</div>
-          <div className="text-sm font-semibold text-slate-900 leading-tight">
-            {verificationLabel}
-          </div>
-          <div className="text-[11px] text-slate-500 leading-tight">
-            Keep your info up to date for students.
-          </div>
-        </div>
-
-        <button
-          onClick={() => setEditOpen(true)}
-          className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 shrink-0"
-        >
-          Edit
-        </button>
-      </div>
-    </div>
-  
-          {/* Main 3-column layout */}
           <div className="grid gap-3 lg:gap-4 md:grid-cols-3 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
-            {/* LEFT */}
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
@@ -1016,76 +951,93 @@ const updated = {
                   </div>
                 </div>
 
-              <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
-  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
-    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
-      Scholarship Posting Quick Tips
-    </span>
-  </h3>
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
+                  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
+                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+                      Scholarship / Fellowship Posting Quick Tips
+                    </span>
+                  </h3>
 
-  <ul className="mt-2 space-y-3 text-xs text-slate-700">
-  <li className="flex items-start gap-2">
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-      ✓
-    </span>
-    <span>Add your organization’s official logo (Company or University logo) to clearly identify the scholarship provider and build credibility with applicants.</span>
-  </li>
+                  <ul className="mt-2 space-y-3 text-xs text-slate-700">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Add your organization’s official logo to clearly identify the provider and build credibility with applicants.
+                      </span>
+                    </li>
 
-  <li className="flex items-start gap-2">
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-      ✓
-    </span>
-    <span>Include a scholarship banner image to visually highlight the opportunity and attract student attention.</span>
-  </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Include a strong banner image to visually highlight the opportunity and attract student attention.
+                      </span>
+                    </li>
 
-  <li className="flex items-start gap-2">
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-      ✓
-    </span>
-    <span>Provide a direct link to the official scholarship webpage so applicants can access full details and submit their application.</span>
-  </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Provide a direct link to the official opportunity page so applicants can access full details and apply easily.
+                      </span>
+                    </li>
 
-  <li className="flex items-start gap-2">
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-      ✓
-    </span>
-    <span>Include a link to the organization’s official website to help applicants verify the scholarship provider.</span>
-  </li>
-</ul>
-</div>
-</div>
-  </aside>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Include a link to the organization’s official website to help applicants verify the provider.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </aside>
 
-            
-
-           
-
-            {/* CENTER */}
             <main className="col-span-12 md:col-span-1">
               <div className="rounded-2xl bg-white shadow-sm border border-slate-200 flex flex-col h-full">
-               
                 <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
-  <div className="flex items-center gap-2">
-    <Link
-      to="/partner/submit-scholarship"
-      className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
-    >
-      Post new scholarship
-    </Link>
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                    <Link
+                      to="/partner/submit-scholarship"
+                      className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
+                    >
+                      Post Scholarship
+                    </Link>
 
-    <Link
-      to="/partner/submit-funded-graduate-admission"
-      className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-indigo-700"
-    >
-      Post Funded Admission
-    </Link>
-  </div>
-</div>
+                    <Link
+                      to="/partner/submit-scholarship"
+                      className="inline-flex items-center rounded-full bg-violet-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-violet-700"
+                    >
+                      Post Fellowship
+                    </Link>
+
+                    <Link
+                      to="/partner/submit-funded-graduate-admission"
+                      className="inline-flex items-center rounded-full bg-indigo-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-indigo-700"
+                    >
+                      Post Funded Admission
+                    </Link>
+                  </div>
+                </div>
 
                 <div className="flex-1 h-[calc(100vh-3.5rem-160px)] overflow-y-auto">
-                  {myScholarships.length === 0 ? (
+                  {loadingScholarships ? (
                     <div className="h-[50vh] grid place-items-center text-sm text-slate-500">
-                      No scholarship posted yet.
+                      Loading listings...
+                    </div>
+                  ) : schErr ? (
+                    <div className="h-[50vh] grid place-items-center text-sm text-red-600">
+                      {schErr}
+                    </div>
+                  ) : myScholarships.length === 0 ? (
+                    <div className="h-[50vh] grid place-items-center text-sm text-slate-500">
+                      No opportunity posted yet.
                     </div>
                   ) : (
                     <ul className="divide-y divide-slate-100">
@@ -1096,12 +1048,10 @@ const updated = {
 
                         const rawStatus = String(sch.status || "").toLowerCase();
 
-                        // Friendly label for partners
                         let statusLabel = sch.status || "pending";
                         if (rawStatus === "pending") statusLabel = "Pending for Approval";
                         else if (rawStatus === "approved") statusLabel = "Approved";
 
-                        // Color coding
                         const dotClass =
                           rawStatus === "approved"
                             ? "bg-green-500"
@@ -1115,6 +1065,9 @@ const updated = {
                             : rawStatus === "pending"
                             ? "bg-amber-50 text-amber-700 ring-amber-200"
                             : "bg-slate-100 text-slate-700 ring-slate-200";
+
+                        const type = listingTypeLabel(sch);
+                        const publicPath = listingPublicPath(sch);
 
                         return (
                           <li key={sch.id} className="group hover:bg-slate-50/80 transition">
@@ -1141,6 +1094,9 @@ const updated = {
                                 <div className="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
                                   {sch.orgName && <span className="truncate">Org: {sch.orgName}</span>}
                                   {sch.amount && <span>Amount: {sch.amount}</span>}
+                                  <span className="inline-flex items-center rounded-full px-2 py-0.5 ring-1 text-[11px] bg-violet-50 text-violet-700 ring-violet-200">
+                                    {type}
+                                  </span>
                                   <span
                                     className={`inline-flex items-center rounded-full px-2 py-0.5 ring-1 text-[11px] ${pillClass}`}
                                   >
@@ -1154,42 +1110,47 @@ const updated = {
                                   </p>
                                 )}
 
-                               {sch.link && (
-  <div className="mt-1">
-    <a
-      href={sch.link}
-      target="_blank"
-      rel="noreferrer"
-      className="text-xs font-medium text-blue-700 hover:underline"
-    >
-      View / Apply
-    </a>
+                                {(sch.link || publicPath) && (
+                                  <div className="mt-1">
+                                    {sch.link ? (
+                                      <a
+                                        href={sch.link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-xs font-medium text-blue-700 hover:underline"
+                                      >
+                                        View / Apply
+                                      </a>
+                                    ) : (
+                                      <Link
+                                        to={publicPath}
+                                        className="text-xs font-medium text-blue-700 hover:underline"
+                                      >
+                                        View details
+                                      </Link>
+                                    )}
 
-    {/* per-scholarship stats (right after the link) */}
-    <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600">
-      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
-        Views: {sch.views ?? 0}
-      </span>
-      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
-        Clicks on Apply: {sch.applyClicks ?? 0}
-      </span>
-      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
-        Website visits: {sch.websiteClicks ?? 0}
-      </span>
+                                    <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-600">
+                                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                                        Views: {sch.views ?? 0}
+                                      </span>
+                                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                                        Clicks on Apply: {sch.applyClicks ?? 0}
+                                      </span>
+                                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                                        Website visits: {sch.websiteClicks ?? 0}
+                                      </span>
 
-      {/* ✅ NEW: open per-scholarship breakdown modal */}
-  <button
-    type="button"
-    onClick={() => openStatsModal(sch)}
-    className="rounded-full border border-slate-300 bg-white px-3 py-0.6 hover:bg-slate-50"
-  >
-    Details
-  </button>
-
-    </div>
-  </div>
-
-)}
+                                      <button
+                                        type="button"
+                                        onClick={() => openStatsModal(sch)}
+                                        className="rounded-full border border-slate-300 bg-white px-3 py-0.6 hover:bg-slate-50"
+                                      >
+                                        Details
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </li>
@@ -1201,13 +1162,12 @@ const updated = {
 
                 <div className="border-t border-slate-200 px-4 lg:px-5 py-3 bg-slate-50/60 rounded-b-2xl">
                   <p className="text-xs text-slate-500 text-center">
-                    Posting clear, scam-free scholarships helps students trust your organization and our platform.
+                    Posting clear, trustworthy opportunities helps students trust your organization and our platform.
                   </p>
                 </div>
               </div>
             </main>
 
-            {/* RIGHT */}
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
                 <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
@@ -1218,74 +1178,71 @@ const updated = {
                     <li className="flex gap-2">
                       <span>✅</span>
                       <span>
-                        The scholarship URL must point directly to the provider’s official scholarship page and include enough
+                        The opportunity URL must point directly to the provider’s official page and include enough
                         information to help students understand the application process and apply with ease.
                       </span>
                     </li>
                     <li className="flex gap-2">
                       <span>✅</span>
                       <span>
-                        Universities and Scholarship providers must share a contact email using their organization’s domain and ensure it remains reachable.
+                        Universities and providers must share a contact email using their organization’s domain and ensure it remains reachable.
                       </span>
                     </li>
                     <li className="flex gap-2"><span>✅</span><span>No confidential data collection (bank details, IDs, SSNs, etc.).</span></li>
                   </ul>
                 </div>
 
-               
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
-  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
-    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
-      Funded Program Posting Quick Tips
-    </span>
-  </h3>
+                  <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
+                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+                      Funded Program Posting Quick Tips
+                    </span>
+                  </h3>
 
-  <ul className="mt-2 space-y-3 text-xs text-slate-700">
-    <li className="flex items-start gap-2">
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-        ✓
-      </span>
-      <span>
-        Add your University’s official logo (University logo) to clearly identify the scholarship provider and build credibility with applicants.
-      </span>
-    </li>
+                  <ul className="mt-2 space-y-3 text-xs text-slate-700">
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Add your University’s official logo to clearly identify the provider and build credibility with applicants.
+                      </span>
+                    </li>
 
-    <li className="flex items-start gap-2">
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-        ✓
-      </span>
-      <span>
-        Include a Program banner image to visually highlight the opportunity and attract student attention.
-      </span>
-    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Include a program banner image to visually highlight the opportunity and attract student attention.
+                      </span>
+                    </li>
 
-    <li className="flex items-start gap-2">
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-        ✓
-      </span>
-      <span>
-        Provide a direct link to the official program webpage so applicants can access full details and submit their application.
-      </span>
-    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Provide a direct link to the official program webpage so applicants can access full details and apply.
+                      </span>
+                    </li>
 
-    <li className="flex items-start gap-2">
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
-        ✓
-      </span>
-      <span>
-        Include a link to the University’s official website to help applicants verify University/College.
-      </span>
-    </li>
-  </ul>
-</div>
-
+                    <li className="flex items-start gap-2">
+                      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-emerald-600 bg-emerald-50 text-[10px] font-bold text-emerald-700">
+                        ✓
+                      </span>
+                      <span>
+                        Include a link to the University’s official website to help applicants verify the institution.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </aside>
           </div>
         </div>
       </div>
 
-      {/* Toast */}
       {msg && (
         <div className="fixed left-1/2 -translate-x-1/2 bottom-5 z-40">
           <div className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm shadow-lg">
@@ -1294,7 +1251,6 @@ const updated = {
         </div>
       )}
 
-      {/* ✅ Per-scholarship stats modal */}
       {statsOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
@@ -1309,7 +1265,7 @@ const updated = {
             <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-200">
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-slate-900 truncate">
-                  {statsItem?.title || "Scholarship details"}
+                  {statsItem?.title || "Listing details"}
                 </div>
                 <div className="text-xs text-slate-500 truncate">
                   {statsItem?.orgName ? statsItem.orgName : ""}
@@ -1328,6 +1284,10 @@ const updated = {
             </div>
 
             <div className="p-4">
+              <div className="mb-3 text-xs text-slate-500">
+                Type: <span className="font-medium text-slate-700">{listingTypeLabel(statsItem)}</span>
+              </div>
+
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="text-xs text-slate-500">Views</div>
@@ -1365,36 +1325,32 @@ const updated = {
         </div>
       )}
 
-
-      {/* EDIT MODAL */}
       {editOpen && (
-       <div className="fixed inset-0 z-50 bg-black/40 overflow-y-auto px-4 py-6">   
-            <div className="w-full max-w-xl mx-auto mt-32 rounded-2xl bg-white shadow-xl max-h-[calc(100vh-9rem)] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/40 overflow-y-auto px-4 py-6">
+          <div className="w-full max-w-xl mx-auto mt-32 rounded-2xl bg-white shadow-xl max-h-[calc(100vh-9rem)] flex flex-col">
             <div className="relative px-5 py-4 border-b border-slate-200">
-  <h3 className="text-lg font-semibold text-slate-900 text-center">
-    Update Account Information
-  </h3>
+              <h3 className="text-lg font-semibold text-slate-900 text-center">
+                Update Account Information
+              </h3>
 
-  <button
-    type="button"
-    onClick={() => {
-      setEditOpen(false);
-      setPwErr("");
-      setCurrentPw("");
-      setNewPw("");
-      setConfirmPw("");
-    }}
-    className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
-    aria-label="Close"
-    title="Close"
-  >
-    ✕
-  </button>
-</div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditOpen(false);
+                  setPwErr("");
+                  setCurrentPw("");
+                  setNewPw("");
+                  setConfirmPw("");
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100"
+                aria-label="Close"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
 
-            {/*<form onSubmit={saveUpdates} className="px-5 py-4">*/}
             <form onSubmit={saveUpdates} className="px-5 py-4 overflow-y-auto">
-              {/* Account fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="block">
                   <div className="text-sm font-medium text-slate-700">Organization</div>
@@ -1448,7 +1404,6 @@ const updated = {
                   />
                 </label>
 
-                {/* Logo / avatar URL + upload */}
                 <label className="block md:col-span-2">
                   <div className="text-sm font-medium text-slate-700">Logo / Avatar URL</div>
                   <input
@@ -1475,7 +1430,9 @@ const updated = {
                       <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-300 bg-slate-100">
                         <img src={form.photo} alt="Logo preview" className="h-full w-full object-cover" />
                       </div>
-                      <span className="text-xs text-slate-500">Preview of your organization avatar.</span>
+                      <span className="text-xs text-slate-500">
+                        Preview of your organization avatar.
+                      </span>
                     </div>
                   )}
                 </label>
@@ -1483,11 +1440,12 @@ const updated = {
 
               <hr className="my-5 border-slate-200" />
 
-              {/* Password change */}
               <div>
                 <h4 className="text-sm font-semibold text-slate-800">Change Password</h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  {user?.password ? "Update your password below." : "Set a password for quicker login next time."}
+                  {user?.password
+                    ? "Update your password below."
+                    : "Set a password for quicker login next time."}
                 </p>
 
                 {pwErr && (
