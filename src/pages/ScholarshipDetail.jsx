@@ -1,17 +1,12 @@
 // src/pages/ScholarshipDetail.jsx
-//import { useEffect, useState } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
 
-
-// ✅ Sidebar ads (same component used elsewhere)
-import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
-
 // ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
-  import.meta.env.VITE_SCHOLARSHIPS_API_BASE || // <-- primary (prod)
+  import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE ||
   ""
@@ -45,7 +40,7 @@ function HtmlResult({ html }) {
 
 /* ---- Local fallback helpers ---- */
 const LOCAL_KEYS = ["partnerScholarships", "scholarships", "postedScholarships"];
-const CATALOG_CACHE_KEY = "scholarship_catalog_cache"; // optional list cache
+const CATALOG_CACHE_KEY = "scholarship_catalog_cache";
 
 function tryJson(getter) {
   try {
@@ -55,12 +50,10 @@ function tryJson(getter) {
   }
 }
 
-// Some entries may be wrapped like { data: {...} }
 function unwrap(item) {
   return item && item.data && typeof item.data === "object" ? item.data : item;
 }
 
-// Collect all plausible identifiers for one item
 function candidateIds(item, storeKey, index) {
   const x = unwrap(item) || {};
   const ids = [
@@ -75,16 +68,13 @@ function candidateIds(item, storeKey, index) {
   ]
     .filter(Boolean)
     .map((v) => v.toString());
-  // Deterministic fallback id so list/detail can agree without a real id
   ids.push(`local_${storeKey}_${index}`);
   return ids;
 }
 
-// (Optional) scan a small number of localStorage arrays (serverless convenience)
 function scanAllLocalForId(want) {
   for (let i = 0; i < localStorage.length; i += 1) {
     const k = localStorage.key(i) || "";
-    // Skip obvious non-arrays / noisy keys
     if (!/scholar|post|list|cache|store/i.test(k)) continue;
     const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "null"));
     if (!Array.isArray(arr)) continue;
@@ -99,7 +89,6 @@ function scanAllLocalForId(want) {
 function loadLocalByIdOrIndex(idStr) {
   const want = idStr.toString();
 
-  // 0) Try the catalog cache (the list page can write exactly what it rendered)
   const cacheMap =
     tryJson(() => JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || "{}")) ||
     {};
@@ -107,14 +96,13 @@ function loadLocalByIdOrIndex(idStr) {
     const cand = unwrap(cacheMap[want]) || cacheMap[want];
     return cand;
   }
-  // Also try any value in the cache map that matches by alternate id fields
+
   for (const v of Object.values(cacheMap)) {
     const cand = unwrap(v) || v;
     const ids = candidateIds(cand, "cache", -1);
     if (ids.includes(want)) return cand;
   }
 
-  // 1) Exact match against known id fields OR deterministic fallback id
   for (const k of LOCAL_KEYS) {
     const arr = tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
     if (!Array.isArray(arr)) continue;
@@ -124,7 +112,6 @@ function loadLocalByIdOrIndex(idStr) {
     }
   }
 
-  // 2) If numeric-like, allow index fallback (legacy convenience)
   if (/^\d+$/.test(want)) {
     const idx = Number(want);
     for (const k of LOCAL_KEYS) {
@@ -133,7 +120,6 @@ function loadLocalByIdOrIndex(idStr) {
     }
   }
 
-  // 3) Last resort: lightly scan other local arrays (keeps existing logic intact)
   const probed = scanAllLocalForId(want);
   if (probed) return probed;
 
@@ -205,7 +191,7 @@ function buildTasteProfile() {
     field: new Map(),
     funding: new Map(),
     tokens: new Map(),
-    hasHistory: recent.length >= 3, // ✅ only personalize after a few views
+    hasHistory: recent.length >= 3,
   };
 
   function bump(map, key, w = 1) {
@@ -215,7 +201,7 @@ function buildTasteProfile() {
   }
 
   recent.forEach((e, idx) => {
-    const weight = Math.max(1, 6 - Math.floor(idx / 6)); // newest weighted more
+    const weight = Math.max(1, 6 - Math.floor(idx / 6));
     bump(counts.country, e.country, weight);
     bump(counts.level, e.level, weight);
     bump(counts.field, e.field, weight);
@@ -243,11 +229,6 @@ function overlapCount(setA, setB) {
   return c;
 }
 
-/**
- * ✅ Strict gate:
- * - Must have at least ONE strong signal (field match OR enough keyword overlap)
- * - And must pass score threshold
- */
 function scoreAndGate(candidate, current, taste) {
   if (!candidate) return { ok: false, score: -Infinity };
 
@@ -267,7 +248,6 @@ function scoreAndGate(candidate, current, taste) {
 
   const tasteTopFields = topKeys(taste?.field, 2);
   const tasteTopTokens = new Set(topKeys(taste?.tokens, 8));
-
   const tokenOverlapWithTaste = overlapCount(candTokens, tasteTopTokens);
 
   const sameFieldAsCurrent =
@@ -276,7 +256,6 @@ function scoreAndGate(candidate, current, taste) {
   const sameFieldAsTaste =
     candidate.field && tasteTopFields.includes(String(candidate.field));
 
-  // ✅ Strong signals required
   const hasStrongSignal =
     sameFieldAsCurrent ||
     sameFieldAsTaste ||
@@ -285,10 +264,8 @@ function scoreAndGate(candidate, current, taste) {
 
   if (!hasStrongSignal) return { ok: false, score: -Infinity };
 
-  // ---- scoring (only after pass the gate) ----
   let score = 0;
 
-  // Similarity to current scholarship (strong)
   if (sameFieldAsCurrent) score += 12;
   if (candidate.level && current?.level && candidate.level === current.level)
     score += 6;
@@ -299,7 +276,6 @@ function scoreAndGate(candidate, current, taste) {
   )
     score += 4;
 
-  // Funding overlap (medium)
   const candFunding = new Set(
     Array.isArray(candidate.fundingType) ? candidate.fundingType : []
   );
@@ -309,11 +285,9 @@ function scoreAndGate(candidate, current, taste) {
     }
   );
 
-  // Keyword overlaps
   score += Math.min(8, tokenOverlapWithCurrent * 2);
   score += Math.min(6, tokenOverlapWithTaste);
 
-  // Personalization boosts (taste profile) — only if enough history
   if (taste?.hasHistory) {
     if (taste?.field?.has(candidate.field))
       score += Math.min(6, taste.field.get(candidate.field));
@@ -323,8 +297,7 @@ function scoreAndGate(candidate, current, taste) {
       score += Math.min(4, taste.country.get(candidate.country));
   }
 
-  // ✅ Minimum score so we don't show “everything”
-  const MIN_SCORE = taste?.hasHistory ? 14 : 16; // stricter if no history
+  const MIN_SCORE = taste?.hasHistory ? 14 : 16;
   if (score < MIN_SCORE) return { ok: false, score };
 
   return { ok: true, score };
@@ -335,48 +308,38 @@ export default function ScholarshipDetail() {
   const [item, setItem] = useState(null);
   const [err, setErr] = useState("");
 
-  // ✅ simple lightbox for banner
   const [showBanner, setShowBanner] = useState(false);
-
-  // ✅ recommendations
   const [recs, setRecs] = useState([]);
   const [showAllTips, setShowAllTips] = useState(false);
-  // ✅ AI quick summary
+
   const [aiSummary, setAiSummary] = useState("");
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
-  // ✅ AI simplified steps
-const [aiSteps, setAiSteps] = useState("");
-const [aiStepsLoading, setAiStepsLoading] = useState(false);
-const [showAiSteps, setShowAiSteps] = useState(false);
 
+  const [aiSteps, setAiSteps] = useState("");
+  const [aiStepsLoading, setAiStepsLoading] = useState(false);
+  const [showAiSteps, setShowAiSteps] = useState(false);
 
+  const trackScholarship = (sid, type) => {
+    try {
+      if (!API_BASE) return;
 
-  // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
-const trackScholarship = (sid, type) => {
-  try {
-    if (!API_BASE) return;
+      const idSafe = String(sid || "").trim();
+      const t = String(type || "").toLowerCase().trim();
+      if (!idSafe || !t) return;
 
-    const idSafe = String(sid || "").trim();
-    const t = String(type || "").toLowerCase().trim();
-    if (!idSafe || !t) return;
+      const gateKey = `sch:${idSafe}:${t}`;
+      if (!shouldSendTrackOnce(gateKey)) return;
 
-    // ✅ Count only once per device (persistent guard)
-    const gateKey = `sch:${idSafe}:${t}`;
-    if (!shouldSendTrackOnce(gateKey)) return;
-
-    fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: t }),
-      keepalive: true,
-    }).catch(() => {});
-  } catch {
-    // never break UI
-  }
-};
-
-
-
+      fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: t }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      // never break UI
+    }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -385,7 +348,7 @@ const trackScholarship = (sid, type) => {
       setErr("");
       setItem(null);
 
-      const useApi = Boolean(API_BASE); // only if configured
+      const useApi = Boolean(API_BASE);
 
       if (useApi) {
         try {
@@ -401,7 +364,7 @@ const trackScholarship = (sid, type) => {
           if (!alive) return;
           setItem(data);
           return;
-        } catch (e) {
+        } catch {
           // fallback to local
         }
       }
@@ -428,7 +391,6 @@ const trackScholarship = (sid, type) => {
     };
   }, [id]);
 
-  // ✅ close lightbox on ESC
   useEffect(() => {
     if (!showBanner) return;
     const onKey = (e) => {
@@ -438,12 +400,6 @@ const trackScholarship = (sid, type) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [showBanner]);
 
-
-
-
-  
-
-  // ✅ STRICT "You may also like"
   useEffect(() => {
     let alive = true;
 
@@ -454,7 +410,6 @@ const trackScholarship = (sid, type) => {
 
       let list = [];
 
-      // get catalog
       if (API_BASE) {
         try {
           const res = await fetch(
@@ -469,7 +424,6 @@ const trackScholarship = (sid, type) => {
         }
       }
 
-      // fallback to local arrays if API list fails
       if (!list.length) {
         const merged = [];
         for (const k of LOCAL_KEYS) {
@@ -482,7 +436,6 @@ const trackScholarship = (sid, type) => {
 
       const taste = buildTasteProfile();
 
-      // ✅ Only include strongly related items
       const ranked = list
         .map((x) => {
           const r = scoreAndGate(x, item, taste);
@@ -502,132 +455,120 @@ const trackScholarship = (sid, type) => {
     };
   }, [item]);
 
-
   const scholarshipPayload = useMemo(() => {
-  if (!item?.id) return null;
+    if (!item?.id) return null;
 
-  return {
-    id: item.id,
-    title: item.title || "",
-    country: item.country || "",
-    level: item.level || "",
-    deadline: item.deadline || "",
-    description: item.description || "",
-    eligibility: item.eligibility || "",
-    benefits: item.benefits || "",
-    howToApply: item.howToApply || "",
-  };
-}, [item]);
+    return {
+      id: item.id,
+      title: item.title || "",
+      country: item.country || "",
+      level: item.level || "",
+      deadline: item.deadline || "",
+      description: item.description || "",
+      eligibility: item.eligibility || "",
+      benefits: item.benefits || "",
+      howToApply: item.howToApply || "",
+    };
+  }, [item]);
 
+  useEffect(() => {
+    let cancelled = false;
 
-useEffect(() => {
-  let cancelled = false;
+    async function loadAiSummary() {
+      if (!AI_API_BASE || !scholarshipPayload?.id) return;
 
-  async function loadAiSummary() {
+      try {
+        setAiSummaryLoading(true);
+
+        const res = await fetch(`${AI_API_BASE}/api/scholarships/ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "generate-summary",
+            id: scholarshipPayload.id,
+            title: scholarshipPayload.title,
+            country: scholarshipPayload.country,
+            level: scholarshipPayload.level,
+            deadline: scholarshipPayload.deadline,
+            description: scholarshipPayload.description,
+            eligibility: scholarshipPayload.eligibility,
+            benefits: scholarshipPayload.benefits,
+            howToApply: scholarshipPayload.howToApply,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`AI summary HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!cancelled) {
+          setAiSummary(data?.result || "");
+        }
+      } catch (err) {
+        console.error("AI summary failed:", err);
+        if (!cancelled) {
+          setAiSummary("");
+        }
+      } finally {
+        if (!cancelled) {
+          setAiSummaryLoading(false);
+        }
+      }
+    }
+
+    loadAiSummary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [scholarshipPayload]);
+
+  async function handleSimplifySteps() {
     if (!AI_API_BASE || !scholarshipPayload?.id) return;
 
+    if (aiSteps && showAiSteps) {
+      setShowAiSteps(false);
+      return;
+    }
+
+    if (aiSteps && !showAiSteps) {
+      setShowAiSteps(true);
+      return;
+    }
+
     try {
-      setAiSummaryLoading(true);
+      setAiStepsLoading(true);
 
       const res = await fetch(`${AI_API_BASE}/api/scholarships/ai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        /*body: JSON.stringify({
-          action: "get-scholarship-summary",
-          scholarship: scholarshipPayload,
-        }),*/
         body: JSON.stringify({
-  action: "generate-summary",
-  id: scholarshipPayload.id,
-  title: scholarshipPayload.title,
-  country: scholarshipPayload.country,
-  level: scholarshipPayload.level,
-  deadline: scholarshipPayload.deadline,
-  description: scholarshipPayload.description,
-  eligibility: scholarshipPayload.eligibility,
-  benefits: scholarshipPayload.benefits,
-  howToApply: scholarshipPayload.howToApply,
-}),
+          action: "simplify-application-steps",
+          scholarship: scholarshipPayload,
+        }),
       });
 
       if (!res.ok) {
-        throw new Error(`AI summary HTTP ${res.status}`);
+        throw new Error(`AI steps HTTP ${res.status}`);
       }
 
       const data = await res.json();
-
-      if (!cancelled) {
-        setAiSummary(data?.result || "");
-      }
+      setAiSteps(data?.result || "");
+      setShowAiSteps(true);
     } catch (err) {
-      console.error("AI summary failed:", err);
-      if (!cancelled) {
-        setAiSummary("");
-      }
+      console.error("AI simplified steps failed:", err);
+      setAiSteps("");
+      setShowAiSteps(false);
     } finally {
-      if (!cancelled) {
-        setAiSummaryLoading(false);
-      }
+      setAiStepsLoading(false);
     }
   }
-
-  loadAiSummary();
-
-  return () => {
-    cancelled = true;
-  };
-}, [scholarshipPayload]);
-
-async function handleSimplifySteps() {
-  if (!AI_API_BASE || !scholarshipPayload?.id) return;
-
-  // If already generated and visible, just hide
-  if (aiSteps && showAiSteps) {
-    setShowAiSteps(false);
-    return;
-  }
-
-  // If already generated but hidden, just show again
-  if (aiSteps && !showAiSteps) {
-    setShowAiSteps(true);
-    return;
-  }
-
-  try {
-    setAiStepsLoading(true);
-
-    const res = await fetch(`${AI_API_BASE}/api/scholarships/ai`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "simplify-application-steps",
-        scholarship: scholarshipPayload,
-      }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`AI steps HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    setAiSteps(data?.result || "");
-    setShowAiSteps(true);
-  } catch (err) {
-    console.error("AI simplified steps failed:", err);
-    setAiSteps("");
-    setShowAiSteps(false);
-  } finally {
-    setAiStepsLoading(false);
-  }
-}
-
-
-
-
 
   if (err) {
     return (
@@ -639,11 +580,11 @@ async function handleSimplifySteps() {
 
   if (!item) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">Loading…</div>      
-       );
-      }
-  // ✅ AdSense gate: show ads only after scholarship content is loaded
-const canShowAds = Boolean(item);
+      <div className="max-w-4xl mx-auto px-4 py-12 text-slate-600">
+        Loading…
+      </div>
+    );
+  }
 
   const {
     title,
@@ -670,8 +611,6 @@ const canShowAds = Boolean(item);
   const bannerSrc = imageUrl || imageData || "";
   const logo = providerLogoUrl || providerLogoData || "";
 
-  
-
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <style>{`
@@ -683,288 +622,253 @@ const canShowAds = Boolean(item);
       `}</style>
 
       <div className="flex-1">
-        {/* ✅ Side ads ONLY on 2xl+ so center feed never gets squeezed */}
-        
-  <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
-  <div className="grid grid-cols-1 2xl:grid-cols-[160px_minmax(0,1024px)_160px] 2xl:gap-6 items-start">
-            {/* LEFT ADS (2nd ad frozen) */}
-            <aside className="hidden 2xl:block pt-8">
-              <div className="space-y-4">
-                <div className="max-h-[250px] overflow-hidden">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-                <div className="sticky top-[140px]">
-                  {canShowAds && <GoogleSidebarAd />}
+        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
+          <div className="mx-auto w-full max-w-[1024px]">
+            <main className="min-w-0">
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
+                <Link
+                  to="/scholarship"
+                  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+                >
+                  ← Back to Scholarships
+                </Link>
+              </div>
+
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
+                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt={`${provider || "Provider"} logo`}
+                        className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : null}
+
+                    <div className="min-w-0 flex-1">
+                      <h1 className="text-xl sm:text-2xl font-bold leading-snug break-words">
+                        {title}
+                      </h1>
+
+                      <div className="mt-1">
+                        <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6">
+                          {provider}
+                          {country ? ` • ${country}` : ""}
+                        </div>
+
+                        {(level || field) && (
+                          <div className="text-sm sm:text-base text-slate-600 leading-6">
+                            {level ? level : ""}
+                            {field ? `${level ? " • " : ""}${field}` : ""}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
+                    {Array.isArray(fundingType) && fundingType.length > 0 && (
+                      <span className="inline-flex flex-wrap items-center gap-2">
+                        <span className="text-slate-500">Funding:</span>
+                        <span className="inline-flex flex-wrap gap-1">
+                          {fundingType.map((f) => (
+                            <span
+                              key={f}
+                              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
+                            >
+                              {f}
+                            </span>
+                          ))}
+                        </span>
+                      </span>
+                    )}
+
+                    {amount && (
+                      <span className="inline-flex flex-wrap items-center gap-2">
+                        <span className="text-slate-500">Amount:</span>
+                        <span className="font-medium">{amount}</span>
+                      </span>
+                    )}
+
+                    {deadline && (
+                      <span className="inline-flex flex-wrap items-center gap-2">
+                        <span className="text-slate-500">Deadline:</span>
+                        <span className="font-medium break-words">{deadline}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
+                    {partnerApplyUrl && (
+                      <a
+                        href={partnerApplyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackScholarship(id, "apply")}
+                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+                      >
+                        Apply Now
+                      </a>
+                    )}
+
+                    {link && (
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackScholarship(id, "website")}
+                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+                      >
+                        Visit website
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </aside>
 
-            {/* CENTER (unchanged layout/dimensions) */}
-            <main className="min-w-0">
-             
-              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
-                    <Link
-                   to="/scholarship"
-                    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
-                   >
-                     ← Back to Scholarships
-                  </Link>
-                 </div>
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
+                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
+                  <div className="min-w-0 space-y-2">
+                    <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
+                      <div className="flex items-center justify-between gap-3">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          Quick scholarship Summary
+                        </h2>
+                      </div>
 
-  
-             {/*<div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
-  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">*/}
-  <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
-  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
-    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-      {logo ? (
-        <img
-          src={logo}
-          alt={`${provider || "Provider"} logo`}
-          className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      ) : null}
+                      <div className="mt-3 text-sm sm:text-base leading-7">
+                        {aiSummaryLoading ? (
+                          <p className="text-slate-600">Generating summary...</p>
+                        ) : aiSummary ? (
+                          <HtmlResult html={aiSummary} />
+                        ) : (
+                          <p className="text-slate-600">
+                            AI summary is not available for this scholarship yet.
+                          </p>
+                        )}
+                      </div>
+                    </section>
 
-      <div className="min-w-0 flex-1">
-        <h1 className="text-xl sm:text-2xl font-bold leading-snug break-words">
-          {title}
-        </h1>
+                    {description && (
+                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          Scholarship Description
+                        </h2>
+                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+                          <RichHtml html={description} />
+                        </div>
+                      </section>
+                    )}
 
-      
-        <div className="mt-1">
-  <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6">
-    {provider}
-    {country ? ` • ${country}` : ""}
-  </div>
+                    {bannerSrc && (
+                      <section className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setShowBanner(true)}
+                          className="block w-full text-left"
+                          title="Click to enlarge"
+                        >
+                          <img
+                            src={bannerSrc}
+                            alt={`${provider || title} banner`}
+                            className="w-full h-auto object-contain bg-white"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </button>
+                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+                          Click image to enlarge
+                        </div>
+                      </section>
+                    )}
 
-  {(level || field) && (
-    <div className="text-sm sm:text-base text-slate-600 leading-6">
-      {level ? level : ""}
-      {field ? `${level ? " • " : ""}${field}` : ""}
-    </div>
-  )}
-</div>
+                    {eligibility && (
+                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          Eligibility & Requirements
+                        </h2>
+                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+                          <RichHtml html={eligibility} />
+                        </div>
+                      </section>
+                    )}
 
+                    {benefits && (
+                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          Funding and Benefits
+                        </h2>
+                        <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
+                          <RichHtml html={benefits} />
+                        </div>
+                      </section>
+                    )}
 
+                    {howToApply && (
+                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          How to submit Application
+                        </h2>
+                        <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
+                          <RichHtml html={howToApply} />
+                        </div>
 
-      </div>
-    </div>
+                        <div className="mt-4 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                              <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
+                                Summarized & Simplified Application Steps
+                              </h3>
+                              <p className="mt-0.5 text-sm text-slate-600">
+                                Turn the application instructions into a shorter checklist.
+                              </p>
+                            </div>
 
-    <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
-      {Array.isArray(fundingType) && fundingType.length > 0 && (
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <span className="text-slate-500">Funding:</span>
-          <span className="inline-flex flex-wrap gap-1">
-            {fundingType.map((f) => (
-              <span
-                key={f}
-                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
-              >
-                {f}
-              </span>
-            ))}
-          </span>
-        </span>
-      )}
+                            <button
+                              type="button"
+                              onClick={handleSimplifySteps}
+                              disabled={aiStepsLoading}
+                              className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
+                            >
+                              {aiStepsLoading
+                                ? "Working..."
+                                : aiSteps && showAiSteps
+                                ? "Hide Steps"
+                                : aiSteps && !showAiSteps
+                                ? "Show Steps"
+                                : "Simplify Steps"}
+                            </button>
+                          </div>
 
-      {amount && (
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <span className="text-slate-500">Amount:</span>
-          <span className="font-medium">{amount}</span>
-        </span>
-      )}
+                          <div className="mt-3 text-sm sm:text-base leading-6">
+                            {showAiSteps && aiSteps ? (
+                              <HtmlResult html={aiSteps} />
+                            ) : null}
+                          </div>
+                        </div>
+                      </section>
+                    )}
 
-      {deadline && (
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <span className="text-slate-500">Deadline:</span>
-          <span className="font-medium break-words">{deadline}</span>
-        </span>
-      )}
-    </div>
+                    {additionalInformation && (
+                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
+                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+                          Additional Information
+                        </h2>
+                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+                          <RichHtml html={additionalInformation} />
+                        </div>
+                      </section>
+                    )}
+                  </div>
 
-    <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
-      {partnerApplyUrl && (
-        <a
-          href={partnerApplyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackScholarship(id, "apply")}
-          className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
-        >
-          Apply Now
-        </a>
-      )}
-
-      {link && (
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackScholarship(id, "website")}
-          className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
-        >
-          Visit website
-        </a>
-      )}
-    </div>
-  </div>
-</div>
-             
-  <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
-  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
-    <div className="min-w-0 space-y-2"> 
-
-  <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-        Quick scholarship Summary
-      </h2>
-      {/*<span className="inline-flex items-center rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-[#0A4595]">
-        Scholarship AI
-      </span>*/}
-    </div>
-
-    <div className="mt-3 text-sm sm:text-base leading-7">
-      {aiSummaryLoading ? (
-        <p className="text-slate-600">Generating summary...</p>
-      ) : aiSummary ? (
-        <HtmlResult html={aiSummary} />
-      ) : (
-        <p className="text-slate-600">
-          AI summary is not available for this scholarship yet.
-        </p>
-      )}
-    </div>
-  </section>
-
-  {description && (
-  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    Scholarship Description
-  </h2>
-  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-    <RichHtml html={description} />
-  </div>
-</section>
-        )}
-
-  {bannerSrc && (
-  <section className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-    <button
-      type="button"
-      onClick={() => setShowBanner(true)}
-      className="block w-full text-left"
-      title="Click to enlarge"
-    >
-      <img
-        src={bannerSrc}
-        alt={`${provider || title} banner`}
-        className="w-full h-auto object-contain bg-white"
-        loading="lazy"
-        decoding="async"
-      />
-    </button>
-    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-      Click image to enlarge
-    </div>
-  </section>
-)}
-
-
-
-  {eligibility && (
-  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    Eligibility & Requirements
-  </h2>
-  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-    <RichHtml html={eligibility} />
-  </div>
-</section>
-)}
-
-  {benefits && (
-  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    Funding and Benefits
-  </h2>
-  <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
-    <RichHtml html={benefits} />
-  </div>
-</section>
-)}
-
-{howToApply && (
-<section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    How to submit Application
-  </h2>
-  <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
-    <RichHtml html={howToApply} />
-  </div>
-
-  <div className="mt-4 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
-    {/*</div><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">*/}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <div>
-        <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
-          Summarized & Simplified Application Steps
-        </h3>
-        <p className="mt-0.5 text-sm text-slate-600">
-          Turn the application instructions into a shorter checklist.
-        </p>
-      </div>
-
-      <button
-  type="button"
-  onClick={handleSimplifySteps}
-  disabled={aiStepsLoading}
-  className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
->
-  {aiStepsLoading
-    ? "Working..."
-    : aiSteps && showAiSteps
-    ? "Hide Steps"
-    : aiSteps && !showAiSteps
-    ? "Show Steps"
-    : "Simplify Steps"}
-</button>
- </div>
-
-<div className="mt-3 text-sm sm:text-base leading-6">
-  {showAiSteps && aiSteps ? (
-    <HtmlResult html={aiSteps} />
-  ) : null}
-</div>
-</div>
-
-
-
-
-</section>
-  )}
-
-{additionalInformation && (
-  <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-  <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-    Additional Information
-  </h2>
-  <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-    <RichHtml html={additionalInformation} />
-  </div>
-</section>
-)}
-</div>
-                  {/*<aside className="space-y-6">*/}
                   <aside className="space-y-6 lg:pl-2">
                     {bannerSrc && (
-                      
-                        <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -986,7 +890,6 @@ const canShowAds = Boolean(item);
                     )}
 
                     <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                      
                       <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-6 text-center">
                         <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
@@ -1019,109 +922,107 @@ const canShowAds = Boolean(item);
                         </dl>
 
                         {partnerApplyUrl && (
-                         <a
-                         href={partnerApplyUrl}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         onClick={() => trackScholarship(id, "apply")}
-                         className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                         >
-                       Apply Now
-                         </a>
-                           )}
+                          <a
+                            href={partnerApplyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => trackScholarship(id, "apply")}
+                            className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
+                          >
+                            Apply Now
+                          </a>
+                        )}
                       </div>
                     </div>
 
+                    <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
+                      <div className="bg-slate-100 px-5 py-4">
+                        <h4 className="text-lg font-bold text-slate-900 text-center">
+                          Scholarship Tips for International Students
+                        </h4>
+                      </div>
 
-  <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-  <div className="bg-slate-100 px-5 py-4">
-    <h4 className="text-lg font-bold text-slate-900 text-center">
-      Scholarship Tips for International Students
-    </h4>
-  </div>
+                      <div className="p-4 space-y-3">
+                        {[
+                          {
+                            heading: "📝 Start Early and Stay Organized",
+                            text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
+                          },
+                          {
+                            heading: "🌍 Understand Eligibility Requirements",
+                            text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
+                          },
+                          {
+                            heading: "🧾 Prepare Strong Documents",
+                            text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
+                          },
+                          {
+                            heading: "✍️ Write a Compelling Personal Statement",
+                            text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
+                          },
+                          {
+                            heading: "🧑‍🏫 Secure Strong Recommendations",
+                            text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
+                          },
+                          {
+                            heading: "🎯 Tailor Every Application",
+                            text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
+                          },
+                          {
+                            heading: "💬 Show Leadership and Impact",
+                            text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
+                          },
+                          {
+                            heading: "💡 Be Clear About Your Goals",
+                            text: "Explain your academic path and how it connects to long-term impact and career objectives.",
+                          },
+                          {
+                            heading: "🔍 Proofread Carefully",
+                            text: "Review your application for clarity and errors. Ask others to check your work before submission.",
+                          },
+                          {
+                            heading: "📤 Submit Before the Deadline",
+                            text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
+                          },
+                          {
+                            heading: "📚 Apply to Multiple Scholarships",
+                            text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
+                          },
+                          {
+                            heading: "🤝 Stay Professional",
+                            text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
+                          },
+                          {
+                            heading: "🔄 Keep Trying",
+                            text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
+                          },
+                        ]
+                          .slice(0, showAllTips ? 13 : 5)
+                          .map((tip, idx) => (
+                            <div
+                              key={idx}
+                              className="rounded-xl bg-white border border-slate-200 px-4 py-3"
+                            >
+                              <p className="font-semibold text-slate-900 text-sm sm:text-base">
+                                {tip.heading}
+                              </p>
+                              <p className="text-sm text-slate-700 mt-1 leading-6">
+                                {tip.text}
+                              </p>
+                            </div>
+                          ))}
 
-  <div className="p-4 space-y-3">
-    {[
-      {
-        heading: "📝 Start Early and Stay Organized",
-        text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
-      },
-      {
-        heading: "🌍 Understand Eligibility Requirements",
-        text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
-      },
-      {
-        heading: "🧾 Prepare Strong Documents",
-        text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
-      },
-      {
-        heading: "✍️ Write a Compelling Personal Statement",
-        text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
-      },
-      {
-        heading: "🧑‍🏫 Secure Strong Recommendations",
-        text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
-      },
-      {
-        heading: "🎯 Tailor Every Application",
-        text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
-      },
-      {
-        heading: "💬 Show Leadership and Impact",
-        text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
-      },
-      {
-        heading: "💡 Be Clear About Your Goals",
-        text: "Explain your academic path and how it connects to long-term impact and career objectives.",
-      },
-      {
-        heading: "🔍 Proofread Carefully",
-        text: "Review your application for clarity and errors. Ask others to check your work before submission.",
-      },
-      {
-        heading: "📤 Submit Before the Deadline",
-        text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
-      },
-      {
-        heading: "📚 Apply to Multiple Scholarships",
-        text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
-      },
-      {
-        heading: "🤝 Stay Professional",
-        text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
-      },
-      {
-        heading: "🔄 Keep Trying",
-        text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
-      },
-    ]
-      .slice(0, showAllTips ? 13 : 5)
-      .map((tip, idx) => (
-        <div
-          key={idx}
-          className="rounded-xl bg-white border border-slate-200 px-4 py-3"
-        >
-          <p className="font-semibold text-slate-900 text-sm sm:text-base">
-            {tip.heading}
-          </p>
-          <p className="text-sm text-slate-700 mt-1 leading-6">
-            {tip.text}
-          </p>
-        </div>
-      ))}
-
-    <button
-      type="button"
-      onClick={() => setShowAllTips((v) => !v)}
-      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-    >
-      {showAllTips ? "Show fewer tips" : "Show more tips"}
-    </button>
-  </div>
-</div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAllTips((v) => !v)}
+                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                          {showAllTips ? "Show fewer tips" : "Show more tips"}
+                        </button>
+                      </div>
+                    </div>
 
                     {recs.length > 0 && (
-                      /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/
                       <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
                         <div className="bg-slate-100 px-5 py-4">
                           <h4 className="text-lg font-bold text-slate-900 text-center">
@@ -1150,23 +1051,10 @@ const canShowAds = Boolean(item);
                 </div>
               </div>
             </main>
-
-            {/* RIGHT ADS (2nd ad frozen) */}
-            <aside className="hidden 2xl:block pt-8">
-              <div className="space-y-4">
-                <div className="max-h-[250px] overflow-hidden">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-                <div className="sticky top-[140px]">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-              </div>
-            </aside>
           </div>
         </div>
       </div>
 
-      {/* ✅ Lightbox overlay */}
       {showBanner && (
         <div
           className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"

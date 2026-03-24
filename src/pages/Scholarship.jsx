@@ -11,7 +11,7 @@ import {
 } from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback + cache)
 
 // ✅ Google Ads (same component you used in dashboards)
-import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
+//import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 const CONTENT_TYPE = "SCHOLARSHIP";
 const CONTINENT_NAMES = Object.keys(REGIONS);
@@ -431,7 +431,7 @@ const trackScholarship = (id, type) => {
             <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
           </div>
         </aside>*/}
-        <aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+        {/*<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
           <GoogleSidebarAd
             slot="2515946722"
             enabled={canShowAds}
@@ -450,7 +450,7 @@ const trackScholarship = (id, type) => {
               minHeight={450}
             />
           </div>
-        </aside>
+        </aside>*/}
 
         {/* CENTER FEED (keeps EXACT same dimension as before) */}
         
@@ -853,7 +853,7 @@ const trackScholarship = (id, type) => {
           </div>
         </aside>*/}
       
-<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
+{/*<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
   <GoogleSidebarAd
     slot="2515946722"
     enabled={canShowAds}
@@ -872,7 +872,7 @@ const trackScholarship = (id, type) => {
       minHeight={450}
     />
   </div>
-</aside>
+</aside>*/}
 
 
 

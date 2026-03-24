@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
-import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 // ✅ Same API base as scholarships (same Lambda)
 const API_BASE = (
@@ -17,11 +16,10 @@ const API_BASE = (
 function RichHtml({ html }) {
   if (!html) return null;
   return (
-   
     <div
-  className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words text-justify"
-  dangerouslySetInnerHTML={{ __html: html }}
-/>
+      className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words text-justify"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 
@@ -389,7 +387,6 @@ export default function FundedGraduateAdmissionDetail() {
 
       if (API_BASE) {
         try {
-          // ✅ Ask for funded type list once your Lambda supports contentType param
           const res = await fetch(
             `${API_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
           );
@@ -408,10 +405,13 @@ export default function FundedGraduateAdmissionDetail() {
             tryJson(() => JSON.parse(localStorage.getItem(k) || "[]")) || [];
           if (Array.isArray(arr)) merged.push(...arr.map(unwrap));
         }
-        // ✅ filter funded only if field exists locally
         list = merged
           .filter(Boolean)
-          .filter((x) => String(x?.contentType || "").toUpperCase() === "FUNDED_GRAD_ADMISSION");
+          .filter(
+            (x) =>
+              String(x?.contentType || "").toUpperCase() ===
+              "FUNDED_GRAD_ADMISSION"
+          );
       }
 
       const taste = buildTasteProfile();
@@ -451,8 +451,6 @@ export default function FundedGraduateAdmissionDetail() {
     );
   }
 
-  const canShowAds = Boolean(item);
-
   const {
     title,
     provider,
@@ -482,129 +480,87 @@ export default function FundedGraduateAdmissionDetail() {
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <style>{`
         .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.2rem 0 0.35rem; }
-.rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.15rem 0 0.25rem; }
-.rich-html li { display: list-item; margin: 0.12rem 0; }
-.rich-html p { margin: 0.12rem 0; }
+        .rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.15rem 0 0.25rem; }
+        .rich-html li { display: list-item; margin: 0.12rem 0; }
+        .rich-html p { margin: 0.12rem 0; }
         .rich-html a { text-decoration: underline; }
       `}</style>
 
       <div className="flex-1">
-        
         <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 lg:px-5">
-        <div className="grid grid-cols-1 2xl:grid-cols-[140px_minmax(0,1120px)_140px] gap-4 2xl:gap-6 items-start">
-            {/* LEFT ADS */}
-            <aside className="hidden 2xl:block pt-8">
-              <div className="space-y-4">
-                <div className="max-h-[250px] overflow-hidden">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-                <div className="sticky top-[140px]">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-              </div>
-            </aside>
-
-            {/* CENTER */}
+          <div className="mx-auto w-full max-w-[1120px]">
             <main className="min-w-0 w-full">
-             
               <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-8 sm:pt-10 lg:pt-12 pb-2">
-  <Link
-    to="/funded-graduate-admission"
-    className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
-  >
-    ← Back to Funded Graduate Admission
-  </Link>
-</div>
+                <Link
+                  to="/funded-graduate-admission"
+                  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+                >
+                  ← Back to Funded Graduate Admission
+                </Link>
+              </div>
 
-<div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
-                  {/*<div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    {logo ? (
-                   <img
-                        src={logo}
-                   alt={`${provider || "University"} logo`}
-                        className="h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
-                     loading="lazy"
-                    onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                            }}
-                    />
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                    {/* Mobile only: logo + university name */}
+                    <div className="flex items-center gap-3 sm:hidden">
+                      {logo ? (
+                        <img
+                          src={logo}
+                          alt={`${provider || "University"} logo`}
+                          className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : null}
 
+                      {provider ? (
+                        <div className="min-w-0 text-lg font-bold text-[#4B1F6F] leading-snug break-words">
+                          {provider}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Desktop / tablet existing layout */}
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt={`${provider || "University"} logo`}
+                        className="hidden sm:block h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
                     ) : null}
 
                     <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
-                       {title}
-                        </h1>
-                       <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
-                        <span className="font-medium">{provider}</span>
-                      {country ? ` • ${country}` : ""}
-                      {level ? ` • ${level}` : ""}
-                      {field ? ` • ${field}` : ""}
-                           </p>
-                       </div>
-                    </div>*/}
+                      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
+                        {title}
+                      </h1>
+                      <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
+                        <span className="hidden sm:inline font-medium">
+                          {provider}
+                        </span>
+                        <span className="hidden sm:inline">
+                          {country ? ` • ${country}` : ""}
+                          {level ? ` • ${level}` : ""}
+                          {field ? ` • ${field}` : ""}
+                        </span>
 
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-  {/* Mobile only: logo + university name */}
-  <div className="flex items-center gap-3 sm:hidden">
-    {logo ? (
-      <img
-        src={logo}
-        alt={`${provider || "University"} logo`}
-        className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-        loading="lazy"
-        decoding="async"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    ) : null}
+                        <span className="sm:hidden">
+                          {country || ""}
+                          {level ? ` • ${level}` : ""}
+                          {field ? ` • ${field}` : ""}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
 
-    {provider ? (
-      /*<div className="min-w-0 text-base font-semibold text-slate-900 leading-snug break-words">*/
-      <div className="min-w-0 text-lg font-bold text-[#4B1F6F] leading-snug break-words">
-        {provider}
-      </div>
-    ) : null}
-  </div>
-
-  {/* Desktop / tablet existing layout */}
-  {logo ? (
-    <img
-      src={logo}
-      alt={`${provider || "University"} logo`}
-      className="hidden sm:block h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
-      loading="lazy"
-      decoding="async"
-      onError={(e) => {
-        e.currentTarget.style.display = "none";
-      }}
-    />
-  ) : null}
-
-  <div className="min-w-0">
-    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
-      {title}
-    </h1>
-    <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
-      <span className="hidden sm:inline font-medium">{provider}</span>
-      <span className="hidden sm:inline">
-        {country ? ` • ${country}` : ""}
-        {level ? ` • ${level}` : ""}
-        {field ? ` • ${field}` : ""}
-      </span>
-
-      <span className="sm:hidden">
-        {country || ""}
-        {level ? ` • ${level}` : ""}
-        {field ? ` • ${field}` : ""}
-      </span>
-    </p>
-  </div>
-</div>
-
-                  
                   <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
                       <span className="inline-flex items-center gap-2">
@@ -635,7 +591,6 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
                   </div>
 
-                  {/*<div className="mt-4 flex gap-3">*/}
                   <div className="mt-4 flex flex-col sm:flex-row gap-3">
                     {partnerApplyUrl && (
                       <a
@@ -643,7 +598,6 @@ export default function FundedGraduateAdmissionDetail() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackItem(id, "apply")}
-                        /*className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"*/
                         className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
                       >
                         Apply Now
@@ -656,7 +610,6 @@ export default function FundedGraduateAdmissionDetail() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackItem(id, "website")}
-                        /*className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50"*/
                         className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
                       >
                         Visit website
@@ -666,210 +619,167 @@ export default function FundedGraduateAdmissionDetail() {
                 </div>
               </div>
 
-              {/*</main><div className="max-w-5xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6">*/}
-  <div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
-  <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-5 lg:gap-6">
-  {/*<div className="min-w-0 space-y-2 lg:-ml-4">*/}
-  <div className="min-w-0 space-y-3 lg:space-y-2">
-  {description && (
-    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-      <h2
-        className="text-2xl font-semibold text-[#4B1F6F]"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
-        Program Description
-      </h2>
-      <div className="mt-2">
-        <RichHtml html={description} />
-      </div>
-    </section>
-  )}
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
+                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-5 lg:gap-6">
+                  <div className="min-w-0 space-y-3 lg:space-y-2">
+                    {description && (
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                        <h2
+                          className="text-2xl font-semibold text-[#4B1F6F]"
+                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                        >
+                          Program Description
+                        </h2>
+                        <div className="mt-2">
+                          <RichHtml html={description} />
+                        </div>
+                      </section>
+                    )}
 
-  {bannerSrc && (
-  <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">
-    <button
-      type="button"
-      onClick={() => setShowBanner(true)}
-      className="block w-full text-left"
-      title="Click to enlarge"
-    >
-      <img
-        src={bannerSrc}
-        alt={`${provider || title} banner`}
-        className="w-full h-auto object-contain bg-white"
-        loading="lazy"
-        decoding="async"
-      />
-    </button>
-    <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-      Click image to enlarge
-    </div>
-  </section>
-)}
+                    {bannerSrc && (
+                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">
+                        <button
+                          type="button"
+                          onClick={() => setShowBanner(true)}
+                          className="block w-full text-left"
+                          title="Click to enlarge"
+                        >
+                          <img
+                            src={bannerSrc}
+                            alt={`${provider || title} banner`}
+                            className="w-full h-auto object-contain bg-white"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </button>
+                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+                          Click image to enlarge
+                        </div>
+                      </section>
+                    )}
 
+                    {eligibility && (
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                        <h2
+                          className="text-2xl font-semibold text-[#4B1F6F]"
+                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                        >
+                          Program Eligibility & Requirements
+                        </h2>
+                        <div className="mt-2">
+                          <RichHtml html={eligibility} />
+                        </div>
+                      </section>
+                    )}
 
+                    {benefits && (
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                        <h2
+                          className="text-2xl font-semibold text-[#4B1F6F]"
+                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                        >
+                          Funding Benefits
+                        </h2>
+                        <div className="mt-2">
+                          <RichHtml html={benefits} />
+                        </div>
+                      </section>
+                    )}
 
+                    {howToApply && (
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                        <h2
+                          className="text-2xl font-semibold text-[#4B1F6F]"
+                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                        >
+                          How to Apply
+                        </h2>
+                        <div className="mt-2">
+                          <RichHtml html={howToApply} />
+                        </div>
+                      </section>
+                    )}
 
-  {eligibility && (
-    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-      <h2
-        className="text-2xl font-semibold text-[#4B1F6F]"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
-        Program Eligibility & Requirements
-      </h2>
-      <div className="mt-2">
-        <RichHtml html={eligibility} />
-      </div>
-    </section>
-  )}
+                    {additionalInformation && (
+                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                        <h2
+                          className="text-xl sm:text-2xl font-semibold text-[#4B1F6F] leading-tight"
+                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                        >
+                          Additional Information
+                        </h2>
+                        <div className="mt-2">
+                          <RichHtml html={additionalInformation} />
+                        </div>
+                      </section>
+                    )}
 
-  {benefits && (
-    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-      <h2
-        className="text-2xl font-semibold text-[#4B1F6F]"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
-        Funding Benefits
-      </h2>
-      <div className="mt-2">
-        <RichHtml html={benefits} />
-      </div>
-    </section>
-  )}
+                    <div className="pt-2 sm:pt-3">
+                      <div className="border-t border-slate-200 pt-4 sm:pt-5">
+                        <h4 className="text-base sm:text-xl font-bold text-center text-[#0A4595] underline underline-offset-4">
+                          Tips for Program Selection
+                        </h4>
 
-  {howToApply && (
-    /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-6 py-3">*/
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-      <h2
-        className="text-2xl font-semibold text-[#4B1F6F]"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
-        How to Apply
-      </h2>
-      <div className="mt-2">
-        <RichHtml html={howToApply} />
-      </div>
-    </section>
-  )}
+                        <div className="mt-4 space-y-3">
+                          {[
+                            {
+                              heading: "Confirm the true funding scope",
+                              text: "Review the offer carefully to see whether it covers tuition only or also includes living expenses, insurance, research support, and the full duration of study. A program described as funded may still leave significant costs for the student.",
+                            },
+                            {
+                              heading: "Consider STEM designation and confirm with admissions",
+                              text: "Where possible, prioritize programs that fall under STEM-designated fields, as they may offer extended practical training opportunities after graduation depending on visa regulations. If you are unsure whether your program qualifies, review the ",
+                              linkText: "STEM Programs page",
+                              linkUrl: "/stem-programs",
+                              extra:
+                                " for guidance, and always confirm details directly with the university’s admissions or program office before making a final decision.",
+                            },
+                            {
+                              heading: "Prioritize fit over name recognition",
+                              text: "A well-known university is not always the best choice. The stronger option is the one that aligns clearly with your academic background, professional goals, research interests, and long-term direction after graduation.",
+                            },
+                            {
+                              heading: "Examine faculty and supervision quality",
+                              text: "For research-based programs, faculty fit matters greatly. Look at supervisor interests, publications, current projects, and lab activity. Strong academic alignment can shape mentorship quality, funding continuity, and publication opportunities.",
+                            },
+                            {
+                              heading: "Measure affordability beyond tuition",
+                              text: "Even where tuition is covered, daily life can still be expensive. Compare housing, food, transportation, insurance, and local living costs before deciding. A more affordable city may provide a stronger and more sustainable student experience.",
+                            },
+                            {
+                              heading: "Understand the obligations behind support",
+                              text: "Some funding packages include teaching, grading, research, or departmental service responsibilities. Clarify the expected workload early so you can judge whether the balance between funding and academic pressure is realistic.",
+                            },
+                            {
+                              heading: "Assess value through outcomes",
+                              text: "Look beyond admission and ask what the program leads to. Strong options usually offer research exposure, practical training, internships, alumni networks, and credible career pathways that continue to add value after graduation.",
+                            },
+                          ].map((tip, idx) => (
+                            <div key={idx} className="px-0">
+                              <p className="text-[13px] sm:text-sm font-semibold text-[#163b66]">
+                                {idx + 1}. {tip.heading}
+                              </p>
+                              <p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
+                                {tip.text}
+                                {tip.linkText && (
+                                  <>
+                                    <Link
+                                      to={tip.linkUrl}
+                                      className="text-[#0A4595] font-semibold hover:underline"
+                                    >
+                                      {tip.linkText}
+                                    </Link>
+                                    {tip.extra}
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-  {additionalInformation && (
-    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-      <h2
-        /*className="text-2xl font-semibold text-[#4B1F6F]"*/
-        className="text-xl sm:text-2xl font-semibold text-[#4B1F6F] leading-tight"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
-        Additional Information
-      </h2>
-      <div className="mt-2">
-        <RichHtml html={additionalInformation} />
-      </div>
-    </section>
-  )}
-
-  <div className="pt-2 sm:pt-3">
-  <div className="border-t border-slate-200 pt-4 sm:pt-5">
-    {/*<h4 className="text-sm sm:text-base font-bold text-center text-[#0A4595] underline underline-offset-4">*/}
-    <h4 className="text-base sm:text-xl font-bold text-center text-[#0A4595] underline underline-offset-4">
-      Tips for Program Selection
-    </h4>
-
-    <div className="mt-4 space-y-3">
-      {[
-        {
-          heading: "Confirm the true funding scope",
-          text: "Review the offer carefully to see whether it covers tuition only or also includes living expenses, insurance, research support, and the full duration of study. A program described as funded may still leave significant costs for the student.",
-        },
-
-        {
-  heading: "Consider STEM designation and confirm with admissions",
-  text: "Where possible, prioritize programs that fall under STEM-designated fields, as they may offer extended practical training opportunities after graduation depending on visa regulations. If you are unsure whether your program qualifies, review the ",
-  linkText: "STEM Programs page",
-  linkUrl: "/stem-programs",
-  extra: " for guidance, and always confirm details directly with the university’s admissions or program office before making a final decision.",
-},
-        {
-          heading: "Prioritize fit over name recognition",
-          text: "A well-known university is not always the best choice. The stronger option is the one that aligns clearly with your academic background, professional goals, research interests, and long-term direction after graduation.",
-        },
-        {
-          heading: "Examine faculty and supervision quality",
-          text: "For research-based programs, faculty fit matters greatly. Look at supervisor interests, publications, current projects, and lab activity. Strong academic alignment can shape mentorship quality, funding continuity, and publication opportunities.",
-        },
-        {
-          heading: "Measure affordability beyond tuition",
-          text: "Even where tuition is covered, daily life can still be expensive. Compare housing, food, transportation, insurance, and local living costs before deciding. A more affordable city may provide a stronger and more sustainable student experience.",
-        },
-        {
-          heading: "Understand the obligations behind support",
-          text: "Some funding packages include teaching, grading, research, or departmental service responsibilities. Clarify the expected workload early so you can judge whether the balance between funding and academic pressure is realistic.",
-        },
-        {
-          heading: "Assess value through outcomes",
-          text: "Look beyond admission and ask what the program leads to. Strong options usually offer research exposure, practical training, internships, alumni networks, and credible career pathways that continue to add value after graduation.",
-        },
-      ].map((tip, idx) => (
-        <div key={idx} className="px-0">
-          <p className="text-[13px] sm:text-sm font-semibold text-[#163b66]">
-            {idx + 1}. {tip.heading}
-          </p>
-          {/*<p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
-            {tip.text}
-          </p>*/}
-          <p className="mt-1 text-[12px] sm:text-[13px] leading-5 sm:leading-6 text-slate-700 text-justify">
-  {tip.text}
-  {tip.linkText && (
-    <>
-      <Link
-        to={tip.linkUrl}
-        className="text-[#0A4595] font-semibold hover:underline"
-      >
-        {tip.linkText}
-      </Link>
-      {tip.extra}
-    </>
-  )}
-</p>
-
-
-
-
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-
-             
-
-                  {/*<aside className="space-y-6">*/}
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
@@ -893,17 +803,14 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     )}
 
-                    
                     <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
-                      {/*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-6 text-center">*/}
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
                         <h3 className="text-base font-semibold -mx-4 sm:-mx-5 lg:-mx-6 -mt-4 sm:-mt-5 lg:-mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
-                        At a glance
-                            </span>
+                            At a glance
+                          </span>
                         </h3>
 
-                        {/*<dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">*/}
                         <dl className="mt-3 text-sm text-slate-700 text-left mx-auto w-full max-w-xs break-words">
                           <dt className="font-medium">University</dt>
                           <dd className="mb-3">{provider || "-"}</dd>
@@ -934,7 +841,6 @@ export default function FundedGraduateAdmissionDetail() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => trackItem(id, "apply")}
-                            /*className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"*/
                             className="mt-2 inline-block w-full sm:w-auto rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
                           >
                             Apply Now
@@ -943,8 +849,6 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     </div>
 
-                    
-                    
                     {recs.length > 0 && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <div className="bg-slate-100 px-5 py-4">
@@ -960,8 +864,9 @@ export default function FundedGraduateAdmissionDetail() {
                             return (
                               <Link
                                 key={sid}
-                                to={`/funded-graduate-admission/${encodeURIComponent(sid)}`}
-                                /*className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"*/
+                                to={`/funded-graduate-admission/${encodeURIComponent(
+                                  sid
+                                )}`}
                                 className="block px-4 sm:px-5 py-4 text-emerald-700 hover:bg-slate-50 break-words"
                               >
                                 <span className="font-semibold">{label}</span>
@@ -975,18 +880,6 @@ export default function FundedGraduateAdmissionDetail() {
                 </div>
               </div>
             </main>
-
-            {/* RIGHT ADS */}
-            <aside className="hidden 2xl:block pt-8">
-              <div className="space-y-4">
-                <div className="max-h-[250px] overflow-hidden">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-                <div className="sticky top-[140px]">
-                  {canShowAds && <GoogleSidebarAd />}
-                </div>
-              </div>
-            </aside>
           </div>
         </div>
       </div>
@@ -999,8 +892,10 @@ export default function FundedGraduateAdmissionDetail() {
           role="dialog"
           aria-modal="true"
         >
-          {/*<div className="max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>*/}
-          <div className="max-w-5xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="max-w-5xl w-full max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="text-sm font-semibold text-slate-700">
@@ -1014,7 +909,6 @@ export default function FundedGraduateAdmissionDetail() {
                   Close
                 </button>
               </div>
-              {/*<div className="p-3 bg-slate-50">*/}
               <div className="p-2 sm:p-3 bg-slate-50 max-h-[75vh] overflow-auto">
                 <img
                   src={bannerSrc}
