@@ -244,8 +244,9 @@ export default function Navbar() {
           <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
           <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
           <NavLink to="/stem-programs" className={link}>STEM Programs</NavLink>
-          <NavLink to="/funded-graduate-admission" className={link}>Funded Graduate Programs</NavLink>
-          <NavLink to="/scholarships" className={link}>Scholarships Directory</NavLink>
+          <NavLink to="/funded-graduate-admission" className={link}>University-funded Programs</NavLink>
+          <NavLink to="/scholarships" className={link}>Scholarships</NavLink>
+          <NavLink to="/scholarships" className={link}>Fellowships</NavLink>
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
         </nav>

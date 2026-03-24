@@ -159,7 +159,7 @@ function formatDateForDisplay(value) {
   });
 }
 
-async function optimizeImageFile(file, { maxWidth = 1600, maxHeight = 1600, quality = 0.8 } = {}) {
+/*async function optimizeImageFile(file, { maxWidth = 1600, maxHeight = 1600, quality = 0.8 } = {}) {
   if (!file || !file.type.startsWith("image/")) return file;
 
   // Keep SVG unchanged
@@ -194,6 +194,63 @@ async function optimizeImageFile(file, { maxWidth = 1600, maxHeight = 1600, qual
   const ctx = canvas.getContext("2d");
   if (!ctx) return file;
 
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b), "image/webp", quality);
+  });
+
+  if (!blob) return file;
+
+  const baseName = String(file.name || "image")
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^\w.\-]+/g, "_");
+
+  return new File([blob], `${baseName}.webp`, {
+    type: "image/webp",
+    lastModified: Date.now(),
+  });
+}*/
+async function optimizeImageFile(
+  file,
+  { maxWidth = 1280, maxHeight = 1280, quality = 0.58 } = {}
+) {
+  if (!file || !file.type.startsWith("image/")) return file;
+
+  // Keep SVG unchanged
+  if (file.type === "image/svg+xml") return file;
+
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = dataUrl;
+  });
+
+  const width = img.width || 0;
+  const height = img.height || 0;
+  if (!width || !height) return file;
+
+  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+  const targetWidth = Math.max(1, Math.round(width * ratio));
+  const targetHeight = Math.max(1, Math.round(height * ratio));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const ctx = canvas.getContext("2d", { alpha: true });
+  if (!ctx) return file;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
   const blob = await new Promise((resolve) => {
@@ -372,9 +429,9 @@ const onPickLogo = async (e) => {
     setForm((f) => ({ ...f, providerLogoUrl: publicUrl, providerLogoData: "" }));*/
 
 const optimizedFile = await optimizeImageFile(file, {
-  maxWidth: 512,
-  maxHeight: 512,
-  quality: 0.82,
+  maxWidth: 320,
+  maxHeight: 320,
+  quality: 0.55,
 });
 
 const safeName = (optimizedFile.name || "logo.webp").replace(/[^\w.\-]+/g, "_");
@@ -676,9 +733,9 @@ const onChange = (e) => {
       setForm((f) => ({ ...f, imageUrl: publicUrl, imageData: "" }));*/
 
   const optimizedFile = await optimizeImageFile(file, {
-  maxWidth: 1600,
-  maxHeight: 900,
-  quality: 0.8,
+  maxWidth: 1280,
+  maxHeight: 720,
+  quality: 0.58,
 });
 
 const safeName = (optimizedFile.name || "image.webp").replace(/[^\w.\-]+/g, "_");
