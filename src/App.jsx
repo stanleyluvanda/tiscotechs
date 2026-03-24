@@ -73,6 +73,7 @@ const PartnerSubmitScholarship = lazy(() =>
 );
 const Scholarship = lazy(() => import("./pages/Scholarship.jsx"));
 const ScholarshipDetail = lazy(() => import("./pages/ScholarshipDetail.jsx"));
+const Fellowships = lazy(() => import("./pages/Fellowships.jsx"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard.jsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.jsx"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
@@ -207,12 +208,18 @@ export default function App() {
 
           {/* keep one redirect alias only */}
           <Route
-            path="/scholarships"
-            element={<Navigate to="/scholarship" replace />}
-          />
-          <Route path="/scholarship" element={<Scholarship />} />
-          <Route path="/scholarship/:id" element={<ScholarshipDetail />} />
+  path="/scholarships"
+  element={<Navigate to="/scholarship" replace />}
+/>
+<Route path="/scholarship" element={<Scholarship />} />
+<Route path="/scholarship/:id" element={<ScholarshipDetail />} />
 
+<Route
+  path="/fellowships"
+  element={<Navigate to="/fellowship" replace />}
+/>
+<Route path="/fellowship" element={<Fellowships />} />
+<Route path="/fellowship/:id" element={<ScholarshipDetail />} />
           <Route
             path="/eduinfo"
             element={<Navigate to="/edufinancing" replace />}

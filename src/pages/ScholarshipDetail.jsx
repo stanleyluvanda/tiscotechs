@@ -327,7 +327,13 @@ export default function ScholarshipDetail() {
       const t = String(type || "").toLowerCase().trim();
       if (!idSafe || !t) return;
 
-      const gateKey = `sch:${idSafe}:${t}`;
+      /*const gateKey = `sch:${idSafe}:${t}`;*/
+      const typePrefix =
+  String(item?.contentType || "SCHOLARSHIP").toUpperCase() === "FELLOWSHIP"
+    ? "fellowship"
+    : "sch";
+
+const gateKey = `${typePrefix}:${idSafe}:${t}`;
       if (!shouldSendTrackOnce(gateKey)) return;
 
       fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
@@ -610,6 +616,13 @@ export default function ScholarshipDetail() {
 
   const bannerSrc = imageUrl || imageData || "";
   const logo = providerLogoUrl || providerLogoData || "";
+  const contentType = String(item?.contentType || "SCHOLARSHIP").toUpperCase();
+  const isFellowship = contentType === "FELLOWSHIP";
+
+  const itemLabel = isFellowship ? "Fellowship" : "Scholarship";
+  const itemLabelPlural = isFellowship ? "Fellowships" : "Scholarships";
+  const backPath = isFellowship ? "/fellowship" : "/scholarship";
+  const detailBasePath = isFellowship ? "/fellowship" : "/scholarship";
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -626,12 +639,18 @@ export default function ScholarshipDetail() {
           <div className="mx-auto w-full max-w-[1024px]">
             <main className="min-w-0">
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
-                <Link
+                {/*<Link
                   to="/scholarship"
                   className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
                 >
                   ← Back to Scholarships
-                </Link>
+                </Link>*/}
+                <Link
+  to={backPath}
+  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+>
+  ← Back to {itemLabelPlural}
+</Link>
               </div>
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
@@ -737,7 +756,8 @@ export default function ScholarshipDetail() {
                     <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
                       <div className="flex items-center justify-between gap-3">
                         <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          Quick scholarship Summary
+                          {/*Quick scholarship Summary*/}
+                          Quick {itemLabel} Summary
                         </h2>
                       </div>
 
@@ -748,7 +768,8 @@ export default function ScholarshipDetail() {
                           <HtmlResult html={aiSummary} />
                         ) : (
                           <p className="text-slate-600">
-                            AI summary is not available for this scholarship yet.
+                            {/*AI summary is not available for this scholarship yet.*/}
+                            AI summary is not available for this {itemLabel.toLowerCase()} yet.
                           </p>
                         )}
                       </div>
@@ -757,7 +778,8 @@ export default function ScholarshipDetail() {
                     {description && (
                       <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
                         <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          Scholarship Description
+                          {/*Scholarship Description*/}
+                         {itemLabel} Description
                         </h2>
                         <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
                           <RichHtml html={description} />
@@ -938,7 +960,8 @@ export default function ScholarshipDetail() {
                     <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
                       <div className="bg-slate-100 px-5 py-4">
                         <h4 className="text-lg font-bold text-slate-900 text-center">
-                          Scholarship Tips for International Students
+                          {/*Scholarship Tips for International Students*/}
+                          {itemLabel} Tips for International Students
                         </h4>
                       </div>
 
@@ -1033,11 +1056,13 @@ export default function ScholarshipDetail() {
                         <div className="divide-y divide-slate-200">
                           {recs.map((s, idx) => {
                             const sid = getAnyId(s) || String(idx);
-                            const label = s?.title || "Untitled scholarship";
+                            /*const label = s?.title || "Untitled scholarship";*/
+                            const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
                             return (
                               <Link
                                 key={sid}
-                                to={`/scholarship/${encodeURIComponent(sid)}`}
+                                /*to={`/scholarship/${encodeURIComponent(sid)}`}*/
+                                to={`${detailBasePath}/${encodeURIComponent(sid)}`}
                                 className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
                               >
                                 <span className="font-semibold">{label}</span>

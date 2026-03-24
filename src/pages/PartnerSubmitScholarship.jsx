@@ -271,6 +271,7 @@ async function optimizeImageFile(
 
 export default function PartnerSubmitScholarship() {
   const [form, setForm] = useState({
+  contentType: "SCHOLARSHIP",
   title: "",
   provider: "",
   continent: "All",
@@ -848,7 +849,8 @@ if (form.deadlineMode === "single") {
 }
 
   const payload = {
-  contentType: "SCHOLARSHIP",
+  //contentType: "SCHOLARSHIP",
+  contentType: form.contentType || "SCHOLARSHIP",
   title: form.title,
   provider: form.provider,
   country: form.country,
@@ -894,7 +896,10 @@ if (form.deadlineMode === "single") {
           // keep {}
         }
 
-        setMsg(`Saved! Scholarship #${data?.id ?? ""} created.`);
+        //setMsg(`Saved! Scholarship #${data?.id ?? ""} created.`);
+        setMsg(
+  `Saved! ${form.contentType === "FELLOWSHIP" ? "Fellowship" : "Scholarship"} #${data?.id ?? ""} created.`
+    );
         setErr("");
         resetFormAndEditors();
         return;
@@ -906,7 +911,10 @@ if (form.deadlineMode === "single") {
     // 2) Fallback to localStorage
     try {
       const saved = saveLocalScholarship(payload, "scholarships_local");
-      setMsg(`Scholarship submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`);
+      //setMsg(`Scholarship submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`);
+      setMsg(
+  `${form.contentType === "FELLOWSHIP" ? "Fellowship" : "Scholarship"} submitted (saved locally). ${saved?.id ? `#${saved.id}` : ""}`
+);
       setErr("");
       resetFormAndEditors();
     } catch (localErr) {
@@ -916,6 +924,7 @@ if (form.deadlineMode === "single") {
 
   function resetFormAndEditors() {
     setForm({
+  contentType: "SCHOLARSHIP",
   title: "",
   provider: "",
   continent: "All",
@@ -969,8 +978,14 @@ link: "",
     <div className="min-h-screen bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
       {/* wider container */}
       <div className="max-w-3xl lg:max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold">Submit a Scholarship</h1>
-        <p className="mt-1 text-slate-600">Partners and universities can list their opportunities here.</p>
+        {/*<h1 className="text-2xl font-bold">Submit a Scholarship</h1>
+        <p className="mt-1 text-slate-600">Partners and universities can list their opportunities here.</p>*/}
+        <h1 className="text-2xl font-bold">
+  {form.contentType === "FELLOWSHIP" ? "Submit a Fellowship" : "Submit a Scholarship"}
+</h1>
+<p className="mt-1 text-slate-600">
+  Partners and universities can list their opportunities here.
+</p>
 
         {/* Bordered card around the whole form & messages (matches login style) */}
         <div className="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -1001,8 +1016,23 @@ link: "",
             <form onSubmit={submit} className="space-y-6">
               {/* Top grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <label className="block">
+      <div className="text-sm font-medium">Listing Type *</div>
+      <select
+        name="contentType"
+        value={form.contentType}
+        onChange={onChange}
+        className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+      >
+        <option value="SCHOLARSHIP">Scholarship</option>
+        <option value="FELLOWSHIP">Fellowship</option>
+      </select>
+    </label>
                 <label className="block">
-                  <div className="text-sm font-medium">Scholarship Title *</div>
+                  {/*<div className="text-sm font-medium">Scholarship Title *</div>*/}
+                  <div className="text-sm font-medium">
+  {form.contentType === "FELLOWSHIP" ? "Fellowship Title *" : "Scholarship Title *"}
+</div>
                   <input
                     name="title"
                     value={form.title}
@@ -1343,11 +1373,18 @@ link: "",
 
               {/* Logo/Banner */}
               <div className="bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-                <div className="text-sm font-medium">Scholarship Banner</div>
+                {/*<div className="text-sm font-medium">Scholarship Banner</div>
                 <p className="mt-1 text-xs text-slate-600">
                   Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
                   the Scholarship details page.
-                </p>
+                </p>*/}
+                <div className="text-sm font-medium">
+  {form.contentType === "FELLOWSHIP" ? "Fellowship Banner" : "Scholarship Banner"}
+</div>
+<p className="mt-1 text-xs text-slate-600">
+  Add a hosted image URL (preferred) or upload a file. This appears above the “At a glance” card on
+  the {form.contentType === "FELLOWSHIP" ? "Fellowship" : "Scholarship"} details page.
+</p>
 
                 {/* URL input */}
                 <label className="block mt-3">
@@ -1441,7 +1478,10 @@ link: "",
 
               <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
   <div>
-    <div className="text-sm font-medium">Scholarship Description</div>
+    {/*<div className="text-sm font-medium">Scholarship Description</div>*/}
+    <div className="text-sm font-medium">
+  {form.contentType === "FELLOWSHIP" ? "Fellowship Description" : "Scholarship Description"}
+</div>
     <div
       ref={descHostRef}
       className="mt-2 bg-white border border-slate-300 rounded"
@@ -1488,9 +1528,12 @@ link: "",
 
 
               <div className="pt-2">
-                <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
+                {/*<button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
                   Submit Scholarship
-                </button>
+                </button>*/}
+                <button className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700">
+  {form.contentType === "FELLOWSHIP" ? "Submit Fellowship" : "Submit Scholarship"}
+</button>
               </div>
 
               {/* Helpful footer for debugging */}
