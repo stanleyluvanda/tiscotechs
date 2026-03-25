@@ -655,7 +655,7 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  {/*<div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {logo ? (
                       <img
                         src={logo}
@@ -687,8 +687,52 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
                           </div>
                         )}
                       </div>
-                    </div>
+                    </div>*/}
+
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+  <div className="min-w-0 flex-1">
+    <div className="flex items-center gap-3 sm:block">
+      {logo ? (
+        <img
+          src={logo}
+          alt={`${provider || "Provider"} logo`}
+          className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 sm:mt-1"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : null}
+
+      <div className="min-w-0 sm:mt-1">
+        <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6 break-words">
+          {provider}
+          {country ? ` • ${country}` : ""}
+        </div>
+      </div>
+    </div>
+
+    <h1 className="mt-3 sm:mt-2 text-xl sm:text-2xl font-bold leading-snug break-words">
+      {title}
+    </h1>
+
+    {(level || field) && (
+      <div className="mt-1 text-sm sm:text-base text-slate-600 leading-6">
+        {level ? level : ""}
+        {field ? `${level ? " • " : ""}${field}` : ""}
+      </div>
+    )}
+  </div>
+
+
+
+
+
+
+
                   </div>
+
 
                   <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
