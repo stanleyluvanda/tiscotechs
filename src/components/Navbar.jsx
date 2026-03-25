@@ -237,7 +237,7 @@ export default function Navbar() {
         </Link>
 
         {/* CENTER: nav (Partner after About) */}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1 overflow-x-auto">
+        {/*<nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1 overflow-x-auto">
           <NavLink to="/home" className={link}>Home</NavLink>
           <NavLink to="/about" className={link}>About</NavLink>
           <NavLink to="/partner" className={link}>Partner</NavLink>
@@ -249,7 +249,45 @@ export default function Navbar() {
           <NavLink to="/fellowships" className={link}>Fellowships</NavLink>
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
-        </nav>
+        </nav>*/}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1">
+  <NavLink to="/home" className={link}>Home</NavLink>
+  <NavLink to="/about" className={link}>About</NavLink>
+  <NavLink to="/partner" className={link}>Partner</NavLink>
+  <NavLink to="/edufinancing" className={link}>EduFinancing</NavLink>
+  <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
+  <NavLink to="/stem-programs" className={link}>STEM Programs</NavLink>
+
+  {/* ✅ Funding Dropdown (NEW) */}
+  <div className="relative group">
+    <button className="px-1.5 py-1.5 text-[13px] font-semibold text-white/90 hover:bg-white/10 rounded-md whitespace-nowrap">
+      Funding Programs for International Students ▾
+    </button>
+
+    <div className="absolute left-0 hidden group-hover:block bg-white text-slate-900 rounded-md shadow-lg mt-2 min-w-[220px] z-50">
+      
+      <Link to="/scholarship" className="block px-4 py-2 text-sm hover:bg-slate-100">
+        Scholarships
+      </Link>
+
+      <Link to="/fellowship" className="block px-4 py-2 text-sm hover:bg-slate-100">
+        Fellowships
+      </Link>
+
+      <Link to="/funded-graduate-admission" className="block px-4 py-2 text-sm hover:bg-slate-100">
+        University-funded Programs
+      </Link>
+
+      <Link to="/funding-programs" className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]">
+        Funding Programs
+      </Link>
+
+    </div>
+  </div>
+
+  <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
+  <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
+</nav>
 
         {/* RIGHT: globe + auth (single Log in) */}
         <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
