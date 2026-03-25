@@ -13,6 +13,7 @@ const API_BASE = (
 
 /* ---- Content types ---- */
 const CT_SCH = "SCHOLARSHIP";
+const CT_FEL = "FELLOWSHIP";
 const CT_FGA = "FUNDED_GRAD_ADMISSION";
 
 /* ---- tiny helper to load partnerAuth (email) ---- */
@@ -116,9 +117,15 @@ export default function PartnerDashboard() {
   const email = partner?.email || partner?.username || partner?.user || "";
 
   // Scholarships
-  const [items, setItems] = useState([]);
+  /*const [items, setItems] = useState([]);
   // Funded grad admissions
-  const [fgaItems, setFgaItems] = useState([]);
+  const [fgaItems, setFgaItems] = useState([]);*/
+  // Scholarships
+const [items, setItems] = useState([]);
+// Fellowships
+const [fellowshipItems, setFellowshipItems] = useState([]);
+// Funded grad admissions
+const [fgaItems, setFgaItems] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -176,14 +183,20 @@ export default function PartnerDashboard() {
       try {
         if (API_BASE) {
           // Fetch both in parallel
-          const [schMine, fgaMine] = await Promise.all([
+          /*const [schMine, fgaMine] = await Promise.all([
             fetchMineFromApi(CT_SCH),
             fetchMineFromApi(CT_FGA),
-          ]);
+          ]);*/
+const [schMine, felMine, fgaMine] = await Promise.all([
+  fetchMineFromApi(CT_SCH),
+  fetchMineFromApi(CT_FEL),
+  fetchMineFromApi(CT_FGA),
+]);
 
           if (!alive) return;
 
           setItems(schMine);
+          setFellowshipItems(felMine);
           setFgaItems(fgaMine);
           setLoading(false);
           return;
@@ -202,6 +215,11 @@ export default function PartnerDashboard() {
           const ctOk = ct ? ct === CT_SCH : true; // if older items have no contentType
           return emailLower && pe === emailLower && ctOk;
         });
+  const mineFel = allSch.filter((s) => {
+  const pe = String(s.postedByEmail || s.partnerEmail || "").toLowerCase().trim();
+  const ct = String(s.contentType || "").trim();
+  return emailLower && pe === emailLower && ct === CT_FEL;
+});
 
         const allFga = loadLocalFundedGraduateAdmissions();
         const mineFga = allFga.filter((s) => {
@@ -213,6 +231,7 @@ export default function PartnerDashboard() {
 
         if (!alive) return;
         setItems(mineSch);
+        setFellowshipItems(mineFel);
         setFgaItems(mineFga);
         setErr("");
       } catch (e) {
@@ -249,6 +268,32 @@ export default function PartnerDashboard() {
     return list;
   }, [items, statusFilter, q]);
 
+
+  const filteredFellowships = useMemo(() => {
+  let list = fellowshipItems.slice();
+
+  if (statusFilter !== "all") {
+    list = list.filter(
+      (s) => String(s.status || "pending").toLowerCase() === statusFilter
+    );
+  }
+
+  const needle = q.trim().toLowerCase();
+  if (needle) {
+    list = list.filter((s) =>
+      [s.title, s.provider, s.country, s.level, s.field]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(needle))
+    );
+  }
+
+  return list;
+}, [fellowshipItems, statusFilter, q]);
+
+
+
+
+
   const filteredFga = useMemo(() => {
     let list = fgaItems.slice();
 
@@ -271,11 +316,21 @@ export default function PartnerDashboard() {
   }, [fgaItems, statusFilter, q]);
 
   async function setStatusFor(kind, id, status) {
-    if (!API_BASE) {
+    /*if (!API_BASE) {
       if (kind === CT_SCH) setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
       else setFgaItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
       return;
-    }
+    }*/
+    if (!API_BASE) {
+  if (kind === CT_SCH) {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
+  } else if (kind === CT_FEL) {
+    setFellowshipItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
+  } else {
+    setFgaItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
+  }
+  return;
+}
 
     try {
       // same endpoint; backend should apply by id
@@ -287,19 +342,36 @@ export default function PartnerDashboard() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const updated = await res.json();
 
-      if (kind === CT_SCH) setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
-      else setFgaItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+      /*if (kind === CT_SCH) setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+      else setFgaItems((prev) => prev.map((it) => (it.id === id ? updated : it)));*/
+      if (kind === CT_SCH) {
+  setItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+} else if (kind === CT_FEL) {
+  setFellowshipItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+} else {
+  setFgaItems((prev) => prev.map((it) => (it.id === id ? updated : it)));
+}
     } catch (e) {
       alert(`Failed to update status: ${e.message}`);
     }
   }
 
   async function removeFor(kind, id) {
-    if (!API_BASE) {
+    /*if (!API_BASE) {
       if (kind === CT_SCH) setItems((prev) => prev.filter((it) => it.id !== id));
       else setFgaItems((prev) => prev.filter((it) => it.id !== id));
       return;
-    }
+    }*/
+    if (!API_BASE) {
+  if (kind === CT_SCH) {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+  } else if (kind === CT_FEL) {
+    setFellowshipItems((prev) => prev.filter((it) => it.id !== id));
+  } else {
+    setFgaItems((prev) => prev.filter((it) => it.id !== id));
+  }
+  return;
+}
 
     if (!confirm("Delete this item? This cannot be undone.")) return;
 
@@ -307,8 +379,15 @@ export default function PartnerDashboard() {
       const res = await fetch(`${API_BASE}/api/scholarships/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      if (kind === CT_SCH) setItems((prev) => prev.filter((it) => it.id !== id));
-      else setFgaItems((prev) => prev.filter((it) => it.id !== id));
+      /*if (kind === CT_SCH) setItems((prev) => prev.filter((it) => it.id !== id));
+      else setFgaItems((prev) => prev.filter((it) => it.id !== id));*/
+      if (kind === CT_SCH) {
+  setItems((prev) => prev.filter((it) => it.id !== id));
+} else if (kind === CT_FEL) {
+  setFellowshipItems((prev) => prev.filter((it) => it.id !== id));
+} else {
+  setFgaItems((prev) => prev.filter((it) => it.id !== id));
+}
     } catch (e) {
       alert(`Failed to delete: ${e.message}`);
     }
@@ -321,6 +400,7 @@ export default function PartnerDashboard() {
   }
 
   const schEmpty = !loading && !err && filteredScholarships.length === 0;
+  const felEmpty = !loading && !err && filteredFellowships.length === 0;
   const fgaEmpty = !loading && !err && filteredFga.length === 0;
 
   return (
@@ -343,6 +423,13 @@ export default function PartnerDashboard() {
             className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
           >
             + Add Scholarship
+          </Link>
+
+          <Link
+           to="/partner/submit-scholarship"
+           className="rounded bg-violet-600 text-white px-4 py-2 text-sm font-semibold hover:bg-violet-700"
+          >
+           + Add Fellowship
           </Link>
 
           {/* If you already have a route for funded grad submission, keep it.
@@ -481,6 +568,105 @@ export default function PartnerDashboard() {
           )}
         </div>
 
+
+ {/* =========================
+            Fellowship section
+           ========================= */}
+
+        <div className="mt-10">
+  <div className="flex items-center justify-between gap-3">
+    <h2 className="text-lg font-semibold text-slate-900">My Fellowships</h2>
+    <span className="text-xs text-slate-500">
+      {filteredFellowships.length} item{filteredFellowships.length === 1 ? "" : "s"}
+    </span>
+  </div>
+
+  {felEmpty ? (
+    <div className="py-8 text-center text-slate-600">No fellowships found.</div>
+  ) : (
+    <div className="mt-3 overflow-x-auto">
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr className="text-left border-b border-slate-200">
+            <th className="py-2 pr-3">Title</th>
+            <th className="py-2 pr-3">Provider</th>
+            <th className="py-2 pr-3">Status</th>
+            <th className="py-2 pr-3">Deadline</th>
+            <th className="py-2 pr-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredFellowships.map((it) => (
+            <tr key={it.id} className="border-b border-slate-100">
+              <td className="py-2 pr-3">
+                <div className="font-medium">{it.title}</div>
+                <div className="text-slate-500">
+                  {it.country || "Multiple"} • {it.level || "—"}
+                </div>
+              </td>
+              <td className="py-2 pr-3">{it.provider}</td>
+              <td className="py-2 pr-3">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5">
+                  {it.status || "pending"}
+                </span>
+              </td>
+              <td className="py-2 pr-3">{it.deadline || "—"}</td>
+              <td className="py-2 pr-3">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => preview(CT_FEL, it)}
+                    className="rounded border border-slate-300 px-2 py-1 hover:bg-slate-50"
+                    title="Preview"
+                  >
+                    Preview
+                  </button>
+
+                  <Link
+                    to={`/fellowship/${it.id}`}
+                    className="rounded border border-slate-300 px-2 py-1 hover:bg-slate-50"
+                    title="View public page"
+                  >
+                    View
+                  </Link>
+
+                  {it.status !== "archived" ? (
+                    <button
+                      onClick={() => setStatusFor(CT_FEL, it.id, "archived")}
+                      className="rounded border border-amber-300 text-amber-700 px-2 py-1 hover:bg-amber-50"
+                    >
+                      Archive
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setStatusFor(CT_FEL, it.id, "pending")}
+                      className="rounded border border-green-300 text-green-700 px-2 py-1 hover:bg-green-50"
+                    >
+                      Unarchive
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => removeFor(CT_FEL, it.id)}
+                    className="rounded border border-red-300 text-red-700 px-2 py-1 hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+
+
+
+
+
+
+
         {/* =========================
             Funded Graduate Programs section
            ========================= */}
@@ -592,11 +778,20 @@ export default function PartnerDashboard() {
               {previewItem.field ? ` • ${previewItem.field}` : ""}
             </div>
 
-            {previewItem.description && (
+            {/*</div>{previewItem.description && (
               <section>
                 <h4 className="text-base font-semibold">
                   {previewKind === CT_FGA ? "Program Description" : "Scholarship Description"}
-                </h4>
+                </h4>*/}
+          {previewItem.description && (
+  <section>
+    <h4 className="text-base font-semibold">
+      {previewKind === CT_FGA
+        ? "Program Description"
+        : previewKind === CT_FEL
+        ? "Fellowship Description"
+        : "Scholarship Description"}
+    </h4>
                 <div className="mt-2">
                   <RichHtml html={previewItem.description} />
                 </div>
