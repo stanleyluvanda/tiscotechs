@@ -689,14 +689,15 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
                       </div>
                     </div>*/}
 
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-  <div className="min-w-0 flex-1">
-    <div className="flex items-center gap-3 sm:block">
+                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+  {/* MOBILE ONLY */}
+  <div className="sm:hidden min-w-0 flex-1">
+    <div className="flex items-center gap-3">
       {logo ? (
         <img
           src={logo}
           alt={`${provider || "Provider"} logo`}
-          className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 sm:mt-1"
+          className="h-14 w-14 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
           loading="lazy"
           decoding="async"
           onError={(e) => {
@@ -705,33 +706,68 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
         />
       ) : null}
 
-      <div className="min-w-0 sm:mt-1">
-        <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6 break-words">
+      <div className="min-w-0">
+        <div className="text-base font-semibold text-[#46166B] leading-6 break-words">
           {provider}
           {country ? ` • ${country}` : ""}
         </div>
       </div>
     </div>
 
-    <h1 className="mt-3 sm:mt-2 text-xl sm:text-2xl font-bold leading-snug break-words">
+    <h1 className="mt-3 text-xl font-bold leading-snug break-words">
       {title}
     </h1>
 
     {(level || field) && (
-      <div className="mt-1 text-sm sm:text-base text-slate-600 leading-6">
+      <div className="mt-1 text-sm text-slate-600 leading-6">
         {level ? level : ""}
         {field ? `${level ? " • " : ""}${field}` : ""}
       </div>
     )}
   </div>
 
+  {/* DESKTOP EXACTLY AS BEFORE */}
+  <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 min-w-0 flex-1">
+    {logo ? (
+      <img
+        src={logo}
+        alt={`${provider || "Provider"} logo`}
+        className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
+        loading="lazy"
+        decoding="async"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    ) : null}
+
+    <div className="min-w-0 flex-1">
+      <h1 className="text-2xl font-bold leading-snug break-words">
+        {title}
+      </h1>
+
+      <div className="mt-1">
+        <div className="text-lg font-semibold text-[#46166B] leading-6">
+          {provider}
+          {country ? ` • ${country}` : ""}
+        </div>
+
+        {(level || field) && (
+          <div className="text-base text-slate-600 leading-6">
+            {level ? level : ""}
+            {field ? `${level ? " • " : ""}${field}` : ""}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
 
 
-
-                  </div>
+                  
 
 
                   <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
