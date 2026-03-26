@@ -11,6 +11,8 @@ const SECTION_LEFT_IMAGE = "/images/funding-programs/funding-overview.jpg";
 const SECTION_BOTTOM_IMAGE = "/images/OneOnOne Funding consultation.png";
 const SPOTLIGHT_FALLBACK_1 = "/images/Fulbright1.png";
 const SPOTLIGHT_FALLBACK_2 = "/images/Chevening.png";
+const SPOTLIGHT_FALLBACK_3 = "/images/Commonwealth.png";
+const SPOTLIGHT_FALLBACK_4 = "/images/Daad1.png";
 
 function getTypeIcon(type) {
   if (type === "scholarship_program") return "🎓";
@@ -61,12 +63,12 @@ export default function FundingPrograms() {
   }, [search, type]);
 
   const spotlightPrograms = useMemo(() => {
-    const base = featuredFundingPrograms.length
-      ? featuredFundingPrograms
-      : fundingPrograms;
+  const base = featuredFundingPrograms.length
+    ? featuredFundingPrograms
+    : fundingPrograms;
 
-    return base.slice(0, 2);
-  }, []);
+  return base.slice(0, 4);
+}, []);
 
   const featuredGrid = useMemo(() => {
     const base = featuredFundingPrograms.length
@@ -182,7 +184,7 @@ export default function FundingPrograms() {
                 className="text-[42px] sm:text-[54px] leading-none font-medium text-[#A57900]"
                 style={{ fontFamily: '"Brush Script MT", "Segoe Script", cursive' }}
               >
-                Explore funding options
+                Explore popular funding options
               </h2>
             </div>
 
@@ -226,10 +228,16 @@ export default function FundingPrograms() {
               </div>
 
               {/* RIGHT SPOTLIGHT PROGRAMS */}
-              <div className="lg:border-l lg:border-slate-300 lg:pl-10 space-y-10">
+              <div className="lg:border-l lg:border-slate-300 lg:pl-8 space-y-8">
                 {spotlightPrograms.map((item, index) => {
                   const fallbackImage =
-                    index === 0 ? SPOTLIGHT_FALLBACK_1 : SPOTLIGHT_FALLBACK_2;
+  index === 0
+    ? SPOTLIGHT_FALLBACK_1
+    : index === 1
+    ? SPOTLIGHT_FALLBACK_2
+    : index === 2
+    ? SPOTLIGHT_FALLBACK_3
+    : SPOTLIGHT_FALLBACK_4;
 
                   return (
                     <Link
@@ -237,7 +245,7 @@ export default function FundingPrograms() {
                       to={`/funding-programs/${item.id}`}
                       className="group block"
                     >
-                      <div className="grid grid-cols-[160px_1fr] gap-5 items-start">
+                     <div className="grid grid-cols-[130px_1fr] sm:grid-cols-[150px_1fr] gap-4 items-start">
                         <div className="overflow-hidden border border-slate-200 bg-white shadow-sm">
                           <img
                             src={item.bannerUrl || item.logoUrl || fallbackImage}

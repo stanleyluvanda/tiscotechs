@@ -1,4 +1,4 @@
-// src/data/fundingPrograms.js
+///src/data/fundingPrograms.js
 
 export const FUNDING_PROGRAMS = [
   {
@@ -36,7 +36,7 @@ export const FUNDING_PROGRAMS = [
 
     officialUrl: "https://foreign.fulbrightonline.org/",
     logoUrl: "",
-    bannerUrl: "",
+    bannerUrl: "/images/Fulbright1.png",
 
     isRecurring: true,
     featured: true
@@ -77,7 +77,48 @@ export const FUNDING_PROGRAMS = [
 
     officialUrl: "https://www.chevening.org/",
     logoUrl: "",
-    bannerUrl: "",
+    bannerUrl: "/images/Chevening.png",
+
+    isRecurring: true,
+    featured: true
+  },
+
+  {
+    id: "commonwealth-scholarship",
+    title: "Commonwealth Scholarship",
+    provider: "Commonwealth Scholarship Commission",
+    type: "scholarship_program",
+    category: "Government / International",
+
+    summary:
+      "Prestigious scholarship supporting talented students from eligible Commonwealth countries.",
+
+    description:
+      "Commonwealth Scholarships support students from eligible Commonwealth countries to pursue postgraduate study in the United Kingdom and contribute to development in their home countries.",
+
+    eligibility:
+      "Open to applicants from eligible Commonwealth countries, usually for students with strong academic merit and development potential.",
+
+    funding:
+      "Usually covers tuition fees, living allowance, airfare, and other approved costs depending on the scheme.",
+
+    applicationProcess:
+      "Applicants usually apply through national nominating agencies, universities, or the Commonwealth Scholarship Commission application system, depending on the scholarship route.",
+
+    fundingType: ["Fully Funded"],
+    amount: "Tuition, stipend, airfare, and approved allowances",
+
+    studyCountries: ["UK"],
+    eligibleCountries: ["Eligible Commonwealth countries"],
+
+    studyLevel: ["Masters", "PhD"],
+    fields: ["Multiple fields"],
+
+    tags: ["Development", "International Students"],
+
+    officialUrl: "https://cscuk.fcdo.gov.uk/",
+    logoUrl: "",
+    bannerUrl: "/images/Commonwealth.png",
 
     isRecurring: true,
     featured: true
@@ -116,7 +157,7 @@ export const FUNDING_PROGRAMS = [
 
     officialUrl: "https://www.daad.de/",
     logoUrl: "",
-    bannerUrl: "",
+    bannerUrl: "/images/DAAD Scholarships.png",
 
     isRecurring: true,
     featured: true
