@@ -384,6 +384,7 @@ export default function Navbar() {
               <NavLink to="/study-in-us" className={link} onClick={() => setMobileNavOpen(false)}>Study in The U.S</NavLink>
               <NavLink to="/stem-programs" className={link} onClick={() => setMobileNavOpen(false)}>STEM Programs</NavLink>
               <NavLink to="/funded-graduate-admission" className={link} onClick={() => setMobileNavOpen(false)}>Funded Graduate Admission</NavLink>
+              <NavLink to="/funding-programs" className={link} onClick={() => setMobileNavOpen(false)}>Funding Programs</NavLink>
               <NavLink to="/scholarships" className={link} onClick={() => setMobileNavOpen(false)}>Scholarships Directory</NavLink>
               <NavLink to="/fellowships" className={link} onClick={() => setMobileNavOpen(false)}>Fellowships</NavLink>
               <NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>
