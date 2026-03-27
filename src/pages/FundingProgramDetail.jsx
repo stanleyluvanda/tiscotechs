@@ -259,6 +259,308 @@ function FulbrightExtraSections() {
   );
 }
 
+function CheveningExtraSections() {
+  return (
+    <>
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Program Overview
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening Scholarships are the UK government’s flagship international
+          awards for emerging leaders, professionals, and change-makers from
+          around the world. The program supports outstanding individuals to
+          pursue a one-year master’s degree in the United Kingdom while building
+          the knowledge, leadership capacity, and international networks needed
+          to create positive change in their home countries.
+        </p>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening is fully funded, allowing scholars to focus on academic
+          development, leadership growth, cultural exchange, and networking
+          across the UK and beyond. After completing their studies, scholars are
+          expected to return home equipped with stronger professional skills,
+          broader global perspectives, and long-term connections.
+        </p>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Types of Opportunities Under Chevening
+        </h2>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="border border-slate-200 bg-slate-50 p-4">
+            <h3 className="font-semibold text-slate-900">
+              1. Chevening Scholarships
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              These awards support one-year taught master’s degrees at eligible
+              UK universities. They are designed for applicants with strong
+              leadership potential, professional ambition, and a clear plan for
+              impact after returning home.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 bg-slate-50 p-4">
+            <h3 className="font-semibold text-slate-900">
+              2. Chevening Fellowships
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              These are shorter specialist programmes for mid-career and senior
+              professionals. Fellowships focus on leadership, policy,
+              professional development, and sector-specific expertise rather
+              than a full academic degree.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          What a Chevening Scholarship Covers
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening Scholarships are generally fully funded, which means
+          scholars can focus on study, leadership development, and networking
+          without the main financial burden of international master’s study.
+        </p>
+
+        <ul className="mt-4 space-y-2 text-sm leading-7 text-slate-700 list-disc pl-5">
+          <li>Full tuition fees</li>
+          <li>Monthly living allowance</li>
+          <li>Return travel to the UK</li>
+          <li>Arrival and departure allowances where applicable</li>
+          <li>Access to networking and enrichment activities</li>
+        </ul>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Who Chevening Is Looking For
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          There is no single “typical” Chevening Scholar. Strong candidates
+          usually demonstrate leadership potential, academic readiness, clear
+          career direction, and a strong commitment to creating positive change
+          in their communities, countries, or professional sectors.
+        </p>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening welcomes applicants from different backgrounds. What matters
+          most is the ability to show ambition, influence, readiness for an
+          intensive UK master’s programme, and a thoughtful vision for the
+          future.
+        </p>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          General Eligibility for Chevening Scholarships
+        </h2>
+        <ul className="mt-4 space-y-2 text-sm leading-7 text-slate-700 list-disc pl-5">
+          <li>Must be a citizen of a Chevening-eligible country or territory.</li>
+          <li>
+            Must return to the home country for at least two years after the
+            award ends.
+          </li>
+          <li>
+            Must hold an undergraduate degree that qualifies the applicant for a
+            UK master’s programme.
+          </li>
+          <li>
+            Must have at least 2,800 hours of work experience completed after
+            undergraduate graduation.
+          </li>
+          <li>Must apply to three eligible UK university courses.</li>
+          <li>
+            Must secure an unconditional offer from at least one eligible course
+            by the required deadline.
+          </li>
+        </ul>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Important Eligibility Notes
+        </h2>
+        <ul className="mt-4 space-y-2 text-sm leading-7 text-slate-700 list-disc pl-5">
+          <li>
+            Applicants are generally not eligible if they hold British or dual
+            British citizenship, except in limited cases defined by the
+            programme.
+          </li>
+          <li>
+            Applicants may be ineligible if they are employees, former
+            employees, or close relatives of employees of certain UK government
+            bodies, British Embassies, the British Council, or sponsoring
+            universities within the restricted period.
+          </li>
+          <li>
+            Applicants who previously studied in the UK on a UK
+            government-funded scholarship are generally not eligible under the
+            standard scholarship route.
+          </li>
+          <li>
+            Holding a master’s degree does not automatically prevent an
+            applicant from pursuing another eligible master’s degree through
+            Chevening.
+          </li>
+        </ul>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Work Experience Requirement
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening requires a minimum of 2,800 hours of work experience
+          completed after undergraduate graduation. This is roughly equivalent
+          to two years of full-time work, though the hours may be accumulated in
+          different ways depending on the applicant’s professional path.
+        </p>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          This requirement helps the programme identify candidates with proven
+          experience, professional maturity, and strong potential to lead with
+          impact.
+        </p>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Application Process
+        </h2>
+
+        <div className="mt-4 space-y-4">
+          <div className="border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900">Step 1</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Review the latest eligibility requirements, country participation,
+              work experience rules, and application guidance.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900">Step 2</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Research and choose three eligible one-year taught master’s
+              courses at UK universities.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900">Step 3</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Prepare a strong application demonstrating leadership, networking
+              ability, professional direction, and the intended impact of the
+              award after returning home.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900">Step 4</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Submit the application through the official Chevening process
+              within the application window and complete any required interview
+              stage if shortlisted.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 p-4">
+            <h3 className="font-semibold text-slate-900">Step 5</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Secure an unconditional offer from at least one chosen course by
+              the programme deadline.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Chevening Fellowships — Overview
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening Fellowships are separate from the one-year master’s
+          scholarship route. They are intended for professionals who want
+          specialist training, leadership development, policy exposure, or
+          sector-specific advancement through shorter UK-based programmes.
+        </p>
+
+        <div className="mt-4 border border-slate-200 bg-slate-50 p-4">
+          <h3 className="font-semibold text-slate-900">
+            General Fellowship Eligibility
+          </h3>
+          <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-700 list-disc pl-5">
+            <li>Must be a citizen of a fellowship-eligible country or territory.</li>
+            <li>Must show leadership and influence potential.</li>
+            <li>Must return to the country of citizenship after the fellowship.</li>
+            <li>Must meet programme-specific fellowship requirements.</li>
+            <li>Must not hold British or dual British citizenship.</li>
+            <li>
+              Must not fall within restricted categories related to UK
+              government-funded awards or certain employment relationships.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Examples of Chevening Fellowships
+        </h2>
+
+        <div className="mt-4 space-y-4">
+          <div className="border border-slate-200 bg-blue-50 p-4">
+            <h3 className="font-semibold text-slate-900">
+              Chevening Gurukul Fellowship for Leadership and Excellence
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Hosted by the University of Oxford, this fellowship is designed
+              for mid-career professionals from India and focuses on leadership,
+              globalisation, public policy, and long-term impact.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 bg-emerald-50 p-4">
+            <h3 className="font-semibold text-slate-900">
+              Chevening Energy Market Reform Fellowship
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Hosted by the University of Dundee, this fellowship supports
+              senior professionals in the energy sector and focuses on policy,
+              regulation, and sustainable market reform.
+            </p>
+          </div>
+
+          <div className="border border-slate-200 bg-violet-50 p-4">
+            <h3 className="font-semibold text-slate-900">
+              Chevening Western Balkans Cyber Security Fellowship
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-slate-700">
+              Hosted by Cranfield University, this fellowship is designed for
+              professionals in cyber security and cyber policy and focuses on
+              legal, strategic, and operational approaches to cyber risk and
+              national resilience.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-xl font-bold text-slate-900">
+          Why Chevening Stands Out
+        </h2>
+        <p className="mt-3 text-[15px] leading-7 text-slate-700">
+          Chevening combines full financial support, academic excellence,
+          leadership development, and access to a powerful international alumni
+          network. It is designed not only to support study in the UK, but also
+          to help future leaders build influence, strengthen professional
+          partnerships, and create meaningful change at home.
+        </p>
+      </section>
+    </>
+  );
+}
+
 function DetailRow({ label, value }) {
   if (!value) return null;
   return (
@@ -286,6 +588,19 @@ export default function FundingProgramDetail() {
     .slice(0, 4);
 
   const isFulbright = program.id === "fulbright-foreign-student-program";
+  const isChevening = program.id === "chevening-scholarship";
+
+  const infoSourceIds = new Set([
+    "swedish-institute-scholarship-global-professionals",
+    "iefa-database",
+    "campus-france",
+    "australia-for-asean-scholarships",
+    "overview-of-scholarships-in-japan",
+    "jasso-scholarships-japan",
+    "australia-awards-short-courses"
+  ]);
+
+  const isInfoSource = infoSourceIds.has(program.id);
 
   return (
     <>
@@ -321,6 +636,22 @@ export default function FundingProgramDetail() {
             </div>
           </section>
 
+          {isInfoSource ? (
+            <section className="mt-6 border border-sky-200 bg-sky-50 p-5 shadow-sm">
+              <h2 className="text-base font-bold text-sky-900">
+                Application Status Note
+              </h2>
+              <p className="mt-2 text-sm leading-7 text-sky-900/90">
+                This page is intended as an official information source. Check
+                the official website for the latest application status, eligible
+                programmes, participating countries, and expected opening dates.
+                Information on this page should be used as a guide, while the
+                official provider page remains the source of truth for current
+                opportunities, closed rounds, and future calls.
+              </p>
+            </section>
+          ) : null}
+
           <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <DetailRow label="Funding Type" value={program.fundingType} />
             <DetailRow label="Amount / Coverage" value={program.amount} />
@@ -329,7 +660,7 @@ export default function FundingProgramDetail() {
           </section>
 
           <section className="mt-6 grid gap-6">
-            {!isFulbright ? (
+            {!isFulbright && !isChevening ? (
               <>
                 <section className="border border-slate-200 bg-white p-5 shadow-sm">
                   <h2 className="text-xl font-bold text-slate-900">
@@ -367,8 +698,10 @@ export default function FundingProgramDetail() {
                   </p>
                 </section>
               </>
-            ) : (
+            ) : isFulbright ? (
               <FulbrightExtraSections />
+            ) : (
+              <CheveningExtraSections />
             )}
           </section>
 
@@ -378,10 +711,16 @@ export default function FundingProgramDetail() {
             </h2>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <DetailRow label="Eligible Countries" value={program.eligibleCountries} />
+              <DetailRow
+                label="Eligible Countries"
+                value={program.eligibleCountries}
+              />
               <DetailRow label="Fields of Study" value={program.fields} />
               <DetailRow label="Category" value={program.category} />
-              <DetailRow label="Recurring Program" value={program.isRecurring ? "Yes" : "No"} />
+              <DetailRow
+                label="Recurring Program"
+                value={program.isRecurring ? "Yes" : "No"}
+              />
             </div>
 
             {program.officialUrl ? (
