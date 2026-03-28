@@ -710,7 +710,7 @@ export const FUNDING_PROGRAMS = [
 
   officialUrl: "https://www.rhodeshouse.ox.ac.uk/scholarships/the-rhodes-scholarship/",
   logoUrl: "",
-  bannerUrl: "/images/Rhodes Scholarship.png",
+  bannerUrl: "/images/Rhodes.png",
 
   isRecurring: true,
   featured: true
