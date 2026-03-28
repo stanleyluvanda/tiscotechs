@@ -597,7 +597,8 @@ export default function FundingProgramDetail() {
     "australia-for-asean-scholarships",
     "overview-of-scholarships-in-japan",
     "jasso-scholarships-japan",
-    "australia-awards-short-courses"
+    "australia-awards-short-courses",
+    "rhodes-scholarship"
   ]);
 
   const isInfoSource = infoSourceIds.has(program.id);

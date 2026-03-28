@@ -674,6 +674,46 @@ export const FUNDING_PROGRAMS = [
 
   isRecurring: true,
   featured: false
+},
+{
+  id: "rhodes-scholarship",
+  title: "Rhodes Scholarship",
+  provider: "Rhodes Trust",
+  type: "scholarship_program",
+  category: "Prestigious / Leadership / Information Source",
+
+  summary:
+    "A fully funded postgraduate scholarship for exceptional young leaders from around the world to study full-time at the University of Oxford.",
+
+  description:
+    "The Rhodes Scholarship is one of the world’s most prestigious postgraduate awards. It offers outstanding young people from around the world the opportunity to undertake full-time postgraduate study at the University of Oxford while joining an international community committed to leadership, service, and global understanding. The scholarship is fully funded and is designed not only to support academic excellence, but also to develop public-spirited leaders who seek to make a positive difference in the world. Scholars usually study in Oxford for two or more years and may apply for most full-time postgraduate courses offered by the University of Oxford.",
+
+  eligibility:
+    "Eligibility depends on the constituency through which the applicant applies, so candidates must check the official Rhodes eligibility rules for their country or region. In general, applicants are expected to demonstrate outstanding academic achievement, strong character, commitment to service, leadership potential, and sustained achievement outside the classroom. The detailed criteria and age or nationality requirements may vary slightly by constituency, so applicants should always confirm the latest official conditions before applying.",
+
+  funding:
+    "The Rhodes Scholarship is fully funded. It covers University of Oxford course fees and provides an annual stipend for living expenses. For the 2025–26 academic year, the stipend is listed as £20,400 per year (£1,700 per month). The Rhodes Trust also covers the Oxford application fee, student visa fee, International Health Surcharge, two economy-class flights to and from the UK, and a settling-in allowance. Additional assistance may also be available for scholars continuing to a second course in Oxford, including visa-related support.",
+
+  applicationProcess:
+    "Applicants must apply through the Rhodes Scholarship constituency for their country or region and should carefully review the official application guidance before starting. The process is competitive and usually requires academic records, references, personal statements, and evidence of leadership, service, and achievement. Because application periods open and close on a yearly cycle, applicants should use the official Rhodes website to confirm whether applications are currently open, closed, or expected to reopen for the next Oxford entry year.",
+
+  fundingType: ["Fully Funded", "Information Source"],
+  amount: "Oxford fees + stipend + visa, health surcharge, flights, and settling-in support",
+
+  studyCountries: ["United Kingdom"],
+  eligibleCountries: ["Constituency-specific"],
+
+  studyLevel: ["Postgraduate", "Masters", "DPhil / PhD"],
+  fields: ["Most full-time postgraduate courses at Oxford"],
+
+  tags: ["Oxford", "Leadership", "Prestigious Scholarship", "Information Source"],
+
+  officialUrl: "https://www.rhodeshouse.ox.ac.uk/scholarships/the-rhodes-scholarship/",
+  logoUrl: "",
+  bannerUrl: "/images/Rhodes Scholarship.png",
+
+  isRecurring: true,
+  featured: true
 }
 
 
