@@ -22,7 +22,9 @@ function RichHtml({ html }) {
   if (!html) return null;
   return (
     <div
-      className="rich-html prose-sm max-w-none text-justify"
+      //className="rich-html prose-sm max-w-none text-justify"
+      //className="rich-html max-w-none text-justify"
+      className="rich-html max-w-none text-justify"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -32,7 +34,8 @@ function HtmlResult({ html }) {
   if (!html) return null;
   return (
     <div
-      className="rich-html prose-sm max-w-none"
+      //className="rich-html prose-sm max-w-none"
+      className="rich-html max-w-none"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -626,13 +629,72 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
-      <style>{`
-        .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
-        .rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.5rem 0 0.75rem; }
-        .rich-html li { display: list-item; margin: 0.25rem 0; }
-        .rich-html p { margin: 0.5rem 0; }
-        .rich-html a { text-decoration: underline; }
-      `}</style>
+     
+      <style>{` 
+  .rich-html ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0 0.75rem;
+  }
+
+  .rich-html ol {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0 0.75rem;
+  }
+
+  .rich-html li {
+    margin: 0.25rem 0;
+  }
+
+  .rich-html p {
+    margin: 0.5rem 0;
+  }
+
+  .rich-html a {
+    text-decoration: underline;
+  }
+
+  .rich-html ul > li {
+    list-style: disc;
+  }
+
+  .rich-html ol > li:not([data-list]) {
+    list-style: decimal;
+  }
+
+  .rich-html ol li[data-list="bullet"],
+  .rich-html ol li[data-list="ordered"] {
+    list-style: none;
+    position: relative;
+  }
+
+  .rich-html ol li[data-list="bullet"]::before {
+    content: "•";
+    position: absolute;
+    left: -1rem;
+    top: 0.22rem;
+    font-size: 1.15em;
+    line-height: 1;
+  }
+
+  .rich-html ol {
+    counter-reset: quill-ordered;
+  }
+
+  .rich-html ol li[data-list="ordered"] {
+    counter-increment: quill-ordered;
+  }
+
+  .rich-html ol li[data-list="ordered"]::before {
+    content: counter(quill-ordered) ".";
+    position: absolute;
+    left: -1.5rem;
+    top: 0;
+    min-width: 1.25rem;
+    text-align: right;
+
+  }
+    `}</style>
 
       <div className="flex-1">
         <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
@@ -655,40 +717,7 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
                 <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
-                  {/*<div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                    {logo ? (
-                      <img
-                        src={logo}
-                        alt={`${provider || "Provider"} logo`}
-                        className="h-14 w-14 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
-                    ) : null}
-
-                    <div className="min-w-0 flex-1">
-                      <h1 className="text-xl sm:text-2xl font-bold leading-snug break-words">
-                        {title}
-                      </h1>
-
-                      <div className="mt-1">
-                        <div className="text-base sm:text-lg font-semibold text-[#46166B] leading-6">
-                          {provider}
-                          {country ? ` • ${country}` : ""}
-                        </div>
-
-                        {(level || field) && (
-                          <div className="text-sm sm:text-base text-slate-600 leading-6">
-                            {level ? level : ""}
-                            {field ? `${level ? " • " : ""}${field}` : ""}
-                          </div>
-                        )}
-                      </div>
-                    </div>*/}
-
+                 
                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
   {/* MOBILE ONLY */}
   <div className="sm:hidden min-w-0 flex-1">
@@ -762,13 +791,6 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
     </div>
   </div>
 </div>
-
-
-
-
-
-                  
-
 
                   <div className="mt-4 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 text-sm">
                     {Array.isArray(fundingType) && fundingType.length > 0 && (
