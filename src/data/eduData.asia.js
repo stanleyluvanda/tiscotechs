@@ -2174,7 +2174,16 @@ export const ASIA = [
       "programs": ["LL.B.", "LL.M."]
     },
     "Faculty of Medical Sciences": {
-      "programs": ["Master of Physiotherapy", "M.Sc. Respiratory Therapy", "Master in Public Health (MPH)"]
+    "programs": [
+        "MBBS (Bachelor of Medicine and Bachelor of Surgery)",
+        "BDS (Bachelor of Dental Surgery)",
+        "MD (Doctor of Medicine)",
+        "MS (Master of Surgery)",
+        "MDS (Master of Dental Surgery)",
+        "Diploma in Medical Sciences",
+        "DM (Doctorate of Medicine - Super Speciality)",
+        "MCh (Master of Chirurgiae - Super Speciality)",
+        "PhD in Medical Sciences"]
     },
     "Faculty of Music": {
       "programs": ["B.A. (Hons.) Hindustani Music", "B.A. (Hons.) Karnatak Music", "M.A. Hindustani Music", "M.A. Karnataka Music", "M.A. Percussion", "Master of Fine Arts (MFA)"]
@@ -2184,8 +2193,232 @@ export const ASIA = [
     },
     "Faculty of Open Learning": {
       "programs": []
+    }
+  },
+  "Indian Institute of Technology Kharagpur": {
+    "Faculty of Engineering and Architecture (FoE&A)": {
+      "programs": [
+        "B.Tech Aerospace Engineering",
+        "M.Tech Aerospace Engineering",
+        "B.Tech Agricultural and Food Engineering",
+        "M.Tech Food Process Engineering",
+        "M.Tech Farm Machinery and Power",
+        "M.Tech Aquacultural Engineering",
+        "M.Tech Agricultural Systems and Management",
+        "M.Tech Land and Water Resources Engineering",
+        "B.Arch Architecture",
+        "B.Tech Artificial Intelligence",
+        "M.Tech Artificial Intelligence",
+        "B.Tech Biotechnology and Biochemical Engineering",
+        "M.Tech Biotechnology and Biochemical Engineering",
+        "B.Tech Chemical Engineering",
+        "M.Tech Chemical Engineering",
+        "B.Tech Civil Engineering",
+        "M.Tech Structural Engineering",
+        "M.Tech Transportation Engineering",
+        "M.Tech Geotechnical Engineering",
+        "M.Tech Hydraulic and Water Resources Engineering",
+        "M.Tech Environmental Engineering and Management",
+        "B.Tech Computer Science and Engineering",
+        "M.Tech Computer Science and Engineering",
+        "M.Tech Cryogenic Engineering",
+        "B.Tech Electrical Engineering",
+        "B.Tech Instrumentation Engineering",
+        "M.Tech Control System Engineering",
+        "M.Tech Machine Drives and Power Electronics",
+        "M.Tech Power and Energy Systems",
+        "M.Tech Instrumentation and Integrated Electronics",
+        "M.Tech Signal Processing and Machine Learning",
+        "B.Tech Electronics and Electrical Communication Engineering",
+        "M.Tech RF and Microwave Engineering",
+        "M.Tech Microelectronics and VLSI Circuits",
+        "M.Tech Communications and Signal Processing",
+        "M.Tech Vision and Intelligent Systems",
+        "M.Tech Wireless Communications and Networks",
+        "B.Tech Industrial Engineering",
+        "M.Tech Industrial Engineering and Management",
+        "M.Tech Operations Research and Data Analytics",
+        "M.Tech Quality Engineering Design and Manufacturing",
+        "B.Tech Mechanical Engineering",
+        "B.Tech Manufacturing Science and Engineering",
+        "M.Tech Manufacturing Science and Engineering",
+        "M.Tech Thermal and Fluids Engineering",
+        "M.Tech Mechanical Systems Design",
+        "B.Tech Metallurgical and Materials Engineering",
+        "M.Tech Metallurgical and Materials Engineering",
+        "M.Tech Steel Technology",
+        "B.Tech Mining Engineering",
+        "M.Tech Mining Engineering",
+        "M.Tech Mining Safety Engineering",
+        "M.Tech Geomechanics for Mineral and Energy Resources",
+        "M.Tech Safety, Health and Environment",
+        "B.Tech Ocean Engineering and Naval Architecture",
+        "M.Tech Ocean Engineering and Naval Architecture",
+        "M.Tech Infrastructure Design and Management",
+        "M.Tech Rubber Technology",
+        "M.Tech Quality and Reliability Engineering",
+        "M.Tech Safety Engineering and Analytics"
+      ]
+    },
+    "Faculty of Sciences (FoS)": {
+      "programs": [
+        "B.S. Chemistry",
+        "M.Sc. Chemistry",
+        "B.S. Applied Geology",
+        "B.S. Exploration Geophysics",
+        "M.Sc. Applied Geology",
+        "M.Sc. Exploration Geophysics",
+        "M.Sc. Geology",
+        "M.Sc. Geophysics",
+        "B.S. Mathematics and Computing",
+        "M.Sc. Mathematics and Computing",
+        "BS-MS Mathematics and Computing",
+        "BS-MS Statistics and Data Science",
+        "M.Sc. Mathematics",
+        "B.S. Physics",
+        "M.Sc. Physics",
+        "BS-MS Physics",
+        "M.Tech Solid State Technology",
+        "M.Tech Functional Materials and Devices",
+        "M.Tech Earth System Science and Technology"
+      ]
+    },
+    "Faculty of Biosciences & Biotechnology": {
+      "programs": [
+        "B.Tech Biotechnology and Biochemical Engineering",
+        "M.Tech Biotechnology and Biochemical Engineering",
+        "M.Sc. Chemical and Molecular Biology",
+        "M.Sc. Medical Physics",
+        "M.Sc. Nuclear Medicine",
+        "M.Sc. Molecular Medical Microbiology",
+        "M.Tech Medical Science and Technology",
+        "M.Tech Medical Imaging and Informatics",
+        "M.Tech Biomedical Engineering",
+        "M.Tech Medical Science and Technology in Medical Imaging, Instrumentation and Informatics",
+        "M.Tech Medical Science and Technology in Molecular and Regenerative Medicine"
+      ]
+    },
+    "Faculty of Interdisciplinary Studies": {
+      "programs": [
+        "M.Tech Electric Transportation",
+        "M.Tech Cyber Physical Systems",
+        "M.Tech Petroleum Engineering",
+        "M.Sc. Petroleum Engineering",
+        "B.Sc.-B.Ed. ITEP Mathematics",
+        "B.Sc.-B.Ed. ITEP Physics",
+        "B.Sc.-B.Ed. ITEP Chemistry",
+        "B.Sc.-B.Ed. ITEP Economics",
+        "M.Tech Renewable Energy Technologies",
+        "B.S. Economics",
+        "M.Sc. Economics",
+        "BS-MS Economics",
+        "MBA Human Resources Management",
+        "M.Tech Materials Science and Engineering",
+        "M.Tech Technology Innovation and Entrepreneurship",
+        "M.Tech Water Engineering and Management",
+        "LL.M. Master of Laws",
+        "LL.M. Intellectual Property Law",
+        "PG Public Policy Law and Governance",
+        "MBA Executive MBA",
+        "MBA Business Analytics",
+        "MBA Business Management",
+        "M.Tech Financial Engineering"
+      ]
+    }
+    },
+    "Manipal Academy of Higher Education": {
+    
+    "Faculty of Health Sciences": {
+      "programs": [
+        "MBBS",
+        "BDS",
+        "BSc Allied Health Sciences",
+        "BPharm",
+        "BSc Nursing",
+        "BPT (Physiotherapy)",
+        "BSc Medical Laboratory Technology",
+        "BSc Radiography",
+        "BSc Biomedical Science",
+        "MD",
+        "MS",
+        "MDS",
+        "MPharm",
+        "MSc Nursing",
+        "MPH (Public Health)",
+        "MSc Medical Sciences",
+        "PhD Health Sciences"
+      ]
+    },
+
+    "Faculty of Technology & Science": {
+      "programs": [
+        "BTech Computer Science and Engineering",
+        "BTech Information Technology",
+        "BTech Electronics and Communication Engineering",
+        "BTech Electrical Engineering",
+        "BTech Mechanical Engineering",
+        "BTech Civil Engineering",
+        "BTech Chemical Engineering",
+        "BTech Data Science",
+        "BTech Artificial Intelligence",
+        "BArch Architecture",
+        "BSc Physics",
+        "BSc Chemistry",
+        "BSc Mathematics",
+        "BSc Data Science",
+        "MTech Computer Science and Engineering",
+        "MTech Artificial Intelligence",
+        "MTech Data Science",
+        "MTech Mechanical Engineering",
+        "MTech Civil Engineering",
+        "MSc Physics",
+        "MSc Chemistry",
+        "MSc Mathematics",
+        "MSc Data Science",
+        "PhD Engineering",
+        "PhD Sciences"
+      ]
+    },
+
+    "Faculty of Management, Law, Humanities & Social Sciences": {
+      "programs": [
+        "BBA",
+        "BCom",
+        "BA Economics",
+        "BA Journalism and Mass Communication",
+        "BA Psychology",
+        "BA Humanities",
+        "BA English",
+        "BA Sociology",
+        "LLB",
+        "BA LLB",
+        "BBA LLB",
+        "MBA",
+        "MBA Business Analytics",
+        "MBA Finance",
+        "MBA Marketing",
+        "MCom",
+        "MA Economics",
+        "MA English",
+        "MA Psychology",
+        "MA Journalism",
+        "LLM",
+        "PhD Management",
+        "PhD Social Sciences"
+      ]
+    },
+
+    "Directorate of Online Education": {
+      "programs": [
+        "Online MBA",
+        "Online MSc Data Science",
+        "Online MSc Business Analytics",
+        "PG Certificate Business Analytics",
+        "PG Certificate Logistics and Supply Chain Management"
+      ]
     },
   },
+
 },
     },
   
