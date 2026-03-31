@@ -9,18 +9,12 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 // ⬇️ NEW import
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
-//import { createPost as createPostOnServer } from "../lib/postsApi.js";  // ⬅️ ADD THIS
-//import { createPost as createPostOnServer, postCommentToServer, postReplyToServer,} from "../lib/postsApi.js";//
 import { createPost as createPostOnServer,deletePost as deletePostOnServer,postCommentToServer,postReplyToServer,getMyNotifications,countUnread,markNotificationRead,clearReadNotifications,} from "../lib/postsApi.js";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 import { signOut } from "aws-amplify/auth";
 import MessagingDock from "../components/MessagingDock";
-
-
-
-
 
 // ✅ ADD THIS HERE (top-level helper, before the component)
 
@@ -1067,6 +1061,10 @@ function cleanAiPlainText(text = "") {
 /* ------------------------ Main Component ------------------------- */
 export default function LecturerDashboard() {
   const navigate = useNavigate();
+  const handleLecturerSignOut = async () => {
+    await logoutEverywhereClientOnly();
+    navigate("/login?role=lecturer");
+  };
   const [me, setMe] = useState(null);
 
   // ✅ ADD THIS BLOCK EXACTLY HERE (notification state)
@@ -3331,15 +3329,14 @@ async function clearNotificationsServerBacked() {
                     <Link to={getLecturerProfileHref()} className="block text-sm text-blue-600 underline text-center">
                       View profile
                     </Link>
+                    
                     <button
-                      className="block w-full text-sm text-slate-600 underline text-center"
-                      onClick={() => {
-                        sessionStorage.clear();
-                        navigate("/login?role=lecturer");
-                      }}
-                    >
-                      Sign out
-                    </button>
+                type="button"
+                           className="block w-full text-sm text-slate-600 underline text-center"
+                         onClick={handleLecturerSignOut}
+                           >
+                        Sign out
+                   </button>
                   </div>
                 )}
               </div>

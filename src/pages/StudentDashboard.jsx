@@ -3182,6 +3182,15 @@ const logoutEverywhereClientOnly = async () => {
   try { window.dispatchEvent(new Event("auth:changed")); } catch {}
 };
 
+const handleStudentSignOut = async () => {
+  window.__skSigningOut = true;
+  try {
+    await logoutEverywhereClientOnly();
+  } finally {
+    navigate("/login?role=student");
+  }
+};
+
 const resetIdleTimer = () => {
   if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
   idleTimerRef.current = setTimeout(() => {
@@ -3879,9 +3888,6 @@ function updatePostById(postId, updater) {
   }
 }
 
-
-
-
   /* ===== Likes/Comments/Replies/Delete ===== */
 
 const toggleLike = (postId) => {
@@ -3891,28 +3897,6 @@ const toggleLike = (postId) => {
     likes: x.liked ? Math.max(0, (x.likes || 0) - 1) : (x.likes || 0) + 1,
   }));
 };
-
-
-// ✅ NEW: sync updated post (with comments/replies) to the global posts API
-{/*const syncPostToServer = async (updatedPost) => {
-  if (!updatedPost?.id) return;
-  try {
-    //await createPostOnServer(
-      {await createPost({
-      ...updatedPost,
-      scope: "student-dashboard",
-      updatedAt: Date.now(),
-      // ensure server sees a non-empty text field
-      text:
-        (updatedPost.text && String(updatedPost.text).trim()) ||
-        stripHtml(updatedPost.html || "").trim() ||
-        updatedPost.title ||
-        "Post",
-    });
-  } catch (e) {
-    console.warn("[StudentDashboard] syncPostToServer failed", e);
-  }
-};*/}
 
 // ✅ NEW: sync updated post (with comments/replies) to the global posts API
 const syncPostToServer = async (updatedPost) => {
@@ -3933,25 +3917,6 @@ const syncPostToServer = async (updatedPost) => {
     console.warn("[StudentDashboard] syncPostToServer failed", e);
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const addComment = async (postId, text, images = [], files = []) => {
   const t = (text || "").trim();
@@ -4089,13 +4054,6 @@ updatePostById(postId, (x) => {
 };
 
 
-
-
-
-
-
-
-
 const addReply = async (postId, commentId, text, images = [], files = []) => {
   const t = (text || "").trim();
   if (!t && images.length === 0 && files.length === 0) return;
@@ -4215,18 +4173,6 @@ if (!serverReply?.id) {
           updatedAt: now,
         };
 
-  //updatePostById(postId, (x) => {
-    //const base = Array.isArray(x.comments) ? x.comments.slice() : [];
-    //const nextComments = base.map((c) => {
-      //if (!c || c.id !== commentId) return c;
-      //const replies = Array.isArray(c.replies) ? c.replies.slice() : [];
-      //replies.push(finalReply);
-      //return { ...c, replies };
-    //});
-    //return { ...x, comments: nextComments };
-  //});
-//};
-
 
 updatePostById(postId, (x) => {
   const base = Array.isArray(x.comments) ? x.comments.slice() : [];
@@ -4249,25 +4195,6 @@ updatePostById(postId, (x) => {
 
   
     // 2️⃣ Persist to backend
-    //try {
-      //await createReply({
-        //postId,
-        //commentId,
-        //text: t,
-        //authorId,
-        //authorName,
-      //});
-    //} catch (err) {
-      //console.error("[StudentDashboard] createReply failed:", err);
-    //}
-  //};
-
-
-
-  //const deletePost = (postId)=>{
-    //if (!confirm("Delete this post?")) return;
-    //setPosts(p => p.filter(x => x.id !== postId));
-  //};
 
   const deletePost = async (postId) => {
   if (!confirm("Delete this post?")) return;
@@ -4283,10 +4210,6 @@ updatePostById(postId, (x) => {
     alert("Could not delete the post on the server. It may still appear on other devices.");
   }
 };
-
-
-
-
 
   /* ===== Post refs for scroll-to from notifications ===== */
   const postRefs = useRef({}); // id -> element
@@ -4313,14 +4236,6 @@ updatePostById(postId, (x) => {
     const commentText = (p.comments||[]).map(c=> [c.author?.toLowerCase()||"", (c.text||"").toLowerCase()]).flat().join(" ");
     return [plain,title,author,type,files,commentText].some(s => s.includes(q));
   };
-
-  // Combine student + lecturer posts for FEED rendering (so scroll works)
-  //const feedCombined = useMemo(() => {
-    //const a = Array.isArray(posts) ? posts : [];
-    //const b = Array.isArray(lecturerPosts) ? lecturerPosts : [];
-    //const normalizedLect = b.map(p => (p.authorType ? p : { ...p, authorType: "lecturer" }));
-    //return [...a, ...normalizedLect];
-  //}, [posts, lecturerPosts]);
 
   // Combine student + lecturer posts for FEED rendering (dedupe by id so PDFs don't render twice)
 const feedCombined = useMemo(() => {
@@ -4554,7 +4469,7 @@ const feedCombined = useMemo(() => {
                       </div>
                     </div>
 
-                    <Link to="/student-dashboard" className="block text-sm text-blue-600 underline text-center">View profile</Link>
+                    {/*<Link to="/student-dashboard" className="block text-sm text-blue-600 underline text-center">View profile</Link>
                     <button
                       className="block w-full text-sm text-slate-600 underline text-center"
                       onClick={() => {
@@ -4566,7 +4481,17 @@ const feedCombined = useMemo(() => {
 }}
                     >
                       Sign out
-                    </button>
+                    </button>*/}
+  <Link to="/student-dashboard" className="block text-sm text-blue-600 underline text-center">
+  View profile
+</Link>
+<button
+  type="button"
+  className="block w-full text-sm text-slate-600 underline text-center"
+  onClick={handleStudentSignOut}
+>
+  Sign out
+</button>
                   </div>
                 )}
               </div>
