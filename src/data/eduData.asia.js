@@ -1952,6 +1952,228 @@ export const ASIA = [
 },
   },
 },
+
+{
+  name: "Azerbaijan",
+  code: "AZ",
+  universities: {
+    "ADA University": {
+      "School of Public and International Affairs": {
+        programs: [
+          "Bachelor in International Studies",
+          "Bachelor in Communication and Digital Media",
+          "Bachelor in Public Affairs",
+          "Master in Public Administration",
+          "Master in Public Administration in Azerbaijani",
+          "Master in Diplomacy and International Affairs"
+        ]
+      },
+      "School of Business": {
+        programs: [
+          "Bachelor in Business Administration",
+          "Bachelor in Economics",
+          "Bachelor in Finance",
+          "Master of Business Administration",
+          "Master of Business Administration in Finance",
+          "Master in Global Management and Politics",
+          "Master in Human Resource Management"
+        ]
+      },
+      "School of IT and Engineering": {
+        programs: [
+          "Bachelor in Computer Science",
+          "Bachelor in Computer Engineering",
+          "Bachelor in Information Technology",
+          "Bachelor in Mathematics",
+          "Bachelor in Electrical and Electronics Engineering",
+          "Master in Computer Science and Data Analytics",
+          "Master in Electrical and Power Engineering",
+          "Master in Computer Engineering and High Performance Computing"
+        ]
+      },
+      "School of Law": {
+        programs: [
+          "Bachelor of Laws",
+          "Master of Laws"
+        ]
+      },
+      "School of Agricultural and Food Sciences": {
+        programs: [
+          "Bachelor in Agricultural Technologies",
+          "Bachelor in Food Technologies",
+          "Bachelor in Animal Science",
+          "Master in Agricultural and Food Systems Management"
+        ]
+      },
+      "School of Design and Architecture": {
+        programs: [
+          "Bachelor in Architecture",
+          "Bachelor in Interior Design",
+          "Bachelor in Urban Planning",
+          "Bachelor in Communication Design"
+        ]
+      },
+      "School of Education": {
+        programs: [
+          "Master in Educational Management",
+          "Master in Teaching and Learning",
+          "Master in Educational Management in Azerbaijani",
+          "Master in Teaching and Learning in Azerbaijani"
+        ]
+      }
+    },
+
+     "Khazar University": {
+    "School of Science and Engineering": {
+        programs: [
+          "Bachelor of Science in Computer Science",
+          "Bachelor of Science in Computer Engineering",
+          "Bachelor of Science in Petroleum Engineering",
+          "Bachelor of Science in Civil Engineering",
+          "Bachelor of Science in Telecommunications and Radio Engineering",
+          "Bachelor of Science in Electrical and Electronics Engineering",
+          "Bachelor of Science in Chemical Engineering",
+          "Bachelor of Science in Mechanical Engineering",
+          "Bachelor of Science in Information Security",
+          "Bachelor of Science in Design",
+          "Bachelor of Science in Architecture",
+
+          "Bachelor of Science in Physics Education",
+          "Bachelor of Science in Biology Education",
+          "Bachelor of Science in Chemistry and Biology Education",
+          "Bachelor of Science in Chemistry Education",
+          "Bachelor of Science in Mathematics and Informatics Education",
+          "Bachelor of Science in Geography Education",
+          "Bachelor of Science in Fine Arts Education",
+
+          "Master of Science in Computer Science",
+          "Master of Science in Data Science",
+          "Master of Science in Electrical and Electronics Engineering",
+          "Master of Science in Computer Engineering",
+          "Master of Science in Petroleum Engineering",
+          "Master of Science in Artificial Intelligence",
+          "Master of Science in High Performance Computing",
+
+          "Doctor of Philosophy in Science and Engineering",
+          "Doctor of Philosophy in Computer Science",
+          "Doctor of Philosophy in Engineering"
+        ]
+      },
+
+      "School of Economics and Management": {
+        programs: [
+          "Bachelor of Science in Economics",
+          "Bachelor of Business Administration in Finance",
+          "Bachelor of Business Administration in Accounting",
+          "Bachelor of Business Administration in Management",
+          "Bachelor of Business Administration in Marketing",
+          "Bachelor of Business Administration in Tourism and Hotel Management",
+          "Bachelor of Business Administration",
+
+          "Master of Business Administration",
+          "Master of Business Administration in Finance",
+          "Master of Business Administration in Accounting",
+          "Master of Business Administration in Management",
+          "Master of Business Administration in Project Management",
+          "Master of Business Administration in Tourism and Hotel Management",
+          "Master of Business Administration in Marketing",
+          "Master of Business Administration in Mediation",
+
+          "Master of Science in Economics",
+          "Master of Science in Economic Theory",
+          "Master of Science in Economics of Regulation",
+          "Master of Science in Finance",
+          "Master of Science in Financial Management",
+
+          "Doctor of Philosophy in Economics",
+          "Doctor of Philosophy in World Economy",
+          "Doctor of Philosophy in Organization and Management of Enterprises"
+        ]
+      },
+
+      "School of Humanities, Education and Social Sciences": {
+        programs: [
+          "Bachelor in Azerbaijani Language and Literature Teaching",
+          "Bachelor in International Relations",
+          "Bachelor in Philology Azerbaijani Language and Literature",
+          "Bachelor in Philology English Language and Literature",
+          "Bachelor in Elementary School Teaching",
+          "Bachelor in Political Science",
+          "Bachelor in Psychology",
+          "Bachelor in Regional Studies",
+          "Bachelor in History Teaching",
+          "Bachelor in History and Geography Teaching",
+          "Bachelor in Translation",
+          "Bachelor in Foreign Language Teaching English",
+
+          "Master in Pedagogy",
+          "Master in Theory and History of Education",
+          "Master in International Relations and Diplomacy",
+          "Master in History and Theory of International Relations",
+          "Master in Philology Azerbaijan Literature",
+          "Master in Philology Azerbaijan Language",
+          "Master in Linguistics English",
+          "Master in Political Science World Political Processes",
+          "Master in Political Science Conflict Studies",
+          "Master in Psychology Clinical Psychology",
+          "Master in Psychology Applied Psychology",
+          "Master in Area Studies European and Asian Studies",
+          "Master in Translation English",
+
+          "Doctor of Philosophy in Humanities",
+          "Doctor of Philosophy in Social Sciences",
+          "Doctor of Philosophy in Political Science",
+          "Doctor of Philosophy in Psychology"
+        ]
+      },
+
+      "Graduate School of Science Art and Technology": {
+        programs: [
+          "Master in Design Environmental Design",
+          "Master in Educational Administration",
+          "Master in Intelligent Systems",
+          "Master in Artificial Intelligence",
+          "Master in High Performance Computing Systems",
+          "Master in Data Analytics",
+          "Master in Electronic Devices and Systems",
+          "Master in Power Electronics",
+          "Master in Computer Systems and Networks",
+          "Master in Oil and Gas Field Development",
+          "Master in Veterinary Epidemiology"
+        ]
+      },
+      "Faculty of Veterinary Medicine": {
+        programs: [
+          "Bachelor of Veterinary Medicine",
+          "Master of Veterinary Medicine",
+          "Doctor of Philosophy in Veterinary Medicine",
+          "Bachelor of Science in Veterinary Basic Sciences",
+          "Bachelor of Science in Veterinary Preclinical Sciences",
+          "Bachelor of Science in Veterinary Clinical Sciences",
+          "Bachelor of Science in Food Hygiene and Technology",
+          "Bachelor of Science in Animal Nutrition and Breeding",
+
+          "Master of Science in Veterinary Basic Sciences",
+          "Master of Science in Veterinary Preclinical Sciences",
+          "Master of Science in Veterinary Clinical Sciences",
+          "Master of Science in Food Hygiene and Technology",
+          "Master of Science in Animal Nutrition and Breeding",
+
+          "Doctor of Philosophy in Veterinary Basic Sciences",
+          "Doctor of Philosophy in Veterinary Microbiology and Virology",
+          "Doctor of Philosophy in Veterinary Pathology and Parasitology",
+          "Doctor of Philosophy in Veterinary Clinical Sciences",
+          "Doctor of Philosophy in Animal Nutrition and Genetics",
+          "Doctor of Philosophy in Food Safety and Veterinary Public Health"
+        ]
+      }
+     }
+
+    
+  
+  },
+},
+
   
 
 
@@ -2418,6 +2640,1903 @@ export const ASIA = [
       ]
     },
   },
+   "Indian Institute of Technology Roorkee": {
+    "Faculty of Engineering & Architecture": {
+      "programs": [
+        "BTech Aerospace Engineering",
+        "BTech Biosciences and Bioengineering",
+        "BTech Engineering Physics",
+        "BTech Chemical Engineering",
+        "BTech Civil Engineering",
+        "BTech Energy Engineering",
+        "BTech Computer Science and Engineering",
+        "BTech Electronics and Communication Engineering",
+        "BTech Electrical Engineering",
+        "BTech Mechanical Engineering",
+        "BTech Metallurgical and Materials Engineering",
+        "BTech Production and Industrial Engineering",
+        "BTech Data Science and Artificial Intelligence",
+        "Bachelor of Architecture",
+        "Bachelor of Design",
+        "Integrated MTech Geological Technology",
+        "Integrated MTech Geophysical Technology",
+        "MArch Architecture",
+        "MURP Urban and Regional Planning",
+        "MDes Industrial Design",
+        "MTech Chemical Engineering",
+        "MTech Environmental Engineering",
+        "MTech Geospatial Engineering",
+        "MTech Geotechnical Engineering",
+        "MTech Hydraulic Engineering",
+        "MTech Structural Engineering",
+        "MTech Transportation Engineering",
+        "MTech Electric Drives and Power Electronics",
+        "MTech Power System Engineering",
+        "MTech Systems and Control",
+        "MTech Communication Network and Signal Processing",
+        "MTech RF and Microwave Engineering",
+        "MTech Microelectronics and VLSI",
+        "MTech Computer Science and Engineering",
+        "MTech Mechanical and Industrial Engineering",
+        "MTech Industrial Metallurgy",
+        "MTech Materials Engineering",
+        "MTech Computational Materials Engineering",
+        "MTech Pulp and Paper Technology",
+        "MTech Packaging Technology",
+        "MTech Disaster Mitigation and Management",
+        "MTech Earthquake Engineering",
+        "MTech Transportation Systems"
+      ]
+    },
+    "Faculty of Sciences": {
+      "programs": [
+        "BSMS Chemical Science",
+        "BSMS Mathematics and Computing",
+        "BSMS Physics",
+        "BSMS Economics",
+        "MSc Economics",
+        "MSc Physics",
+        "MSc Mathematics",
+        "MSc Applied Geology",
+        "MSc Chemistry",
+        "MTech Solid State Electronic Technology",
+        "MTech Photonics",
+        "MTech Nanoscience and Nanotechnology",
+        "MTech Applied Mathematics and Scientific Computing"
+      ]
+    },
+    "Faculty of Biosciences & Biotechnology": {
+      "programs": [
+        "BTech Biosciences and Bioengineering",
+        "MSc Bioscience and Bioengineering",
+        "MTech Biomanufacturing",
+        "MTech Structural and Computational Biology"
+      ]
+    },
+    "Faculty of Interdisciplinary Studies": {
+      "programs": [
+        "MTech Hydro and Renewable Energy",
+        "MTech Environmental Management of Rivers and Lakes",
+        "MTech Hydrology",
+        "MTech Irrigation Water Management",
+        "MTech Water Resources Development and Management",
+        "MTech Drinking Water and Sanitation",
+        "MTech Artificial Intelligence and Data Science",
+        "MTech Polymer Science and Engineering",
+        "MTech Dam Safety and Rehabilitation",
+        "MTech Space Science and Technology",
+        "MTech Sustainable Energy Engineering",
+        "MTech Public Policy Law and Governance"
+      ]
+    },
+  },
+  "Vellore Institute of Technology": {
+
+    "School of Computer Science and Engineering (SCOPE)": {
+      "programs": [
+        "BTech Computer Science and Engineering",
+        "BTech Computer Science and Engineering Bioinformatics",
+        "BTech Computer Science and Engineering Business Systems",
+        "BTech Computer Science and Engineering Blockchain",
+        "BTech Computer Science and Engineering Software Engineering",
+        "BTech Computer Science and Engineering Data Science",
+        "BTech Computer Science and Engineering Artificial Intelligence and Machine Learning",
+        "BTech Computer Science and Engineering Artificial Intelligence and Data Engineering",
+        "BTech Computer Science and Engineering Artificial Intelligence and Robotics",
+        "BTech Computer Science and Engineering Cyber Security",
+        "BTech Computer Science and Engineering Quantum Computing",
+        "BTech Computer Science and Engineering Cloud Computing and Automation",
+        "BTech Computer Science and Engineering Digital Forensics",
+        "BTech Computer Science and Engineering Gaming Technology",
+        "BTech Computer Science and Engineering Health Informatics",
+        "BTech Computer Science and Engineering Data Analytics",
+        "Integrated MTech Software Engineering",
+        "Integrated MTech Computer Science and Engineering",
+        "Integrated MTech Computer Science and Engineering Data Science",
+        "Integrated MTech Artificial Intelligence",
+        "Integrated MTech Computer Science and Engineering Cyber Security",
+        "Integrated MTech Computational and Data Science",
+        "MTech Computer Science and Engineering",
+        "MTech Computer Science and Engineering Artificial Intelligence and Machine Learning",
+        "MTech Computer Science and Engineering Big Data Analytics",
+        "MTech Computer Science and Engineering Cybersecurity",
+        "MTech Artificial Intelligence and Data Science",
+        "MTech Artificial Intelligence and Machine Learning",
+        "MTech Embedded Systems",
+        "MTech VLSI Design",
+        "MCA"
+      ]
+    },
+
+    "School of Electrical Engineering (SELECT)": {
+      "programs": [
+        "BTech Electrical and Electronics Engineering",
+        "BTech Electrical and Computer Science Engineering",
+        "MTech Power Electronics and Drives",
+        "MTech Electric Mobility",
+        "MTech Control and Automation"
+      ]
+    },
+
+    "School of Electronics Engineering (SENSE)": {
+      "programs": [
+        "BTech Electronics and Communication Engineering",
+        "BTech Electronics and Communication Engineering VLSI",
+        "BTech Electronics and Communication Engineering Embedded Systems",
+        "BTech Electronics and Communication Engineering Artificial Intelligence and Cybernetics",
+        "BTech Electronics and Instrumentation Engineering",
+        "BTech Electronics Engineering VLSI Design and Technology",
+        "BTech Electronics and Computer Engineering"
+      ]
+    },
+
+    "School of Mechanical Engineering (SMEC)": {
+      "programs": [
+        "BTech Mechanical Engineering",
+        "BTech Mechanical Engineering Automotive Design",
+        "BTech Mechanical Engineering Artificial Intelligence and Robotics",
+        "BTech Mechanical Engineering Electric Vehicles",
+        "BTech Mechanical Engineering Robotics",
+        "BTech Mechatronics and Automation",
+        "MTech Mechatronics",
+        "MTech CAD CAM",
+        "MTech Smart Manufacturing",
+        "MTech Automotive Electronics"
+      ]
+    },
+
+    "School of Civil Engineering (SCE)": {
+      "programs": [
+        "BTech Civil Engineering",
+        "BTech Civil Engineering L and T",
+        "MTech Structural Engineering",
+        "MTech Construction Technology and Management"
+      ]
+    },
+
+    "School of Chemical Engineering (SCHEME)": {
+      "programs": [
+        "BTech Chemical Engineering"
+      ]
+    },
+
+    "School of Bio Sciences and Technology (SBST)": {
+      "programs": [
+        "BTech Biotechnology",
+        "BTech Bioengineering",
+        "MTech Biotechnology",
+        "MSc Biotechnology",
+        "MSc Biomedical Genetics",
+        "MSc Applied Microbiology"
+      ]
+    },
+
+    "School of Advanced Sciences (SAS)": {
+      "programs": [
+        "BSc",
+        "Integrated MSc Biotechnology",
+        "Integrated MSc Food Science and Technology",
+        "Integrated MSc Data Science",
+        "Integrated MSc Physics",
+        "Integrated MSc Chemistry",
+        "Integrated MSc Mathematics",
+        "Integrated MSc Applied Psychology",
+        "MSc Chemistry",
+        "MSc Physics",
+        "MSc Data Science",
+        "MSc Artificial Intelligence and Machine Learning",
+        "MSc Business Statistics"
+      ]
+    },
+
+    "School of Social Sciences and Languages (SSL)": {
+      "programs": [
+        "BA",
+        "BA English",
+        "BA Languages",
+        "BA Social Sciences",
+        "BBA",
+        "BCom",
+        "BCA",
+        "Integrated MA Public Services",
+        "Master of Social Work"
+      ]
+    },
+
+    "VIT Business School (VIT BS)": {
+      "programs": [
+        "MBA",
+        "MBA Finance",
+        "MBA Marketing",
+        "MBA Human Resource Management",
+        "MBA Business Analytics",
+        "MBA Operations Management"
+      ]
+    },
+
+    "School of Architecture (V SPARC)": {
+      "programs": [
+        "BArch",
+        "MArch"
+      ]
+    },
+
+    "VIT School of Design (V SIGN)": {
+      "programs": [
+        "BDes",
+        "MDes Industrial Design"
+      ]
+    },
+
+    "School of Healthcare Science and Engineering (SHINE)": {
+      "programs": [
+        "BTech Health Sciences and Technology"
+      ]
+    },
+
+    "VIT School of Agricultural Innovations and Advanced Learning (VAIAL)": {
+      "programs": [
+        "BSc Agriculture",
+        "Agronomy",
+        "Genetics and Plant Breeding",
+        "Plant Pathology and Agricultural Entomology",
+        "Agricultural Extension and Agricultural Economics",
+        "Horticulture and Food Science"
+      ]
+    },
+
+    "School of Hotel and Tourism Management (HOT)": {
+      "programs": [
+        "Hotel and Tourism Management"
+      ]
+    },
+
+    "VIT School of Media Arts and Technology (V SMART)": {
+      "programs": []
+    }
+
+  },
+  "Savitribai Phule Pune University": {
+    "Faculty of Arts, Fine Arts and Performing Arts": {
+      "programs": [
+        "Doctor of Philosophy in Arts, Fine Arts and Performing Arts",
+        "Master of Philosophy in Arts, Fine Arts and Performing Arts",
+        "Master of Arts",
+        "Master of Arts External",
+        "Master of Arts in Foreign Languages",
+        "Master of Oriental Learning",
+        "Master of Arts in Job Oriented Functional Hindi",
+        "Master of Fine Arts",
+        "Master of Arts in Sanskrit Linguistics",
+        "Master of Arts in Indian Logic and Epistemology",
+        "Bachelor of Arts Special",
+        "Bachelor of Arts",
+        "Bachelor of Arts General External",
+        "Bachelor of Oriental Learning in Sanskrit",
+        "Bachelor of Fine Arts",
+        "Diploma and Degree Course in Hindi Functional Languages",
+        "Special Diploma in Russian",
+        "Advanced Diploma in French",
+        "Advanced Diploma in German",
+        "Advanced Diploma in Russian",
+        "Advanced Diploma in Japanese",
+        "Master of Arts in Lalit Kala",
+        "Bachelor of Arts in Lalit Kala",
+        "Lower Diploma in Sanskrit",
+        "Lower Diploma in Ardhamagadhi",
+        "Lower Diploma in Pali",
+        "Higher Diploma in Sanskrit",
+        "Higher Diploma in Ardhamagadhi",
+        "Higher Diploma in Pali",
+        "Diploma in Music",
+        "Diploma in French",
+        "Diploma in German",
+        "Diploma in Russian",
+        "Diploma in Japanese",
+        "Diploma in Literature in Modern European Languages",
+        "Vyawaharik Hindi Padvika and Madhyamik Hindi Adhyapak",
+        "Diploma in Manuscriptology",
+        "Prayojanmulak Hindi Padvika",
+        "Sampreshan aur Janasampark Madhyamo ke Liye Hindi Lekhan Padvika Pathyakram",
+        "Hindi Tankan, Ashulekhan and Mudrit Sanshodhan Padvika Pathyakram",
+        "Part Time Certificate Course in Translation",
+        "Part Time Diploma Course in Translation",
+        "Diploma in Urdu"
+      ]
+    },
+    "Faculty of Education and Physical Education": {
+      "programs": [
+        "Doctor of Science in Education and Physical Education",
+        "Doctor of Philosophy in Education and Physical Education",
+        "Master of Philosophy in Education and Physical Education",
+        "Doctor of Philosophy in Education Interdisciplinary",
+        "Master of Philosophy in Education Interdisciplinary",
+        "Master of Philosophy in Physical Education",
+        "Master of Education",
+        "Master of Education in Physical Education",
+        "Master of Education Interdisciplinary",
+        "Master of Arts in Education Interdisciplinary",
+        "Bachelor of Education",
+        "Bachelor of Education in Physical Education",
+        "Bachelor of Science in Physical Education, Health Education and Sports",
+        "Bachelor of Education in Yoga",
+        "Bachelor of Education Vocational",
+        "Bachelor of Education in Education of Handicapped",
+        "Bachelor of Physical Education",
+        "Bachelor of Education in Hearing Impaired",
+        "Post Graduate Diploma in Research Methodology of Education",
+        "Diploma in Education for Deaf",
+        "Diploma in Education for Teachers of Mentally Retarded Children",
+        "Diploma in Sports Journalism",
+        "Special Training Course for Teachers of Mentally Retarded Persons",
+        "Certificate Course for Training of Adult Education Middle Level Functionaries Animators"
+      ]
+    },
+    "Faculty of Science": {
+      "programs": [
+        "Doctor of Philosophy in Science",
+        "Master of Philosophy in Science",
+        "Master of Science",
+        "Master of Computer Applications",
+        "Master of Science in Medical Biochemistry",
+        "Master of Science in Biotechnology",
+        "Master of Science in Petroleum Technology",
+        "Master of Science in Applied Electronic Science",
+        "Post Graduate Bachelor of Science Applied Course in Toxicology",
+        "Post Graduate Bachelor of Science Applied Course in Tissue Culture",
+        "Master of Computer Science",
+        "Master of Technology in Atmospheric Physics",
+        "Master of Technology in Computer Science",
+        "Master of Technology in Bioinformatics",
+        "Master of Technology in Lasers and Electro-Optics",
+        "Master of Technology in Mathematical Modelling and Simulation",
+        "Master of Technology in Radar System",
+        "Master of Technology in Integrated Digital Communications",
+        "Master of Technology Cross Migration and Second Level in Computer",
+        "Master of Technology in Resource Development",
+        "Master of Science in Computer Science",
+        "Master of Science in Technology in Weapon Systems",
+        "Master of Arts in Health Sciences",
+        "Master of Science in Health Sciences",
+        "Master of Arts in Communication Studies",
+        "Master of Science in Communication Studies",
+        "Master of Technology in Laser and Laser Applications",
+        "Master of Science in Technology in Information Technology",
+        "Master of Technology in Material Science",
+        "Master of Science in Drug Chemistry",
+        "Master of Science in Energy Studies",
+        "Master of Computer Science with Scientific Computing",
+        "Master of Technology in Software Engineering",
+        "Bachelor of Science",
+        "Bachelor of Science Restructured",
+        "Bachelor of Science Applied in Environmental Pollution",
+        "Bachelor of Science Applied in Electronics",
+        "Bachelor of Science Applied in Biomedical Techniques",
+        "Bachelor of Science Applied in Pollution Environment",
+        "Bachelor of Science Applied in Petroleum Technology",
+        "Bachelor of Science Applied in Scientific Instrumentation",
+        "Bachelor of Science Applied in Energy Studies",
+        "Bachelor of Computer Science",
+        "Diploma in Hydrogeology",
+        "Post Graduate Diploma in Mineral Exploration",
+        "Job Oriented Diploma Course in Industrial Chemistry",
+        "Evening Course in Computer Programme",
+        "Certificate Course in River Basin and Management",
+        "Diploma Course in River Basin and Management",
+        "Certificate Course in Application Oriented Disciplines in Refrigeration",
+        "Certificate Course in Application Oriented Disciplines in Radio Servicing",
+        "Certificate Course in Application Oriented Disciplines in Television Servicing",
+        "Certificate Course in Application Oriented Disciplines in Industrial Electronics",
+        "Diploma Course in Application Oriented Disciplines in Refrigeration",
+        "Diploma Course in Application Oriented Disciplines in Radio Servicing",
+        "Diploma Course in Application Oriented Disciplines in Television Servicing",
+        "Diploma Course in Application Oriented Disciplines in Industrial Electronics",
+        "Coding Theory and Cryptography",
+        "Certificate Course in Weapon System",
+        "Diploma in Weapon System",
+        "Post Graduate Diploma in Automobile Technology",
+        "Post Graduate Diploma in Armament Technology",
+        "Post Graduate Diploma in Radio Communication",
+        "Advanced Diploma in Bioinformatics",
+        "Post Graduate Diploma in Community Health and Development",
+        "Post Graduate Diploma in Dietetics",
+        "Certificate Course in Awareness of Health and Environmental",
+        "Bachelor of Science in Technology in Weapon System",
+        "Bachelor of Science Applied in Optometry",
+        "Post Graduate Certificate Course in Tank Technology",
+        "Basic Diploma in Weapon System",
+        "Post Graduate Diploma in Armament Technology",
+        "Post Graduate Diploma in Mobile Warfare Communication",
+        "Post Graduate Diploma in Automotive Technology",
+        "Diploma in Equipment Management",
+        "Diploma in Automotive Technology",
+        "Diploma in Explosive and Armament",
+        "Diploma in Communication Technology",
+        "Certificate Course in VLSI Design"
+      ]
+    },
+    "Faculty of Management": {
+      "programs": [
+        "Doctor of Philosophy in Management",
+        "Master of Business Administration",
+        "Master of Personnel Management",
+        "Master of Computer Management",
+        "Master of Management Sciences",
+        "Master of Marketing Management",
+        "Master of Computer Applications",
+        "Bachelor of Hotel Management and Catering Technology",
+        "Diploma in Business Management",
+        "Diploma in Computer Management",
+        "Diploma in Marketing Management",
+        "Diploma in Print Administration",
+        "Diploma in Co-operative Management",
+        "Diploma in Hospital Management",
+        "Diploma in Office Management",
+        "Diploma in Capital Marketing Management",
+        "Diploma in Financial Services",
+        "Post Graduate Diploma in Environment",
+        "Advanced Diploma in Computer Application"
+      ]
+    },
+    "Faculty of Pharmaceutical Science": {
+      "programs": [
+        "Doctor of Philosophy in Pharmaceutical Science",
+        "Master of Pharmacy",
+        "Master of Pharmacy in Quality Assurance Techniques",
+        "Bachelor of Pharmacy"
+      ]
+    },
+    "Faculty of Commerce": {
+      "programs": [
+        "Doctor of Philosophy in Commerce",
+        "Master of Philosophy in Commerce",
+        "Master of Commerce",
+        "Master of Commerce External",
+        "Bachelor of Commerce",
+        "Bachelor of Commerce External",
+        "Bachelor of Commerce Restructured",
+        "Post Graduate Diploma in Company Secretaryship",
+        "Post Graduate Diploma in Salesmanship and Advertisement",
+        "Post Graduate Diploma in Statistics",
+        "Post Graduate Diploma in Taxation",
+        "Post Graduate Diploma in Banking",
+        "Post Graduate Diploma in Accountancy",
+        "Post Graduate Diploma in International Business",
+        "Certificate Course in E-commerce"
+      ]
+    },
+    "Faculty of Law": {
+      "programs": [
+        "Doctor of Philosophy in Law",
+        "Doctor of Laws",
+        "Master of Laws",
+        "Master of Laws External",
+        "Master of Labour Laws and Labour Welfare",
+        "Bachelor of Laws",
+        "Bachelor of Laws General",
+        "Bachelor of Laws Five Year",
+        "Bachelor of Social Legal Science",
+        "Diploma in Taxation Laws",
+        "Diploma in Labour Laws and Labour Welfare",
+        "Diploma in Co-operative Laws",
+        "Diploma in Criminology",
+        "Diploma in Legislative Drafting"
+      ]
+    }
+  },
+  "Tata Institute of Fundamental Research": {
+    "Tata Institute of Fundamental Research, Mumbai": {
+      "programs": [
+        "Integrated PhD in Biology",
+        "PhD in Biology",
+        "Integrated PhD in Computer Science and Learning, Information and Data Sciences",
+        "PhD in Computer Science and Learning, Information and Data Sciences",
+        "Integrated PhD in Chemistry",
+        "PhD in Chemistry",
+        "Integrated PhD in Mathematics",
+        "PhD in Mathematics",
+        "Integrated PhD in Physics",
+        "PhD in Physics"
+      ]
+    },
+    "Tata Institute of Fundamental Research, Mumbai and National Centre for Radio Astrophysics, Pune": {
+      "programs": [
+        "Integrated PhD in Physics",
+        "PhD in Physics"
+      ]
+    },
+    "Tata Institute of Fundamental Research, Hyderabad": {
+      "programs": [
+        "Integrated PhD in Biology",
+        "PhD in Biology",
+        "Integrated PhD in Chemistry",
+        "PhD in Chemistry",
+        "Integrated PhD in Physics",
+        "PhD in Physics"
+      ]
+    },
+    "International Centre for Theoretical Sciences, Bangalore": {
+      "programs": [
+        "PhD in Mathematics",
+        "Integrated PhD in Physics",
+        "PhD in Physics",
+        "PhD in Applied and Computational Mathematics"
+      ]
+    },
+    "Centre for Applicable Mathematics, Bangalore": {
+      "programs": [
+        "Integrated PhD in Mathematics",
+        "PhD in Mathematics"
+      ]
+    },
+    "National Centre for Biological Sciences, Bangalore": {
+      "programs": [
+        "Integrated PhD in Biology",
+        "PhD in Biology",
+        "Master of Science in Wildlife Biology and Conservation"
+      ]
+    },
+    "Homi Bhabha Centre for Science Education, Mumbai": {
+      "programs": [
+        "PhD in Science Education"
+      ]
+    }
+  },
+  "BITS Pilani": {
+    "Pilani Campus": {
+      "programs": [
+        "Bachelor of Engineering in Computer Science",
+        "Bachelor of Engineering in Chemical Engineering",
+        "Bachelor of Engineering in Civil Engineering",
+        "Bachelor of Engineering in Electrical and Electronics Engineering",
+        "Bachelor of Engineering in Electronics and Instrumentation Engineering",
+        "Bachelor of Engineering in Mechanical Engineering",
+        "Bachelor of Pharmacy",
+        "Master of Science in Biological Sciences",
+        "Master of Science in Chemistry",
+        "Master of Science in Economics",
+        "Master of Science in Mathematics",
+        "Master of Science in Physics",
+        "Master of Engineering in Sanitation Science, Technology and Management",
+        "Master of Engineering in Chemical Engineering",
+        "Master of Engineering in Chemical Engineering with specialization in Petroleum Engineering",
+        "Master of Engineering in Mechanical Engineering with specialization in Thermal Engineering",
+        "Master of Engineering in Software Systems",
+        "Master of Engineering in Design Engineering",
+        "Master of Engineering in Computer Science",
+        "Master of Engineering in Computer Science with specialization in Information Security",
+        "Master of Engineering in Microelectronics",
+        "Master of Engineering in Mechanical Engineering",
+        "Master of Engineering in Manufacturing Systems Engineering",
+        "Master of Engineering in Embedded Systems",
+        "Master of Engineering in Electronics and Control",
+        "Master of Engineering in Communication Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Water Resource Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Transportation Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Structural Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Infrastructure Engineering and Management",
+        "Master of Engineering in Biotechnology",
+        "Master of Engineering in Environmental Engineering",
+        "Master of Pharmacy in Pharmacology",
+        "Master of Pharmacy in Pharmaceutics",
+        "Master of Pharmacy in Pharmaceutical Chemistry",
+        "Master of Pharmacy in Pharmacy",
+        "Master of Business Administration in Business Analytics",
+        "Master in Public Health",
+        "Master of Science in General Studies with Communication and Media Studies Stream",
+        "Doctor of Philosophy"
+      ]
+    },
+    "Goa Campus": {
+      "programs": [
+        "Bachelor of Engineering in Chemical Engineering",
+        "Bachelor of Engineering in Civil Engineering",
+        "Bachelor of Engineering in Computer Science",
+        "Bachelor of Engineering in Electrical and Electronics Engineering",
+        "Bachelor of Engineering in Electronics and Computer Engineering",
+        "Bachelor of Engineering in Electronics and Communication Engineering",
+        "Bachelor of Engineering in Electronics and Instrumentation Engineering",
+        "Bachelor of Engineering in Manufacturing Engineering",
+        "Bachelor of Engineering in Mechanical Engineering",
+        "Bachelor of Engineering in Environmental and Sustainability Engineering",
+        "Bachelor of Pharmacy",
+        "Master of Science in Biological Sciences",
+        "Master of Science in Chemistry",
+        "Master of Science in Semiconductor and Nanoscience",
+        "Master of Engineering in Sanitation Science, Technology and Management",
+        "Master of Engineering in Embedded Systems",
+        "Master of Engineering in Chemical Engineering with specialization in Petroleum Engineering",
+        "Master of Engineering in Biotechnology",
+        "Master of Engineering in Chemical Engineering",
+        "Master of Engineering in Mechanical Engineering",
+        "Master of Engineering in Design Engineering",
+        "Master of Engineering in Computer Science",
+        "Master of Engineering in Environmental Engineering",
+        "Doctor of Philosophy"
+      ]
+    },
+    "Hyderabad Campus": {
+      "programs": [
+        "Bachelor of Engineering in Chemical Engineering",
+        "Bachelor of Engineering in Civil Engineering",
+        "Bachelor of Engineering in Computer Science",
+        "Bachelor of Engineering in Electrical and Electronics Engineering",
+        "Bachelor of Engineering in Electronics and Computer Engineering",
+        "Bachelor of Engineering in Electronics and Communication Engineering",
+        "Bachelor of Engineering in Electronics and Instrumentation Engineering",
+        "Bachelor of Engineering in Manufacturing Engineering",
+        "Bachelor of Engineering in Mechanical Engineering",
+        "Bachelor of Engineering in Environmental and Sustainability Engineering",
+        "Bachelor of Engineering in Mathematics and Computing",
+        "Bachelor of Pharmacy",
+        "Master of Science in Biological Sciences",
+        "Master of Science in Chemistry",
+        "Master of Science in Economics",
+        "Master of Science in General Studies",
+        "Master of Science in Mathematics",
+        "Master of Science in Physics",
+        "Master of Science in Semiconductor and Nanoscience",
+        "Master of Engineering in Biotechnology",
+        "Master of Engineering in Chemical Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Structural Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Transportation Engineering",
+        "Master of Engineering in Civil Engineering with specialization in Infrastructure Engineering and Management",
+        "Master of Engineering in Communication",
+        "Master of Engineering in Computer Science",
+        "Master of Engineering in Computer Science with specialization in Information Security",
+        "Master of Engineering in Design Engineering",
+        "Master of Engineering in Embedded Systems",
+        "Master of Engineering in Manufacturing Systems Engineering",
+        "Master of Engineering in Mechanical Engineering",
+        "Master of Engineering in Mechanical Engineering with specialization in Thermal Engineering",
+        "Master of Engineering in Environmental Engineering",
+        "Master of Engineering in VLSI and Microelectronics",
+        "Master of Engineering in Electronics and Control",
+        "Master of Engineering in Electrical Engineering with specialization in Power Electronics and Drives",
+        "Master of Engineering in Sanitation Science, Technology and Management",
+        "Master of Engineering in Software Systems",
+        "Master of Pharmacy in Pharmacology",
+        "Master of Pharmacy in Pharmaceutics",
+        "Master of Pharmacy in Pharmaceutical Chemistry",
+        "Master of Pharmacy in Pharmacy",
+        "Master of Business Administration",
+        "Master of Business Administration in Business Analytics",
+        "Master in Public Health",
+        "Master of Science in General Studies with Communication and Media Studies Stream",
+        "Doctor of Philosophy"
+      ]
+    },
+    "Dubai Campus": {
+      "programs": [
+        "Bachelor of Engineering in Biotechnology",
+        "Bachelor of Engineering in Chemical Engineering",
+        "Bachelor of Engineering in Chemical Engineering with specialization in Energy, Environment and Sustainability",
+        "Bachelor of Engineering in Civil Engineering",
+        "Bachelor of Engineering in Architectural and Urban Engineering",
+        "Bachelor of Engineering in Computer Science",
+        "Bachelor of Engineering in Electronics and Communication Engineering",
+        "Bachelor of Engineering in Electrical and Electronics Engineering",
+        "Bachelor of Engineering in Mechanical Engineering",
+        "Bachelor of Engineering in Electronics and Computer Engineering",
+        "Bachelor of Business Administration Honours",
+        "Doctor of Philosophy in Biological Sciences",
+        "Doctor of Philosophy in Chemical Engineering",
+        "Doctor of Philosophy in Chemistry",
+        "Doctor of Philosophy in Civil Engineering",
+        "Doctor of Philosophy in Computer Science and Information Systems",
+        "Doctor of Philosophy in Economics and Finance",
+        "Doctor of Philosophy in Electrical and Electronics Engineering",
+        "Doctor of Philosophy in Humanities and Social Sciences",
+        "Doctor of Philosophy in Management",
+        "Doctor of Philosophy in Mathematics",
+        "Doctor of Philosophy in Mechanical Engineering",
+        "Doctor of Philosophy in Pharmacy",
+        "Doctor of Philosophy in Physics",
+        "Doctor of Philosophy in General Sciences"
+      ]
+    },
+    "Mumbai": {
+      "programs": [
+        "Bachelor of Design Honours",
+        "Bachelor of Arts and Bachelor of Laws Honours",
+        "Bachelor of Business Administration and Bachelor of Laws Honours",
+        "Master of Business Administration"
+      ]
+    }
+  },
+  "Indian Institute of Science": {
+    "Institute-Level Programmes": {
+      "programs": [
+        "Bachelor of Science Research",
+        "Bachelor of Technology in Mathematics and Computing",
+        "Master of Technology",
+        "Master of Design in Product Design, Development and Management",
+        "Master of Management",
+        "Master of Technology through CFTI Mode",
+        "Joint Master of Technology in Semiconductor Technology",
+        "Master of Engineering",
+        "Master of Science",
+        "Integrated Doctor of Philosophy",
+        "Master of Technology Research",
+        "Doctor of Philosophy"
+      ]
+    },
+    "Department and Centre Programmes": {
+      "programs": [
+        "Master of Technology in Aerospace Engineering",
+        "Master of Technology in Artificial Intelligence",
+        "Master of Technology in Bioengineering",
+        "Master of Technology in Civil Engineering",
+        "Master of Technology in Chemical Engineering",
+        "Master of Technology in Earth and Climate Sciences",
+        "Master of Technology in Computational and Data Sciences",
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Electronics and Communication Engineering",
+        "Master of Technology in Electronic Systems Engineering",
+        "Master of Technology in Electrical Engineering",
+        "Master of Technology in Sustainable Technologies",
+        "Master of Technology in Electronic Product Design",
+        "Master of Technology in Mobility Engineering",
+        "Master of Science in Mathematics",
+        "Master of Technology Research in Civil Engineering",
+        "Master of Technology Research in Mechanical Engineering",
+        "Master of Technology Research in Computational and Data Sciences",
+        "Master of Technology Research in Chemical Engineering",
+        "Doctor of Philosophy in Computer Science and Engineering",
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Artificial Intelligence"
+      ]
+    }
+  },
+  "Lovely Professional University": {
+
+    "Faculty of Engineering and Technology": {
+      "programs": [
+        "BTech Computer Science and Engineering",
+        "BTech Mechanical Engineering",
+        "BTech Civil Engineering",
+        "BTech Electrical Engineering",
+        "BTech Electronics and Communication Engineering",
+        "BTech Information Technology",
+        "BTech Automobile Engineering",
+        "BTech Biotechnology",
+        "BTech Food Technology",
+        "MTech Computer Science and Engineering",
+        "MTech Mechanical Engineering",
+        "MTech Civil Engineering",
+        "MTech Electrical Engineering",
+        "MTech Electronics and Communication Engineering",
+        "MTech Biotechnology"
+      ]
+    },
+
+    "Faculty of Computer Applications and IT": {
+      "programs": [
+        "Bachelor of Computer Applications",
+        "BSc Information Technology",
+        "Master of Computer Applications",
+        "MSc Information Technology",
+        "Diploma in Computer Applications"
+      ]
+    },
+
+    "Faculty of Business and Management": {
+      "programs": [
+        "Bachelor of Business Administration",
+        "BBA Honours",
+        "Bachelor of Hotel Management and Catering Technology",
+        "Master of Business Administration",
+        "MBA Digital Business",
+        "MBA Financial Markets",
+        "MBA International Business",
+        "MBA Supply Chain Management"
+      ]
+    },
+
+    "Faculty of Commerce and Economics": {
+      "programs": [
+        "Bachelor of Commerce",
+        "Bachelor of Commerce Honours",
+        "Master of Commerce"
+      ]
+    },
+
+    "Faculty of Arts and Humanities": {
+      "programs": [
+        "Bachelor of Arts",
+        "BA Journalism and Mass Communication",
+        "Master of Arts",
+        "MA English",
+        "MA Political Science",
+        "MA History"
+      ]
+    },
+
+    "Faculty of Law": {
+      "programs": [
+        "BA LLB Honours",
+        "BBA LLB Honours",
+        "BCom LLB Honours",
+        "Bachelor of Laws",
+        "Master of Laws"
+      ]
+    },
+
+    "Faculty of Design and Fine Arts": {
+      "programs": [
+        "Bachelor of Design Fashion Design",
+        "Bachelor of Design Interior Design",
+        "Bachelor of Design Product Design",
+        "MDes Fashion Design",
+        "MDes Product Design"
+      ]
+    },
+
+    "Faculty of Sciences": {
+      "programs": [
+        "Bachelor of Science",
+        "BSc Physics",
+        "BSc Chemistry",
+        "BSc Mathematics",
+        "BSc Biotechnology",
+        "BSc Forensic Science",
+        "MSc Physics",
+        "MSc Chemistry",
+        "MSc Mathematics",
+        "MSc Biotechnology",
+        "MSc Data Science"
+      ]
+    },
+
+    "Faculty of Agriculture": {
+      "programs": [
+        "BSc Agriculture",
+        "MSc Agronomy",
+        "MSc Horticulture",
+        "MSc Soil Science",
+        "MSc Plant Pathology"
+      ]
+    },
+
+    "Faculty of Architecture and Planning": {
+      "programs": [
+        "Bachelor of Architecture",
+        "Master of Architecture",
+        "Bachelor of Planning"
+      ]
+    },
+
+    "Faculty of Hospitality and Tourism": {
+      "programs": [
+        "BSc Hotel Management",
+        "BSc Airlines Tourism and Hospitality",
+        "Diploma in Food Production"
+      ]
+    },
+
+    "Faculty of Vocational and Diploma Studies": {
+      "programs": [
+        "Diploma in Civil Engineering",
+        "Diploma in Mechanical Engineering",
+        "Diploma in Electrical Engineering",
+        "Diploma in Fashion Design",
+        "Diploma in Business Administration"
+      ]
+    },
+
+    "Faculty of Doctoral Studies": {
+      "programs": [
+        "PhD Engineering",
+        "PhD Management",
+        "PhD Commerce",
+        "PhD Law",
+        "PhD Agriculture",
+        "PhD Sciences",
+        "PhD Humanities"
+      ]
+    }
+  },
+  "Amrita Vishwa Vidyapeetham": {
+
+    "School of Agriculture": {
+      "programs": [
+        "Bachelor of Science Honours in Agriculture",
+        "Master of Science in Agriculture Agronomy",
+        "Doctor of Philosophy in Agriculture Agronomy"
+      ]
+    },
+
+    "School of Allied Health Sciences": {
+      "programs": [
+        "Bachelor of Science in Cardiac Perfusion Technology",
+        "Bachelor of Science in Cardio Vascular Technology",
+        "Bachelor of Science in Diabetes Sciences",
+        "Bachelor of Science in Echocardiography Technology",
+        "Bachelor of Science in Intensive Care Technology",
+        "Bachelor of Science in Medical Laboratory Science",
+        "Bachelor of Science in Neuro Electro Physiology",
+        "Bachelor of Science in Blood Bank Technology",
+        "Bachelor of Science in Nuclear Medicine Technology",
+        "Bachelor of Science in Nutrition and Dietetics",
+        "Bachelor of Science in Optometry",
+        "Bachelor of Audiology and Speech Language Pathology",
+        "Bachelor of Anaesthesia and Operation Theatre Technology",
+        "Bachelor of Dialysis Therapy Technology",
+        "Bachelor of Emergency Medical Technology",
+        "Bachelor of Medical Radiology and Imaging Technology",
+        "Bachelor of Optometry",
+        "Bachelor of Physician Associate",
+        "Bachelor of Radiation Therapy Technology",
+        "Bachelor of Respiratory Technology",
+
+        "Executive Master in Public Health",
+        "Master of Science in Cardiovascular Technology",
+        "Master of Science in Deglutology and Swallowing Disorders",
+        "Master of Science in Diabetes Sciences",
+        "Master of Science in Neuro Electro Physiology",
+        "Master of Philosophy in Clinical Psychology",
+        "Master of Advanced Care Paramedics",
+        "Master of Dialysis Therapy",
+        "Master of Hospital Administration",
+        "Master of Medical Laboratory Science",
+        "Master of Nutrition and Dietetics",
+        "Master of Public Health",
+        "Master of Respiratory Technology"
+      ]
+    },
+
+    "School of Architecture": {
+      "programs": [
+        "Bachelor of Architecture",
+        "Bachelor of Design in Interior Design",
+        "Doctor of Philosophy in Architecture"
+      ]
+    },
+
+    "School of Artificial Intelligence": {
+      "programs": [
+        "Bachelor of Science in Physics Mathematics and Computer Science with Minor in Artificial Intelligence and Data Science",
+        "Bachelor of Science Honours in Mathematics and Artificial Intelligence",
+        "Bachelor of Science Honours in Visual Communication with Minor in Artificial Intelligence",
+        "Bachelor of Technology in Computer Science and Engineering Artificial Intelligence",
+        "Bachelor of Technology in Robotics and Artificial Intelligence",
+        "Bachelor of Technology in Artificial Intelligence and Data Science",
+        "Bachelor of Technology in Artificial Intelligence and Data Science Autonomous Agents and Robotic Systems",
+        "Bachelor of Technology in Artificial Intelligence and Data Science Cyber Physical Systems and Security",
+        "Bachelor of Technology in Artificial Intelligence and Data Science Medical Engineering",
+        "Bachelor of Technology in Artificial Intelligence and Data Science Quantum Technologies",
+        "Bachelor of Business Administration Honours in Digital Marketing and Artificial Intelligence",
+        "Master of Technology in Artificial Intelligence and Data Science",
+        "Master of Computer Applications in Artificial Intelligence and Data Science",
+        "Doctor of Philosophy in Artificial Intelligence and Data Science"
+      ]
+    },
+
+    "School of Arts and Science": {
+      "programs": [
+        "Integrated Master of Science in Visual Communication",
+        "Integrated Master of Science in Data Science",
+        "Bachelor of Science Honours in Food Science and Nutrition",
+        "Bachelor of Science Honours in Chemistry",
+        "Integrated Master of Science and Bachelor of Science Honours in Chemistry",
+        "Master of Arts in Journalism and Mass Communication",
+        "Master of Commerce in Finance and Systems",
+        "Master of Fine Arts in Visual Media",
+        "Master of Science in Physics",
+        "Master of Science in Mathematics",
+        "Master of Arts in English Language and Literature",
+        "Master of Arts in Visual Media and Communication",
+        "Master of Science in Applied Statistics and Data Analytics",
+        "Master of Science in Visual Communication",
+        "Master of Social Work",
+
+        "Doctor of Philosophy in Commerce and Management",
+        "Doctor of Philosophy in Communication",
+        "Doctor of Philosophy in Computer Science",
+        "Doctor of Philosophy in Computer Science and Information Technology",
+        "Doctor of Philosophy in English and Languages",
+        "Doctor of Philosophy in English Language and Literature",
+        "Doctor of Philosophy in Management and Commerce",
+        "Doctor of Philosophy in Philosophy",
+        "Doctor of Philosophy in Visual Media and Communication"
+      ]
+    },
+
+    "School of Arts, Humanities and Commerce": {
+      "programs": [
+        "Bachelor of Arts Honours in Mass Communication with Minor in Business Management and Media",
+        "Bachelor of Arts Honours in Mass Communication with Minor in Digital Design and Animation",
+        "Bachelor of Commerce Honours in FinTech",
+        "Bachelor of Commerce Honours in Taxation and Finance",
+        "Bachelor of Commerce Honours integrated with ACCA",
+        "Bachelor of Commerce in International Finance",
+        "Bachelor of Business Administration",
+        "Bachelor of Business Administration in Business Analytics",
+        "Bachelor of Design Honours in Communication Design",
+        "Bachelor of Science Honours in Visual Media and Communication",
+        "Bachelor of Commerce in Taxation and Finance",
+
+        "Master of Arts in Communication",
+        "Master of Arts in Journalism and Mass Communication",
+        "Master of Commerce in Finance and Systems",
+        "Master of Fine Arts in Visual Media",
+        "Master of Arts in English Language and Literature",
+        "Master of Arts in Visual Media and Communication",
+        "Master of Science in Visual Communication",
+
+        "Doctor of Philosophy in Arts Humanities and Commerce",
+        "Doctor of Philosophy in Communication",
+        "Doctor of Philosophy in Humanities and Social Sciences"
+      ]
+    },
+
+    "School of Ayurveda": {
+      "programs": [
+        "Bachelor of Ayurvedic Medicine and Surgery",
+        "Doctor of Medicine in Dravyaguna Vigyana",
+        "Doctor of Medicine in Kayachikitsa",
+        "Doctor of Medicine in Panchakarma",
+        "Doctor of Medicine in Rasashastra and Bhaishajya Kalpana",
+        "Doctor of Medicine in Swasthavritta",
+        "Doctor of Medicine in Ayurveda Samhita Sanskrit and Siddhanta",
+        "Master of Surgery in Prasuti and Streeroga",
+        "Master of Surgery in Shalakya Tantra",
+        "Master of Surgery in Shalya Tantra"
+      ]
+    },
+
+    "School of Business": {
+      "programs": [
+        "Bachelor of Business Administration",
+        "Bachelor of Business Administration in Business Analytics",
+        "Bachelor of Business Administration Honours in Digital Marketing and Artificial Intelligence",
+        "Master of Business Administration",
+        "Master of Business Administration and Master of Science in Business Analytics Dual Degree Programme",
+        "Doctor of Philosophy in Management"
+      ]
+    },
+
+    "School of Commerce": {
+      "programs": [
+        "Bachelor of Commerce Honours in FinTech",
+        "Bachelor of Commerce Honours in Taxation and Finance",
+        "Bachelor of Commerce Honours integrated with ACCA",
+        "Bachelor of Commerce in International Finance",
+        "Bachelor of Commerce in Taxation and Finance",
+        "Master of Commerce in Finance and Systems",
+        "Doctor of Philosophy in Commerce and Management",
+        "Doctor of Philosophy in Arts Media and Commerce"
+      ]
+    },
+
+    "School of Computing": {
+      "programs": [
+        "Integrated Bachelor of Computer Applications and Master of Computer Applications",
+        "Bachelor of Computer Applications",
+        "Bachelor of Computer Applications in Artificial Intelligence and Data Science",
+        "Bachelor of Computer Applications in Cyber Security",
+        "Bachelor of Computer Applications in UI and UX and Game Design",
+        "Master of Computer Applications",
+        "Master of Computer Applications in Artificial Intelligence and Data Science",
+        "Master of Computer Applications in Cyber Security"
+      ]
+    },
+
+    "School of Dentistry": {
+      "programs": [
+        "Bachelor of Dental Surgery",
+        "Diploma in Dental Mechanics",
+        "Master of Dental Surgery in Conservative and Endodontics",
+        "Master of Dental Surgery in Oral and Maxillofacial Pathology and Microbiology",
+        "Master of Dental Surgery in Oral and Maxillofacial Surgery",
+        "Master of Dental Surgery in Oral Medicine and Radiology",
+        "Master of Dental Surgery in Orthodontics and Dentofacial Orthopaedics",
+        "Master of Dental Surgery in Paediatric and Preventive Dentistry",
+        "Master of Dental Surgery in Periodontics",
+        "Master of Dental Surgery in Prosthodontics and Crown and Bridge",
+        "Master of Dental Surgery in Public Health Dentistry"
+      ]
+    },
+
+    "School of Engineering": {
+      "programs": [
+        "Bachelor of Technology in Aerospace Engineering",
+        "Bachelor of Technology in Automation and Robotics Engineering",
+        "Bachelor of Technology in Chemical Engineering",
+        "Bachelor of Technology in Civil Engineering",
+        "Bachelor of Technology in Computer and Communication Engineering",
+        "Bachelor of Technology in Computer Science and Engineering",
+        "Bachelor of Technology in Computer Science and Engineering Artificial Intelligence",
+        "Bachelor of Technology in Computer Science and Engineering Cyber Security",
+        "Bachelor of Technology in Computer Science and Engineering Quantum Computing",
+        "Bachelor of Technology in Electrical and Computer Engineering",
+        "Bachelor of Technology in Electrical and Electronics Engineering",
+        "Bachelor of Technology in Electronics and Communication Engineering",
+        "Bachelor of Technology in Electronics and Computer Engineering",
+        "Bachelor of Technology in Mechanical Engineering",
+        "Bachelor of Technology in Robotics and Artificial Intelligence",
+        "Bachelor of Technology in Artificial Intelligence and Data Science",
+
+        "Master of Technology in Artificial Intelligence",
+        "Master of Technology in Automotive Engineering",
+        "Master of Technology in Biomedical Engineering",
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Cyber Security",
+        "Master of Technology in Data Science",
+        "Master of Technology in Embedded Systems",
+        "Master of Technology in Engineering Design",
+        "Master of Technology in Materials Science and Engineering",
+        "Master of Technology in Robotics and Automation",
+        "Master of Technology in Structural Engineering",
+        "Master of Technology in Thermal Engineering",
+        "Master of Technology in VLSI Design",
+
+        "Doctor of Philosophy in Aerospace Engineering",
+        "Doctor of Philosophy in Civil Engineering",
+        "Doctor of Philosophy in Computer Science and Engineering",
+        "Doctor of Philosophy in Electronics and Communication Engineering",
+        "Doctor of Philosophy in Mechanical Engineering"
+      ]
+    },
+
+    "School of Media and Mass Communication": {
+      "programs": [
+        "Integrated Master of Science in Visual Communication",
+        "Bachelor of Arts Honours in Mass Communication",
+        "Bachelor of Design in Communication Design",
+        "Master of Arts in Communication",
+        "Master of Arts in Journalism and Mass Communication",
+        "Master of Science in Visual Communication",
+        "Doctor of Philosophy in Communication"
+      ]
+    },
+
+    "School of Medicine": {
+      "programs": [
+        "Bachelor of Medicine and Bachelor of Surgery",
+        "Doctor of Medicine in General Medicine",
+        "Doctor of Medicine in Paediatrics",
+        "Doctor of Medicine in Radiodiagnosis",
+        "Doctor of Medicine in Anaesthesiology",
+        "Doctor of Medicine in Dermatology",
+        "Doctor of Medicine in Pathology",
+        "Doctor of Medicine in Pharmacology",
+        "Doctor of Medicine in Microbiology",
+        "Doctor of Medicine in Psychiatry",
+        "Doctor of Medicine in Respiratory Medicine",
+        "Master of Surgery in General Surgery",
+        "Master of Surgery in Orthopaedics",
+        "Master of Surgery in Ophthalmology",
+        "Doctor of Medicine Super Speciality Programs",
+        "Doctor of National Board Programs",
+        "Doctor of Philosophy in Medical and Health Sciences",
+        "Doctor of Philosophy in Pharmaceutical Sciences"
+      ]
+    },
+
+    "School of Nanoscience": {
+      "programs": [
+        "Bachelor of Science Honours in Molecular Medicine",
+        "Master of Science in Clinical Genomics",
+        "Master of Science in Molecular Medicine",
+        "Master of Science in Nanobiotechnology",
+        "Master of Science in Nanoelectronics and Nanoengineering",
+        "Master of Science in Stem Cell Technology and Regenerative Medicine",
+        "Master of Technology in Molecular Medicine",
+        "Master of Technology in Nanobiotechnology",
+        "Master of Technology in Nanoelectronics and Nanoengineering",
+        "Doctor of Philosophy in Nanomedicine and Molecular Medicine"
+      ]
+    },
+
+    "School of Nursing": {
+      "programs": [
+        "Bachelor of Science in Nursing",
+        "Master of Science in Nursing",
+        "Doctor of Philosophy in Nursing"
+      ]
+    },
+
+    "School of Pharmacy": {
+      "programs": [
+        "Bachelor of Pharmacy",
+        "Doctor of Pharmacy",
+        "Doctor of Pharmacy Post Baccalaureate",
+        "Master of Pharmacy in Pharmaceutical Chemistry",
+        "Master of Pharmacy in Pharmaceutics",
+        "Master of Pharmacy in Pharmacology",
+        "Master of Pharmacy in Pharmacy Practice",
+        "Doctor of Philosophy in Pharmaceutical Sciences"
+      ]
+    },
+
+    "School of Physical Sciences": {
+      "programs": [
+        "Bachelor of Science Honours in Physics",
+        "Bachelor of Science Honours in Chemistry",
+        "Integrated Master of Science in Chemistry",
+        "Integrated Master of Science in Mathematics",
+        "Integrated Master of Science in Physics",
+        "Integrated Master of Science in Mathematics and Computing",
+        "Master of Science in Physics",
+        "Master of Science in Mathematics",
+        "Master of Science in Chemistry",
+        "Master of Science in Data Science",
+        "Doctor of Philosophy in Chemistry",
+        "Doctor of Philosophy in Mathematics",
+        "Doctor of Philosophy in Physics"
+      ]
+    },
+
+    "School of Social and Behavioural Sciences": {
+      "programs": [
+        "Bachelor of Social Work",
+        "Master of Science in Cognitive Sciences",
+        "Master of Science in Social Data Science and Policy",
+        "Master of Social Work",
+        "Doctor of Philosophy in Cognitive Sciences",
+        "Doctor of Philosophy in Social Sciences",
+        "Doctor of Philosophy in Social and Behavioral Sciences"
+    
+      ]
+    },
+    "School of Spiritual and Cultural Studies": {
+      "programs": [
+        "An Advanced Study of Yoga Sutra of Rishi Patanjali with Basics of Samkhya",
+        "Bharatiya Jnana Parampara",
+        "DigVijaya",
+        "Essence of Hinduism",
+        "Online Certificate Course on Ashtadhyayi",
+        "Online Meditation Course in Mastery Over Mind",
+        "Open Courses",
+        "Rigvedic Geography",
+        "Doctor of Philosophy in Spiritual Studies"
+      ]
+    },
+    "School of Sculpting": {
+      "programs": [
+        "Basic Sculpting Course",
+        "Certificate Course on Sculpting of Human Form and Animal Anatomy",
+        "Computerized Numerical Controls",
+        "Eight Level Graded Certificate Program in Bharatanatyam",
+        "Mural Painting Course",
+        "One Year Diploma on Traditional Sculpture and Wood Carving",
+        "Sculptural Heritage of Hindu Temples",
+        "Stone and Cement Sculpting Course",
+        "Traditional Sculptural Drawing",
+        "Wood Sculpting Course"
+      ]
+    },
+    "School of Interdisciplinary Studies": {
+      "programs": [
+        "Building Disaster Resilience and Social Responsibility through Experiential Learning",
+        "Four Days Certificate Course on Building Disaster Resilience and Social Responsibility through Experiential Learning"
+      ]
+    }
+  },
+  "SRM Institute of Science and Technology": {
+
+    "College of Engineering and Technology": {
+      "programs": [
+        "Bachelor of Technology in Aerospace Engineering",
+        "Bachelor of Technology in Automobile Engineering",
+        "Bachelor of Technology in Biomedical Engineering",
+        "Bachelor of Technology in Biotechnology",
+        "Bachelor of Technology in Chemical Engineering",
+        "Bachelor of Technology in Civil Engineering",
+        "Bachelor of Technology in Computer Science and Engineering",
+        "Bachelor of Technology in Artificial Intelligence and Data Science",
+        "Bachelor of Technology in Cyber Security",
+        "Bachelor of Technology in Internet of Things",
+        "Bachelor of Technology in Electrical and Electronics Engineering",
+        "Bachelor of Technology in Electronics and Communication Engineering",
+        "Bachelor of Technology in Electronics and Instrumentation Engineering",
+        "Bachelor of Technology in Information Technology",
+        "Bachelor of Technology in Mechanical Engineering",
+        "Bachelor of Technology in Mechatronics Engineering",
+        "Bachelor of Technology in Nanotechnology",
+        "Bachelor of Technology in Robotics and Automation",
+        "Bachelor of Architecture",
+
+        "Master of Technology in Aerospace Engineering",
+        "Master of Technology in Automobile Engineering",
+        "Master of Technology in Biomedical Engineering",
+        "Master of Technology in Biotechnology",
+        "Master of Technology in Chemical Engineering",
+        "Master of Technology in Structural Engineering",
+        "Master of Technology in Construction Engineering and Management",
+        "Master of Technology in Environmental Engineering",
+        "Master of Technology in Power Systems",
+        "Master of Technology in Embedded Systems",
+        "Master of Technology in VLSI Design",
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Data Science",
+        "Master of Technology in Artificial Intelligence",
+        "Master of Technology in Robotics",
+        "Master of Technology in Mechatronics",
+        "Master of Technology in Thermal Engineering",
+        "Master of Technology in Manufacturing Engineering",
+        "Master of Technology in Automotive Engineering",
+        "Master of Technology in Nanotechnology",
+        "Master of Architecture",
+
+        "Doctor of Philosophy in Aerospace Engineering",
+        "Doctor of Philosophy in Automobile Engineering",
+        "Doctor of Philosophy in Biomedical Engineering",
+        "Doctor of Philosophy in Biotechnology",
+        "Doctor of Philosophy in Chemical Engineering",
+        "Doctor of Philosophy in Civil Engineering",
+        "Doctor of Philosophy in Computer Science and Engineering",
+        "Doctor of Philosophy in Electrical and Electronics Engineering",
+        "Doctor of Philosophy in Electronics and Communication Engineering",
+        "Doctor of Philosophy in Mechanical Engineering",
+        "Doctor of Philosophy in Mechatronics Engineering",
+        "Doctor of Philosophy in Architecture"
+      ]
+    },
+
+    "College of Medical and Health Sciences": {
+      "programs": [
+        "Bachelor of Medicine and Bachelor of Surgery (MBBS)",
+        "Bachelor of Dental Surgery",
+        "Bachelor of Science in Nursing",
+        "Bachelor of Physiotherapy",
+        "Bachelor of Occupational Therapy",
+        "Bachelor of Pharmacy",
+        "Doctor of Pharmacy (Pharm.D)",
+        "Bachelor of Science in Medical Laboratory Technology",
+        "Bachelor of Science in Radiology and Imaging",
+        "Bachelor of Science in Cardiac Care Technology",
+        "Bachelor of Science in Optometry",
+        "Bachelor of Science in Nutrition and Dietetics",
+        "Bachelor of Science in Public Health",
+
+        "Doctor of Medicine (MD)",
+        "Master of Surgery (MS)",
+        "Master of Dental Surgery",
+        "Master of Science in Nursing",
+        "Master of Physiotherapy",
+        "Master of Occupational Therapy",
+        "Master of Pharmacy",
+        "Master of Science in Public Health",
+        "Master of Science in Medical Specializations",
+
+        "Doctorate of Medicine (DM)",
+        "Master of Chirurgiae (MCh)",
+
+        "Doctor of Philosophy in Medical Sciences",
+        "Doctor of Philosophy in Dentistry",
+        "Doctor of Philosophy in Nursing",
+        "Doctor of Philosophy in Pharmacy",
+        "Doctor of Philosophy in Physiotherapy",
+        "Doctor of Philosophy in Allied Health Sciences"
+      ]
+    },
+
+    "College of Management": {
+      "programs": [
+        "Bachelor of Business Administration",
+        "Bachelor of Commerce",
+        "Bachelor of Business Administration in Business Analytics",
+        "Bachelor of Business Administration in Digital Marketing",
+
+        "Master of Business Administration",
+        "Master of Business Administration in Business Analytics",
+        "Executive Master of Business Administration",
+
+        "Doctor of Philosophy in Management"
+      ]
+    },
+
+    "College of Science and Humanities": {
+      "programs": [
+        "Bachelor of Science in Physics",
+        "Bachelor of Science in Chemistry",
+        "Bachelor of Science in Mathematics",
+        "Bachelor of Science in Computer Science",
+        "Bachelor of Science in Biotechnology",
+        "Bachelor of Science in Visual Communication",
+        "Bachelor of Science in Psychology",
+        "Bachelor of Science in Fashion Design",
+
+        "Bachelor of Arts in English",
+        "Bachelor of Arts in Journalism",
+        "Bachelor of Arts in Economics",
+        "Bachelor of Arts in Political Science",
+
+        "Bachelor of Computer Applications",
+        "Bachelor of Commerce",
+        "Bachelor of Design",
+
+        "Master of Science in Physics",
+        "Master of Science in Chemistry",
+        "Master of Science in Mathematics",
+        "Master of Science in Computer Science",
+        "Master of Science in Biotechnology",
+        "Master of Science in Data Science",
+
+        "Master of Arts in English",
+        "Master of Arts in Journalism",
+        "Master of Arts in Economics",
+        "Master of Arts in Political Science",
+
+        "Master of Computer Applications",
+        "Master of Commerce",
+
+        "Doctor of Philosophy in Sciences",
+        "Doctor of Philosophy in Humanities",
+        "Doctor of Philosophy in Computer Applications",
+        "Doctor of Philosophy in Commerce"
+      ]
+    },
+
+    "School of Law": {
+      "programs": [
+        "Bachelor of Arts and Bachelor of Laws",
+        "Bachelor of Business Administration and Bachelor of Laws",
+        "Bachelor of Commerce and Bachelor of Laws",
+        "Bachelor of Laws",
+
+        "Master of Laws",
+
+        "Doctor of Philosophy in Law"
+      ]
+    },
+
+    "College of Agricultural Sciences": {
+      "programs": [
+        "Bachelor of Science in Agriculture",
+        "Master of Science in Agriculture",
+        "Doctor of Philosophy in Agriculture"
+      ]
+    },
+
+    "College of Hotel Management": {
+      "programs": [
+        "Bachelor of Science in Hotel Management",
+        "Bachelor of Science in Culinary Arts",
+        "Bachelor of Science in Hospitality and Tourism",
+
+        "Master of Science in Hotel Management",
+        "Master of Science in Hospitality and Tourism",
+
+        "Doctor of Philosophy in Hospitality and Tourism"
+      ]
+    }
+  },
+  "International Institute of Information Technology Hyderabad": {
+    "Institute-wide Programmes": {
+      "programs": [
+        "Bachelor of Technology in Computer Science and Engineering",
+        "Bachelor of Technology in Electronics and Communication Engineering",
+
+        "Bachelor of Technology and Master of Science in Computer Science and Engineering",
+        "Bachelor of Technology and Master of Science in Computer Science and Computational Linguistics",
+        "Bachelor of Technology and Master of Science in Computer Science and Computational Natural Sciences",
+
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Computer Science and Information Security",
+        "Master of Technology in Computer Aided Structural Engineering",
+        "Master of Technology in Product Design and Management",
+
+        "Master of Science by Research in Computer Science and Engineering",
+        "Master of Science by Research in Electronics and Communication Engineering",
+        "Master of Science by Research in Computational Linguistics",
+        "Master of Science by Research in Computational Natural Sciences",
+        "Master of Science by Research in Civil Engineering",
+        "Master of Science by Research in Bioinformatics",
+        "Master of Science by Research in Spatial Informatics",
+        "Master of Science by Research in Computing and Human Sciences",
+
+        "Master of Philosophy in Computational Linguistics",
+
+        "Master of Science in Information Technology",
+        "Executive Master of Science in Information Technology",
+
+        "Doctor of Philosophy in Computer Science and Engineering",
+        "Doctor of Philosophy in Electronics and Communication Engineering",
+        "Doctor of Philosophy in Computational Linguistics",
+        "Doctor of Philosophy in Computational Natural Sciences",
+        "Doctor of Philosophy in Civil Engineering",
+        "Doctor of Philosophy in Bioinformatics",
+        "Doctor of Philosophy in Spatial Informatics",
+        "Doctor of Philosophy in Computing and Human Sciences"
+      ]
+    }
+  },
+  "Jawaharlal Nehru University": {
+
+    "School of Arts and Aesthetics": {
+      "programs": [
+        "Master of Arts in Arts and Aesthetics",
+        "Master of Philosophy in Arts and Aesthetics",
+        "Doctor of Philosophy in Arts and Aesthetics"
+      ]
+    },
+
+    "School of Biotechnology": {
+      "programs": [
+        "Master of Science in Biotechnology",
+        "Master of Technology in Biotechnology",
+        "Doctor of Philosophy in Biotechnology"
+      ]
+    },
+
+    "School of Computational and Integrative Sciences": {
+      "programs": [
+        "Master of Science in Computational and Integrative Sciences",
+        "Master of Technology in Computational and Integrative Sciences",
+        "Master of Philosophy in Computational Biology",
+        "Doctor of Philosophy in Computational and Integrative Sciences"
+      ]
+    },
+
+    "School of Computer and Systems Sciences": {
+      "programs": [
+        "Master of Computer Applications",
+        "Master of Technology in Computer Science and Technology",
+        "Master of Technology in Data Science",
+        "Master of Philosophy in Computer Science",
+        "Doctor of Philosophy in Computer Science"
+      ]
+    },
+
+    "School of Engineering": {
+      "programs": [
+        "Bachelor of Technology in Computer Science and Engineering",
+        "Bachelor of Technology in Electronics and Communication Engineering",
+        "Master of Technology in Computer Science and Engineering",
+        "Master of Technology in Electronics and Communication Engineering",
+        "Doctor of Philosophy in Engineering"
+      ]
+    },
+
+    "School of Environmental Sciences": {
+      "programs": [
+        "Master of Science in Environmental Sciences",
+        "Master of Philosophy in Environmental Sciences",
+        "Doctor of Philosophy in Environmental Sciences"
+      ]
+    },
+
+    "School of International Studies": {
+      "programs": [
+        "Master of Arts in International Relations",
+        "Master of Arts in Politics (International Studies)",
+        "Master of Arts in Economics (International Studies)",
+        "Master of Philosophy in International Studies",
+        "Doctor of Philosophy in International Studies"
+      ]
+    },
+
+    "School of Language, Literature and Culture Studies": {
+      "programs": [
+        "Bachelor of Arts in Foreign Languages",
+        "Master of Arts in Foreign Languages",
+        "Master of Philosophy in Language Studies",
+        "Doctor of Philosophy in Language Studies"
+      ]
+    },
+
+    "School of Life Sciences": {
+      "programs": [
+        "Master of Science in Life Sciences",
+        "Master of Philosophy in Life Sciences",
+        "Doctor of Philosophy in Life Sciences"
+      ]
+    },
+
+    "School of Physical Sciences": {
+      "programs": [
+        "Master of Science in Physics",
+        "Master of Science in Chemistry",
+        "Master of Philosophy in Physical Sciences",
+        "Doctor of Philosophy in Physical Sciences"
+      ]
+    },
+
+    "School of Sanskrit and Indic Studies": {
+      "programs": [
+        "Master of Arts in Sanskrit",
+        "Master of Philosophy in Sanskrit Studies",
+        "Doctor of Philosophy in Sanskrit Studies"
+      ]
+    },
+
+    "School of Social Sciences": {
+      "programs": [
+        "Master of Arts in Sociology",
+        "Master of Arts in Geography",
+        "Master of Arts in History",
+        "Master of Arts in Political Science",
+        "Master of Arts in Economics",
+        "Master of Philosophy in Social Sciences",
+        "Doctor of Philosophy in Social Sciences"
+      ]
+    },
+
+    "Atal Bihari Vajpayee School of Management and Entrepreneurship": {
+      "programs": [
+        "Master of Business Administration",
+        "Doctor of Philosophy in Management"
+      ]
+    }
+  },
+  "Jawaharlal Nehru University": {
+
+    "School of International Studies": {
+      "programs": [
+        "Ph.D. in Indo-Pacific Studies",
+        "Ph.D. in Inner Asian Studies",
+        "Ph.D. in West Asian Studies",
+        "Ph.D. in African Studies",
+        "Ph.D. in Russian & Central Asian Studies",
+        "Ph.D. in Comparative Politics and Political Theory",
+        "Ph.D. in Economics Studies & Planning",
+        "Ph.D. in Ancient History",
+        "Ph.D. in Medieval History",
+        "Ph.D. in Modern History",
+        "Ph.D. in Political Studies",
+        "Ph.D. in Geography",
+        "M.A. in Politics (International Studies)",
+        "M.A. in Economics (World Economy)",
+        "M.A. in International Relations and Area Studies",
+        "M.A. in International Relations – West Asian Studies"
+      ]
+    },
+
+    "School of Social Sciences": {
+      "programs": [
+        "Ph.D. in Economics",
+        "Ph.D. in Population Studies",
+        "Ph.D. in Social Science in Health",
+        "Ph.D. in Public Health",
+        "Ph.D. in Social Systems",
+        "Ph.D. in Educational Studies",
+        "Ph.D. in Studies in Science Policy",
+        "Ph.D. in Philosophy",
+        "Ph.D. in Women Studies",
+        "Ph.D. in Social Exclusion and Inclusive Policy",
+        "Ph.D. in Media Studies",
+        "Ph.D. in Informal Sector and Labour Studies",
+        "Ph.D. in Adult Education",
+        "M.A. in Economics",
+        "M.A. in Ancient History",
+        "M.A. in Medieval History",
+        "M.A. in Modern History",
+        "M.A. in Political Science",
+        "M.A. in Geography",
+        "M.A. in Sociology",
+        "M.A. in Philosophy",
+        "M.A. in Development and Labour Studies",
+        "Master of Public Health"
+      ]
+    },
+
+    "School of Language, Literature & Culture Studies": {
+      "programs": [
+        "Ph.D. in French",
+        "Ph.D. in German",
+        "Ph.D. in Hindi",
+        "Ph.D. in Urdu",
+        "Ph.D. in Hindi Translation",
+        "Ph.D. in Russian",
+        "Ph.D. in Spanish",
+        "Ph.D. in Japanese",
+        "Ph.D. in Korean",
+        "Ph.D. in Chinese",
+        "Ph.D. in Persian",
+        "Ph.D. in Arabic",
+        "Ph.D. in Linguistics",
+        "Ph.D. in English",
+        "Ph.D. in Greek Studies",
+        "M.A. in French and Francophone Studies",
+        "M.A. in German Studies",
+        "M.A. in Hindi",
+        "M.A. in Urdu",
+        "M.A. in Hindi Translation",
+        "M.A. in Russian",
+        "M.A. in Spanish",
+        "M.A. in Japanese",
+        "M.A. in Korean",
+        "M.A. in Chinese",
+        "M.A. in Persian",
+        "M.A. in Pashto",
+        "M.A. in Arabic",
+        "M.A. in Linguistics",
+        "M.A. in English",
+        "B.A. (Hons.) in French",
+        "B.A. (Hons.) in German",
+        "B.A. (Hons.) in Russian",
+        "B.A. (Hons.) in Spanish",
+        "B.A. (Hons.) in Japanese",
+        "B.A. (Hons.) in Korean",
+        "B.A. (Hons.) in Chinese",
+        "B.A. (Hons.) in Persian",
+        "B.A. (Hons.) in Pashto",
+        "B.A. (Hons.) in Arabic",
+        "Diploma in Urdu (ADOP)",
+        "Certificate in Urdu (COP)",
+        "Diploma in Mongolian",
+        "Certificate in Mongolian",
+        "Diploma in Bhasha Indonesia",
+        "Certificate in Bhasha Indonesia",
+        "Certificate in Pashto",
+        "Certificate in Uzbek",
+        "Diploma in Uzbek",
+        "Diploma in Hebrew",
+        "Certificate in Hebrew",
+        "Diploma in Pali",
+        "Certificate in Pali",
+        "Certificate in Sanskrit Computational Linguistics",
+        "Certificate in Sanskrit",
+        "Certificate in Yoga Philosophy",
+        "Certificate in Vedic Culture",
+        "Certificate in Natya Shastra",
+        "Certificate in Health Awareness and Wellness",
+        "Certificate in Indian Philosophy"
+      ]
+    },
+
+    "School of Computer & Systems Sciences": {
+      "programs": [
+        "Ph.D. in Computer Science",
+        "M.Tech in Computer Science & Technology",
+        "M.Tech in Data Science",
+        "MCA (Master of Computer Applications)"
+      ]
+    },
+
+    "School of Environmental Sciences": {
+      "programs": [
+        "Ph.D. in Environmental Sciences",
+        "M.Sc. in Environmental Sciences"
+      ]
+    },
+
+    "School of Life Sciences": {
+      "programs": [
+        "Ph.D. in Life Sciences",
+        "Ph.D. in Chemical Sciences",
+        "Ph.D. in Computational Biology and Bioinformatics",
+        "Ph.D. in Biotechnology",
+        "Ph.D. in Molecular Medicine",
+        "M.Sc. in Life Sciences",
+        "M.Sc. (Research) in Life Sciences"
+      ]
+    },
+
+    "School of Physical Sciences": {
+      "programs": [
+        "Ph.D. in Physical Sciences",
+        "Ph.D. in Mathematics",
+        "M.Sc. in Physics",
+        "M.Sc. in Chemistry",
+        "M.Sc. in Mathematics"
+      ]
+    },
+
+    "School of Arts and Aesthetics": {
+      "programs": [
+        "Ph.D. in Visual Studies",
+        "Ph.D. in Theatre and Performance Studies",
+        "Ph.D. in Cinema Studies",
+        "M.A. in Arts and Aesthetics"
+      ]
+    },
+
+    "School of Computational and Integrative Sciences": {
+      "programs": [
+        "Ph.D. in Computer Science",
+        "Ph.D. in Microsystems",
+        "Ph.D. in Area-I",
+        "Ph.D. in Area-II",
+        "Ph.D. in Area-III",
+        "Ph.D. in Area-IV",
+        "M.Sc. in Computational and Integrative Sciences (Track I)",
+        "M.Sc. in Computational and Integrative Sciences (Track II)",
+        "M.Sc. in Computational and Integrative Sciences (GAT-B)",
+        "PG Diploma in Big Data Analytics"
+      ]
+    },
+
+    "School of Biotechnology": {
+      "programs": [
+        "Ph.D. in Biotechnology",
+        "M.Sc. in Biotechnology"
+      ]
+    },
+
+    "School of Sanskrit and Indic Studies": {
+      "programs": [
+        "Ph.D. in Sanskrit",
+        "M.A. in Sanskrit",
+        "B.Sc.–M.Sc. Integrated Program in Ayurveda Biology"
+      ]
+    },
+
+    "School of Engineering": {
+      "programs": [
+        "Ph.D. in Computer Science and Engineering",
+        "Ph.D. in Electronics and Communication Engineering",
+        "Ph.D. in Mechanical Engineering",
+        "B.Tech in Computer Science & Engineering",
+        "B.Tech in Electronics & Communication Engineering",
+        "M.Tech in Computer Science and Engineering",
+        "M.Tech in Electronics and Communication Engineering",
+        "M.Tech in Material Science and Technology"
+      ]
+    },
+
+    "Atal Bihari Vajpayee School of Management and Entrepreneurship": {
+      "programs": [
+        "Master of Business Administration",
+        "Ph.D. in Management"
+      ]
+    },
+
+    "Special Centre for Nano Sciences": {
+      "programs": [
+        "Ph.D. in Nano Science",
+        "M.Tech in Nano Science",
+        "M.Tech in Nano Electronics"
+      ]
+    },
+
+    "Special Centre for North East India Studies": {
+      "programs": [
+        "Ph.D. in North East India Studies"
+      ]
+    },
+
+    "Special Centre for Molecular Medicine": {
+      "programs": [
+        "Ph.D. in Molecular Medicine",
+        "M.Sc. in Molecular Medicine"
+      ]
+    },
+
+    "Special Centre for Disaster Research": {
+      "programs": [
+        "Ph.D. in Disaster Studies",
+        "M.A. in Disaster Studies"
+      ]
+    },
+
+    "Special Centre for Tamil Studies": {
+      "programs": [
+        "Ph.D. in Tamil",
+        "M.A. in Tamil"
+      ]
+    },
+
+    "Centre for the Study of Law & Governance": {
+      "programs": [
+        "Ph.D. in Law and Governance"
+      ]
+    }
+  }
+
 
 },
     },
