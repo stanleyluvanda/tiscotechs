@@ -6,11 +6,11 @@ import { uploadFileToS3 } from "../../lib/uploadLambda";
  * Attachment object shape (what this component returns via `onChange`):
  *
  * {
- *   url: string,        // public S3 URL
+ *   url: string,        // public CloudFront URL
  *   key: string,        // S3 object key (folder/file.ext)
- *   fileName: string,   // original file.name
- *   size: number,       // file.size in bytes
- *   mime: string,       // file.type
+ *   fileName: string,   // final uploaded file name
+ *   size: number,       // uploaded size in bytes
+ *   mime: string,       // uploaded mime type
  *   type: "image" | "document" | "other"
  * }
  */
@@ -62,7 +62,7 @@ function formatSize(bytes) {
  * Lecturers will add videos via a separate “YouTube URL” field on the dashboard.
  */
 
-  export default function AttachmentUploader({
+export default function AttachmentUploader({
   value = [],
   onChange,
   role = "student",
@@ -131,14 +131,22 @@ function formatSize(bytes) {
       try {
         for (const f of validFiles) {
           const res = await uploadFileToS3(f, { folder });
-          const attType = classifyType(f.type);
+
+          // Use FINAL uploaded metadata from upload helper.
+          // This matters because image uploads may now be converted to WebP.
+          const finalMime = res.contentType || f.type || "application/octet-stream";
+          const finalName = res.fileName || res.uploadedFileName || f.name;
+          const finalSize =
+            typeof res.size === "number" ? res.size : f.size;
+
+          const attType = classifyType(finalMime);
 
           newAttachments.push({
             url: res.url,
             key: res.key,
-            fileName: f.name,
-            size: f.size,
-            mime: f.type || "application/octet-stream",
+            fileName: finalName,
+            size: finalSize,
+            mime: finalMime,
             type: attType,
           });
         }
@@ -206,72 +214,66 @@ function formatSize(bytes) {
   return (
     <div className="space-y-2">
       {/* Drop zone + button */}
-     
       {shouldShowControl && (
-  <div
-    onDrop={onDrop}
-    onDragOver={onDragOver}
-    className={`inline-block ${
-      uploading ? "opacity-70 cursor-progress" : ""
-    }`}
-  >
-    
-    <label className="inline-flex h-[29px] items-center gap-1 cursor-pointer rounded-full border border-slate-300 bg-white px-3 text-sm text-slate-700 hover:bg-slate-50">
-      
-      <div className="inline-flex items-center gap-1 leading-none">
-        {/* image icon */}
-        <span
-          className="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-100"
-          title={`Attach files/image (max ${maxFiles})`}
-          aria-label={`Attach files/image (max ${maxFiles})`}
+        <div
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          className={`inline-block ${
+            uploading ? "opacity-70 cursor-progress" : ""
+          }`}
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="w-3.5 h-3.5 text-slate-700"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM5 5h14v9.2l-2.6-2.6a2 2 0 0 0-2.8 0l-2.8 2.8-1.8-1.8a2 2 0 0 0-2.8 0L5 15.4V5Zm0 14v-1.8l2.8-2.8 4.6 4.6 2.8-2.8L19 18.2V19H5Z" />
-            <path d="M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
-          </svg>
-        </span>
+          <label className="inline-flex h-[29px] items-center gap-1 cursor-pointer rounded-full border border-slate-300 bg-white px-3 text-sm text-slate-700 hover:bg-slate-50">
+            <div className="inline-flex items-center gap-1 leading-none">
+              <span
+                className="inline-flex items-center justify-center w-5 h-5 rounded-full hover:bg-slate-100"
+                title={`Attach files/image (max ${maxFiles})`}
+                aria-label={`Attach files/image (max ${maxFiles})`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-3.5 h-3.5 text-slate-700"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM5 5h14v9.2l-2.6-2.6a2 2 0 0 0-2.8 0l-2.8 2.8-1.8-1.8a2 2 0 0 0-2.8 0L5 15.4V5Zm0 14v-1.8l2.8-2.8 4.6 4.6 2.8-2.8L19 18.2V19H5Z" />
+                  <path d="M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+                </svg>
+              </span>
 
-        {/* link/attachment icon */}
-        <span
-          className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
-          title={`Attach files/image (max ${maxFiles})`}
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="w-4 h-4 text-slate-700"
-            fill="currentColor"
-          >
-            <path d="M10.6 13.4a1 1 0 0 0 1.4 1.4l4.95-4.95a3 3 0 1 0-4.24-4.24L7.8 10.55a5 5 0 0 0 7.07 7.07l5.3-5.3a1 1 0 1 0-1.4-1.4l-5.3 5.3a3 3 0 1 1-4.24-4.24l4.95-4.95a1 1 0 1 1 1.4 1.4l-4.95 4.95Z" />
-          </svg>
-        </span>
+              <span
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100"
+                title={`Attach files/image (max ${maxFiles})`}
+                aria-hidden="true"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-4 h-4 text-slate-700"
+                  fill="currentColor"
+                >
+                  <path d="M10.6 13.4a1 1 0 0 0 1.4 1.4l4.95-4.95a3 3 0 1 0-4.24-4.24L7.8 10.55a5 5 0 0 0 7.07 7.07l5.3-5.3a1 1 0 1 0-1.4-1.4l-5.3 5.3a3 3 0 1 1-4.24-4.24l4.95-4.95a1 1 0 1 1 1.4 1.4l-4.95 4.95Z" />
+                </svg>
+              </span>
 
-        {/* small max indicator */}
-        <span className="text-[11px] text-slate-500">5</span>
-      </div>
+              <span className="text-[11px] text-slate-500">5</span>
+            </div>
 
-      <input
-        type="file"
-        multiple
-        accept={accept}
-        onChange={onInputChange}
-        className="hidden"
-        disabled={uploading || remainingSlots <= 0}
-      />
-    </label>
+            <input
+              type="file"
+              multiple
+              accept={accept}
+              onChange={onInputChange}
+              className="hidden"
+              disabled={uploading || remainingSlots <= 0}
+            />
+          </label>
 
-    {remainingSlots <= 0 && (
-      <p className="mt-1 text-xs text-slate-500">
-        You have attached the maximum of {maxFiles} files.
-      </p>
-    )}
-  </div>
-)}
+          {remainingSlots <= 0 && (
+            <p className="mt-1 text-xs text-slate-500">
+              You have attached the maximum of {maxFiles} files.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -289,12 +291,12 @@ function formatSize(bytes) {
               className="flex items-center justify-between gap-3 rounded border bg-slate-50 px-3 py-2"
             >
               <div className="flex items-center gap-3 min-w-0">
-                {/* preview / icon */}
                 {att.type === "image" ? (
                   <img
                     src={att.url}
                     alt={att.fileName || "image"}
                     className="h-10 w-10 rounded object-cover border"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="h-10 w-10 flex items-center justify-center rounded border bg-white text-xs text-slate-600">

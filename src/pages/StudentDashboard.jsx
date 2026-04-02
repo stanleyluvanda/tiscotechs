@@ -20,7 +20,6 @@ import useNoIndex from "../lib/useNoIndex";
 import MessagingDock from "../components/MessagingDock";
 
 
-
 /* ================= Utils ================ */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
 const UPLOAD_LAMBDA =
@@ -183,10 +182,6 @@ function splitImagesAndFilesFromPost(post) {
   };
 }
 
-
-
-
-
 // Auto-grow helper for textareas
 function autosize(el, maxPx = 220) {
   if (!el) return;
@@ -341,6 +336,78 @@ async function fileToDownscaledDataURL(file, maxW, maxH, quality = 0.84, targetK
     return dataURL;
   } finally { URL.revokeObjectURL(blobUrl); }
 }
+
+
+
+
+
+//I added the below to optimize the image 04022026 in case it compromise the logic,it will be removed
+
+async function convertImageFileToWebP(
+  file,
+  {
+    maxW = 1600,
+    maxH = 1600,
+    quality = 0.8,
+    fileName = "image",
+  } = {}
+) {
+  const blobUrl = URL.createObjectURL(file);
+
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = blobUrl;
+    });
+
+    const ratio = Math.min(1, maxW / img.width, maxH / img.height);
+    const w = Math.max(1, Math.round(img.width * ratio));
+    const h = Math.max(1, Math.round(img.height * ratio));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const webpBlob = await new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), "image/webp", quality);
+    });
+
+    if (!webpBlob) return file;
+
+    const safeBase = String(fileName || file.name || "image")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[^a-z0-9_-]+/gi, "_")
+      .slice(0, 60) || "image";
+
+    return new File([webpBlob], `${safeBase}.webp`, {
+      type: "image/webp",
+      lastModified: Date.now(),
+    });
+  } catch (err) {
+    console.warn("[StudentDashboard] WebP conversion skipped:", err);
+    return file;
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -527,11 +594,7 @@ function Avatar({ size="md", url, name, online=false }) {
   );
 }
 function stripHtml(s=""){ const d=document.createElement("div"); d.innerHTML=s; return (d.textContent||d.innerText||"").trim(); }
-/*function ExpandableText({ text, initialChars=180 }) {
-  const [open,setOpen]=useState(false); if(!text) return null;
-  const tooLong = text.length>initialChars, shown = open||!tooLong?text:text.slice(0,initialChars)+"…";
-  return <div className="mt-1 text-slate-800"><span>{shown}</span>{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="ml-2 text-blue-600 hover:underline"> {open?"Read less":"Read more"}</button>}</div>;
-}*/
+
 function ExpandableText({ text, initialChars = 180, className = "" }) {
   const [open, setOpen] = useState(false);
   if (!text) return null;
@@ -603,12 +666,6 @@ function ExpandableText({ text, initialChars = 180, className = "" }) {
   );
 }
 
-
-/*function ExpandableHtml({ html, initialChars=280 }) {
-  const [open,setOpen]=useState(false); const plain=stripHtml(html); const tooLong=plain.length>initialChars; const shortHtml=plain.slice(0,initialChars)+(tooLong?"…":"");
-  return <div className="mt-3 text-slate-800 prose-sm max-w-none">{open||!tooLong?<div dangerouslySetInnerHTML={{__html:html}}/>:<div>{shortHtml}</div>}{tooLong&&<button onClick={()=>setOpen(v=>!v)} className="mt-1 text-blue-600 text-sm hover:underline">{open?"Read less":"Read more"}</button>}</div>;
-}*/
-
 function ExpandableHtml({ html, initialChars = 280 }) {
   const [open, setOpen] = useState(false);
   const plain = stripHtml(html);
@@ -634,10 +691,6 @@ function ExpandableHtml({ html, initialChars = 280 }) {
     </div>
   );
 }
-
-
-
-
 
 /* Bright, pulsing NEW badge */
 function NewBadge({ show }) {
@@ -713,16 +766,6 @@ function AttachmentImage({ att, className="", onClick, enlarge=false }) {
     />
   );
 }
-
-/* function AttachmentLink({ att }) {
-  const url = useAttachmentUrl(att, true);
-  if (!url) return <span className="text-slate-400">{att.name || "file"}</span>;
-  return (
-    <a href={url} download={att.name || "file"} target="_blank" rel="noopener noreferrer" className="underline">
-      {att.name || "file"}
-    </a>
-  );
-} */
 
 function getExt(name = "") {
   const n = String(name || "").trim();
@@ -823,10 +866,6 @@ function AttachmentLink({ att }) {
     </a>
   );
 }
-
-
-
-
 
 /* ---------- Reusable grid (with prev/next arrows) ---------- */
 function ImageGrid({
@@ -932,12 +971,6 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
           <div className="text-xs text-slate-500 mb-1">{comment.authorProgram||""}</div>*/}
           <div className="font-bold text-slate-900">{comment.author}</div>
 
-{/*{comment.authorProgram ? (
-  <div className="text-xs font-bold text-blue-800 mb-1">
-    {comment.authorProgram}
-  </div>
-) : null}*/}
-
 {(comment?.authorProgram || comment?.createdAt) ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
     {(comment?.authorProgram || "").trim()}
@@ -997,12 +1030,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
             </div>*/}
             <div className="font-bold text-slate-900">{r?.author}</div>
 
-{/*{r?.authorProgram ? (
-  <div className="text-xs font-bold text-blue-800 mb-1">
-    {r.authorProgram}
-  </div>
-) : null}*/}
-
 {(r?.authorProgram || r?.createdAt) ? (
   <div className="text-xs font-bold text-blue-800 mb-1">
     {(r?.authorProgram || "").trim()}
@@ -1014,9 +1041,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
     ) : null}
   </div>
 ) : null}
-
-
-
 
             <ExpandableText text={r?.text || ""} />
 
@@ -1061,20 +1085,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
             className="mt-2"
           >
             <div className="flex items-start gap-2">
-              {/*<textarea
-                ref={(el) => el && autosize(el)}
-                value={reply}
-                onChange={(e) => {
-                  setReply(e.target.value);
-                  autosize(e.target);
-                }}
-                placeholder="Write a reply…"
-                rows={1}
-                className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
-                style={{ minHeight: 40, maxHeight: 220 }}
-              />*/}
-
-
               <textarea
   ref={(el) => el && autosize(el)}
   value={reply}
@@ -1100,20 +1110,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
               </label>
@@ -1125,18 +1121,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
                 Reply
               </button>
             </div>
-            {/* ✅ Preview */}
-  {/* ✅ Preview for reply */}
-{/*{reply?.trim() && (
-  <div className="pl-10">
-    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
-      <div className="text-xs text-slate-500 mb-2">Preview</div>
-      
-      <ExpandableText text={(reply || "").replace(/\r\n/g, "\n")} />
-    </div>
-  </div>
-)}
-*/}
 
             {(replyImages.length>0 || replyFiles.length>0) && (
               <div className="mt-2 space-y-2 pl-1">
@@ -1198,13 +1182,6 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
 
   return true;
 }
-
-
-
-
-
-
-
 
 /* ====== Post card (with lightbox + prev/next) ====== */
 function PostCard({
@@ -1442,11 +1419,6 @@ const files = mergedFiles.filter((a) => {
   </ul>
 )}
 
-
-
-
-
-
      <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
         <button onClick={onToggleLike} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
           <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked?"currentColor":"none"} stroke="currentColor"><path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z"/></svg>
@@ -1466,12 +1438,7 @@ const files = mergedFiles.filter((a) => {
     🚩 Report
   </button>
 
-
-
-
       </div>
-
-
 
       {showComments && (
         <div className="mt-3 space-y-3">
@@ -1620,9 +1587,26 @@ function guessMime(name = "", fallback = "application/octet-stream") {
   return fallback;
 }
 
-function dataUrlToFile(dataUrl, fileName, mimeFallback) {
+/*function dataUrlToFile(dataUrl, fileName, mimeFallback) {
   const blob = dataURLtoBlob(dataUrl);
   const mime = blob.type || mimeFallback || "application/octet-stream";
+  return new File([blob], fileName || "file", { type: mime });
+}*/
+async function dataUrlToFile(dataUrl, fileName, mimeFallback) {
+  const blob = dataURLtoBlob(dataUrl);
+  const mime = blob.type || mimeFallback || "application/octet-stream";
+
+  if (mime.startsWith("image/")) {
+    const originalFile = new File([blob], fileName || "image", { type: mime });
+
+    return await convertImageFileToWebP(originalFile, {
+      maxW: 1600,
+      maxH: 1600,
+      quality: 0.8,
+      fileName: fileName || "image",
+    });
+  }
+
   return new File([blob], fileName || "file", { type: mime });
 }
 
@@ -1640,12 +1624,26 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
       continue;
     }
 
-    if (img.dataUrl) {
+    /*if (img.dataUrl) {
       const file = dataUrlToFile(img.dataUrl, img.name || "image.jpg", img.mime || "image/jpeg");
       const url = await uploadToCloudFront({ file, folder: "comment-images" });
       upImgs.push({ id: img.id || url, name: img.name || file.name, mime: file.type, url });
-    }
+    }*/
   }
+  if (img.dataUrl) {
+  const file = await dataUrlToFile(
+    img.dataUrl,
+    img.name || "image.jpg",
+    img.mime || "image/jpeg"
+  );
+  const url = await uploadToCloudFront({ file, folder: "comment-images" });
+  upImgs.push({
+    id: img.id || url,
+    name: file.name || img.name || "image.webp",
+    mime: file.type || "image/webp",
+    url,
+  });
+}
 
   // files
   for (const f of (fileDescs || [])) {
@@ -1657,12 +1655,23 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
       continue;
     }
 
-    if (f.dataUrl) {
+    /*if (f.dataUrl) {
       const mime = f.mime || guessMime(f.name);
       const file = dataUrlToFile(f.dataUrl, f.name || "file", mime);
       const url = await uploadToCloudFront({ file, folder: "comment-files" });
       upFiles.push({ id: f.id || url, name: f.name || file.name, mime: file.type || mime, url });
-    }
+    }*/
+    if (f.dataUrl) {
+  const mime = f.mime || guessMime(f.name);
+  const file = await dataUrlToFile(f.dataUrl, f.name || "file", mime);
+  const url = await uploadToCloudFront({ file, folder: "comment-files" });
+  upFiles.push({
+    id: f.id || url,
+    name: file.name || f.name || "file",
+    mime: file.type || mime,
+    url,
+  });
+}
   }
 
   return { upImgs, upFiles };
@@ -1709,11 +1718,6 @@ async function callAssistAI(action, text) {
   return String(data?.result || "");
 }
 
-/*function sanitizeSimpleAiHtml(html = "") {
-  return String(html || "")
-    .replace(/<(?!\/?(p|strong|br)\b)[^>]*>/gi, "")
-    .trim();
-}*/
 function sanitizeSimpleAiHtml(html = "") {
   return String(html || "")
     .replace(/<(?!\/?(p|strong|br|ul|li)\b)[^>]*>/gi, "")
@@ -1780,8 +1784,6 @@ export default function StudentDashboard() {
     "{}"
   );
 
-
-
   // ✅ ADD IT HERE (with other useState/useMemo)
   const REPORT_REASONS = [
     "Scam",
@@ -1816,27 +1818,6 @@ console.log("[StudentDashboard] RAW_API_BASE =", RAW_API_BASE);
 console.log("[StudentDashboard] API_BASE =", API_BASE);
 
   // Update ONLY bannerUrl/photoUrl for the logged-in user on the server
-  /*async function patchMyProfileOnServer(patch) {
-    const email = (current?.email || user?.email || "").trim();
-    if (!API_BASE || !email) return null;
-
-    // ✅ Adjust these paths if your backend uses different ones.
-    // Many of your routes follow: /api/auth/<role>/get-profile
-    // We'll use: student/update-profile (create it in backend if not existing yet).
-    const url = `${API_BASE}/api/auth/student/update-profile`;
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, ...patch }),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(data?.error || "update-profile failed");
-    return data?.user || data;
-  }*/
-
-
   async function patchMyProfileOnServer(patch) {
   const email = (current?.email || user?.email || "").trim();
 
@@ -1893,22 +1874,6 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
 }
 
   // Pull the latest profile from server when dashboard loads (for cross-device sync)
-  /*async function fetchMyProfileFromServer() {
-    const email = (current?.email || user?.email || "").trim();
-    if (!API_BASE || !email) return null;
-
-    const url = `${API_BASE}/api/auth/student/get-profile`;
-
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok) throw new Error(data?.error || "get-profile failed");
-    return data?.user || data;
-  }*/
  async function fetchMyProfileFromServer() {
   const email = (current?.email || user?.email || "").trim();
 
@@ -1932,26 +1897,6 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
   return data?.user || data?.data?.user || null;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   const [user,setUser] = useState(()=>{
     const raw = loadActiveUser();
     const merged = { ...initialUser, ...(raw||{}) };
@@ -1961,8 +1906,6 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
   });
 
    // ✅ ADD THIS RIGHT HERE (after user exists)
-  /*const scopeKey =
-    `${user?.university || ""}#${user?.college || ""}#${user?.department || ""}`.toLowerCase();*/
   const scopeKey =
   `${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();
 
@@ -2062,14 +2005,6 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-
-
-
-
-
-
-
   // ===== Unread responses from lecturers (for the Contact card badge)
   const [unreadLecturerResponses, setUnreadLecturerResponses] = useState(0);
   useEffect(() => {
@@ -2133,61 +2068,6 @@ console.log("[StudentDashboard] API_BASE =", API_BASE);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consentStudentId, consentEmail, consentState]);
 
-  // ===== Video posts saved by admin (right column)
-  /*const [videoPosts, setVideoPosts] = useState(() => {
-  const arr = safeParse(localStorage.getItem("videoPosts")) || [];
-  return Array.isArray(arr) ? arr : [];
-});*/
-
-
-
-// ===== Video posts saved by admin (right column) — load from backend, not localStorage
-/*const [videoPosts, setVideoPosts] = useState([]);
-
-useEffect(() => {
-  let cancelled = false;
-
-  async function loadAdminVideos() {
-    try {
-      // IMPORTANT:
-      // Your admin "Video Post" creator must save videos under THIS scope.
-      // (See note below: Admin video creator must use scope: "admin-video-posts")
-      const remote = await fetchPosts({
-        scope: "admin-video-posts",
-        role: "student", // safe; backend can ignore role or use it for filtering
-      });
-
-      if (cancelled) return;
-
-      const vids = (remote || [])
-        .filter(p => p && (p.type === "Video" || String(p.type||"").toLowerCase() === "video"))
-        .map(p => ({
-          ...p,
-          createdAt: p.createdAt ?? p.created_at ?? p.timestamp ?? 0,
-        }))
-        .sort((a,b) => (Number(b.createdAt)||0) - (Number(a.createdAt)||0));
-
-      setVideoPosts(vids);
-    } catch (e) {
-      console.warn("[StudentDashboard] loadAdminVideos failed", e);
-      // Don’t hard-fail the whole page; just keep videos empty
-      setVideoPosts([]);
-    }
-  }
-
-  loadAdminVideos();
-
-  // optional: refresh occasionally so students see new admin videos without reload
-  const t = setInterval(loadAdminVideos, 60_000);
-
-  return () => {
-    cancelled = true;
-    clearInterval(t);
-  };
-}, []);*/
-
-
-
 // ===== Video posts saved by admin (right column) — load from backend ONLY
 const [videoPosts, setVideoPosts] = useState([]);
 
@@ -2233,50 +2113,6 @@ useEffect(() => {
   };
 }, []);
 
-
-
-/*useEffect(() => {
-  const sync = () => {
-    const arr = safeParse(localStorage.getItem("videoPosts")) || [];
-    setVideoPosts(Array.isArray(arr) ? arr : []);
-  };
-
-  const onStorage = (e) => {
-    if (!e || e.key === "videoPosts") sync();
-  };
-  const onUpdated = () => sync();
-
-  window.addEventListener("storage", onStorage);
-  window.addEventListener("videoPosts:updated", onUpdated);
-  sync(); // initial load in case anything changed before mount
-
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener("videoPosts:updated", onUpdated);
-  };
-}, []);*/
-
-
-  /*const visibleVideos = useMemo(() => {
-    const meCont = (user?.continent || "").trim().toLowerCase();
-    return (videoPosts || [])
-      .filter(p => p && p.type === "video")
-      .filter(p => {
-        const audience = (p.audience || "students").toLowerCase();
-        const includesStudents = audience === "students" || audience === "both";
-        if (!includesStudents) return false;
-        const va = p.videoAudience || { scope: "all" };
-        if (va.scope === "continent") {
-          const list = Array.isArray(va.continents) ? va.continents : [];
-          const hasMe = list.some(c => (c || "").trim().toLowerCase() === meCont);
-          return hasMe;
-        }
-        return true;
-      })
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [videoPosts, user?.continent]);
-  const latestVideo = visibleVideos[0] || null;*/
-
   const visibleVideos = useMemo(() => {
   const meCont = (user?.continent || "").trim().toLowerCase();
   return (videoPosts || [])
@@ -2298,93 +2134,13 @@ useEffect(() => {
 }, [videoPosts, user?.continent]);
 
 // ✅ ADD THIS: state for latestVideo
-/*const [latestVideo, setLatestVideo] = useState(null);
-
-// ✅ ADD THIS: keep state in sync with visibleVideos
-useEffect(() => {
-  setLatestVideo(visibleVideos[0] || null);
-}, [visibleVideos]);*/
-
 const latestVideo = visibleVideos[0] || null;
-
-
-
   const audKey = audienceKey(user);
   const baseFac = `FACULTY__${user.university}__${user.faculty}`;
   const facYearKey = `${baseFac}__${user.year}`;
   const ts = (v) => (typeof v === "number" ? v : Date.parse(v) || 0);
 
   // Human-readable "time ago" label for posts
-  {/*function formatTimeAgo(input) {
-    const t = typeof input === "number" ? input : Date.parse(input || "") || Date.now();
-    const diff = Math.max(0, Date.now() - t);
-    const sec = Math.floor(diff / 1000);
-    const min = Math.floor(sec / 60);
-    const hr  = Math.floor(min / 60);
-    const day = Math.floor(hr / 24);
-
-    if (sec < 60) return "Just now";
-    if (min < 60) return `${min}m`;
-    if (hr  < 24) return `${hr}h`;
-    if (day < 7) return `${day}d`;
-    return new Date(t).toLocaleDateString();
-  }*/}
-
-  // ===== Seeded posts
-  /*const seeded = useMemo(()=>[
-    {
-      id:"p3",
-      createdAt: Date.now()-60*60*1000,
-      authorType:"lecturer",
-      author:"Dr. A. Lecturer",
-      authorPhoto:"",
-      authorProgram:user.faculty,
-      time:"1h",
-      audience:audKey,
-      type:"Notes",
-      title:"Week 3 Lab Tutorial",
-      html:"<p><strong>New tutorial</strong> uploaded for Week 3. Please review before the lab.</p>",
-      images:[],
-      files:[{name:"week3-tutorial.pdf"}],
-      likes:5, liked:false,
-      comments:[{id:"c1", author:user.name, authorPhoto:user.photoUrl, authorProgram:user.program, text:"Thanks doc! This helps a lot.", images:[], files:[], replies:[{id:"r1", author:"Dr. A. Lecturer", authorPhoto:"", authorProgram:user.faculty, text:"You're welcome. See you in lab.", images:[], files:[] }]}],
-    },
-    {
-      id:"p2",
-      createdAt: Date.now()-5*60*60*1000,
-      authorType:"student",
-      author:"Scholarships Bot",
-      authorPhoto:"",
-      authorProgram:"Global",
-      time:"5h",
-      audience:"GLOBAL",
-      type:"Scholarships",
-      title:"Women in Tech 2025",
-      html:'<p>New scholarship: Women in Tech 2025 — closes Sept 30. <a href="/scholarship">See details</a>.</p>',
-      images:[], files:[], likes:3, liked:false, comments:[]
-    },
-    {
-      id:"p1",
-      createdAt: Date.now()-24*60*60*1000,
-      authorType:"student",
-      author:"Course Admin",
-      authorPhoto:"",
-      authorProgram:user.program,
-      time:"Yesterday",
-      audience:baseFac,
-      type:"Assignments",
-      title:"Midterm Review Session",
-      html:'<p>Midterm review session posted. Slides are available in <a href="/eduinfo">EduInfo</a>.</p>',
-      images:[], files:[], likes:2, liked:false, comments:[]
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  ],[]);
-
-  const [posts,setPosts] = useState(()=>{
-    const stored = safeParse(localStorage.getItem("posts"));
-    return stored && Array.isArray(stored) ? stored : seeded;
-  });*/
-
   // ===== Seeded posts (DISABLED)
 // Keep this variable so nothing else breaks, but it returns an empty array.
 const seeded = useMemo(() => [], []);
@@ -2394,8 +2150,6 @@ const [posts, setPosts] = useState(() => {
   const stored = safeParse(localStorage.getItem("posts"));
   return stored && Array.isArray(stored) ? stored : [];
 });
-
-
 
 
   /* ⬇️⬇️ PASTE THIS BLOCK RIGHT HERE ⬇️⬇️ */
@@ -2517,9 +2271,6 @@ function normalizeCommentFromBackend(c) {
 
   return { ...base, replies };
 }
-
-
-
 
   // 🔄 Load posts from backend API (global feed for student dashboard)
   const [feedLoading, setFeedLoading] = useState(false);
@@ -2805,10 +2556,6 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
     };
   }, []);
 
-
-
-
-
   /* ---- Force-persist helper so lecturer side sees updates immediately ---- */
 function persistLecturerPostsNow(arr) {
   try {
@@ -2877,12 +2624,6 @@ function persistLecturerPostsNow(arr) {
     } catch {}
   }
 }
-
-
-
-
-
-
 
   // Persist lecturer posts only if they actually changed.
 // Also avoid broadcasting an event unless we wrote new data.
@@ -2991,10 +2732,6 @@ useEffect(() => {
     return map;
   }, [posts]);
   const markTypeSeen = (t) => setLastSeenByType(prev => ({ ...prev, [t]: latestByType[t] || Date.now() }));
-
-
-
-
 
   // persist posts safely
   useEffect(()=>{
@@ -3126,39 +2863,6 @@ useEffect(() => {
   };
 
   // ===== Idle timer
-  /*const [idleWarning,setIdleWarning] = useState(false);
-  const [countdown,setCountdown] = useState(60);
-  const idleTimerRef = useRef(null);
-  const countdownRef = useRef(null);
-  const resetIdleTimer = ()=>{
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    idleTimerRef.current = setTimeout(()=>{
-      setIdleWarning(true); setCountdown(60);
-      countdownRef.current = setInterval(()=>{
-        setCountdown(c=>{
-          if (c<=1) { clearInterval(countdownRef.current); setIdleWarning(false); navigate("/login?role=student"); }
-          return c-1;
-        });
-      },1000);
-    }, 20*60*1000);
-  };
-  useEffect(()=>{
-    const bump=()=>{ if (!idleWarning) resetIdleTimer(); };
-    window.addEventListener("mousemove",bump);
-    window.addEventListener("keydown",bump);
-    window.addEventListener("click",bump);
-    resetIdleTimer();
-    return ()=>{
-      window.removeEventListener("mousemove",bump);
-      window.removeEventListener("keydown",bump);
-      window.removeEventListener("click",bump);
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[idleWarning]);*/
-
-  // ===== Idle timer
 const [idleWarning, setIdleWarning] = useState(false);
 const [countdown, setCountdown] = useState(60);
 const idleTimerRef = useRef(null);
@@ -3235,36 +2939,6 @@ useEffect(() => {
 }, [idleWarning]);
 
   /* ===== Banner/Avatar ===== */
-  /*const onPickBanner = async (e)=>{
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-    const dataUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
-    setUser(u=>{ const next = { ...u, bannerUrl:dataUrl }; saveAndBroadcastUser(next); return next; });
-  };*/
-
-  /*const onPickBanner = async (e) => {
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-
-    const dataUrl = await fileToDownscaledDataURL(f, 1200, 320, 0.82, 460);
-
-    // 1) Update locally immediately (current behavior)
-    let nextUser = null;
-    setUser((u) => {
-      const next = { ...u, bannerUrl: dataUrl };
-      nextUser = next;
-      saveAndBroadcastUser(next);
-      return next;
-    });
-
-    // 2) Also persist to server (new behavior)
-    try {
-      await patchMyProfileOnServer({ bannerUrl: dataUrl });
-    } catch (err) {
-      console.warn("[StudentDashboard] banner save failed", err);
-      // keep local banner; just warn
-    }
-  };*/
   const onPickBanner = async (e) => {
   const file = e.target.files?.[0];
   e.target.value = "";
@@ -3285,39 +2959,6 @@ useEffect(() => {
   }
 };
 
-
-
-
-
-
-
-
-  /*const onPickAvatar = async (e)=>{
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-    const dataUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
-    setUser(u=>{ const next = { ...u, photoUrl:dataUrl }; saveAndBroadcastUser(next); return next; });
-  };*/
-  /*const onPickAvatar = async (e) => {
-    const f = e.target.files?.[0];
-    if (!f || !f.type.startsWith("image/")) return;
-
-    const dataUrl = await fileToDownscaledDataURL(f, 320, 320, 0.86, 260);
-
-    // 1) Update locally immediately
-    setUser((u) => {
-      const next = { ...u, photoUrl: dataUrl };
-      saveAndBroadcastUser(next);
-      return next;
-    });
-
-    // 2) Persist to server
-    try {
-      await patchMyProfileOnServer({ photoUrl: dataUrl });
-    } catch (err) {
-      console.warn("[StudentDashboard] avatar save failed", err);
-    }
-  };*/
   const onPickAvatar = async (e) => {
   const file = e.target.files?.[0];
   e.target.value = ""; // so selecting same file again triggers change
@@ -3338,9 +2979,6 @@ useEffect(() => {
   }
 };
 
-
-  
-
   /* ===== Composer ===== */
   const [composerOpen,setComposerOpen]=useState(false);
   const editorRef = useRef(null);
@@ -3359,70 +2997,6 @@ useEffect(() => {
 
   const exec = (cmd, value=null)=>{ document.execCommand(cmd,false,value); editorRef.current?.focus(); };
   const addLink = ()=>{ const url = prompt("Enter URL (include https://)"); if (url) exec("createLink", url); };
-
-  
-
-  /*const handlePaste = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData?.getData("text/plain") || "";
-    if (document.queryCommandSupported("insertText")) document.execCommand("insertText", false, text);
-    else {
-      const sel = window.getSelection();
-      if (!sel || !sel.rangeCount) return;
-      sel.deleteFromDocument();
-      sel.getRangeAt(0).insertNode(document.createTextNode(text));
-    }
-  };*/
-
-  /*const handlePaste = (e) => {
-  e.preventDefault();
-
-  const cb = e.clipboardData || window.clipboardData;
-  const text = cb?.getData("text/plain") || "";
-
-  // Normalize line endings
-  const normalized = String(text).replace(/\r\n/g, "\n");
-
-  // Escape HTML special chars
-  const esc = (s) =>
-    String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-
-  // Convert:
-  // - blank lines => paragraph breaks
-  // - single newline => <br/>
-  const html = normalized
-    .split(/\n{2,}/g)
-    .map((para) => para.split("\n").map(esc).join("<br/>"))
-    .map((p) => `<p>${p || "<br/>"}</p>`)
-    .join("");
-
-  // Insert HTML at cursor (keeps paragraphs)
-  if (document.queryCommandSupported?.("insertHTML")) {
-    document.execCommand("insertHTML", false, html);
-    return;
-  }
-
-  // Fallback: manual range insert
-  const sel = window.getSelection();
-  if (!sel || !sel.rangeCount) return;
-  sel.deleteFromDocument();
-
-  const range = sel.getRangeAt(0);
-  const container = document.createElement("div");
-  container.innerHTML = html;
-
-  const frag = document.createDocumentFragment();
-  while (container.firstChild) frag.appendChild(container.firstChild);
-
-  range.insertNode(frag);
-  range.collapse(false);
-};*/
-
 
 
 const handlePaste = async (e) => {
@@ -3447,7 +3021,7 @@ const handlePaste = async (e) => {
         }
 
         // ✅ Upload using your existing flow (same as AttachmentUploader)
-        const uploaded = await uploadFileToS3(file);
+        /*const uploaded = await uploadFileToS3(file);
 
         const att = {
           url: uploaded.url,
@@ -3456,7 +3030,24 @@ const handlePaste = async (e) => {
           size: file.size,
           mime: file.type,
           type: "image",
-        };
+        };*/
+        const webpFile = await convertImageFileToWebP(file, {
+  maxW: 1600,
+  maxH: 1600,
+  quality: 0.8,
+  fileName: file.name || "screenshot",
+});
+
+const uploaded = await uploadFileToS3(webpFile);
+
+const att = {
+  url: uploaded.url,
+  key: uploaded.key,
+  fileName: uploaded.fileName || webpFile.name || "screenshot.webp",
+  size: typeof uploaded.size === "number" ? uploaded.size : webpFile.size,
+  mime: uploaded.contentType || webpFile.type || "image/webp",
+  type: "image",
+};
 
         // ✅ This is the SAME attachments state you already submit to the backend
         setAttachments((prev) => [...(Array.isArray(prev) ? prev : []), att]);
@@ -3518,70 +3109,6 @@ const handlePaste = async (e) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
-  const reason = prompt(
-    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
-    "Report reason? (Scam,harassment,sexual, hate, misinformation, copyright, other)",
-    "spam"
-  );
-  if (!reason) return;
-
-  const details = prompt("Optional details (what happened?)", "") || "";
-
-  const me = user || currentUser || {}; // use whatever variable your page uses
-  const reportedByEmail = String(me.email || "").trim().toLowerCase();
-
-  try {
-    await reportContent({
-      itemType,
-      itemId,
-      postId,
-      commentId,
-      replyId,
-      scope: "student-dashboard", // or your page scope variable
-      reportedByUserId: me.id || "",
-      reportedByEmail,
-      reportedByRole: me.role || "",
-      reason,
-      details,
-    });
-    alert("Report submitted. Thank you.");
-  } catch (e) {
-    console.error("report failed", e);
-    alert(`Report failed: ${e.message}`);
-  }
-}*/
-
 function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
   setReportModal({
     open: true,
@@ -3621,36 +3148,6 @@ async function submitReport() {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Persist attachments to IDB and return lightweight descriptors
   async function persistAttachments(images=[], files=[]) {
     const imgDescs = [];
@@ -3660,10 +3157,17 @@ async function submitReport() {
       const blob = dataURLtoBlob(src.dataUrl);
       await idbSet(id, blob);
       const thumb = await makeThumb(src.dataUrl, 360, 360, 0.72);
-      imgDescs.push({ id, name: src.name || "image.jpg", mime: blob.type || "image/jpeg", 
+      /*imgDescs.push({ id, name: src.name || "image.jpg", mime: blob.type || "image/jpeg", 
         thumb,
         dataUrl: src.dataUrl,               // ⬅️ NEW
-      });
+      });*/
+      imgDescs.push({
+  id,
+  name: src.name || "image.jpg",
+  mime: blob.type || "image/jpeg",
+  thumb,
+  dataUrl: src.dataUrl,
+});
     }
     const fileDescs = [];
     for (let i=0;i<files.length;i++) {
@@ -3671,8 +3175,14 @@ async function submitReport() {
       const id = `att_file_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       const blob = dataURLtoBlob(src.dataUrl);
       await idbSet(id, blob);
-      fileDescs.push({ id, name: src.name || "file", mime: blob.type || src.mime || "application/octet-stream",
-        dataUrl: src.dataUrl,  });             // ⬅️ NEW });
+      /*fileDescs.push({ id, name: src.name || "file", mime: blob.type || src.mime || "application/octet-stream",
+        dataUrl: src.dataUrl,  });*/             // ⬅️ NEW });
+   fileDescs.push({
+  id,
+  name: src.name || "file",
+  mime: blob.type || src.mime || "application/octet-stream",
+  dataUrl: src.dataUrl,
+});
     }
     return { imgDescs, fileDescs };
   }
@@ -3821,11 +3331,6 @@ async function submitReport() {
   return [merged, ...prev.filter(x => x?.id !== merged.id)];
 });
 
-
-
-
-
-
     } catch (err) {
       console.error("[StudentDashboard] createPost failed", err);
       alert(
@@ -3838,12 +3343,6 @@ async function submitReport() {
   const prev = Array.isArray(p) ? p : [];
   return [localPost, ...prev.filter(x => x?.id !== localPost.id)];
 });
-
-
-
-
-
-
 
     }
 
@@ -4033,13 +3532,6 @@ if (!serverComment?.id) {
           updatedAt: now,
         };
 
-  //updatePostById(postId, (x) => {
-    //const comments = Array.isArray(x.comments) ? x.comments.slice() : [];
-    //comments.push(finalComment);
-    //return { ...x, comments };
-  //});
-//};
-
 updatePostById(postId, (x) => {
   const comments = Array.isArray(x.comments) ? x.comments.slice() : [];
   comments.push(finalComment);
@@ -4153,8 +3645,6 @@ if (!serverReply?.id) {
             ? serverReply.files
             //: fileDescs,
             : upFiles,  // ✅ ALWAYS URLs
-
-
 
         }
       : {
@@ -4275,9 +3765,6 @@ const feedCombined = useMemo(() => {
 }, [posts, lecturerPosts]);
 
 
-
-
-
   /* ===== Filtering (add "View my posts") ===== */
   let filtered = feedCombined
   .filter(p => (showLecturerOnly ? p.authorType === "lecturer" : true))
@@ -4316,18 +3803,12 @@ const feedCombined = useMemo(() => {
 
   };
 
-
-
-
   useEffect(() => {
   if (editProfile) {
     setMeOpen(true);
     // (optional) you could also scroll into view here if you want
   }
 }, [editProfile]);
-
-
-
 
   /* ===== Notifications (bell + lecturer toast) ===== */
   const [lecturerToast, setLecturerToast] = useState(null); // { id, author, title, createdAt }
@@ -4469,19 +3950,7 @@ const feedCombined = useMemo(() => {
                       </div>
                     </div>
 
-                    {/*<Link to="/student-dashboard" className="block text-sm text-blue-600 underline text-center">View profile</Link>
-                    <button
-                      className="block w-full text-sm text-slate-600 underline text-center"
-                      onClick={() => {
-  // prevent any persistence/dispatch loops during logout
-  window.__skSigningOut = true;
-  try { sessionStorage.clear(); } catch {}
-  try { localStorage.removeItem("currentUser"); } catch {}
-  navigate("/login?role=student");
-}}
-                    >
-                      Sign out
-                    </button>*/}
+                   
   <Link to="/student-dashboard" className="block text-sm text-blue-600 underline text-center">
   View profile
 </Link>
@@ -4882,18 +4351,11 @@ const feedCombined = useMemo(() => {
           </Card>
 
           {/* Small loading hint above the feed */}
-          {/*{feedLoading && (
-            <div className="text-sm text-slate-500 px-1 mb-1">
-              Loading posts…
-            </div>
-          )}*/}
           {feedLoading && (filtered?.length || 0) === 0 && (
   <div className="text-sm text-slate-500 px-1 mb-1">
     Loading posts…
   </div>
 )}
-
-          
 
   {filtered.map((p, idx) => (
   <div
@@ -4918,12 +4380,7 @@ const feedCombined = useMemo(() => {
     />
   </div>
 ))}
-
-
-
-
-
-        </section>
+  </section>
 
         {/* RIGHT */}
         <aside className="space-y-4 pb-24">
@@ -4963,7 +4420,6 @@ const feedCombined = useMemo(() => {
 
           <StudentAlertsCTA />
         
-
           {/* Contact Lecturer card */}
           {/*<div className="mt-3">
             <div className="w-full border border-slate-200 bg-white rounded-2xl p-4">

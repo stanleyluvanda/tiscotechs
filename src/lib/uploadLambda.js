@@ -17,6 +17,89 @@ function safeType(file) {
   return (file && file.type) || "application/octet-stream";
 }
 
+function isImageFile(file) {
+  return !!file && typeof file.type === "string" && file.type.startsWith("image/");
+}
+
+function safeBaseName(name = "image") {
+  return String(name || "image")
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-z0-9_-]+/gi, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80) || "image";
+}
+
+/**
+ * Convert image files to compressed WebP in-browser.
+ * This does NOT affect non-image files.
+ * Keeps function self-contained so existing logic is not disturbed.
+ */
+async function optimizeImageIfNeeded(file, opts = {}) {
+  if (!isImageFile(file)) {
+    return file;
+  }
+
+  const {
+    maxWidth = 1600,
+    maxHeight = 1600,
+    quality = 0.8,
+  } = opts;
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Could not read image for optimization"));
+      el.src = objectUrl;
+    });
+
+    const ratio = Math.min(1, maxWidth / img.width, maxHeight / img.height);
+    const width = Math.max(1, Math.round(img.width * ratio));
+    const height = Math.max(1, Math.round(img.height * ratio));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return file; // fail safe: keep original file
+    }
+
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const webpBlob = await new Promise((resolve) => {
+      canvas.toBlob(
+        (blob) => resolve(blob),
+        "image/webp",
+        quality
+      );
+    });
+
+    if (!webpBlob) {
+      return file; // fail safe: keep original file
+    }
+
+    const optimized = new File(
+      [webpBlob],
+      `${safeBaseName(file.name)}.webp`,
+      {
+        type: "image/webp",
+        lastModified: Date.now(),
+      }
+    );
+
+    return optimized;
+  } catch (err) {
+    console.warn("[uploadLambda] Image optimization skipped:", err);
+    return file; // fail safe: never block upload
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 /**
  * XHR upload so we can support onProgress.
  * If onProgress is not provided, this still works fine.
@@ -73,6 +156,9 @@ function xhrUpload({ url, method = "PUT", headers = {}, body, onProgress }) {
  * @param {Object} [opts]
  * @param {string} [opts.folder] - Optional folder prefix ("uploads" by default)
  * @param {function} [opts.onProgress] - Optional progress callback ({ loaded, total, percent })
+ * @param {number} [opts.maxWidth] - Optional image resize width cap
+ * @param {number} [opts.maxHeight] - Optional image resize height cap
+ * @param {number} [opts.quality] - Optional WebP quality (0-1)
  * @returns {Promise<{ key: string, url: string, size?: number, contentType?: string, originalName?: string }>}
  */
 export async function uploadFileToS3(file, opts = {}) {
@@ -85,7 +171,17 @@ export async function uploadFileToS3(file, opts = {}) {
 
   const folder = opts.folder || "uploads";
   const onProgress = opts.onProgress;
-  const contentType = safeType(file);
+
+  // ✅ Safe optimization step:
+  // - images -> resized/compressed WebP
+  // - non-images -> untouched
+  const finalFile = await optimizeImageIfNeeded(file, {
+    maxWidth: opts.maxWidth || 1600,
+    maxHeight: opts.maxHeight || 1600,
+    quality: typeof opts.quality === "number" ? opts.quality : 0.8,
+  });
+
+  const contentType = safeType(finalFile);
 
   /* --------------------------------------------------
    * 1️⃣ REQUEST A SIGNED URL FROM LAMBDA
@@ -96,7 +192,7 @@ export async function uploadFileToS3(file, opts = {}) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      fileName: file.name,
+      fileName: finalFile.name,
       fileType: contentType,
       folder,
     }),
@@ -137,33 +233,24 @@ export async function uploadFileToS3(file, opts = {}) {
       // Must match the Content-Type used when signing
       "Content-Type": contentType,
     },
-    body: file,
+    body: finalFile,
     onProgress,
   });
 
   /* --------------------------------------------------
    * 3️⃣ CONSTRUCT PUBLIC URL
    * -------------------------------------------------- */
-  /*const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${fileKey}`;*/
-
-  /* --------------------------------------------------
- * 3️⃣ CONSTRUCT PUBLIC URL
- * -------------------------------------------------- */
-const CLOUDFRONT_DOMAIN = import.meta.env.VITE_UPLOADS_CDN_DOMAIN || "d3d7m2wzxdf6rh.cloudfront.net";
-const publicUrl = `https://${CLOUDFRONT_DOMAIN}/${fileKey}`;
-
-
-
-
-
-
+  const CLOUDFRONT_DOMAIN =
+    import.meta.env.VITE_UPLOADS_CDN_DOMAIN || "d3d7m2wzxdf6rh.cloudfront.net";
+  const publicUrl = `https://${CLOUDFRONT_DOMAIN}/${fileKey}`;
 
   // For backward compatibility, we *must* return at least { key, url }.
   return {
     key: fileKey,
     url: publicUrl,
-    size: typeof file.size === "number" ? file.size : undefined,
+    size: typeof finalFile.size === "number" ? finalFile.size : undefined,
     contentType,
     originalName: file.name,
+    fileName: finalFile.name,
   };
 }
