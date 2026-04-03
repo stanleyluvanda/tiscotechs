@@ -170,12 +170,15 @@ export default function Scholarship() {
     return cached?.items || [];
   });
 
-  const [loading, setLoading] = useState(() => {
-    // If we have cached items, don't show a "blank loading" state.
-    /*const cached = readScholarshipsCache("approved");*/
+  {/*const [loading, setLoading] = useState(() => {
     const cached = readScholarshipsCache("approved", { contentType: CONTENT_TYPE });
     return !(cached?.items && cached.items.length > 0);
-  });
+  });*/}
+
+  const [loading, setLoading] = useState(() => {
+  const cached = readScholarshipsCache("approved", CONTENT_TYPE);
+  return !(cached?.items && cached.items.length > 0);
+});
 
   const [err, setErr] = useState("");
   const [usedFallback, setUsedFallback] = useState(false); // informational banner (cache/dev)
@@ -321,7 +324,12 @@ export default function Scholarship() {
       setErr("");
 
       // If we have no cache, show loading spinner
-      if (!baseItems || baseItems.length === 0) setLoading(true);
+      /*if (!baseItems || baseItems.length === 0) setLoading(true);*/
+      if (!baseItems || baseItems.length === 0) {
+  setLoading(true);
+} else {
+  setLoading(false); // 👈 ensures instant UI when cache exists
+}
 
       try {
         const res = await listScholarships({
@@ -329,7 +337,7 @@ export default function Scholarship() {
           contentType: CONTENT_TYPE, // ✅ prevents FUNDED_GRAD_ADMISSION from mixing in
           q: "", // ✅ fetch once; keep filtering client-side for instant UI
           page: 1,
-          pageSize: 2000, // generous; your client filtering expects a big list
+          pageSize: 200, // generous; your client filtering expects a big list
         });
 
         if (!alive) return;
@@ -670,7 +678,10 @@ const trackScholarship = (id, type) => {
           </div>
 
           {/* States */}
-          {loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}
+          {/*{loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}*/}
+          {loading && baseItems.length === 0 && (
+  <div className="mt-6 text-slate-600">Loading scholarships…</div>
+)}
           {err && <div className="mt-6 text-red-600">{err}</div>}
           {!loading && !err && items.length === 0 && (
             <div className="mt-6 text-slate-600">No scholarships found.</div>
