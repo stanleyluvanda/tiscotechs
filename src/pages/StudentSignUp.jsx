@@ -1,6 +1,7 @@
 // src/pages/StudentSignUp.jsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate,useSearchParams, Link } from "react-router-dom";
+import { US_UNIVERSITY_STATE_SEPARATORS } from "../data/usStateUniversityGroups";
 
 import {
   getContinents,
@@ -831,6 +832,8 @@ export default function StudentSignUp() {
               options={universities}
               placeholder="Select University"
               disabled={!form.country}
+               countryName={form.country}
+               separatorsMap={US_UNIVERSITY_STATE_SEPARATORS}
             />
 
             <Select
@@ -923,7 +926,7 @@ export default function StudentSignUp() {
 }
 
 /* ---------- Reusable Select ---------- */
-function Select({ label, value, onChange, options, placeholder, disabled }) {
+/*function Select({ label, value, onChange, options, placeholder, disabled }) {
   return (
     <label className="block">
       <span className="block text-sm text-slate-600 mb-1">{label}</span>
@@ -942,7 +945,97 @@ function Select({ label, value, onChange, options, placeholder, disabled }) {
       </select>
     </label>
   );
+}*/
+
+function Select({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+  countryName = "",
+  separatorsMap = null,
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const onClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    const onEsc = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onEsc);
+
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
+
+  const isUnitedStates = countryName === "United States";
+  const useSeparators = isUnitedStates && separatorsMap;
+
+  const triggerChange = (selectedValue) => {
+    onChange({ target: { value: selectedValue } });
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative block" ref={ref}>
+      <span className="block text-sm text-slate-600 mb-1">{label}</span>
+
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen((v) => !v)}
+        className={`w-full border rounded px-3 py-2 text-left bg-white ${
+          disabled ? "bg-slate-50 cursor-not-allowed" : "hover:bg-slate-50"
+        }`}
+      >
+        {value || <span className="text-slate-500">{placeholder}</span>}
+      </button>
+
+      {open && !disabled && (
+        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+          <button
+            type="button"
+            onClick={() => triggerChange("")}
+            className="block w-full px-3 py-2 text-left hover:bg-slate-50"
+          >
+            {placeholder}
+          </button>
+
+          {options.map((o) => (
+            <div key={o}>
+              {useSeparators && separatorsMap[o] && (
+                <div className="w-full bg-purple-700 px-3 py-2 text-xs font-bold text-white">
+                  {separatorsMap[o]}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => triggerChange(o)}
+                className="block w-full px-3 py-2 text-left hover:bg-slate-50"
+              >
+                {o}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
+
+
+
+
 
 /* ---------- Country Select ---------- */
 function CountrySelect({ label, countries, value, onSelect, disabled }) {

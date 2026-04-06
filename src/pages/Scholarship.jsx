@@ -164,16 +164,9 @@ function filterSortPaginate({
 export default function Scholarship() {
   // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
   const [baseItems, setBaseItems] = useState(() => {
-    /*const cached = readScholarshipsCache("approved");*/
-    /*const cached = readScholarshipsCache("approved", { contentType: CONTENT_TYPE });*/
     const cached = readScholarshipsCache("approved", CONTENT_TYPE);
     return cached?.items || [];
   });
-
-  {/*const [loading, setLoading] = useState(() => {
-    const cached = readScholarshipsCache("approved", { contentType: CONTENT_TYPE });
-    return !(cached?.items && cached.items.length > 0);
-  });*/}
 
   const [loading, setLoading] = useState(() => {
   const cached = readScholarshipsCache("approved", CONTENT_TYPE);
@@ -210,11 +203,6 @@ export default function Scholarship() {
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
   }, []);
-
-
-
-
-
 
 
   // ✅ AUTO-APPLY filters from URL query params (country/continent/etc.)
@@ -267,10 +255,6 @@ export default function Scholarship() {
     if (changed) setPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
-
-
-
-
 
   // Country options depend on continent
   const countryOptions = useMemo(() => {

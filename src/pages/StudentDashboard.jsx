@@ -1610,6 +1610,7 @@ async function dataUrlToFile(dataUrl, fileName, mimeFallback) {
   return new File([blob], fileName || "file", { type: mime });
 }
 
+
 async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
   const upImgs = [];
   const upFiles = [];
@@ -1620,30 +1621,34 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
 
     // already url-based
     if (img.url || img.s3Url) {
-      upImgs.push({ ...img, url: img.url || img.s3Url, dataUrl: undefined });
+      upImgs.push({
+        ...img,
+        url: img.url || img.s3Url,
+        dataUrl: undefined,
+      });
       continue;
     }
 
-    /*if (img.dataUrl) {
-      const file = dataUrlToFile(img.dataUrl, img.name || "image.jpg", img.mime || "image/jpeg");
-      const url = await uploadToCloudFront({ file, folder: "comment-images" });
-      upImgs.push({ id: img.id || url, name: img.name || file.name, mime: file.type, url });
-    }*/
+    if (img.dataUrl) {
+      const file = await dataUrlToFile(
+        img.dataUrl,
+        img.name || "image.jpg",
+        img.mime || "image/jpeg"
+      );
+
+      const url = await uploadToCloudFront({
+        file,
+        folder: "comment-images",
+      });
+
+      upImgs.push({
+        id: img.id || url,
+        name: file.name || img.name || "image.webp",
+        mime: file.type || "image/webp",
+        url,
+      });
+    }
   }
-  if (img.dataUrl) {
-  const file = await dataUrlToFile(
-    img.dataUrl,
-    img.name || "image.jpg",
-    img.mime || "image/jpeg"
-  );
-  const url = await uploadToCloudFront({ file, folder: "comment-images" });
-  upImgs.push({
-    id: img.id || url,
-    name: file.name || img.name || "image.webp",
-    mime: file.type || "image/webp",
-    url,
-  });
-}
 
   // files
   for (const f of (fileDescs || [])) {
@@ -1651,31 +1656,47 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
 
     // already url-based
     if (f.url || f.s3Url) {
-      upFiles.push({ ...f, url: f.url || f.s3Url, dataUrl: undefined });
+      upFiles.push({
+        ...f,
+        url: f.url || f.s3Url,
+        dataUrl: undefined,
+      });
       continue;
     }
 
-    /*if (f.dataUrl) {
-      const mime = f.mime || guessMime(f.name);
-      const file = dataUrlToFile(f.dataUrl, f.name || "file", mime);
-      const url = await uploadToCloudFront({ file, folder: "comment-files" });
-      upFiles.push({ id: f.id || url, name: f.name || file.name, mime: file.type || mime, url });
-    }*/
     if (f.dataUrl) {
-  const mime = f.mime || guessMime(f.name);
-  const file = await dataUrlToFile(f.dataUrl, f.name || "file", mime);
-  const url = await uploadToCloudFront({ file, folder: "comment-files" });
-  upFiles.push({
-    id: f.id || url,
-    name: file.name || f.name || "file",
-    mime: file.type || mime,
-    url,
-  });
-}
+      const mime = f.mime || guessMime(f.name);
+      const file = await dataUrlToFile(
+        f.dataUrl,
+        f.name || "file",
+        mime
+      );
+
+      const url = await uploadToCloudFront({
+        file,
+        folder: "comment-files",
+      });
+
+      upFiles.push({
+        id: f.id || url,
+        name: file.name || f.name || "file",
+        mime: file.type || mime,
+        url,
+      });
+    }
   }
 
   return { upImgs, upFiles };
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3681,6 +3702,8 @@ updatePostById(postId, (x) => {
   return updated;
 });
 };
+
+
   
 
   

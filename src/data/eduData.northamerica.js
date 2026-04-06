@@ -516,7 +516,639 @@ export const NORTH_AMERICA = [
       "Graduate Interdisciplinary Programs": {
         programs: ["PhD in Clinical and Counseling Psychology"]
       }
-    }
+    },
+    "University of Alaska Fairbanks": {
+  "College of Business and Security Management": {
+    programs: [
+      "Certificate in Applied Accounting",
+      "Certificate in Applied Business",
+      "AAS in Applied Accounting",
+      "AAS in Applied Business",
+      "BBA in Accounting",
+      "BBA in Business Administration",
+      "BBA in Economics",
+      "Graduate Certificate in Business Continuity",
+      "Graduate Certificate in Strategic Leadership",
+      "MBA in Business Administration"
+    ]
+  },
+
+  "College of Engineering and Mines": {
+    programs: [
+      "Certificate in Airframe and Powerplant",
+      "Certificate in Airframe",
+      "Certificate in Automotive Technology",
+      "Certificate in Diesel/Heavy Equipment",
+      "Certificate in Drafting Technology",
+      "Certificate in Instrumentation Technology",
+      "Certificate in Powerplant",
+      "AAS in Apprenticeship Technologies",
+      "AAS in Aviation Maintenance",
+      "AAS in Construction Management",
+      "AAS in Industrial Process Operator",
+      "AAS in Professional Piloting",
+      "BS in Aerospace Engineering",
+      "BS in Civil Engineering",
+      "BS in Computer Engineering",
+      "BS in Electrical Engineering",
+      "BS in Energy Resource Engineering",
+      "BS in Geological Engineering",
+      "BS in Mechanical Engineering",
+      "BS in Mining Engineering",
+      "BS in Petroleum Engineering",
+      "Graduate Certificate in Aerospace Engineering",
+      "Graduate Certificate in Applied and Computational Mathematics",
+      "Graduate Certificate in Geospatial Science",
+      "Graduate Certificate in Systems Engineering/Program Management",
+      "MS in Civil Engineering",
+      "MS in Computer Science",
+      "MS in Electrical Engineering",
+      "MS in Geological Engineering",
+      "MS in Mechanical Engineering",
+      "MS in Mining Engineering",
+      "MS in Petroleum Engineering",
+      "PhD in Engineering"
+    ]
+  },
+
+  "College of Indigenous Studies": {
+    programs: [
+      "Certificate in Local Knowledge Educator",
+      "Certificate in Native Language Education",
+      "Certificate in Tribal Governance",
+      "Certificate in Yup'ik Language Proficiency",
+      "AAS in Native Language Education",
+      "AAS in Tribal Governance",
+      "AAS in Yup'ik Language Proficiency",
+      "BA in Alaska Native Languages",
+      "BA in Alaska Native Studies",
+      "BA in Rural Development",
+      "BA in Yup'ik Language and Culture",
+      "Graduate Certificate in Arctic and Northern Studies",
+      "Graduate Certificate in Arctic Security",
+      "Graduate Certificate in Climate Security",
+      "Graduate Certificate in Rural Development",
+      "MA in Arctic and Northern Studies",
+      "MA in Indigenous Studies",
+      "MA in Rural Development",
+      "PhD in Indigenous Studies"
+    ]
+  },
+
+  "College of Liberal Arts": {
+    programs: [
+      "BA in Anthropology",
+      "BA in Art",
+      "BFA in Art",
+      "BA in Communication",
+      "BA in English",
+      "BA in Film and Performing Arts",
+      "BA in Foreign Languages",
+      "BA in History",
+      "BA in Japanese Studies",
+      "BA in Journalism: Science and the Environment",
+      "BA in Justice",
+      "BA in Linguistics",
+      "BA in Music",
+      "BM in Music Education",
+      "BM in Music Performance",
+      "BA in Philosophy",
+      "BA in Political Science",
+      "BA in Psychology",
+      "MA in Anthropology",
+      "MFA in Art",
+      "MEd in Counseling",
+      "MFA in Creative Writing",
+      "MFA/MA in Creative Writing and Literature",
+      "MA in English",
+      "MA in Justice Administration",
+      "MA in Professional Communication",
+      "MMu in Music Performance",
+      "PhD in Anthropology"
+    ]
+  },
+
+  "College of Fisheries and Ocean Sciences": {
+    programs: [
+      "BS in Fisheries and Marine Sciences",
+      "BA in Fisheries",
+      "MS in Fisheries",
+      "MS in Marine Biology",
+      "MMP in Marine Policy",
+      "MMS in Marine Studies",
+      "MS in Oceanography",
+      "PhD in Fisheries",
+      "PhD in Marine Biology",
+      "PhD in Oceanography"
+    ]
+  },
+
+  "College of Natural Science and Mathematics": {
+    programs: [
+      "BA in Biological Sciences",
+      "BS in Biological Sciences",
+      "BS in Chemistry",
+      "BA in Mathematics",
+      "BS in Mathematics",
+      "BS in Physics",
+      "Graduate Certificate in Statistics",
+      "MS in Biological Sciences",
+      "MS in Chemistry",
+      "MS in Mathematics",
+      "MS in Physics",
+      "MS in Physics - Computational Physics Concentration",
+      "MS in Physics - Space Physics Concentration",
+      "MS in Statistics and Data Science",
+      "PhD in Biochemistry and Neuroscience",
+      "PhD in Biological Sciences",
+      "PhD in Mathematics",
+      "PhD in Physics",
+      "PhD in Space Physics"
+    ]
+  },
+
+  "College of Rural, Community and Native Education": {
+    programs: [
+      "Certificate in Early Childhood Education",
+      "Certificate in Medical Assistant",
+      "Certificate in Medical Scribe Specialist",
+      "Certificate in Medical/Dental Reception",
+      "Certificate in Pre-nursing Qualifications",
+      "Certificate in Rural Human Services",
+      "AAS in Dental Assistant",
+      "AAS in Early Childhood Education",
+      "AAS in Human Services",
+      "AAS in Medical Assistant",
+      "AAS in Paramedicine"
+    ]
+  },
+
+  "College of Health": {
+    programs: [
+      "Certificate in Dental Assistant",
+      "Certificate in Health Care Reimbursement",
+      "Certificate in Licensed Practical Nurse",
+      "Graduate Certificate in Healthcare Management and Leadership",
+      "MHML in Healthcare Management and Leadership",
+      "OHM in One Health"
+    ]
+  },
+
+  "College of Earth and Climate Sciences": {
+    programs: [
+      "BA in Climate and Arctic Sustainability",
+      "BS in Climate and Atmospheric Sciences",
+      "BS in Climate and Environmental Change",
+      "BS in Geoscience",
+      "MS in Atmospheric Sciences",
+      "MS in Earth System Science",
+      "MS in Geophysics",
+      "MS in Geoscience",
+      "PhD in Atmospheric Sciences",
+      "PhD in Earth System Science",
+      "PhD in Environmental Chemistry",
+      "PhD in Geophysics",
+      "PhD in Geoscience"
+    ]
+  },
+
+  "College of Natural Resources and Environment": {
+    programs: [
+      "Certificate in High Latitude Range Management",
+      "BS in Natural Resources and Environment",
+      "BS in Wildlife Biology and Conservation",
+      "BA in Wildlife Ecology and Society",
+      "MNRE in Natural Resources and Environment",
+      "MS in Natural Resources and Environment",
+      "MS in Wildlife Biology and Conservation",
+      "PhD in Natural Resources and Sustainability"
+    ]
+  },
+
+  "School of Education": {
+    programs: [
+      "BA in Child Development and Family Studies",
+      "BA in Elementary Education (K-8)",
+      "BA in Secondary Education (7-12)",
+      "Graduate Certificate in School Counselor Certification",
+      "Graduate Certificate in Science Teaching and Outreach",
+      "MEd in Elementary Education",
+      "MEd in Secondary Education",
+      "MEd in Special Education"
+    ]
+  },
+
+  "Community and Technical College": {
+    programs: [
+      "Certificate in Baking and Pastry Arts",
+      "Certificate in Culinary Arts",
+      "Certificate in Information Technology Specialist",
+      "AAS in Culinary Arts and Hospitality",
+      "AAS in Fire Science",
+      "AAS in Information Technology Specialist",
+      "AAS in Paralegal Studies"
+    ]
+  },
+
+  "Interdisciplinary and General Studies": {
+    programs: [
+      "Associate of Arts (AA)",
+      "Associate of Science (AS)",
+      "BAM in Applied Management",
+      "BA in Computer Science",
+      "BS in Computer Science",
+      "BSEM in Homeland Security and Emergency Management",
+      "BA in Interdisciplinary Studies",
+      "BAAS in Interdisciplinary Studies",
+      "BS in Interdisciplinary Studies",
+      "Pre-professional Preparation",
+      "BS in Psychology",
+      "BA in Social Work",
+      "MA in Applied Linguistics",
+      "MA in Interdisciplinary Studies",
+      "MS in Interdisciplinary Studies",
+      "MSDM in Security and Disaster Management",
+      "PhD in Interdisciplinary Studies"
+    ]
+  }
+},
+"Alaska Pacific University": {
+
+  "School of Business and Leadership": {
+    programs: [
+      "Executive MBA in Business Administration",
+      "MBA in Business Administration",
+      "BA in Business Administration"
+    ]
+  },
+
+  "School of Arts, Humanities, and Social Sciences": {
+    programs: [
+      "MA in Arts",
+      "BA in Creative & Professional Writing",
+      "BA in Counseling Psychology",
+      "BA in Community & Place-Based Education",
+      "BA in Alaska Native Governance",
+      "BA in Sustainability Studies",
+      "BA in Outdoor Studies",
+      "BA in Environmental Studies",
+      "BA in Liberal Studies"
+    ]
+  },
+
+  "School of Health Sciences": {
+    programs: [
+      "BS in Nursing",
+      "ADN in Nursing",
+      "Pre-Nursing",
+      "Certificate in Licensed Practical Nursing",
+      "BS in Health Sciences",
+      "Certificate in Community Health",
+      "AAS in Community Health",
+      "Certificate in Health Occupations",
+      "AAS in Health Occupations"
+    ]
+  },
+
+  "School of Environmental and Natural Sciences": {
+    programs: [
+      "BS in Environmental Public Health",
+      "BS in Marine & Environmental Sciences"
+    ]
+  },
+
+  "Community and Professional Programs": {
+    programs: [
+      "Certificate in Alaska Rural Management"
+    ]
+  }
+
+},
+"University of Alaska Southeast": {
+
+  "School of Arts & Sciences": {
+    programs: [
+      "MPA in Public Administration",
+      "BA in Biology-Fisheries Science",
+      "BA in English-Creative Writing",
+      "BA in English-Literature",
+      "BA in English-Literature & the Environment",
+      "BA in Environmental Studies-Environmental Studies",
+      "BA in Environmental Studies-Outdoor Studies",
+      "BA in Environmental Studies-Cultural Geography",
+      "BA in Indigenous Studies",
+      "BA in Integrative Behavioral Health",
+      "BA in Social Science - Anthropology",
+      "BA in Social Science-History",
+      "BA in Social Science-Political Science",
+      "BA in Social Science-Psychology",
+      "BA in Social Science-Sociology",
+      "BLA in Alaska Native Language & Studies - Alaska Native Arts, Languages & Studies",
+      "BLA in Alaska Native Language & Studies - English & Literature",
+      "BLA in Alaska Native Language & Studies - Languages",
+      "BLA in Alaska Native Language & Studies - Liberal Arts",
+      "BLA in Designated Emphasis-Alaska Native Languages and Studies",
+      "BLA in Designated Emphasis-Outdoor and Adventure Studies",
+      "BLA in Independent Design-English & Literature",
+      "BLA in Independent Design-Liberal Arts",
+      "BLA in Interdisciplinary Studies-English & Literature",
+      "BLA in Interdisciplinary Studies-Liberal Arts",
+      "BLA in Interdisciplinary Studies-Cultural Geography",
+      "BLA in Outdoor & Adventure Studies-English & Literature",
+      "BLA in Outdoor & Adventure Studies-Liberal Arts",
+      "BLA in Outdoor & Adventure Studies-Outdoor Studies",
+      "BBA in Business Administration-Accounting",
+      "BBA in Business Administration-Human Resource Management",
+      "BBA in Business Administration-Management Information Systems",
+      "BBA in Business Administration-Management",
+      "BS in Biology - Fisheries Science",
+      "BS in Environmental Resources",
+      "BS in Environmental Science",
+      "BS in Fisheries & Ocean Sciences-Fisheries Science",
+      "BS in Marine Biology-Fisheries Science",
+      "BS in Mathematics",
+      "AA in Associate of Arts-Northwest Coast Art",
+      "AA in General Studies-Northwest Coast Art",
+      "AS in Associate of Science",
+      "AAS in Business Administration",
+      "Minor in Alaska Native Studies",
+      "Minor in Anthropology",
+      "Minor in Biology",
+      "Minor in Business Administration",
+      "Minor in Chemistry",
+      "Minor in Creative Writing",
+      "Minor in English Literature",
+      "Minor in Environmental Science",
+      "Minor in History",
+      "Minor in Information Systems",
+      "Minor in Mathematical Sciences",
+      "Minor in Northwest Coast Art",
+      "Minor in Outdoor & Adventure Studies",
+      "Minor in Philosophy",
+      "Minor in Spanish",
+      "Minor in Tlingit Language-Alaska Native Arts, Languages & Studies",
+      "Minor in Tlingit Language-Languages",
+      "Certificate in Accounting Technician",
+      "Certificate in Higher Education Policy and Administration",
+      "Certificate in Indigenous Language Speaking-Alaska Native Arts, Languages & Studies",
+      "Certificate in Indigenous Language Speaking-Languages",
+      "Certificate in Indigenous Language Teaching-Alaska Native Arts, Languages & Studies",
+      "Certificate in Indigenous Language Teaching-Languages",
+      "Certificate in Outdoor Skills & Leadership",
+      "Certificate in Small Business Management"
+    ]
+  },
+
+  "School of Career Education": {
+    programs: [
+      "BA in Integrative Behavioral Health",
+      "BS in Integrative Behavioral Health",
+      "AAS in Applied Fisheries",
+      "AAS in Construction Technology",
+      "AAS in Health Information Management",
+      "AAS in Health Sciences-Behavioral Health",
+      "AAS in Health Sciences-General Health",
+      "AAS in Health Sciences-Medical Assisting",
+      "AAS in Health Sciences-Medical Coding",
+      "AAS in Marine Transportation",
+      "AAS in Power Technology-Mining (Diesel)",
+      "AAS in Power Technology-Mining (Mine Mechanic)",
+      "AAS in Power Technology-Power Technology (Diesel)",
+      "AAS in Power Technology-Power Technology (Mine Mechanic)",
+      "Minor in Construction Technology",
+      "Minor in Marine Transportation",
+      "Certificate in Applied Fisheries-Alaskan Aquaculture",
+      "Certificate in Applied Fisheries-Fisheries Management",
+      "Certificate in Drafting Technology",
+      "Certificate in Health Information Management Coding Specialist",
+      "Certificate in Medical Assisting",
+      "Certificate in Pre-Nursing Qualifications",
+      "Certificate in Pre-Radiologic Tech Qualifications"
+    ]
+  },
+
+  "School of Education": {
+    programs: [
+      "MAT in Elementary Education (K-8)",
+      "MAT in Secondary & Middle Grades Education",
+      "MAT in Special Education",
+      "MEd in Educational Leadership",
+      "MEd in Reading Specialist",
+      "MEd in Special Education",
+      "BA in Elementary Education",
+      "BA in Special Education",
+      "Minor in Pathways to Teaching",
+      "Graduate Certificate in Elementary Education (K-8)",
+      "Graduate Certificate in Reading Specialist",
+      "Graduate Certificate in Secondary Education",
+      "Graduate Certificate in Special Education",
+      "Graduate Certificate in Superintendent"
+    ]
+  }
+
+},
+"Alaska Bible College": {
+
+  "Biblical and Ministry Studies": {
+    programs: [
+      "Certificate in Biblical Studies (One-Year, Online Option)",
+      "Certificate in Biblical Studies & Christian Ministry (Two-Year)",
+
+      "Associate of Arts in Biblical Studies",
+
+      "BA in Biblical Studies & Christian Ministry",
+
+      "BA in Elementary Education",
+
+      "MA in Biblical Studies"
+    ]
+  }
+
+},
+"University of Alaska Anchorage": {
+
+  "College of Engineering": {
+    programs: [
+      "BS in Civil Engineering",
+      "BS in Computer Science",
+      "BA in Computer Science",
+      "BS in Computer Systems Engineering",
+      "BS in Electrical Engineering",
+      "AAS in Geomatics",
+      "BS in Geomatics",
+      "BS in Mechanical Engineering",
+      "BS in Project Management",
+      "BS in Mining Engineering (2+2)",
+      "BS in Geological Engineering (2+2)",
+
+      "MS in Civil Engineering",
+      "MS in Mechanical Engineering",
+      "MS in Project Management",
+      "MS in Artificial Intelligence, Data Science, and Engineering",
+      "PhD in Engineering",
+
+      "Graduate Certificate in Project Management"
+    ]
+  },
+
+  "College of Arts and Sciences": {
+    programs: [
+      "AA in Associate of Arts",
+      "AS in Associate of Science",
+
+      "BA in Anthropology",
+      "BA in Geography",
+      "BA in Art",
+      "BFA in Art",
+      "BM in Music",
+      "BA in Biological Sciences",
+      "BS in Biological Sciences",
+      "BS in Chemistry",
+      "BA in English",
+      "BA in Geological Sciences",
+      "BS in Geological Sciences",
+      "BA in History",
+      "BA in Interdisciplinary Studies",
+      "BA in Journalism and Public Communications",
+      "BA in Languages",
+      "BA in Mathematics",
+      "BS in Mathematics and Statistics",
+      "BA in Philosophy",
+      "BA in Political Science",
+      "BA in Psychology",
+
+      "MA in Applied Anthropology",
+      "MS in Applied Geological Sciences",
+      "MS in Biological Sciences",
+      "MS in Clinical Psychology",
+      "PhD in Psychology",
+
+      "Graduate Certificate in Children’s Mental Health"
+    ]
+  },
+
+  "College of Business and Public Policy": {
+    programs: [
+      "BBA in Accounting",
+      "BBA in Finance",
+      "AAS in Accounting",
+      "Certificate in Bookkeeping",
+
+      "BBA in Economics",
+      "BA in Economics",
+
+      "BBA in Business and Data Analytics",
+      "BBA in Management",
+      "BBA in Management (Property Management and Real Estate)",
+      "BBA in Marketing",
+
+      "AAS in Business Computer Information Systems",
+      "AAS in General Business",
+
+      "Certificate in Alaska Native Business Management",
+      "Certificate in Business Analytics",
+      "Certificate in Business Leadership",
+      "Certificate in Entrepreneurship",
+
+      "MBA in Business Administration",
+      "MPA in Public Administration",
+      "MPP in Public Policy",
+
+      "Graduate Certificate in Business Analytics and AI",
+      "Graduate Certificate in Executive Leadership"
+    ]
+  },
+
+  "College of Health": {
+    programs: [
+      "Certificate in Children's Behavioral Health",
+      "Certificate in Community, Conflict, and Communication",
+      "Certificate in Conflict Resolution",
+      "Certificate in Corrections",
+      "Certificate in Gerontology",
+      "Certificate in Guardianship",
+      "Certificate in Indian Child Welfare Act",
+      "Certificate in Interprofessional Child Welfare",
+      "Certificate in Medical Assisting",
+      "Certificate in Medical Office Coding",
+      "Certificate in Pharmacy Technology",
+      "Certificate in Phlebotomy",
+
+      "AAS in Diagnostic Medical Sonography",
+      "AAS in Fire and Emergency Services Technology",
+      "AAS in Human Services",
+      "AAS in Medical Assisting",
+      "AAS in Medical Laboratory Technology",
+      "AAS in Nursing",
+      "AAS in Paralegal Studies",
+      "AAS in Paramedical Technology",
+      "AAS in Physical Therapist Assistant",
+      "AAS in Radiologic Technology",
+      "AAS in Surgical Technology",
+      "AAS in Outdoor Leadership",
+
+      "BA in Criminology and Criminal Justice",
+      "BA in Legal Studies",
+      "BS in Dental Hygiene",
+      "BS in Dietetics",
+      "BS in Health Sciences",
+      "BS in Kinesiology",
+      "BS in Medical Laboratory Science",
+      "BS in Nursing",
+      "BSW in Social Work",
+      "Bachelor of Human Services",
+
+      "MS in Dietetics and Nutrition",
+      "MS in Nursing Science",
+      "Doctor of Nursing Practice",
+      "Doctor of Pharmacy",
+      "Doctor of Occupational Therapy",
+      "Medical Doctor (WWAMI Program)",
+
+      "Master of Clinical Health Services",
+      "Master of Public Health",
+      "Master of Public Health and Master of Social Work (Dual)",
+      "Master of Social Work",
+
+      "Graduate Certificate in Family Nurse Practitioner",
+      "Graduate Certificate in Nursing Education",
+      "Graduate Certificate in Psychiatric and Mental Health Nurse Practitioner",
+      "Graduate Certificate in Public Health"
+    ]
+  },
+
+  "School of Education": {
+    programs: [
+      "Certificate in Infant and Toddler Development",
+
+      "AAS in Early Childhood Development",
+
+      "BA in Early Childhood Education (Licensure)",
+      "BA in Early Childhood Education (Professional)",
+      "BA in Early Childhood Education (Child Life Specialist)",
+
+      "MEd in Educational Leadership",
+      "MEd in Teaching and Learning",
+      "MEd in Special Education",
+
+      "Graduate Certificate in Educational Leadership",
+      "Graduate Certificate in Language and Literacy Education",
+      "Graduate Certificate in Special Education",
+      "Graduate Certificate in Indigenizing Education",
+      "Graduate Certificate in Advanced Leadership in Special Education"
+    ]
+  },
+
+  "Community and Technical College": {
+    programs: [
+      "Certificate in Aviation Technology",
+      "Certificate in Building Technologies",
+      "Certificate in Culinary Arts and Hospitality",
+      "Certificate in Transportation and Power"
+    ]
+  }
+}
+  
   
 }
 }
