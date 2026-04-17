@@ -15,6 +15,17 @@ export const US_STATE_UNIVERSITIES = {
     "University of Alaska Southeast",
     "Alaska Bible College",
     "University of Alaska Anchorage",
+    ],
+
+  Arizona: [
+    "Arizona Christian University",
+  ],
+
+ Arkansas: [
+  "University of Arkansas",
+    
+    
+  
   ],
 };
 
