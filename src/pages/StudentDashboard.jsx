@@ -551,11 +551,26 @@ function HeaderBar({ title }) {
     </div>
   );
 }
-function SidebarCard({ title, children }) {
+/*function SidebarCard({ title, children }) {
   return (
     <div className="rounded-none overflow-hidden border border-slate-200 bg-white shadow-sm">
       <HeaderBar title={title} />
       <div className="p-3">{children}</div>
+    </div>
+  );
+}*/
+function SidebarCard({ title, children, headerOnly = false }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="bg-[#8ad5cf] px-4 py-4 font-semibold text-slate-900">
+        {title}
+      </div>
+
+      {!headerOnly ? (
+        <div className="px-4 py-4">
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -3990,48 +4005,98 @@ const feedCombined = useMemo(() => {
             </div>
           </Card>
 
+        
+
           {/* Lecturer posts toggle */}
-          <SidebarCard title="View Lecturers’ posts">
-            <div className="mt-1 flex items-center justify-center gap-2">
-              <NewBadge show={!showLecturerOnly && (hasNewLecturer)} />
-              <button
-                onClick={onToggleLecturerOnly}
-                className={`px-4 py-1 rounded-full text-sm ${showLecturerOnly?"bg-blue-600 text-white":"border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-              >
-                {showLecturerOnly?"On":"Off"}
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-slate-600 text-center">View Academic posts by your Lecturer.</p>
-          </SidebarCard>
+<SidebarCard
+  headerOnly
+  title={
+    /*<div className="flex items-center justify-between gap-3">*/
+      <div className="flex items-center justify-between gap-3 min-w-0">
+      {/*<span>View Lecturers’ posts</span>*/}
+      <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm font-medium leading-none whitespace-nowrap">
+  View Lecturers’ posts
+</span>
+      <div className="flex items-center gap-2">
+        <NewBadge show={!showLecturerOnly && hasNewLecturer} />
+        <button
+          onClick={onToggleLecturerOnly}
+          className={`px-4 py-1 rounded-full text-sm ${
+            showLecturerOnly
+              ? "bg-blue-600 text-white"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          {showLecturerOnly ? "On" : "Off"}
+        </button>
+      </div>
+    </div>
+  }
+/>
 
-          {/* Faculty filter */}
-          <SidebarCard title={`View ${facultyDisplay(user)} posts`}>
-            <div className="mt-1 flex items-center justify-center gap-2">
-              <NewBadge show={!showFacultyOnly && (hasNewFacultySignal || hasNewFacultyPosts)} />
-              <button
-                onClick={onToggleFacultyOnly}
-                className={`px-4 py-1 rounded-full text-sm ${showFacultyOnly?"bg-blue-600 text-white":"border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-              >
-                {showFacultyOnly?"On":"Off"}
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-slate-600 text-center">
-              When ON, you’ll see only {facultyDisplay(user).toLowerCase()} posts for your year. When OFF, faculty posts are hidden.
-            </p>
-          </SidebarCard>
+{/* Faculty filter */}
+<SidebarCard
+  headerOnly
+  title={
+    /*<div className="flex items-center justify-between gap-3">*/
+    <div className="flex items-center justify-between gap-3 min-w-0">
+      {/*<span>{`View ${facultyDisplay(user)} posts`}</span>*/}
+      <span className="min-w-0 flex-1 text-[12px] sm:text-[13px] font-medium leading-5 pr-2 break-words whitespace-normal">
+  {`View ${facultyDisplay(user)} posts`}
+</span>
 
-          {/* My posts */}
-          <SidebarCard title="View my posts">
-            <div className="mt-1 flex items-center justify-center">
-              <button
-                onClick={()=>setShowMineOnly(v=>!v)}
-                className={`px-4 py-1 rounded-full text-sm ${showMineOnly?"bg-blue-600 text-white":"border border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-              >
-                {showMineOnly ? "On" : "Off"}
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-slate-600 text-center">Only show posts you (the student) created.</p>
-          </SidebarCard>
+
+      <div className="flex items-center gap-2">
+        <NewBadge show={!showFacultyOnly && (hasNewFacultySignal || hasNewFacultyPosts)} />
+        <button
+          onClick={onToggleFacultyOnly}
+          className={`px-4 py-1 rounded-full text-sm ${
+            showFacultyOnly
+              ? "bg-blue-600 text-white"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          {showFacultyOnly ? "On" : "Off"}
+        </button>
+      </div>
+    </div>
+  }
+/>
+
+{/* My posts */}
+<SidebarCard
+  headerOnly
+  title={
+    /*<div className="flex items-center justify-between gap-3">*/
+      <div className="flex items-center justify-between gap-3 min-w-0">
+      {/*<span>View my posts</span>*/}
+      <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm font-medium leading-none whitespace-nowrap">
+  View my posts
+</span>
+
+
+      <button
+        onClick={() => setShowMineOnly((v) => !v)}
+        className={`px-4 py-1 rounded-full text-sm ${
+          showMineOnly
+            ? "bg-blue-600 text-white"
+            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+        }`}
+      >
+        {showMineOnly ? "On" : "Off"}
+      </button>
+    </div>
+  }
+/>
+
+
+
+
+
+
+
+
+
 
           {/* Academic posts filters */}
           <SidebarCard title="Academic posts">

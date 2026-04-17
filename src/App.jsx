@@ -112,6 +112,8 @@ const PartnerSubmitFundedGraduateAdmission = lazy(() =>
 const AdminFundedGraduateAdmissionList = lazy(() =>
   import("./pages/AdminFundedGraduateAdmissionList.jsx")
 );
+
+
 const STEMPrograms = lazy(() => import("./pages/STEMPrograms"));
 // Funding Programs (NEW)
 const FundingPrograms = lazy(() =>
@@ -121,6 +123,7 @@ const FundingPrograms = lazy(() =>
 const FundingProgramDetail = lazy(() =>
   import("./pages/FundingProgramDetail.jsx")
 );
+
 
 import { getLoggedInUser } from "./lib/authState.js";
 
@@ -248,6 +251,8 @@ export default function App() {
   path="/funding-programs/:id"
   element={<FundingProgramDetail />}
 />
+
+
           <Route
             path="/partner/submit-funded-graduate-admission"
             element={<PartnerSubmitFundedGraduateAdmission />}
@@ -256,6 +261,7 @@ export default function App() {
             path="/admin/funded-graduate-admissions"
             element={<AdminFundedGraduateAdmissionList />}
           />
+         
 
           {/* links used by Home.jsx */}
           <Route path="/partner/signup" element={<PartnerSignUp />} />

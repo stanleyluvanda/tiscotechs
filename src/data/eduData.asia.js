@@ -4535,10 +4535,922 @@ export const ASIA = [
         "Ph.D. in Law and Governance"
       ]
     }
-  }
+  },
+  "	Christ University": {
+  "School of Architecture": {
+    programs: [
+      "Bachelor of Architecture (BArch)",
+      "MArch in Urban Design and Development",
+      "Doctor of Philosophy (PhD) in Architecture"
+    ]
+  },
 
+  "School of Business and Management": {
+    programs: [
+      "Bachelor of Business Administration (BBA)",
+      "Bachelor of Business Administration (BBA) Decision Science",
+      "Bachelor of Business Administration (BBA) Business Analytics",
+      "Bachelor of Business Administration (BBA) Strategy and Business Analytics",
+      "Bachelor of Business Administration (BBA) Finance and International Business",
+      "Bachelor of Business Administration (BBA) Finance and Economics",
+      "Bachelor of Business Administration (BBA) Finance and Marketing Analytics",
+      "Bachelor of Business Administration (BBA) Marketing and Tourism",
+      "Bachelor of Business Administration (BBA) Marketing and Supply Chain Management",
+      "Bachelor of Business Administration (BBA) Applied Finance with FinTech",
+      "Bachelor of Business Administration (BBA) FinTech",
+      "Integrated Master of Business Administration",
+      "Master of Business Administration (MBA)",
+      "Master of Business Administration (MBA) Executive",
+      "Master of Business Administration (MBA) + MS (Virginia Commonwealth University, USA)",
+      "Master of Business Administration (MBA) + MBA (Western Michigan University, USA)",
+      "Master of Business Administration (MBA) + MBA (THWS, Germany)",
+      "Master of Science Innovation and Entrepreneurship",
+      "Master of Science Strategic Management",
+      "Doctor of Philosophy (PhD) in Management",
+      "Executive Course on Corporate Social Responsibility and Sustainability",
+      "Executive Course on Environment Social and Governance (ESG)"
+    ]
+  },
 
-},
+  "School of Commerce, Finance and Accountancy": {
+    programs: [
+      "Bachelor of Commerce (BCom)",
+      "Bachelor of Commerce (BCom) Work Integrated",
+      "Bachelor of Commerce (BCom) Branding and Entrepreneurship",
+      "Bachelor of Commerce (BCom) Applied Finance and Analytics",
+      "Bachelor of Commerce (BCom) Accountancy and Taxation",
+      "Bachelor of Commerce (BCom) Accountancy and Auditing",
+      "Bachelor of Commerce (BCom) Finance and Accountancy",
+      "Bachelor of Commerce (BCom) Finance and Investment",
+      "Bachelor of Commerce (BCom) International Finance",
+      "Bachelor of Commerce (BCom) International Accountancy and Finance",
+      "Bachelor of Commerce (BCom) International Business Accounting",
+      "Bachelor of Commerce (BCom) Financial Analytics",
+      "Bachelor of Commerce (BCom) Global Management Accounting and Strategy",
+      "Bachelor of Science (BSc) Accountancy and Analytics Integrated Masters Programme",
+      "Bachelor of Science (BSc) Actuarial Science",
+      "Master of Commerce (MCom)",
+      "Master of Commerce (MCom) International Finance",
+      "Master of Science (MSc) Actuarial Science",
+      "Master of Science (MSc) Finance and Analytics",
+      "Master of Science (MSc) Global Finance and Analytics",
+      "Doctor of Philosophy (PhD) in Commerce"
+    ]
+  },
+
+  "School of Education": {
+    programs: [
+      "Bachelor of Education (BEd)",
+      "Master of Arts in Educational Leadership and Management",
+      "Post Graduate Diploma in Educational Leadership and Management",
+      "Post Graduate Diploma in International Education (PGDIE)",
+      "International Baccalaureate (IB) Educator Certificate in Teaching and Learning DP",
+      "International Baccalaureate (IB) Educator Certificate in Leadership Practice",
+      "Doctor of Philosophy (PhD) in Education"
+    ]
+  },
+
+  "School of Engineering and Technology": {
+    programs: [
+      "Bachelor of Technology (BTech) Civil Engineering",
+      "Bachelor of Technology (BTech) Civil Engineering (Lateral Entry)",
+      "Bachelor of Technology (BTech) Electrical and Electronics Engineering",
+      "Bachelor of Technology (BTech) Electrical and Electronics Engineering (Lateral Entry)",
+      "Bachelor of Technology (BTech) Electronics and Communication Engineering",
+      "Bachelor of Technology (BTech) Electronics and Communication Engineering (Lateral Entry)",
+      "Bachelor of Technology (BTech) Electronics and Communication Engineering in VLSI Design and Technology",
+      "Bachelor of Technology (BTech) Mechanical Engineering",
+      "Bachelor of Technology (BTech) Mechanical Engineering (Lateral Entry)",
+      "Bachelor of Technology (BTech) Automotive Technology",
+      "Bachelor of Technology (BTech) Automotive Technology (Lateral Entry)",
+      "Bachelor of Technology (BTech) Computer Science and Engineering",
+      "Bachelor of Technology (BTech) Computer Science and Engineering (Lateral Entry)",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - Cyber Security",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - Artificial Intelligence and Machine Learning",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - Artificial Intelligence and Machine Learning (Lateral Entry)",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - Data Science",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - Data Science (Lateral Entry)",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - IoT",
+      "Bachelor of Technology (BTech) Computer Science and Engineering - IoT (Lateral Entry)",
+      "Bachelor of Technology (BTech) Electronics and Computer Engineering with Artificial Intelligence and Machine Learning",
+      "Bachelor of Technology (BTech) Electronics and Computer Engineering with Artificial Intelligence and Machine Learning (Lateral Entry)",
+      "Bachelor of Technology (BTech) Robotics and Mechatronics",
+      "Bachelor of Technology (BTech) Robotics and Mechatronics (Lateral Entry)",
+      "Bachelor of Technology (BTech) Artificial Intelligence and Machine Learning",
+      "Indo-German First Year BTech Credit Transfer Program (CHRIST-THWS)",
+      "Master of Computer Applications (MCA)",
+      "Master of Technology (MTech) Computer Science and Engineering",
+      "Master of Technology (MTech) Data Science",
+      "Master of Technology (MTech) Civil Engineering - Structural Engineering",
+      "Master of Technology (MTech) Electrical and Electronics Engineering - Electric Vehicle Technology",
+      "Master of Technology (MTech) Electronics and Communication Engineering - VLSI and Embedded Systems",
+      "Master of Technology (MTech) Mechanical Engineering - Machine Design Digital Twin",
+      "Master of Technology (MTech) Mechanical Engineering - Material Science and Technology",
+      "Master of Technology (MTech) Mechanical Engineering - Automotive Systems",
+      "Doctor of Philosophy (PhD) in Civil Engineering",
+      "Doctor of Philosophy (PhD) in Electrical and Electronics Engineering",
+      "Doctor of Philosophy (PhD) in Electronics and Communication Engineering",
+      "Doctor of Philosophy (PhD) in Mechanical Engineering",
+      "Doctor of Philosophy (PhD) in Computer Science and Engineering",
+      "Post Graduate Diploma in VLSI Design",
+      "Post Graduate Diploma in Electric Vehicle Technology"
+    ]
+  },
+
+  "School of Humanities and Performing Arts": {
+    programs: [
+      "Bachelor of Arts (BA) English",
+      "Bachelor of Arts (BA) English with Creative Writing",
+      "Bachelor of Arts (BA) Communication and Media",
+      "Bachelor of Arts (BA) Journalism and Digital Media",
+      "Bachelor of Arts (BA) Music - Western Classical",
+      "Bachelor of Arts (BA) Performing Arts",
+      "Bachelor of Arts (BA) Theatre Studies",
+      "Bachelor of Arts (BA) Philosophy",
+      "Bachelor of Arts (BA) Creative Media",
+      "Master of Arts (MA) English with Communication Studies",
+      "Master of Arts (MA) English and Cultural Studies",
+      "Master of Arts (MA) English Studies and Communication",
+      "Master of Arts (MA) English with Digital Humanities",
+      "Master of Arts (MA) Applied Linguistics and TESOL",
+      "Master of Arts (MA) Media and Communication Studies",
+      "Master of Arts (MA) Digital Media with Analytics",
+      "Master of Arts (MA) Philosophy",
+      "Master of Arts (MA) Religion",
+      "Master of Arts (MA) Performing Arts - Bharatanatyam",
+      "Doctor of Philosophy (PhD) in English Studies",
+      "Doctor of Philosophy (PhD) in English",
+      "Doctor of Philosophy (PhD) in Media Studies",
+      "Doctor of Philosophy (PhD) in Music"
+    ]
+  },
+
+  "School of Law": {
+    programs: [
+      "Bachelor of Law (BA LLB)",
+      "Bachelor of Law (BBA LLB)",
+      "Master of Law (LLM) Constitutional and Administrative Law",
+      "Master of Law (LLM) Intellectual Property and Trade Law",
+      "Master of Law (LLM) Corporate and Commercial Law",
+      "Doctor of Philosophy (PhD) in Law"
+    ]
+  },
+
+  "School of Psychological Sciences, Education and Social Work": {
+    programs: [
+      "Bachelor of Arts (BA) Psychology",
+      "Bachelor of Arts (BA) Economics",
+      "Bachelor of Arts (BA) English",
+      "Bachelor of Arts (BA) Media",
+      "Bachelor of Arts (BA) Communication and Media",
+      "Bachelor of Science (BSc) Psychology",
+      "Bachelor of Science (BSc) Clinical Psychology",
+      "Master of Science (MSc) Psychology (HRDM)",
+      "Master of Science (MSc) Clinical Psychology",
+      "Master of Science (MSc) Clinical Psycho-Oncology",
+      "Master of Science (MSc) Neuropsychology",
+      "Master of Science (MSc) Psychology - Health and Wellbeing",
+      "Master of Science (MSc) Educational Psychology",
+      "Master of Science (MSc) Counselling Psychology",
+      "Master of Arts (MA) Clinical Psychology",
+      "Master of Arts (MA) Counseling and Spirituality",
+      "Master of Social Work (MSW) Clinical and Community Practice",
+      "Master of Social Work (MSW) Human Resource Development and Management",
+      "PG Diploma in Counselling Psychology",
+      "Doctor of Philosophy (PhD) in Psychology",
+      "Doctor of Philosophy (PhD) in Social Work"
+    ]
+  },
+
+  "School of Sciences": {
+    programs: [
+      "Bachelor of Computer Applications (BCA)",
+      "Bachelor of Science (BSc) Computer Science",
+      "Bachelor of Science (BSc) Mathematics",
+      "Bachelor of Science (BSc) Statistics",
+      "Bachelor of Science (BSc) Data Science",
+      "Bachelor of Science (BSc) Artificial Intelligence",
+      "Bachelor of Science (BSc) Economics with Data Science",
+      "Bachelor of Science (BSc) Economics with Data Analytics",
+      "Bachelor of Science (BSc) Economics",
+      "Bachelor of Science (BSc) Physics",
+      "Bachelor of Science (BSc) Chemistry",
+      "Bachelor of Science (BSc) Biotechnology",
+      "Bachelor of Science (BSc) Zoology",
+      "Bachelor of Science (BSc) Botany",
+      "Bachelor of Science (BSc) Forensic Science",
+      "Bachelor of Science (BSc) Life Sciences",
+      "Bachelor of Science (BSc) Media with Computer Science",
+      "Bachelor of Science (BSc) Actuarial Science",
+      "Master of Computer Applications (MCA)",
+      "Master of Science (MSc) Chemistry",
+      "Master of Science (MSc) Computer Science and Applications",
+      "Master of Science (MSc) Mathematics",
+      "Master of Science (MSc) Physics",
+      "Master of Science (MSc) Statistics",
+      "Master of Science (MSc) Botany",
+      "Master of Science (MSc) Zoology",
+      "Master of Science (MSc) Biotechnology",
+      "Master of Science (MSc) Forensic Science",
+      "Master of Science (MSc) Data Science",
+      "Master of Science (MSc) Artificial Intelligence and Machine Learning",
+      "Master of Science (MSc) Artificial Intelligence and Cyber Security",
+      "Master of Science (MSc) Computational Statistics and Applied AI",
+      "Master of Science (MSc) Data Analytics and Artificial Intelligence",
+      "Master of Science (MSc) Quantum Technologies by Research",
+      "Doctor of Philosophy (PhD) in Chemistry",
+      "Doctor of Philosophy (PhD) in Computer Science",
+      "Doctor of Philosophy (PhD) in Physics",
+      "Doctor of Philosophy (PhD) in Mathematics",
+      "Doctor of Philosophy (PhD) in Botany",
+      "Doctor of Philosophy (PhD) in Zoology",
+      "Doctor of Philosophy (PhD) in Biotechnology",
+      "Doctor of Philosophy (PhD) in Data Science",
+      "Doctor of Philosophy (PhD) in Statistics",
+      "Doctor of Philosophy (PhD) in Forensic Science"
+    ]
+  },
+
+  "School of Social Sciences": {
+    programs: [
+      "Bachelor of Arts (BA) Economics",
+      "Bachelor of Arts (BA) Sociology",
+      "Bachelor of Arts (BA) History",
+      "Bachelor of Arts (BA) Political Science",
+      "Bachelor of Arts (BA) Liberal Arts",
+      "Bachelor of Arts (BA) International Studies",
+      "Master of Arts (MA) International Studies",
+      "Master of Arts (MA) Applied Economics",
+      "Master of Arts (MA) Applied Sociology",
+      "Master of Arts (MA) Economics",
+      "Master of Arts (MA) Public Policy",
+      "Master of Science (MSc) Behavioural Science",
+      "Master of Science (MSc) Sustainable Development",
+      "Master of Science (MSc) Behavioural Economics with Data Analytics",
+      "Master of Science (MSc) Economics and Analytics",
+      "Doctor of Philosophy (PhD) in Economics",
+      "Doctor of Philosophy (PhD) in International Studies",
+      "Doctor of Philosophy (PhD) in Political Science",
+      "Doctor of Philosophy (PhD) in History",
+      "Doctor of Philosophy (PhD) in Tourism",
+      "Post Graduate Diploma in Social Sciences Research"
+    ]
+  },
+
+  "Online Degree Programmes": {
+    programs: [
+     "BA in Law", "BA in Psychology"
+          ]
     },
-  
+  },
+},
+},
+{
+  name: "Malaysia",
+code: "MY",
+universities: {
+  "Universiti Teknologi MARA (UiTM)": {
+    "Faculty of Accountancy": {
+      programs: [
+        "Diploma in Accountancy",
+        "Bachelor of Accountancy",
+        "Master of Science in Accountancy",
+        "Doctor of Philosophy in Accountancy"
+      ]
+    },
+
+    "Faculty of Business and Management": {
+      programs: [
+        "Diploma in Business Studies",
+        "Diploma in Office Management and Technology",
+        "Bachelor of Business Administration in Marketing",
+        "Bachelor of Business Administration in Finance",
+        "Bachelor of Business Administration in Human Resource Management",
+        "Bachelor of Business Administration in International Business",
+        "Bachelor of Business Administration in Business Economics",
+        "Bachelor in Office Systems Management",
+        "Master of Business Administration",
+        "Master of Science in Business Management",
+        "Doctor of Philosophy in Business Management"
+      ]
+    },
+
+    "Faculty of Administrative Science and Policy Studies": {
+      programs: [
+        "Bachelor of Administrative Science",
+        "Master of Administrative Science",
+        "Doctor of Philosophy in Administrative Science"
+      ]
+    },
+
+    "Faculty of Communication and Media Studies": {
+      programs: [
+        "Diploma in Communication and Media",
+        "Diploma in New Media Communication and Contentrepreneurship",
+        "Bachelor of Mass Communication in Public Relations",
+        "Bachelor of Mass Communication in Journalism",
+        "Master of Communication",
+        "Doctor of Philosophy in Communication"
+      ]
+    },
+
+    "Faculty of Art and Design": {
+      programs: [
+        "Diploma in Art and Design in Graphic Design",
+        "Diploma in Art and Design in Industrial Design",
+        "Diploma in Photography and Creative Imaging",
+        "Diploma in Fine Art",
+        "Bachelor of Graphic Design",
+        "Bachelor of Industrial Design",
+        "Bachelor of Fine Art",
+        "Master of Arts and Design",
+        "Doctor of Philosophy in Arts and Design"
+      ]
+    },
+
+    "Faculty of Film, Theatre and Animation": {
+      programs: [
+        "Bachelor of Screen Writing",
+        "Bachelor of Film",
+        "Bachelor of Theatre",
+        "Bachelor of Animation",
+        "Master of Creative Arts",
+        "Doctor of Philosophy in Creative Arts"
+      ]
+    },
+
+    "Faculty of Education": {
+      programs: [
+        "Diploma in Education",
+        "Bachelor of Education in TESL",
+        "Bachelor of Education in Science",
+        "Bachelor of Education in Mathematics",
+        "Master of Education",
+        "Doctor of Philosophy in Education"
+      ]
+    },
+
+    "Faculty of Law": {
+      programs: [
+        "Bachelor of Legal Studies",
+        "Bachelor of Laws (LLB)",
+        "Master of Laws (LLM)",
+        "Doctor of Philosophy in Law"
+      ]
+    },
+
+    "Faculty of Music": {
+      programs: [
+        "Bachelor of Music Education",
+        "Bachelor of Music Performance",
+        "Master of Music",
+        "Doctor of Philosophy in Music"
+      ]
+    },
+
+    "Faculty of Information Management": {
+      programs: [
+        "Diploma in Information Management",
+        "Bachelor of Information Science in Records Management",
+        "Bachelor of Information Science in Library Science",
+        "Bachelor of Information Science in Information Systems",
+        "Master of Information Science",
+        "Doctor of Philosophy in Information Science"
+      ]
+    },
+
+    "Faculty of Computer and Mathematical Sciences": {
+      programs: [
+        "Diploma in Computer Science",
+        "Bachelor of Computer Science",
+        "Bachelor of Information Technology",
+        "Bachelor of Science in Mathematics",
+        "Bachelor of Science in Statistics",
+        "Master of Computer Science",
+        "Master of Science in Mathematics",
+        "Doctor of Philosophy in Computer Science",
+        "Doctor of Philosophy in Mathematics"
+      ]
+    },
+
+    "Faculty of Applied Sciences": {
+      programs: [
+        "Diploma in Science",
+        "Bachelor of Science in Biology",
+        "Bachelor of Science in Physics",
+        "Bachelor of Science in Chemistry",
+        "Bachelor of Science in Environmental Technology",
+        "Bachelor of Science in Food Science and Technology",
+        "Bachelor of Science in Applied Chemistry",
+        "Master of Science in Chemistry",
+        "Doctor of Philosophy in Science"
+      ]
+    },
+
+    "Faculty of Civil Engineering": {
+      programs: [
+        "Diploma in Civil Engineering",
+        "Bachelor of Engineering in Civil Engineering",
+        "Master of Engineering in Civil Engineering",
+        "Doctor of Philosophy in Civil Engineering"
+      ]
+    },
+
+    "Faculty of Mechanical Engineering": {
+      programs: [
+        "Diploma in Mechanical Engineering",
+        "Bachelor of Engineering in Mechanical Engineering",
+        "Master of Engineering in Mechanical Engineering",
+        "Doctor of Philosophy in Mechanical Engineering"
+      ]
+    },
+
+    "Faculty of Electrical Engineering": {
+      programs: [
+        "Diploma in Electrical Engineering",
+        "Bachelor of Engineering in Electrical Engineering",
+        "Bachelor of Engineering in Electronics Engineering",
+        "Master of Engineering in Electrical Engineering",
+        "Doctor of Philosophy in Electrical Engineering"
+      ]
+    },
+
+    "Faculty of Chemical Engineering": {
+      programs: [
+        "Bachelor of Engineering in Chemical Engineering",
+        "Bachelor of Engineering in Chemical and Bioprocess Engineering",
+        "Master of Engineering in Chemical Engineering",
+        "Doctor of Philosophy in Chemical Engineering"
+      ]
+    },
+
+    "Faculty of Architecture, Planning and Surveying": {
+      programs: [
+        "Bachelor of Architecture",
+        "Bachelor of Quantity Surveying",
+        "Bachelor of Building Surveying",
+        "Bachelor of Construction Management",
+        "Bachelor of Surveying Science and Geomatics",
+        "Bachelor of Real Estate",
+        "Master of Architecture",
+        "Doctor of Philosophy in Built Environment"
+      ]
+    },
+
+    "Faculty of Health Sciences": {
+      programs: [
+        "Bachelor of Health Sciences",
+        "Bachelor of Environmental Health and Safety",
+        "Master of Health Sciences",
+        "Doctor of Philosophy in Health Sciences"
+      ]
+    },
+
+    "Faculty of Pharmacy": {
+      programs: [
+        "Bachelor of Pharmacy",
+        "Master of Pharmacy",
+        "Doctor of Philosophy in Pharmacy"
+      ]
+    },
+
+    "Faculty of Sports Science and Recreation": {
+      programs: [
+        "Bachelor of Sports Science",
+        "Bachelor of Health and Fitness",
+        "Master of Sports Science",
+        "Doctor of Philosophy in Sports Science"
+      ]
+    },
+
+    "Faculty of Hotel and Tourism Management": {
+      programs: [
+        "Diploma in Tourism Management",
+        "Bachelor of Science in Tourism Management",
+        "Bachelor of Science in Hotel Management",
+        "Master of Hospitality Management",
+        "Doctor of Philosophy in Tourism"
+      ]
+    },
+
+    "Faculty of Plantation and Agrotechnology": {
+      programs: [
+        "Bachelor of Plantation Management Technology",
+        "Bachelor of Science in Agrotechnology",
+        "Master of Science in Agrotechnology",
+        "Doctor of Philosophy in Agrotechnology"
+      ]
+    },
+
+    "Academy of Language Studies": {
+      programs: [
+        "Bachelor of Applied Language Studies in English",
+        "Bachelor of Applied Language Studies in Arabic",
+        "Master of Applied Language Studies",
+        "Doctor of Philosophy in Applied Language Studies"
+      ]
+    },
+
+    "Academy of Contemporary Islamic Studies": {
+      programs: [
+        "Bachelor of Islamic Studies",
+        "Master of Islamic Studies",
+        "Doctor of Philosophy in Islamic Studies"
+      ]
+    },
+
+    "Arshad Ayub Graduate Business School": {
+      programs: [
+        "Master of Business Administration",
+        "Doctor in Business Administration"]
+      },
+      },
+  "University of Malaya": {
+
+    "Faculty of Arts and Social Sciences": {
+      programs: [
+        "BA in Anthropology and Sociology",
+        "BA in Geography",
+        "BA in History",
+        "BA in International and Strategic Studies",
+        "BA in Southeast Asian Studies",
+        "MA in Social Sciences",
+        "PhD in Social Sciences"
+      ]
+    },
+
+    "Faculty of Business and Economics": {
+      programs: [
+        "Bachelor of Accounting",
+        "Bachelor of Business Administration",
+        "Bachelor of Economics",
+        "MBA (Master of Business Administration)",
+        "Master of Economics",
+        "PhD in Business and Economics"
+      ]
+    },
+
+    "Faculty of Computer Science and Information Technology": {
+      programs: [
+        "Bachelor of Computer Science",
+        "Bachelor of Information Technology",
+        "Bachelor of Software Engineering",
+        "Master of Computer Science",
+        "Master of Information Technology",
+        "PhD in Computer Science"
+      ]
+    },
+
+    "Faculty of Engineering": {
+      programs: [
+        "Bachelor of Civil Engineering",
+        "Bachelor of Mechanical Engineering",
+        "Bachelor of Electrical Engineering",
+        "Bachelor of Chemical Engineering",
+        "Master of Engineering",
+        "PhD in Engineering"
+      ]
+    },
+
+    "Faculty of Science": {
+      programs: [
+        "Bachelor of Science in Biology",
+        "Bachelor of Science in Chemistry",
+        "Bachelor of Science in Physics",
+        "Bachelor of Science in Geology",
+        "Master of Science",
+        "PhD in Science"
+      ]
+    },
+
+    "Faculty of Medicine": {
+      programs: [
+        "Bachelor of Medicine and Bachelor of Surgery (MBBS)",
+        "Bachelor of Biomedical Science",
+        "Bachelor of Nursing Science",
+        "Master of Clinical Medicine",
+        "PhD in Medical Sciences"
+      ]
+    },
+
+    "Faculty of Dentistry": {
+      programs: [
+        "Bachelor of Dental Surgery",
+        "Master of Dental Science",
+        "PhD in Dentistry"
+      ]
+    },
+
+    "Faculty of Education": {
+      programs: [
+        "Bachelor of Education",
+        "Master of Education",
+        "PhD in Education"
+      ]
+    },
+
+    "Faculty of Languages and Linguistics": {
+      programs: [
+        "BA in English Language",
+        "BA in Linguistics",
+        "BA in Foreign Languages",
+        "Master of Linguistics",
+        "PhD in Linguistics"
+      ]
+    },
+
+    "Faculty of Law": {
+      programs: [
+        "Bachelor of Laws (LLB)",
+        "Master of Laws (LLM)",
+        "PhD in Law"
+      ]
+    },
+
+    "Faculty of Built Environment": {
+      programs: [
+        "Bachelor of Architecture",
+        "Bachelor of Quantity Surveying",
+        "Bachelor of Building Surveying",
+        "Master of Architecture",
+        "PhD in Built Environment"
+      ]
+    },
+
+    "Faculty of Creative Arts": {
+      programs: [
+        "Bachelor of Performing Arts",
+        "Bachelor of Visual Arts",
+        "Master of Creative Arts",
+        "PhD in Creative Arts"
+      ]
+    },
+
+    "Faculty of Sports and Exercise Sciences": {
+      programs: [
+        "Bachelor of Sports Science",
+        "Master of Sports Science",
+        "PhD in Sports Science"
+      ]
+    },
+
+    "Faculty of Pharmacy": {
+      programs: [
+        "Bachelor of Pharmacy",
+        "Master of Pharmacy",
+        "PhD in Pharmaceutical Sciences"
+      ]
+    },
+
+    "Academy of Islamic Studies": {
+      programs: [
+        "Bachelor of Islamic Studies",
+        "Master of Islamic Studies",
+        "PhD in Islamic Studies"
+      ]
+    },
+
+    "Academy of Malay Studies": {
+      programs: [
+        "Bachelor of Malay Studies",
+        "Master of Malay Studies",
+        "PhD in Malay Studies"
+      ]
+    }
+  },
+   "Universiti Sains Malaysia": {
+    "School of Housing, Building and Planning": {
+      programs: [
+        "BSc in Housing, Building and Planning",
+        "BSc in Quantity Surveying",
+        "BSc in Building Engineering",
+        "MSc in Housing, Building and Planning",
+        "PhD in Housing, Building and Planning"
+      ]
+    },
+
+    "School of Industrial Technology": {
+      programs: [
+        "BSc in Industrial Technology",
+        "BSc in Food Technology",
+        "BSc in Environmental Technology",
+        "MSc in Industrial Technology",
+        "PhD in Industrial Technology"
+      ]
+    },
+
+    "School of Pharmaceutical Sciences": {
+      programs: [
+        "Bachelor of Pharmacy",
+        "MSc in Pharmaceutical Sciences",
+        "PhD in Pharmaceutical Sciences"
+      ]
+    },
+
+    "School of Computer Sciences": {
+      programs: [
+        "BSc in Computer Science",
+        "BSc in Information Technology",
+        "BSc in Software Engineering",
+        "MSc in Computer Science",
+        "PhD in Computer Science"
+      ]
+    },
+
+    "School of Educational Studies": {
+      programs: [
+        "Bachelor of Education",
+        "MEd in Education",
+        "PhD in Education"
+      ]
+    },
+
+    "School of Management": {
+      programs: [
+        "Bachelor of Management",
+        "Bachelor of Accounting",
+        "MBA",
+        "MSc in Management",
+        "PhD in Management"
+      ]
+    },
+
+    "Graduate School of Business (GSB)": {
+      programs: [
+        "MBA",
+        "Doctor of Business Administration (DBA)",
+        "PhD in Business"
+      ]
+    },
+
+    "School of Communication": {
+      programs: [
+        "BA in Communication",
+        "MA in Communication",
+        "PhD in Communication"
+      ]
+    },
+
+    "School of the Arts": {
+      programs: [
+        "BA in Fine Arts",
+        "BA in Music",
+        "MA in Arts",
+        "PhD in Arts"
+      ]
+    },
+
+    "School of Languages, Literacies and Translation": {
+      programs: [
+        "BA in English Language",
+        "BA in Translation Studies",
+        "MA in Linguistics",
+        "PhD in Linguistics"
+      ]
+    },
+
+    "School of Humanities": {
+      programs: [
+        "BA in History",
+        "BA in Philosophy",
+        "BA in Literature",
+        "MA in Humanities",
+        "PhD in Humanities"
+      ]
+    },
+
+    "School of Social Sciences": {
+      programs: [
+        "BA in Economics",
+        "BA in Political Science",
+        "BA in Sociology",
+        "MA in Social Sciences",
+        "PhD in Social Sciences"
+      ]
+    },
+
+    "School of Biological Sciences": {
+      programs: [
+        "BSc in Biology",
+        "MSc in Biological Sciences",
+        "PhD in Biological Sciences"
+      ]
+    },
+
+    "School of Chemical Sciences": {
+      programs: [
+        "BSc in Chemistry",
+        "MSc in Chemical Sciences",
+        "PhD in Chemical Sciences"
+      ]
+    },
+
+    "School of Mathematical Sciences": {
+      programs: [
+        "BSc in Mathematics",
+        "BSc in Statistics",
+        "MSc in Mathematical Sciences",
+        "PhD in Mathematical Sciences"
+      ]
+    },
+
+    "School of Physics": {
+      programs: [
+        "BSc in Physics",
+        "MSc in Physics",
+        "PhD in Physics"
+      ]
+    },
+
+    "School of Distance Education": {
+      programs: [
+        "Bachelor of Social Sciences (Distance Learning)",
+        "Bachelor of Management (Distance Learning)",
+        "Bachelor of Science (Distance Learning)"
+      ]
+    },
+
+    "Institute of Postgraduate Studies": {
+      programs: [
+        "Postgraduate Diploma Programs",
+        "Master’s Degree Programs",
+        "Doctoral (PhD) Programs"
+      ]
+    },
+
+    "School of Electrical and Electronic Engineering": {
+      programs: [
+        "BEng in Electrical and Electronic Engineering",
+        "MEng in Electrical and Electronic Engineering",
+        "PhD in Electrical and Electronic Engineering"
+      ]
+    },
+
+    "School of Materials and Mineral Resources Engineering": {
+      programs: [
+        "BEng in Materials Engineering",
+        "MEng in Materials Engineering",
+        "PhD in Materials Engineering"
+      ]
+    },
+
+    "School of Aerospace Engineering": {
+      programs: [
+        "BEng in Aerospace Engineering",
+        "MEng in Aerospace Engineering",
+        "PhD in Aerospace Engineering"
+      ]
+    },
+
+    "School of Chemical Engineering": {
+      programs: [
+        "BEng in Chemical Engineering",
+        "MEng in Chemical Engineering",
+        "PhD in Chemical Engineering"
+      ]
+    },
+
+    "School of Civil Engineering": {
+      programs: [
+        "BEng in Civil Engineering",
+        "MEng in Civil Engineering",
+        "PhD in Civil Engineering"
+      ]
+    },
+
+    "School of Mechanical Engineering": {
+      programs: [
+        "BEng in Mechanical Engineering",
+        "MEng in Mechanical Engineering",
+        "PhD in Mechanical Engineering"
+      ]
+    },
+
+    "School of Health Sciences": {
+      programs: [
+        "BSc in Health Sciences",
+        "MSc in Health Sciences",
+        "PhD in Health Sciences"
+      ]
+    },
+
+    "School of Medical Sciences": {
+      programs: [
+        "Doctor of Medicine (MD)",
+        "MSc in Medical Sciences",
+        "PhD in Medical Sciences"
+      ]
+    },
+
+    "School of Dental Sciences": {
+      programs: [
+        "Bachelor of Dental Surgery",
+        "MSc in Dental Sciences",
+        "PhD in Dental Sciences"
+      ]
+        }
+      }
+    }
+}
+
 ];
