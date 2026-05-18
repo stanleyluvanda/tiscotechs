@@ -4126,12 +4126,14 @@ const feedCombined = useMemo(() => {
 
 
         {/* CENTER */}
-        {/*<section className="space-y-4">*/}
-          
-          <section className="space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">
-          <Card>
+        {/*<section className="space-y-4">*/} 
+          {/*<section className="space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">*/}
+            <section className="w-full max-w-full overflow-x-hidden space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">
+          {/*<Card>*/}
+            <Card className="w-full max-w-full overflow-hidden">
             {!composerOpen ? (
-              <div className="flex items-center gap-3">
+              
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
                 <Avatar size="md" url={user.photoUrl} name={user.name} online />
                 <button
                   onClick={()=>setComposerOpen(true)}
@@ -4144,19 +4146,24 @@ const feedCombined = useMemo(() => {
               <form onSubmit={onPost}>
                 <div className="flex items-center gap-3">
                   <Avatar size="md" url={user.photoUrl} name={user.name} online />
-                  <div>
+                  {/*<div>*/}
+                    <div className="min-w-0 w-full sm:w-auto">
                     <div className="font-semibold text-slate-900">{user.name}</div>
-                    <label className="flex items-center gap-2 text-xs text-slate-600">
+                    {/*<label className="flex items-center gap-2 text-xs text-slate-600">*/}
+                    <label className="flex items-start gap-2 text-xs text-slate-600 min-w-0">
                       <input type="checkbox" checked={toFaculty} onChange={(e)=>setToFaculty(e.target.checked)}/>
-                      <span>Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)</span>
+                      {/*<span>Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)</span>*/}
+                      <span className="min-w-0 break-words">Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)</span>
                     </label>
                   </div>
-                  <div className="ml-auto">
+                  {/*<div className="ml-auto">*/}
+                  <div className="w-full sm:w-auto sm:ml-auto">
                     {/* For students, include everything EXCEPT Video */}
                     <select
                       value={composerType}
                       onChange={e=>setComposerType(e.target.value)}
-                      className="border border-slate-100 rounded px-2 py-1 text-sm"
+                      /*className="border border-slate-100 rounded px-2 py-1 text-sm"*/
+                      className="w-full sm:w-auto max-w-full border border-slate-100 rounded px-2 py-1 text-sm"
                       title="Select academic post type"
                     >
                       {POST_TYPES.filter(t => t !== "Video").map(t=> <option key={t} value={t}>{t}</option>)}
