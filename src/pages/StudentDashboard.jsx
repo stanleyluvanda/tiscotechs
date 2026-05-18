@@ -1099,7 +1099,8 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
 }}
             className="mt-2"
           >
-            <div className="flex items-start gap-2">
+            {/*<div className="flex items-start gap-2">*/}
+            <div className="flex items-start gap-2 max-sm:flex-wrap">
               <textarea
   ref={(el) => el && autosize(el)}
   value={reply}
@@ -1121,7 +1122,8 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   }}
   placeholder="Write a reply…"
   rows={1}
-  className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
+  /*className="flex-1 border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"*/
+  className="flex-1 max-sm:flex-[1_1_calc(100%-40px)] border border-slate-100 rounded-lg px-3 py-2 bg-white resize-none leading-5"
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
@@ -1477,7 +1479,8 @@ const files = mergedFiles.filter((a) => {
 }}
             className="flex flex-col gap-2"
           >
-            <div className="flex items-start gap-2">
+            {/*<div className="flex items-start gap-2">*/}
+            <div className="flex items-start gap-2 max-sm:flex-wrap">
               <Avatar size="sm" url={currentUser?.photoUrl} name={currentUser?.name || "Me"} online />
               
 
@@ -1502,19 +1505,35 @@ const files = mergedFiles.filter((a) => {
   }}
   placeholder="Write a comment/feedback…"
   rows={1}
-  className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
+  /*className="flex-1 border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"*/
+  className="flex-1 max-sm:flex-[1_1_calc(100%-44px)] border border-slate-100 rounded-lg px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-5 whitespace-pre-wrap break-words"
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
 
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+              {/*<label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
               </label>
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
                 <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
               </label>
               <button type="submit" className="rounded-full bg-purple-600 text-white px-4 py-1 text-sm font-semibold hover:bg-purple-700">Post</button>
-            </div>
+            </div>*/}
+
+            <div className="max-sm:ml-[40px] max-sm:w-[calc(100%-40px)] max-sm:flex max-sm:items-center max-sm:justify-end max-sm:gap-2 sm:contents">
+  <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+    <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
+  </label>
+
+  <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
+    <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
+  </label>
+
+  <button type="submit" className="rounded-full bg-purple-600 text-white px-4 py-1 text-sm font-semibold hover:bg-purple-700">
+    Post
+  </button>
+</div>
+</div>
 
             {(cmtImages.length>0 || cmtFiles.length>0) && (
               <div className="pl-10 space-y-2">
