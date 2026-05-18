@@ -1545,7 +1545,7 @@ const files = mergedFiles.filter((a) => {
   </label>
 
   <button type="submit" className="rounded-full bg-purple-600 text-white px-4 py-1 text-sm font-semibold hover:bg-purple-700">
-    Post
+    Comment
   </button>
 </div>
 </div>
