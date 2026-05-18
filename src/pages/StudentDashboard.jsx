@@ -4127,7 +4127,7 @@ const feedCombined = useMemo(() => {
 
         {/* CENTER */}
         {/*<section className="space-y-4">*/}
-          {/*<section className="space-y-3 lg:space-y-4 min-w-0">*/}
+          
           <section className="space-y-3 lg:space-y-4 min-w-0 mt-[70px] lg:mt-0">
           <Card>
             {!composerOpen ? (
