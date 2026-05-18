@@ -23,8 +23,12 @@ export const US_STATE_UNIVERSITIES = {
 
  Arkansas: [
   "University of Arkansas",
-    
-    
+  ],
+
+  Delaware: [
+  "University of Delaware",
+  "Delaware State University",
+  
   
   ],
 };

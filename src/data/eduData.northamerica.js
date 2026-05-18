@@ -3610,9 +3610,922 @@ export const NORTH_AMERICA = [
       "M.B.A./J.D., dual degree, M.B.A./J.D.",
       "J.D. in Law"
     ]
-    },
-  },
+  }
 },
+"University of Delaware": {
+  "College of Agriculture and Natural Resources": {
+    programs: [
+      "BS in Agriculture and Natural Resources",
+      "BS in Animal Biosciences",
+      "BS in Animal Science",
+      "BS in Food Science",
+      "BS in Pre-Veterinary Medicine",
+      "Minor in Insect and Wildlife Conservation",
+      "MS in Applied Animal Science",
+      "MS in Food Science",
+      "MS in Food Technology",
+      "MS in Secondary STEM Education",
+      "4+1 in Animal Bioscience/Applied Animal Science",
+      "4+1 in Animal Science/Applied Animal Science",
+      "4+1 in Pre-Veterinary Medicine/Applied Animal Science",
+      "4+1 in Pre-Veterinary Medicine/Secondary STEM Education",
+      "4+1 in Food Science/Food Technology"
+    ]
+  },
+
+  "College of Arts and Sciences": {
+    programs: [
+      "BA in Africana Studies",
+      "BS in Actuarial Sciences",
+      "BA in Communication",
+      "BA in European Studies",
+      "BS in Fashion Design and Product Innovation",
+      "BS in Fashion Merchandising and Management",
+      "BS in Neuroscience",
+      "BA in Philosophy",
+      "BA in Political Science",
+      "BA in Russian Studies",
+      "BA in Computer Science",
+      "BA in Psychology Education",
+      "BA in Economics",
+      "BS in Economics",
+      "BA in Economics Education",
+      "MA in Africana Studies",
+      "MS in Applied Mathematics",
+      "MS in Art Conservation",
+      "MA in Art History",
+      "MA in Art History for Museum Professionals",
+      "MS in Biological Sciences",
+      "MS in Chemistry and Biochemistry",
+      "MA in Communication",
+      "MS in Communication (Strategic Communication Online)",
+      "MA in Criminology",
+      "MA in Economic Education",
+      "MA in English",
+      "MA in Fine Arts",
+      "MA in Geography",
+      "MS in Geography",
+      "PhD in Geography",
+      "MA in Geological Sciences",
+      "MA in History",
+      "MA in Italian Studies",
+      "MA in Languages, Literatures and Cultures",
+      "MA in Languages, Literatures, Cultures and Pedagogy",
+      "MA in Liberal Studies",
+      "MA in Linguistics and Cognitive Science",
+      "MA in Mathematics",
+      "MA in Music",
+      "PhD in Neuroscience",
+      "MA in Physics",
+      "MA in Political Science and International Relations",
+      "MA in Psychological and Brain Sciences",
+      "Certificate in Psychological and Brain Sciences",
+      "MA in Sociology",
+      "MA in Statistics",
+      "MA in Statistics Data Science",
+      "MA in Teaching English as a Second Language",
+      "Certificate in Teaching English as a Second Language",
+      "Certificate in Performing Artist",
+      "Certificate in Historic Preservation",
+      "Certificate in Preservation Studies",
+      "Certificate in Winterthur Program in American Material Culture"
+    ]
+  },
+
+  "Alfred Lerner College of Business and Economics": {
+    programs: [
+      "BS in Accounting",
+      "BS in Business Analytics",
+      "BS in Economics",
+      "BA in Economics",
+      "BA in Economics Education",
+      "BS in Entrepreneurship",
+      "BS in Finance",
+      "BS in Financial Planning and Wealth Management",
+      "BS in Fintech",
+      "BS in Global Business",
+      "BS in Hospitality and Event Experience Management",
+      "BS in Hospitality Industry Management",
+      "BS in Management",
+      "BS in Management Information Systems",
+      "BS in Marketing",
+      "Business Undeclared",
+      "BS in Computer Science and Business (Honors)",
+      "MS in Accounting",
+      "MS in Applied Artificial Intelligence for Business",
+      "MS in Business Analytics and Information Management",
+      "MS in Economics and Applied Econometrics",
+      "MA in Economics and Entrepreneurship for Educators",
+      "MS in Finance",
+      "MS in Financial Services Analytics",
+      "MS in Hospitality Business Management",
+      "MS in Hospitality Business Analytics",
+      "MS in Hospitality and Sport Business Analytics",
+      "MS in International Business",
+      "MBA in Business Administration",
+      "MBA in Business Administration Online",
+      "Certificate in Business Fundamentals",
+      "Certificate in Generative AI for Business",
+      "Certificate in Entrepreneurship and Innovation"
+    ]
+  },
+
+  "College of Earth, Ocean, and Environment": {
+    programs: [
+      "BA in Geography",
+      "BS in Geography",
+      "BS in GIScience and Environmental Data Analytics",
+      "Certificate in Geographic Information Systems",
+      "BS in Minerals, Materials and Society",
+      "BS in Marine Science",
+      "4+1 in Marine Biosciences",
+      "4+1 in Oceanography",
+      "MA in Climatology",
+      "MA in Environmental Science and Management",
+      "MA in Geographic Information Science",
+      "MA in Geography",
+      "MS in Geography",
+      "PhD in Geography",
+      "MA in Geological Sciences",
+      "MA in Marine Policy",
+      "MA in Marine Studies",
+      "MA in Oceanography",
+      "MA in Water Science and Policy",
+      "Certificate in Renewable Energy Engineering and Policy",
+      "Certificate in Wind Power Science, Engineering and Policy"
+    ]
+  },
+
+  "College of Education and Human Development": {
+    programs: [
+      "BS in Elementary Teacher Education",
+      "BS in Education",
+      "MS in Childhood Education in Languages, Literatures and Cultures",
+      "MS in Education",
+      "MS in Education and Social Policy",
+      "MS in Educational Statistics and Research Methods",
+      "MS in Educational Technology",
+      "MS in Human Development and Family Sciences",
+      "MS in Literacy Online",
+      "MS in Organizational Improvement for Educational Leaders",
+      "MS in Program Evaluation",
+      "MS in School Psychology",
+      "MS in Secondary STEM Education",
+      "MS in Strategic Leadership",
+      "MS in Teacher Leadership Online",
+      "MS in Teaching Students with Disabilities",
+      "Certificate in Community Engagement",
+      "Certificate in Computer Science Education",
+      "Certificate in Evaluation Science"
+    ]
+  },
+
+  "College of Engineering": {
+    programs: [
+      "BS in Biomedical Engineering",
+      "BS in Chemical Engineering",
+      "BS in Civil Engineering",
+      "BS in Computer Engineering",
+      "BS in Computer Science",
+      "BS in Electrical Engineering",
+      "BS in Environmental Engineering",
+      "BS in Information Systems",
+      "BS in Mechanical Engineering",
+      "BS in Materials Science and Engineering",
+      "4+1 in Computer Science",
+      "4+1 in Computer Engineering/Materials Science and Engineering",
+      "4+1 in Materials Science and Engineering",
+      "MS in Biomedical Engineering",
+      "MS in Chemical Engineering",
+      "MS in Civil Engineering",
+      "MS in Computer Science",
+      "MS in Cybersecurity",
+      "MS in Cybersecurity Online",
+      "MS in Electrical and Computer Engineering",
+      "MS in Electrical and Computer Engineering Online",
+      "MS in Electrochemical Engineering",
+      "MS in Engineering and Public Policy",
+      "MS in Materials Science and Engineering",
+      "MS in Mechanical Engineering",
+      "MS in Ocean Engineering",
+      "MS in Quantum Science and Engineering",
+      "MS in Railroad Engineering",
+      "MS in Robotics",
+      "MS in Technology Product Management",
+      "Certificate in Composite Materials",
+      "Certificate in Composites Manufacturing and Engineering",
+      "Certificate in Computing and Data Science for Soft Materials",
+      "Certificate in Quantitative Systems Pharmacology"
+    ]
+  },
+
+  "College of Health Sciences": {
+    programs: [
+      "AS in Health Sciences",
+      "BS in Applied Molecular Biology and Biotechnology",
+      "BS in Exercise Science",
+      "BS in Health Behavior Science",
+      "BS in Human Physiology",
+      "BS in Integrated Health Sciences",
+      "BS in Kinesiology",
+      "BS in Medical Diagnostics",
+      "BS in Medical Diagnostics Pre-PA",
+      "BS in Medical Laboratory Science",
+      "BS in Nutrition and Dietetics",
+      "BS in Nutrition and Medical Sciences",
+      "BS in Sports Health",
+      "MS in Applied Epidemiology",
+      "Certificate in Epidemiology",
+      "MPH in Public Health",
+      "PhD in Epidemiology",
+      "MS in Applied Physiology",
+      "MS in Athletic Training",
+      "MS in Biomechanics and Movement Science",
+      "MS in Biopharmaceutical Sciences",
+      "MS in Clinical Exercise Physiology",
+      "MS in Communication Sciences and Disorders",
+      "MS in Disaster Science and Management",
+      "MS in Epidemiology",
+      "MS in Epidemiology Methods",
+      "MS in Exercise Science",
+      "MS in Health Behavior Science and Promotion",
+      "Certificate in Health Coaching",
+      "MS in Health Promotion",
+      "MS in Human Nutrition",
+      "MS in Medical Laboratory Sciences",
+      "MS in Medical and Molecular Sciences",
+      "MS in Molecular Diagnostics",
+      "MS in Nutrition Science",
+      "MS in Nutrition and Dietetics/Dietetics Internship",
+      "DPT in Physical Therapy",
+      "PhD in Medical and Molecular Sciences",
+      "DNP in Nursing",
+      "PhD in Nursing",
+      "MSN in Nursing",
+      "Post-Master's Certificate in Nursing",
+      "MS in Social Work",
+      "MS in Speech Language Pathology"
+    ]
+  },
+
+  "Joseph R. Biden School of Public Policy & Administration": {
+    programs: [
+      "BA in Public Policy",
+      "BA in Public Administration",
+      "Certificate in Citizenship and Democracy",
+      "MPA in Public Administration",
+      "MPA in Public Administration Online",
+      "MS in Public Policy and Administration",
+      "MS in Urban Analytics and Policy",
+      "MS in Urban Data Science",
+      "MS in Leadership in Social Innovation",
+      "MS in Nonprofit and Voluntary Action"
+    ]
+  },
+
+  "Graduate College": {
+    programs: [
+      "Interdisciplinary MS in Data Science",
+      "Interdisciplinary MS in Education and Social Policy",
+      "Interdisciplinary MS in Evaluation Science",
+      "Interdisciplinary MS in Interdisciplinary Neuroscience",
+      "Interdisciplinary MS in Microbiology",
+      "Interdisciplinary MS in Quantum Science and Engineering",
+      "Interdisciplinary MS in Water Science and Policy",
+      "Certificate in Community Engagement",
+      "Certificate in Computer Science Education"
+    ]
+  },
+
+  "Honors College": {
+    programs: [
+      "Honors Program"
+    ]
+  },
+
+  /*"School of Education": {
+    programs: [
+      "School of Education programs are housed primarily within the College of Education and Human Development"
+    ]
+  },*/
+
+  "School of Marine Science & Policy": {
+    programs: [
+      "MS in Marine Policy",
+      "MS in Marine Studies",
+      "MS in Oceanography",
+      "4+1 in Marine Biosciences",
+      "4+1 in Oceanography"
+    ]
+  },
+
+  "School of Music": {
+    programs: [
+      "BA in Music",
+      "MS in Music",
+      "Certificate in Chamber Music"
+    ]
+  },
+
+  "School of Nursing": {
+    programs: [
+      "DNP in Nursing",
+      "PhD in Nursing",
+      "MSN in Nursing",
+      "Post-Master's Certificate in Nursing"
+    ]
+  }
+},
+"Delaware State University": {
+  "College of Agriculture, Science & Technology": {
+    programs: [
+      "Minor in Biology",
+      "Minor in Chemistry",
+      "Minor in Computer Science",
+      "Minor in Food and Nutritional Sciences",
+      "Minor in Information Technology",
+      "Minor in Mathematics",
+      "Minor in Natural Resources: Environmental Science",
+      "Minor in Physics",
+      "Minor in Textiles and Apparel Studies",
+
+      "AS in Biological Sciences",
+
+      "BS in Agriculture: Agri-Business",
+      "BS in Agriculture: Agriscience Education",
+      "BS in Agriculture: Animal & Poultry Science",
+      "BS in Agriculture: General Agriculture",
+      "BS in Agriculture: Pre-Veterinary Science",
+      "BS in Biochemistry (Health Professions)",
+      "BS in Biological Sciences: General Biology",
+      "BS in Chemistry",
+      "BS in Chemistry Pre-Pharmacy",
+      "BS in Computer Science",
+      "BS in Engineering Physics: Bioengineering",
+      "BS in Engineering Physics: Electrical Engineering",
+      "BS in Engineering Physics: Optical Engineering",
+      "BS in Food and Nutritional Sciences: Coordinated Program in Dietetics",
+      "BS in Food and Nutritional Sciences: Food Science",
+      "BS in Food and Nutritional Sciences: Nutritional Science",
+      "BS in Food and Nutritional Sciences: Pre-Allied Health Sciences",
+      "BS in Food and Nutritional Sciences: Pre-Medicine and Pre-Physician Assistant",
+      "BS in Information Technology",
+      "BS in Mathematics Education",
+      "BS in Mathematics: Data Analytics",
+      "BS in Natural Resources: Environmental Science",
+      "BS in Natural Resources: Fisheries/Wildlife Science",
+      "BS in Physics",
+      "BS in Textiles and Apparel Studies: Fashion Design",
+      "BS in Textiles and Apparel Studies: Fashion Merchandising",
+
+      "MS in Agriculture: Animal Science",
+      "MS in Applied Chemistry",
+      "MS in Applied Optics",
+      "MS in Biological Sciences",
+      "MS in Computer Science",
+      "MS in Food Science and Biotechnology: Biotechnology",
+      "MS in Food Science and Biotechnology: Food Chemistry",
+      "MS in Food Science and Biotechnology: Food Microbiology",
+      "MS in Mathematics, Applied",
+      "MS in Mathematics, Pure",
+      "MS in Molecular and Cellular Neuroscience",
+      "MS in Natural Resources",
+      "MS in Physics",
+
+      "PhD in Applied Chemistry",
+      "PhD in Integrative Agriculture, Food and Environmental Sciences",
+      "PhD in Interdisciplinary Applied Mathematics and Mathematical Physics",
+      "PhD in Neuroscience",
+      "PhD in Optics"
+    ]
+  },
+
+  "College of Humanities, Education & Social Sciences": {
+    programs: [
+      "Minor in Africana Studies",
+      "Minor in Art Education",
+      "Minor in Criminal Justice",
+      "Minor in English",
+      "Minor in French",
+      "Minor in History",
+      "Minor in International Studies",
+      "Minor in Law Studies",
+      "Minor in Leadership Studies",
+      "Minor in Music",
+      "Minor in Philosophy",
+      "Minor in Political Science",
+      "Minor in Sociology",
+      "Minor in Spanish",
+      "Minor in Studio Art",
+      "Minor in TELL (Teacher of English Language Learners/Bilingual Education)",
+      "Minor in Theatre Arts",
+      "Minor in Women's and Gender Studies",
+      "Minor in Writing",
+
+      "BA in Art Education",
+      "BA in Criminal Justice",
+      "BA in English",
+      "BA in History",
+      "BA in International Studies",
+      "BA in Law Studies",
+      "BA in Liberal Studies",
+      "BA in Mass Communication: Convergence Journalism",
+      "BA in Mass Communication: Digital Media Production",
+      "BA in Mass Communication: Public Relations & Advertising",
+      "BA in Music Education: Instrumental",
+      "BA in Music Education: Vocal",
+      "BA in Music Industry",
+      "BA in Music Therapy",
+      "BA in Music: Instrumental",
+      "BA in Music: Vocal",
+      "BA in New Media in Arts",
+      "BA in Political Science",
+      "BA in Sociology",
+      "BA in Studio Art",
+      "BS in Early Childhood Education (Birth-2)",
+      "BS in Elementary Education (K-6)",
+      "BS in Middle Level Education (6-8)",
+      "BS in Physical Education",
+
+      "MA in Equitable Curriculum and Instructional Leadership",
+      "MA in Justice Studies",
+      "MA in TESOL (Teaching English to Speakers of Other Languages/Bilingual Education)",
+      "MAT in Teaching",
+      "MEd in Dual-Title MA TESOL/Bilingual Education and Educational Leadership",
+      "MEd in Educational Leadership",
+      "MS in Leadership Studies",
+
+      "EdD in Educational Leadership: Higher Education",
+      "EdD in Educational Leadership: K-12"
+    ]
+  },
+
+  "College of Business": {
+    programs: [
+      "Minor in Accounting",
+      "Minor in Business Administration",
+      "Minor in Business Economics",
+      "Minor in Coaching Management",
+      "Minor in Entrepreneurship",
+      "Minor in Finance: Finance and Banking",
+      "Minor in Financial Planning",
+      "Minor in Management: Human Resource Management",
+      "Minor in Management: Management Information Systems/ERP",
+      "Minor in Management: Marketing",
+      "Minor in Recreation Management",
+
+      "BS in Accounting",
+      "BS in Aviation: Aviation Management",
+      "BS in Aviation: Professional Helicopter Pilot",
+      "BS in Aviation: Professional Pilot",
+      "BS in Finance: Finance and Banking",
+      "BS in Finance: Financial Economics",
+      "BS in Hospitality and Tourism Management",
+      "BS in Management: Business Analytics",
+      "BS in Management: General Management",
+      "BS in Management: Human Resource Management",
+      "BS in Management: Management Information Systems/ERP",
+      "BS in Management: Marketing",
+      "BS in Sport Management",
+
+      "MBA in Business Administration: Business Analytics",
+      "MBA in Business Administration: CPA",
+      "MBA in Business Administration: Finance",
+      "MBA in Business Administration: Information Systems",
+      "MSA in Sport Administration"
+    ]
+  },
+
+  "Wesley College of Health & Behavioral Sciences": {
+    programs: [
+      "Minor in Psychology",
+
+      "AS in Psychology",
+      "AS in Public Health",
+      "ASW in Social Work",
+
+      "BS in Kinesiology",
+      "BS in Nursing",
+      "BS in Psychology",
+      "BS in Public Health",
+      "BS to MSN in RN to MSN Program",
+      "BSW in Social Work",
+
+      "MOT in Occupational Therapy",
+      "MPH in Public Health",
+      "MS in Psychology",
+      "MSN in Nursing: Global Leadership",
+      "MSN in Nursing: Nursing Education",
+      "MSN in Nursing: Psychiatric Mental Health Nurse Practitioner",
+      "MSW in Social Work",
+
+      "DSW in Social Work"
+    ]
+  },
+
+  "School of Graduate, Adult and Extended Studies": {
+    programs: [
+      "MPA in Public Administration"
+    ]
+  }
+    },
+    "Wilmington University": {
+  "College of Business and Technology (Business Programs)": {
+    programs: [
+      "Minor in Business",
+      "Minor in Entrepreneurship & Small Business Management",
+      "Minor in Finance",
+      "Minor in Global Management",
+      "Minor in Human Resource Management",
+      "Minor in Management Information Systems",
+
+      "Undergraduate Certificate in Accounting Review",
+      "Undergraduate Certificate in Applied Business Statistics",
+      "Undergraduate Certificate in Construction Management",
+      "Undergraduate Certificate in Cybersecurity and Fintech",
+      "Undergraduate Certificate in Data Visualization",
+      "Undergraduate Certificate in Digital Marketing",
+      "Undergraduate Certificate in Entrepreneurship/Small Business Management",
+      "Undergraduate Certificate in Essentials of People Management",
+      "Undergraduate Certificate in Fintech",
+      "Undergraduate Certificate in Hospitality Management",
+      "Undergraduate Certificate in Human Resource Management",
+      "Undergraduate Certificate in Logistics and Supply Chain Management",
+      "Undergraduate Certificate in Marketing",
+      "Undergraduate Certificate in Marketing Analytics",
+      "Undergraduate Certificate in Nonprofit Management",
+      "Undergraduate Certificate in Project Management",
+      "Undergraduate Certificate in Sales Administration",
+      "Undergraduate Certificate in Sport Analytics",
+      "Undergraduate Certificate in Sport Media",
+      "Undergraduate Certificate in Training & Staff Development",
+
+      "AS in Accounting",
+      "AS in Business Management",
+      "AS in Finance",
+      "AS in Organizational Leadership",
+
+      "BS in Accounting",
+      "BS in Accounting & Finance",
+      "BS in Applied Business",
+      "BS in Business Analytics",
+      "BS in Business Management",
+      "BS in Finance",
+      "BS in Human Resource Management",
+      "BS in Marketing",
+      "BS in Organizational Leadership",
+
+      "MS in Accounting",
+      "MS in Management",
+      "MBA in Business Administration",
+
+      "Graduate Certificate in Business Communication",
+      "Graduate Certificate in Finance",
+      "Graduate Certificate in Healthcare Administration",
+      "Graduate Certificate in Human Resource Management",
+      "Graduate Certificate in Marketing Management",
+      "Graduate Certificate in Nonprofit Management",
+      "Graduate Certificate in Organizational Leadership",
+      "Graduate Certificate in Sustainability",
+
+      "Post-Bachelor Certificate in Accounting",
+
+      "DBA in Doctor of Business Administration"
+    ]
+  },
+
+  "College of Business and Technology (Technology Programs)": {
+    programs: [
+      "Minor in Digital Film-Making",
+      "Minor in Graphic Design",
+      "Minor in Photography",
+      "Minor in Video",
+
+      "Undergraduate Certificate in 3D for Digital Media",
+      "Undergraduate Certificate in Advanced Graphic Design",
+      "Undergraduate Certificate in Applied Technology",
+      "Undergraduate Certificate in Artificial Intelligence",
+      "Undergraduate Certificate in Cloud Practitioner",
+      "Undergraduate Certificate in Data Analytics",
+      "Undergraduate Certificate in Digital Evidence Discovery",
+      "Undergraduate Certificate in Digital Evidence Investigation",
+      "Undergraduate Certificate in Drone Operations and Applications",
+      "Undergraduate Certificate in Esports",
+      "Undergraduate Certificate in Graphic Design",
+      "Undergraduate Certificate in Java Programming",
+      "Undergraduate Certificate in Microsoft .NET Applications Development",
+      "Undergraduate Certificate in Photography",
+      "Undergraduate Certificate in Social Media Management",
+      "Undergraduate Certificate in Technical Communication",
+      "Undergraduate Certificate in UX/UI Design",
+      "Undergraduate Certificate in Video Production",
+      "Undergraduate Certificate in Web Applications Development",
+
+      "AS in Applied Technology",
+      "AS in Cybersecurity",
+      "AS in Data Analytics",
+      "AS in Digital Media",
+
+      "BS in Animation and 3D",
+      "BS in Applied Technology",
+      "BS in Communication",
+      "BS in Cybersecurity",
+      "BS in Game Design and Development",
+      "BS in Graphic Design",
+      "BS in Information Systems Management",
+      "BS in Video and Film Production",
+      "BS in Web Design",
+
+      "MS in Cybersecurity",
+      "MS in Digital Communication",
+      "MS in Information Systems Technologies",
+      "MS in Information Technology Project Management",
+
+      "Graduate Certificate in Agile Project Management",
+      "Graduate Certificate in Management Information Systems",
+      "Graduate Certificate in SCADA Cyber Security",
+      "Graduate Certificate in Technology Project Management"
+    ]
+  },
+
+  "College of Education and Liberal Arts": {
+    programs: [
+      "Minor in Art",
+      "Minor in History",
+      "Minor in Literature",
+
+      "Undergraduate Certificate in Diversity, Equity, and Inclusion",
+      "Undergraduate Certificate in English for Academic Purposes",
+
+      "AA in Interdisciplinary Studies",
+
+      "BS in Early Care and Education",
+      "BS in Education",
+      "BS in Education Studies",
+      "BS in Elementary Education",
+      "BS in Interdisciplinary Studies",
+      "BS in Middle Level Education",
+
+      "MEd in Applied Technology in Education",
+      "MEd in Education",
+      "MEd in Education Studies",
+      "MEd in Elementary and Secondary School Counseling",
+      "MEd in Elementary and Secondary School Counseling (Non-Certified)",
+      "MEd in Higher Education",
+      "MEd in Instruction: National Board Certified Teacher",
+      "MEd in Instruction: Teaching and Learning",
+      "MEd in Interdisciplinary Studies in Education",
+      "MEd in School Leadership",
+      "MEd in Special Education",
+
+      "Graduate Certificate in Administration in Higher Education",
+      "Graduate Certificate in Advanced Study in School Counseling",
+      "Graduate Certificate in Digital Education",
+      "Graduate Certificate in English Speakers of Other Languages",
+      "Graduate Certificate in Equitable Practices",
+      "Graduate Certificate in Foundations in Higher Education",
+      "Graduate Certificate in National Board Certified Teacher",
+      "Graduate Certificate in Reading Specialist",
+      "Graduate Certificate in Special Education: Autism/Severe Intellectual Disabilities",
+      "Graduate Certificate in Special Education: Early Childhood Exceptional Children",
+      "Graduate Certificate in Special Education: Teacher of Students with Disabilities",
+      "Graduate Certificate in STEM Education",
+      "Graduate Certificate in Student Affairs in Higher Education",
+      "Graduate Certificate in Teacher Licensure",
+      "Graduate Certificate in Teaching in Higher Education",
+
+      "EdD in Educational Leadership",
+      "EdD in Organizational Leadership, Learning and Innovation"
+    ]
+  },
+
+  "College of Nursing and Health Sciences": {
+    programs: [
+      "Undergraduate Certificate in Health Information Technology",
+      "Undergraduate Certificate in Health Promotion: Fitness",
+      "Undergraduate Certificate in Hispanic Cultural",
+      "Undergraduate Certificate in Holistic Palliative and End-of-Life Care",
+      "Undergraduate Certificate in Holistic Perspective on Aging and Wellness",
+      "Undergraduate Certificate in Interdisciplinary Care Management",
+
+      "AS in Health Sciences",
+
+      "BS in Health Sciences",
+      "BSN in Nursing",
+      "BSN in Pre-RN Option",
+      "BSN in RN to BSN Pathway",
+
+      "MS in Health Sciences",
+      "MSN in Family Nurse Practitioner",
+      "MSN in Nursing Leadership",
+
+      "Graduate Certificate in Family Nurse Practitioner",
+      "Graduate Certificate in Legal Nurse Consultant",
+      "Graduate Certificate in Nurse Educator",
+      "Graduate Certificate in Nurse Executive",
+      "Graduate Certificate in Nursing Leadership",
+      "Graduate Certificate in Psychiatric Mental Health Nurse Practitioner",
+      "Graduate Certificate in Public Health",
+
+      "DNP in Doctor of Nursing Practice",
+      "DNP in Family Nurse Practitioner",
+      "DNP in Nurse Anesthesiology",
+      "DNP in Psychiatric Mental Health Nurse Practitioner"
+    ]
+  },
+
+  "College of Sciences and Engineering": {
+    programs: [
+      "Minor in Biology",
+      "Minor in Chemistry",
+      "Minor in Mathematics",
+      "Minor in Natural Sciences",
+
+      "Undergraduate Certificate in Biotechnology",
+      "Undergraduate Certificate in Forensic Science",
+
+      "AS in Biology",
+      "AS in Chemistry",
+
+      "BS in Applied Mathematics",
+      "BS in Biology",
+      "BS in Chemistry",
+      "BS in Computer Science",
+      "BS in Environmental Science and Policy",
+
+      "MS in Computer Science",
+      "MS in Environmental Science"
+    ]
+  },
+
+  "College of Social and Behavioral Sciences": {
+    programs: [
+      "Minor in Air Force — Military Studies",
+      "Minor in Army — Military Studies",
+      "Minor in Political Science",
+      "Minor in Pre-Law",
+
+      "Undergraduate Certificate in Child Advocacy Studies",
+      "Undergraduate Certificate in Community Engagement",
+      "Undergraduate Certificate in Compliance",
+      "Undergraduate Certificate in Conflict Resolution",
+      "Undergraduate Certificate in Crime Scene Investigation",
+      "Undergraduate Certificate in Criminal Justice",
+      "Undergraduate Certificate in Emergency Management",
+      "Undergraduate Certificate in Emotional Intelligence and Leadership",
+      "Undergraduate Certificate in Family Science",
+      "Undergraduate Certificate in Human Trafficking Awareness",
+      "Undergraduate Certificate in Trauma-Informed Approaches",
+
+      "AS in Applied Behavioral Health",
+      "AS in Criminal Justice",
+
+      "BS in Behavioral Science",
+      "BS in Criminal Justice",
+      "BS in Law, Policy, and Political Science",
+      "BS in Psychology",
+
+      "MS in Administration of Justice",
+      "MS in Applied Family Science",
+      "MS in Clinical Mental Health Counseling",
+      "MS in Homeland Security",
+      "MS in Human Services",
+      "MS in Professional Studies",
+
+      "Graduate Certificate in Case Management for Human Services",
+      "Graduate Certificate in Financial Management in Human Services",
+      "Graduate Certificate in Trauma and Resilience",
+
+      "Post-Bachelor Certificate in Paralegal",
+
+      "DSS in Doctor of Social Science in Prevention Science"
+    ]
+  },
+
+  "School of Law": {
+    programs: [
+      "JD in Juris Doctor"
+    ]
+  }
+},
+"Goldey-Beacom College": {
+  "School of Business": {
+    programs: [
+      // Bachelor's Degrees
+      "BS in Accounting",
+      "BS in Business Administration",
+      "BS in Business Administration – Business Analytics",
+      "BS in Business Administration – Cybersecurity",
+      "BS in Business Administration – Entrepreneurial Studies",
+      "BS in Business Administration – Esports and Gaming Administration",
+      "BS in Business Administration – Financial Management",
+      "BS in Business Administration – Health Care Management",
+      "BS in Business Administration – Human Resource Management",
+      "BS in Business Administration – Information Technology",
+      "BS in Business Administration – International Business Management",
+      "BS in Business Administration – Legal Studies",
+      "BS in Business Administration – Management",
+      "BS in Business Administration – Marketing Management",
+      "BS in Business Administration – Organizational Psychology",
+      "BS in Business Administration – Sports Management",
+      "BS in Digital Marketing",
+      "BS in Economics",
+      "BS in Finance",
+      "BS in Human Resource Management",
+
+      // Associate Degrees
+      "AS in Accounting",
+      "AS in Business Administration",
+      "AA in General Studies",
+
+      // Undergraduate Certificates
+      "Undergraduate Certificate in Business and Management Essentials",
+      "Undergraduate Certificate in Business Essentials",
+      "Undergraduate Certificate in Foundations of Leadership",
+      "Undergraduate Certificate in Management",
+      "Undergraduate Certificate in Microsoft Office Suite Plus",
+      "Undergraduate Certificate in Professional Communications",
+
+      // Post-Bachelor Certificates
+      "Post-Bachelor Certificate in Accounting",
+      "Post-Bachelor Certificate in Accounting 150-Hour",
+
+      // MBA Programs
+      "MBA in Business Administration",
+      "MBA in Business Administration – Artificial Intelligence",
+      "MBA in Business Administration – Business Analytics",
+      "MBA in Business Administration – Cybersecurity",
+      "MBA in Business Administration – Entrepreneurial Studies",
+      "MBA in Business Administration – Financial Management",
+      "MBA in Business Administration – Health Care Management",
+      "MBA in Business Administration – Human Resource Management",
+      "MBA in Business Administration – Information Technology",
+      "MBA in Business Administration – International Business Management",
+      "MBA in Business Administration – Marketing Management",
+      "MBA in Business Administration – Finance",
+      "MBA in Business Administration – Human Resource Management",
+      "MBA in Business Administration – Taxation",
+      "MBA in Business Administration – Analytical Track",
+
+      // Master's Degrees
+      "MS in Business Analytics",
+      "MS in Finance",
+      "MS in Human Resource Management",
+      "MS in Information Technology",
+      "MM in Management",
+      "MS in Taxation",
+
+      // Graduate Certificates
+      "Graduate Certificate in Analytical Business Skills",
+      "Graduate Certificate in Artificial Intelligence",
+      "Graduate Certificate in Business Analytics",
+      "Graduate Certificate in Business Leadership and Power Skills",
+      "Graduate Certificate in Business Processes",
+      "Graduate Certificate in Cybersecurity",
+      "Graduate Certificate in Entrepreneurship",
+      "Graduate Certificate in Financial and Economic Analysis",
+      "Graduate Certificate in Health Care Management",
+      "Graduate Certificate in HR SHRM Certification Prep",
+      "Graduate Certificate in Human Resource Management",
+      "Graduate Certificate in Information Technology",
+      "Graduate Certificate in Leadership",
+      "Graduate Certificate in Management",
+      "Graduate Certificate in Marketing",
+      "Graduate Certificate in Post-Graduate Executive Business",
+      "Graduate Certificate in Quantitative and Analytical Business",
+      "Graduate Certificate in Traditional Business Administration"
+    ]
+  },
+
+  "School of Liberal Arts and Social Sciences": {
+    programs: [
+      // Bachelor's Degrees
+      "BA in Communication and Media",
+      "BA in Criminal Justice",
+      "BA in English – Communication and Media",
+      "BA in English – Legal Studies",
+      "BA in English – Literary Studies",
+      "BA in Human Services",
+      "BA in Interdisciplinary Studies",
+      "BA in Psychology",
+
+      // Master's Degrees
+      "MA in Counseling Psychology"
+    ]
+  },
+
+  "Minors": {
+    programs: [
+      "Minor in English",
+      "Minor in Financial Management",
+      "Minor in Human Resource Management",
+      "Minor in Management",
+      "Minor in Marketing Management",
+      "Minor in Psychology"
+    ]
+  }
+}
+  },
 },
 {
   name: "Canada",
@@ -5384,8 +6297,9 @@ universities: {
       "PhD in Individualized Interdisciplinary Studies"
     ]
   }
-}
-    }
-}
+},
+ 
+}}
+
 
 ];

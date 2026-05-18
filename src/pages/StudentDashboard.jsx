@@ -3901,16 +3901,19 @@ const feedCombined = useMemo(() => {
     .slice(0, 50);
 
   /* ===== Layout ===== */
-  return (
+ 
+
+     return (
     <div className="min-h-screen bg-[#f3f6fb]">
       
       {/* ⬇️ Add VerifyGate at the very top-level of the page */}
     <VerifyGate email={current?.email} />
     
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
+      <main className="max-w-[1360px] mx-auto px-2 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
         {/* LEFT */}
-        <aside className="space-y-4 pb-24">
+        {/* LEFT - DESKTOP ONLY */}
+       <aside className="hidden lg:block space-y-4 pb-24">
           <Card className="p-0 overflow-hidden">
             <div className="relative h-20 bg-slate-200">
               {user.bannerUrl ? <img src={user.bannerUrl} alt="Banner" className="h-full w-full object-cover"/> : <div className="h-full w-full bg-gradient-to-r from-blue-200 to-indigo-200" />}
@@ -4091,13 +4094,6 @@ const feedCombined = useMemo(() => {
 
 
 
-
-
-
-
-
-
-
           {/* Academic posts filters */}
           <SidebarCard title="Academic posts">
             <div className="space-y-2 text-sm">
@@ -4130,7 +4126,8 @@ const feedCombined = useMemo(() => {
 
 
         {/* CENTER */}
-        <section className="space-y-4">
+        {/*<section className="space-y-4">*/}
+          <section className="space-y-3 lg:space-y-4 min-w-0">
           <Card>
             {!composerOpen ? (
               <div className="flex items-center gap-3">
@@ -4471,7 +4468,8 @@ const feedCombined = useMemo(() => {
   </section>
 
         {/* RIGHT */}
-        <aside className="space-y-4 pb-24">
+          {/* RIGHT - DESKTOP ONLY */}
+        <aside className="hidden lg:block space-y-4 pb-24">
           <Card>
             {latestVideo ? (
               <>
@@ -4590,6 +4588,8 @@ const feedCombined = useMemo(() => {
 </div>
         </aside>
       </main>
+
+
 
       {/* Idle warning modal */}
       {idleWarning && (
