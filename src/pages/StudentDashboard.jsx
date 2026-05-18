@@ -4132,8 +4132,8 @@ const feedCombined = useMemo(() => {
           {/*<Card>*/}
             <Card className="w-full max-w-full overflow-hidden">
             {!composerOpen ? (
-              
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+              <div className="flex items-start gap-3 min-w-0">
+                {/*<div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">*/}
                 <Avatar size="md" url={user.photoUrl} name={user.name} online />
                 <button
                   onClick={()=>setComposerOpen(true)}
@@ -4143,39 +4143,53 @@ const feedCombined = useMemo(() => {
                 </button>
               </div>
             ) : (
-              <form onSubmit={onPost}>
-                <div className="flex items-center gap-3">
-                  <Avatar size="md" url={user.photoUrl} name={user.name} online />
-                  {/*<div>*/}
-                    <div className="min-w-0 w-full sm:w-auto">
-                    <div className="font-semibold text-slate-900">{user.name}</div>
-                    {/*<label className="flex items-center gap-2 text-xs text-slate-600">*/}
-                    <label className="flex items-start gap-2 text-xs text-slate-600 min-w-0">
-                      <input type="checkbox" checked={toFaculty} onChange={(e)=>setToFaculty(e.target.checked)}/>
-                      {/*<span>Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)</span>*/}
-                      <span className="min-w-0 break-words">Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)</span>
-                    </label>
-                  </div>
-                  {/*<div className="ml-auto">*/}
-                  <div className="w-full sm:w-auto sm:ml-auto">
-                    {/* For students, include everything EXCEPT Video */}
-                    <select
-                      value={composerType}
-                      onChange={e=>setComposerType(e.target.value)}
-                      /*className="border border-slate-100 rounded px-2 py-1 text-sm"*/
-                      className="w-full sm:w-auto max-w-full border border-slate-100 rounded px-2 py-1 text-sm"
-                      title="Select academic post type"
-                    >
-                      {POST_TYPES.filter(t => t !== "Video").map(t=> <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                </div>
+              
 
-                <div className="mt-3 flex items-center gap-2">
+                  <form onSubmit={onPost}>
+  <div className="flex items-center gap-3 min-w-0">
+    <Avatar size="md" url={user.photoUrl} name={user.name} online />
+
+    <div className="min-w-0 flex-1">
+      <div className="font-semibold text-slate-900 truncate">
+        {user.name}
+      </div>
+
+      <label className="flex items-start gap-2 text-xs text-slate-600 min-w-0">
+        <input
+          type="checkbox"
+          checked={toFaculty}
+          onChange={(e)=>setToFaculty(e.target.checked)}
+        />
+
+        <span className="min-w-0 truncate">
+          Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)
+        </span>
+      </label>
+    </div>
+  </div>
+
+                {/*<div className="mt-3 flex items-center gap-2">
                   <ToolbarButton onClick={()=>exec("bold")} label="B" title="Bold"/>
                   <ToolbarButton onClick={()=>exec("italic")} label={<em>I</em>} title="Italic"/>
                   <ToolbarButton onClick={addLink} label="🔗" title="Add link"/>
-                </div>
+                </div>*/}
+   <div className="mt-3 flex items-center gap-2 flex-wrap">
+  <ToolbarButton onClick={()=>exec("bold")} label="B" title="Bold"/>
+  <ToolbarButton onClick={()=>exec("italic")} label={<em>I</em>} title="Italic"/>
+  <ToolbarButton onClick={addLink} label="🔗" title="Add link"/>
+
+  <select
+    value={composerType}
+    onChange={e=>setComposerType(e.target.value)}
+    className="ml-auto max-w-[135px] border border-slate-100 rounded px-2 py-1 text-sm"
+    title="Select academic post type"
+  >
+    {POST_TYPES.filter(t => t !== "Video").map(t=> (
+      <option key={t} value={t}>{t}</option>
+    ))}
+  </select>
+</div>             
+
 
                 {/* Title (and Book Title helper) */}
                 <label className="block mt-3">
