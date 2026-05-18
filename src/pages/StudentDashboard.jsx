@@ -1127,17 +1127,32 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+              {/*<label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
                 <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
               </label>
               <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
                 <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
               </label>
               {/* NEW: make reply button prominent */}
-              <button type="submit" className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
+              {/*<button type="submit" className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
                 Reply
               </button>
-            </div>
+            </div>*/}
+
+            <div className="max-sm:w-full max-sm:flex max-sm:items-center max-sm:justify-end max-sm:gap-2 sm:contents">
+  <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
+    <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
+  </label>
+
+  <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
+    <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
+  </label>
+
+  <button type="submit" className="rounded-full bg-blue-600 text-white px-4 py-1 text-sm font-semibold hover:bg-blue-700">
+    Reply
+  </button>
+</div>
+</div>
 
             {(replyImages.length>0 || replyFiles.length>0) && (
               <div className="mt-2 space-y-2 pl-1">
