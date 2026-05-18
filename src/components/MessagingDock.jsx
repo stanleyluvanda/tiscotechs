@@ -1262,8 +1262,10 @@ function myOnlineNow() {
 ) : null}
 
 {/* bottom row: 📎 + attach inputs + Send */}
-<div className="mt-2 flex items-center justify-between gap-2">
-  <div className="flex items-center gap-2 min-w-0">
+{/*<div className="mt-2 flex items-center justify-between gap-2">*/}
+<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-10 sm:pb-0">
+  {/*<div className="flex items-center gap-2 min-w-0">*/}
+  <div className="w-full sm:w-auto flex items-center gap-2 min-w-0">
     <button
       type="button"
       onClick={() => setAttachOpen((v) => !v)}
@@ -1275,19 +1277,22 @@ function myOnlineNow() {
 
     {attachOpen && (
       <div className="min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
+        {/*<div className="flex items-center gap-2 min-w-0">*/}
+          <div className="w-full flex flex-col sm:flex-row sm:items-center gap-2 min-w-0">
           <input
             value={attUrl}
             onChange={(e) => setAttUrl(e.target.value)}
             placeholder="Paste attachment URL"
-            className="w-[220px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
+            /*className="w-[220px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"*/
+            className="w-full sm:w-[220px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
           />
 
           <input
             value={attName}
             onChange={(e) => setAttName(e.target.value)}
             placeholder="Attachment Name"
-            className="w-[130px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
+            /*className="w-[130px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"*/
+            className="w-full sm:w-[130px] rounded-md border border-slate-200 px-2 py-1 text-xs outline-none"
           />
 
           <div className="shrink-0 scale-90 origin-left">
@@ -1315,10 +1320,12 @@ function myOnlineNow() {
 
   <button
     onClick={handleSend}
-    className="rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shrink-0"
+    /*className="rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shrink-0"*/
+    className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mr-10 sm:mr-0"
   >
     Send
   </button>
+
 </div>
           </div>
         </div>
