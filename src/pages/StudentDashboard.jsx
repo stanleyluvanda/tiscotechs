@@ -4723,7 +4723,8 @@ const feedCombined = useMemo(() => {
       <button
         type="button"
         onClick={openBell}
-        className="fixed z-[70] right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"
+        /*className="fixed z-[70] right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"*/
+        className="fixed z-[70] right-2 sm:right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"
         title="Notifications"
       >
         <span className="text-xl">🔔</span>
