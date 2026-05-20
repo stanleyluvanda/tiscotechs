@@ -4491,6 +4491,128 @@ const feedCombined = useMemo(() => {
             </div>
           </Card>
 
+
+
+
+
+
+
+
+          {/* MOBILE QUICK LINKS / FILTERS ONLY */}
+<div className="lg:hidden px-1">
+  <div className="overflow-x-auto pb-1">
+    <div className="flex items-center gap-2 min-w-max">
+
+      <button
+        type="button"
+        onClick={() => setShowMineOnly((v) => !v)}
+        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
+          showMineOnly
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-slate-700 border-slate-200"
+        }`}
+      >
+        My Post
+      </button>
+
+      <button
+        type="button"
+        onClick={onToggleLecturerOnly}
+        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
+          showLecturerOnly
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-slate-700 border-slate-200"
+        }`}
+      >
+        Lecturer&apos;s posts
+      </button>
+
+      <button
+        type="button"
+        onClick={onToggleFacultyOnly}
+        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
+          showFacultyOnly
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-slate-700 border-slate-200"
+        }`}
+      >
+        Common posts
+      </button>
+
+      <Link
+        to="/marketplace"
+        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700 whitespace-nowrap"
+      >
+        Market
+      </Link>
+
+      <Link
+        to="/student/video-tips"
+        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700 whitespace-nowrap"
+      >
+        Video Tips
+      </Link>
+
+      <select
+        value={filterType}
+        onChange={(e) => {
+          setFilterType(e.target.value);
+          markTypeSeen(e.target.value);
+        }}
+        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700"
+      >
+        <option value="All">Post Type: All</option>
+        {POST_TYPES.map((t) => (
+          <option key={t} value={t}>{t}</option>
+        ))}
+      </select>
+
+      <select
+        defaultValue=""
+        onChange={(e) => {
+          if (e.target.value) navigate(e.target.value);
+          e.target.value = "";
+        }}
+        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700"
+      >
+        <option value="" disabled>Platform</option>
+        <option value="/platform/university">University Platform</option>
+        <option value="/platform/global">Global Platform</option>
+      </select>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           {/* Small loading hint above the feed */}
           {feedLoading && (filtered?.length || 0) === 0 && (
   <div className="text-sm text-slate-500 px-1 mb-1">
