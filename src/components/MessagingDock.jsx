@@ -717,7 +717,8 @@ function myOnlineNow() {
 
   return (
       /*<div className="fixed bottom-4 right-[160px] z-50">*/
-      <div className="fixed bottom-4 right-3 sm:right-[160px] z-50">
+     
+      <div className="fixed bottom-4 right-[72px] sm:right-[160px] z-50">
       {/* collapsed pill */}
       {!open && (
         <button
