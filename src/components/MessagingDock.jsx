@@ -1156,15 +1156,16 @@ function myOnlineNow() {
           {/*<div className="border-t border-slate-200 p-3">*/}
           {/*<div className="border-t border-slate-200 px-3 pt-4 pb-6 sm:p-3">*/}
           {/*<div className="border-t border-slate-200 px-3 pt-3 pb-4 sm:p-3">*/}
-          <div className="border-t border-slate-200 px-3 pt-3 pb-3 sm:p-3 min-h-[185px] sm:min-h-0 flex flex-col">
+          {/*<div className="border-t border-slate-200 px-3 pt-3 pb-3 sm:p-3 min-h-[185px] sm:min-h-0 flex flex-col">*/}
+          <div className="border-t border-slate-200 px-3 pt-2 pb-3 sm:p-3 min-h-[185px] sm:min-h-0 flex flex-col">
 {/*<div className="relative">*/}
-<div className="relative mt-2">
+<div className="relative mt-1">
   <textarea
     value={msgText}
     onChange={(e) => setMsgText(e.target.value)}
     placeholder="Write a message..."
-    /*className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-2 pr-10 text-sm outline-none ${*/
-    className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-3 pr-10 text-sm outline-none ${
+    className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-2 pr-10 text-sm outline-none ${
+    /*className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-3 pr-10 text-sm outline-none ${*/
       composerExpanded ? "h-46" : "h-14"
     }`}
   />
