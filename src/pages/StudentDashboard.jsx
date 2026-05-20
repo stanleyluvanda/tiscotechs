@@ -4693,7 +4693,7 @@ const feedCombined = useMemo(() => {
 ))}*/}
 
 {filtered.map((p, idx) => (
-  <React.Fragment key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}>
+  <>
     <div
       ref={(el) => {
         if (el && p?.id) postRefs.current[p.id] = el;
@@ -4740,7 +4740,7 @@ const feedCombined = useMemo(() => {
         </div>
       </Card>
     )}
-  </React.Fragment>
+  </>
 ))}
   </section>
 
