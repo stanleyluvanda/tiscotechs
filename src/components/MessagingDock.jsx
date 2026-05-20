@@ -935,7 +935,7 @@ function myOnlineNow() {
       {/* separate chat window next to dock (LinkedIn-style) */}
       {chatOpen && active && (
         /*<div className="fixed bottom-4 right-[485px] z-50 w-[650px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">*/
-        <div className="fixed bottom-4 left-3 right-3 sm:left-auto sm:right-[485px] z-50 w-auto sm:w-[650px] h-[min(540px,calc(100vh-110px))] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+        <div className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-auto sm:right-[485px] z-50 w-auto sm:w-[650px] h-[calc(100vh-95px)] sm:h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
         
           {/* chat header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
@@ -995,7 +995,7 @@ function myOnlineNow() {
             <div
             ref={messagesScrollRef}
             /*className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">*/
-            className="flex-1 min-h-0 overflow-auto px-2 py-3 pb-24 sm:pb-3 space-y-4">
+           className="flex-1 min-h-0 overflow-auto px-2 py-3 pb-4 sm:pb-3 space-y-4">
             {msgs.length === 0 ? (
               <div className="text-sm text-slate-500">
                 No messages yet. Send the first message to start this conversation.
@@ -1154,7 +1154,8 @@ function myOnlineNow() {
 
           {/* composer (LinkedIn-like) */}
           {/*<div className="border-t border-slate-200 p-3">*/}
-          <div className="border-t border-slate-200 px-3 pt-4 pb-6 sm:p-3">
+          {/*<div className="border-t border-slate-200 px-3 pt-4 pb-6 sm:p-3">*/}
+          <div className="border-t border-slate-200 px-3 pt-3 pb-4 sm:p-3">
 <div className="relative">
   <textarea
     value={msgText}
