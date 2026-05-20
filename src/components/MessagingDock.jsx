@@ -1155,8 +1155,10 @@ function myOnlineNow() {
           {/* composer (LinkedIn-like) */}
           {/*<div className="border-t border-slate-200 p-3">*/}
           {/*<div className="border-t border-slate-200 px-3 pt-4 pb-6 sm:p-3">*/}
-          <div className="border-t border-slate-200 px-3 pt-3 pb-4 sm:p-3">
-<div className="relative">
+          {/*<div className="border-t border-slate-200 px-3 pt-3 pb-4 sm:p-3">*/}
+          <div className="border-t border-slate-200 px-3 pt-3 pb-3 sm:p-3 min-h-[185px] sm:min-h-0 flex flex-col">
+{/*<div className="relative">*/}
+<div className="relative mt-2">
   <textarea
     value={msgText}
     onChange={(e) => setMsgText(e.target.value)}
@@ -1251,10 +1253,12 @@ function myOnlineNow() {
 {/* bottom row: 📎 + attach inputs + Send */}
 {/*<div className="mt-2 flex items-center justify-between gap-2">*/}
 {/*<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-10 sm:pb-0">*/}
-<div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 sm:pb-0">
+{/*<div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 sm:pb-0">*/}
+  <div className="mt-auto flex flex-row items-center justify-between gap-3 pb-0">
   {/*<div className="flex items-center gap-2 min-w-0">*/}
   {/*<div className="w-full sm:w-auto flex items-center gap-2 min-w-0">*/}
-  <div className="w-full sm:w-auto flex items-center gap-2 min-w-0 mt-2 sm:mt-0">
+  {/*<div className="w-full sm:w-auto flex items-center gap-2 min-w-0 mt-2 sm:mt-0">*/}
+    <div className="w-auto flex items-center gap-2 min-w-0">
     <button
       type="button"
       onClick={() => setAttachOpen((v) => !v)}
@@ -1311,7 +1315,8 @@ function myOnlineNow() {
     onClick={handleSend}
     /*className="rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shrink-0"*/
     /*className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mr-10 sm:mr-0"*/
-    className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mb-2 mr-12 sm:mb-0 sm:mr-0"
+    /*className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mb-2 mr-12 sm:mb-0 sm:mr-0"*/
+    className="rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mr-12 sm:mr-0"
   >
     Send
   </button>
