@@ -1305,9 +1305,11 @@ const files = mergedFiles.filter((a) => {
 
   return (
     <div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
-      <div className="flex items-center gap-3">
+      {/*</div><div className="flex items-center gap-3">*/}
+      <div className="flex items-start gap-3">
         <Avatar size="md" url={post.authorPhoto} name={post.author}/>
-        <div className="min-w-0">
+        {/*<div className="min-w-0">*/}
+          <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 min-w-0">
             <div className="font-semibold text-slate-900 truncate">{post.author}</div>
             {post.authorType === "lecturer" && (
@@ -1325,13 +1327,16 @@ const files = mergedFiles.filter((a) => {
           </div>
         </div>
 
-        <span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>
+        {/*<span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>*/}
+        <span className="hidden sm:inline-flex ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
+  {post.type}</span>
 
         {/* NEW: delete control (student can delete own posts) */}
         {canDelete && (
           <button
             onClick={() => onDeletePost?.(post.id)}
-            className="ml-2 text-xs rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 hover:bg-red-100"
+            /*className="ml-2 text-xs rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 hover:bg-red-100"*/
+            className="shrink-0 ml-1 sm:ml-2 text-xs rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 hover:bg-red-100"
             title="Delete this post"
           >
             Delete
@@ -4967,6 +4972,7 @@ const feedCombined = useMemo(() => {
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <div className="font-semibold text-slate-900">Notifications</div>
               <div className="flex items-center gap-3">
+
                 <button className="text-sm text-blue-600 hover:underline" onClick={markAllSeen}>Mark all read</button>
                 <button className="text-sm text-slate-600 hover:underline" onClick={clearAllNotifications}>Clear all</button>
               </div>
