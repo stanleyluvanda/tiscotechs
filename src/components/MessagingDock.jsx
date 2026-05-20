@@ -718,12 +718,14 @@ function myOnlineNow() {
   return (
       /*<div className="fixed bottom-4 right-[160px] z-50">*/
      
-      <div className="fixed bottom-4 right-[72px] sm:right-[160px] z-50">
+      {/*<div className="fixed bottom-4 right-[72px] sm:right-[160px] z-50">*/}
+      <div className="fixed bottom-4 right-3 sm:right-[160px] z-50">
       {/* collapsed pill */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-full bg-white shadow-lg border border-slate-200 px-3 py-2"
+          /*className="flex items-center gap-2 rounded-full bg-white shadow-lg border border-slate-200 px-3 py-2"*/
+          className="flex items-center gap-2 rounded-full bg-white shadow-lg border border-slate-200 px-3 py-2 max-sm:mr-[64px]"
         >
           {/*<div className="w-7 h-7 rounded-full bg-slate-200 overflow-hidden">
             {me?.avatarUrl ? (
