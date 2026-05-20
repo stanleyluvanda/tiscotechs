@@ -4668,7 +4668,7 @@ const feedCombined = useMemo(() => {
   </div>
 )}
 
-  {filtered.map((p, idx) => (
+  {/*{filtered.map((p, idx) => (
   <div
     key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}
     ref={(el) => {
@@ -4690,6 +4690,57 @@ const feedCombined = useMemo(() => {
       isHighlighted={highlightPostId === p.id}
     />
   </div>
+))}*/}
+
+{filtered.map((p, idx) => (
+  <React.Fragment key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}>
+    <div
+      ref={(el) => {
+        if (el && p?.id) postRefs.current[p.id] = el;
+      }}
+      data-post-id={p.id}
+    >
+      <PostCard
+        post={p}
+        onToggleLike={() => toggleLike(p.id)}
+        onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
+        onAddReply={(commentId, text, images, files) =>
+          addReply(p.id, commentId, text, images, files)
+        }
+        onDeletePost={deletePost}
+        onReport={() => onReport({ itemType: "post", itemId: p.id, postId: p.id })}
+        currentUser={user}
+        isHighlighted={highlightPostId === p.id}
+      />
+    </div>
+
+    {idx === 0 && latestVideo && (
+      <Card className="lg:hidden">
+        {latestVideo.title ? (
+          <div className="font-semibold text-slate-900 text-center">
+            {latestVideo.title}
+          </div>
+        ) : (
+          <div className="font-semibold text-slate-900 text-center">
+            Updates from ScholarsKnowledge
+          </div>
+        )}
+
+        <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
+          <YouTubeEmbed
+            idOrUrl={latestVideo.videoUrlOrId}
+            title={latestVideo.title || "ScholarsKnowledge Updates"}
+          />
+        </div>
+
+        <div className="mt-2 text-xs text-slate-500 text-center">
+          {latestVideo?.createdAt
+            ? `Posted ${new Date(latestVideo.createdAt).toLocaleString()}`
+            : null}
+        </div>
+      </Card>
+    )}
+  </React.Fragment>
 ))}
   </section>
 
