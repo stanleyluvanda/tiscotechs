@@ -329,16 +329,6 @@ async function refreshPresence(extraUserIds = []) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
   async function openConversation(thread) {
     setChatOpen(true);
     setAttachOpen(false);
@@ -1004,7 +994,8 @@ function myOnlineNow() {
           {/* messages (LinkedIn rows, not bubbles) */}
             <div
             ref={messagesScrollRef}
-            className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">
+            /*className="flex-1 min-h-0 overflow-auto px-2 py-3 space-y-4">*/
+            className="flex-1 min-h-0 overflow-auto px-2 py-3 pb-24 sm:pb-3 space-y-4">
             {msgs.length === 0 ? (
               <div className="text-sm text-slate-500">
                 No messages yet. Send the first message to start this conversation.
@@ -1152,9 +1143,7 @@ function myOnlineNow() {
   </div>
 ) : null}
 
-
-
-                          </div>
+                        </div>
                         </div>
                       </div>
                     </div>
@@ -1164,13 +1153,15 @@ function myOnlineNow() {
           </div>
 
           {/* composer (LinkedIn-like) */}
-          <div className="border-t border-slate-200 p-3">
+          {/*<div className="border-t border-slate-200 p-3">*/}
+          <div className="border-t border-slate-200 px-3 pt-4 pb-6 sm:p-3">
 <div className="relative">
   <textarea
     value={msgText}
     onChange={(e) => setMsgText(e.target.value)}
     placeholder="Write a message..."
-    className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-2 pr-10 text-sm outline-none ${
+    /*className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-2 pr-10 text-sm outline-none ${*/
+    className={`w-full resize-none rounded-lg border border-slate-200 px-3 py-3 pr-10 text-sm outline-none ${
       composerExpanded ? "h-46" : "h-14"
     }`}
   />
@@ -1222,11 +1213,6 @@ function myOnlineNow() {
   </div>
 ) : null}
 
-
-
-
-
-
   {/* LinkedIn-style expand/collapse arrow */}
   <button
     type="button"
@@ -1263,9 +1249,11 @@ function myOnlineNow() {
 
 {/* bottom row: 📎 + attach inputs + Send */}
 {/*<div className="mt-2 flex items-center justify-between gap-2">*/}
-<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-10 sm:pb-0">
+{/*<div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-10 sm:pb-0">*/}
+<div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 sm:pb-0">
   {/*<div className="flex items-center gap-2 min-w-0">*/}
-  <div className="w-full sm:w-auto flex items-center gap-2 min-w-0">
+  {/*<div className="w-full sm:w-auto flex items-center gap-2 min-w-0">*/}
+  <div className="w-full sm:w-auto flex items-center gap-2 min-w-0 mt-2 sm:mt-0">
     <button
       type="button"
       onClick={() => setAttachOpen((v) => !v)}
@@ -1321,7 +1309,8 @@ function myOnlineNow() {
   <button
     onClick={handleSend}
     /*className="rounded-full bg-emerald-600 text-white px-4 py-2 text-sm font-semibold shrink-0"*/
-    className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mr-10 sm:mr-0"
+    /*className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mr-10 sm:mr-0"*/
+    className="self-end sm:self-auto rounded-full bg-emerald-600 text-white px-5 py-2 text-sm font-semibold shrink-0 mb-2 mr-12 sm:mb-0 sm:mr-0"
   >
     Send
   </button>
