@@ -4504,63 +4504,63 @@ const feedCombined = useMemo(() => {
     <div className="flex items-center gap-2 min-w-max">
 
       <button
-        type="button"
-        onClick={() => setShowMineOnly((v) => !v)}
-        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
-          showMineOnly
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-slate-700 border-slate-200"
-        }`}
-      >
-        My Post
-      </button>
+  type="button"
+  onClick={() => setShowMineOnly((v) => !v)}
+  className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
+    showMineOnly
+      ? "bg-[#f3d9fa] text-[#6b217d] border-[#e7bdf3]"
+      : "bg-[#fcf2ff] text-[#7a3a8a] border-[#efd3f7]"
+  }`}
+>
+  My Post
+</button>
 
-      <button
-        type="button"
-        onClick={onToggleLecturerOnly}
-        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
-          showLecturerOnly
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-slate-700 border-slate-200"
-        }`}
-      >
-        Lecturer&apos;s posts
-      </button>
+<button
+  type="button"
+  onClick={onToggleLecturerOnly}
+  className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
+    showLecturerOnly
+      ? "bg-[#ffe7d6] text-[#9a4b00] border-[#ffd1b0]"
+      : "bg-[#fff4ec] text-[#9a5b20] border-[#ffe0c7]"
+  }`}
+>
+  Lecturer&apos;s posts
+</button>
 
-      <button
-        type="button"
-        onClick={onToggleFacultyOnly}
-        className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap ${
-          showFacultyOnly
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-slate-700 border-slate-200"
-        }`}
-      >
-        Common posts
-      </button>
+<button
+  type="button"
+  onClick={onToggleFacultyOnly}
+  className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
+    showFacultyOnly
+      ? "bg-[#ffe3ea] text-[#a12b4c] border-[#ffc7d5]"
+      : "bg-[#fff1f5] text-[#9f4560] border-[#ffd9e3]"
+  }`}
+>
+  Common posts
+</button>
 
-      <Link
-        to="/marketplace"
-        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700 whitespace-nowrap"
-      >
-        Market
-      </Link>
+<Link
+  to="/marketplace"
+  className="rounded-full px-3 py-1.5 text-sm border border-[#f3d6b4] bg-[#fff7ef] text-[#9a5d18] whitespace-nowrap"
+>
+  Student Market
+</Link>
 
-      <Link
-        to="/student/video-tips"
-        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700 whitespace-nowrap"
-      >
-        Video Tips
-      </Link>
+<Link
+  to="/student/video-tips"
+  className="rounded-full px-3 py-1.5 text-sm border border-[#d9d2ff] bg-[#f5f3ff] text-[#5c4bb7] whitespace-nowrap"
+>
+  Video Tips
+</Link>
 
       <select
-        value={filterType}
-        onChange={(e) => {
-          setFilterType(e.target.value);
-          markTypeSeen(e.target.value);
-        }}
-        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700"
-      >
+  value={filterType}
+  onChange={(e) => {
+    setFilterType(e.target.value);
+    markTypeSeen(e.target.value);
+  }}
+  className="rounded-full px-3 py-1.5 text-sm border border-[#cfe4dc] bg-[#eefaf5] text-[#3d6b5d]"
+>
         <option value="All">Post Type: All</option>
         {POST_TYPES.map((t) => (
           <option key={t} value={t}>{t}</option>
@@ -4568,13 +4568,13 @@ const feedCombined = useMemo(() => {
       </select>
 
       <select
-        defaultValue=""
-        onChange={(e) => {
-          if (e.target.value) navigate(e.target.value);
-          e.target.value = "";
-        }}
-        className="rounded-full px-3 py-1.5 text-sm border border-slate-200 bg-white text-slate-700"
-      >
+  defaultValue=""
+  onChange={(e) => {
+    if (e.target.value) navigate(e.target.value);
+    e.target.value = "";
+  }}
+  className="rounded-full px-3 py-1.5 text-sm border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
+>
         <option value="" disabled>Platform</option>
         <option value="/platform/university">University Platform</option>
         <option value="/platform/global">Global Platform</option>
