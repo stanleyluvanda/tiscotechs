@@ -1310,7 +1310,8 @@ const files = mergedFiles.filter((a) => {
         <Avatar size="md" url={post.authorPhoto} name={post.author}/>
         {/*<div className="min-w-0">*/}
           <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 min-w-0">
+          {/*<div className="flex items-center gap-2 min-w-0">*/}
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
             <div className="font-semibold text-slate-900 truncate">{post.author}</div>
             {post.authorType === "lecturer" && (
               <span
@@ -1328,8 +1329,17 @@ const files = mergedFiles.filter((a) => {
         </div>
 
         {/*<span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>*/}
-        <span className="hidden sm:inline-flex ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
-  {post.type}</span>
+        <div className="flex flex-col items-end shrink-0">
+  <span
+    className="
+      text-[11px] rounded-full border border-slate-100 px-2 py-0.5
+      bg-slate-50 text-slate-600
+      mt-1 sm:mt-0
+    "
+  >
+    {post.type}
+  </span>
+</div>
 
         {/* NEW: delete control (student can delete own posts) */}
         {canDelete && (
