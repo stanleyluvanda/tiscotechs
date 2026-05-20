@@ -935,7 +935,7 @@ function myOnlineNow() {
       {/* separate chat window next to dock (LinkedIn-style) */}
       {chatOpen && active && (
         /*<div className="fixed bottom-4 right-[485px] z-50 w-[650px] h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">*/
-        <div className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-auto sm:right-[485px] z-50 w-auto sm:w-[650px] h-[calc(100vh-135px)] sm:h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+        <div className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-auto sm:right-[485px] z-50 w-auto sm:w-[650px] h-[calc(100vh-150px)] sm:h-[540px] bg-white shadow-2xl border border-slate-200 rounded-xl overflow-hidden flex flex-col">
         
           {/* chat header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200">
