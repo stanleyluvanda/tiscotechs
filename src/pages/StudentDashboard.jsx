@@ -4548,8 +4548,8 @@ const feedCombined = useMemo(() => {
   onClick={() => setShowMineOnly((v) => !v)}
   className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
     showMineOnly
-      ? "bg-[#e8c2f3] text-[#5f1873] border-[#d89be8]"
-      : "bg-[#f5ddfb] text-[#6d2b7d] border-[#dfb4ec]"
+       ? "bg-blue-600 text-white border-blue-600"
+       : "bg-[#f5ddfb] text-[#6d2b7d] border-[#dfb4ec]"
   }`}
 >
   My Post
@@ -4560,7 +4560,7 @@ const feedCombined = useMemo(() => {
   onClick={onToggleLecturerOnly}
   className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
     showLecturerOnly
-     ? "bg-[#ffd8bd] text-[#8a3f00] border-[#ffbe94]"
+     ? "bg-blue-600 text-white border-blue-600"
      : "bg-[#ffe9d8] text-[#8f4d12] border-[#ffd0ad]"
   }`}
 >
@@ -4578,8 +4578,8 @@ const feedCombined = useMemo(() => {
     rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition relative
     ${
       showFacultyOnly
-        ? "bg-[#ffbfd0] text-[#8f1239] border-[#f59ab3]"
-        : "bg-[#ffd7e2] text-[#8f2348] border-[#f7b4c8]"
+         ? "bg-blue-600 text-white border-blue-600"
+         : "bg-[#ffd7e2] text-[#8f2348] border-[#f7b4c8]"
     }
     ${hasNewCommonPosts ? "animate-pulse shadow-[0_0_0_3px_rgba(244,114,182,0.25)]" : ""}
   `}
