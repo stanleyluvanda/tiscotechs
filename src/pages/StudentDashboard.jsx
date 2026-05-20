@@ -1305,7 +1305,7 @@ const files = mergedFiles.filter((a) => {
 
   return (
     <div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
-      {/*</div><div className="flex items-center gap-3">*/}
+      {/*<div className="flex items-center gap-3">*/}
       <div className="flex items-start gap-3">
         <Avatar size="md" url={post.authorPhoto} name={post.author}/>
         {/*<div className="min-w-0">*/}
@@ -1353,6 +1353,24 @@ const files = mergedFiles.filter((a) => {
           </button>
         )}
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {post.title && (
         <h3 className="mt-3 text-base md:text-lg font-semibold text-slate-900">
