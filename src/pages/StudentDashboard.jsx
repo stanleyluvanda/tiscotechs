@@ -1423,7 +1423,7 @@ const files = mergedFiles.filter((a) => {
       )}
 
       {/* post images (general) */}
-      {post.type !== "Academic Books" && images.length>0 && (
+      {/*{post.type !== "Academic Books" && images.length>0 && (
         <div className="mt-3">
           <ImageGrid
             images={images}
@@ -1433,7 +1433,42 @@ const files = mergedFiles.filter((a) => {
             withArrows
           />
         </div>
-      )}
+      )}*/}
+
+      {post.type !== "Academic Books" && images.length > 0 && (
+  <div className="mt-3">
+    {images.length === 1 ? (
+      <div className="sm:hidden">
+        <AttachmentImage
+          att={images[0]}
+          className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
+          onClick={() => openLightbox(images, 0)}
+        />
+      </div>
+    ) : null}
+
+    <div className={images.length === 1 ? "hidden sm:block" : ""}>
+      <ImageGrid
+        images={images}
+        onOpen={(idx)=>openLightbox(images, idx)}
+        max={3}
+        tileClass="h-40"
+        withArrows
+      />
+    </div>
+  </div>
+)}
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Lightbox */}
       {lightbox.open && (
