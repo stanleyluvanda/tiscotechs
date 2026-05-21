@@ -3193,9 +3193,11 @@ async function clearNotificationsServerBacked() {
 
       {/* Keep total width tight and ensure equal margins on both sides */}
       {/*<main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
-      <main className="max-w-[1400px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">
+      {/*<main className="max-w-[1400px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
+        <main className="w-full max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-6 py-0 sm:py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-0 sm:gap-4 lg:gap-6">
         {/* LEFT: Profile + filters */}
-        <aside className="space-y-4 pb-24">
+        {/*<aside className="space-y-4 pb-24">*/}
+          <aside className="hidden lg:block space-y-4 pb-24">
           {/* Profile card */}
           <Card className="p-0 overflow-hidden">
             <div className="relative h-20 bg-slate-200">
@@ -3383,15 +3385,17 @@ async function clearNotificationsServerBacked() {
         </aside>
 
         {/* CENTER: Composer + Feed */}
-        <section className="space-y-4 min-w-0">
+        {/*<section className="space-y-4 min-w-0">*/}
+        <section className="w-full min-w-0 space-y-3 sm:space-y-4">
           <ErrorBoundary>
             <Card>
               {!composerOpen ? (
-                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 px-1 sm:px-0">
                   <Avatar size="md" url={user.photoUrl} name={user.name} online />
                   <button
                     onClick={() => setComposerOpen(true)}
-                    className="flex-1 text-left border border-slate-100 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"
+                    /*className="flex-1 text-left border border-slate-100 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"*/
+                    className="flex-1 text-left border border-slate-100 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600 text-sm sm:text-base"
                   >
                     Start a post
                   </button>
@@ -3399,7 +3403,8 @@ async function clearNotificationsServerBacked() {
               ) : (
                 <form onSubmit={onPost}>
                   {/* Header */}
-                  <div className="flex items-center gap-3">
+                  {/*<div className="flex items-center gap-3">*/}
+                    <div className="flex items-start gap-2 sm:gap-3">
                     <Avatar size="md" url={user.photoUrl} name={user.name} online />
                     <div>
                       <div className="font-semibold text-slate-900">
@@ -3416,7 +3421,8 @@ async function clearNotificationsServerBacked() {
                         </span>
                       </label>
                     </div>
-                    <div className="ml-auto">
+                    {/*<div className="ml-auto">*/}
+                      <div className="ml-auto shrink-0">
                       <select
                         value={composerType}
                         onChange={(e) => setComposerType(e.target.value)}
