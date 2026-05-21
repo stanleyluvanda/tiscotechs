@@ -3190,6 +3190,21 @@ async function clearNotificationsServerBacked() {
     {/* 🔒 Email verification gate — shown on first sign-in or after email change */}
     <VerifyGate email={current?.email} />
 
+    {/* MOBILE: Composer shortcut */}
+<div className="lg:hidden px-2 pt-3 pb-2 bg-slate-50">
+  <Card className="mx-0">
+    <div className="flex items-center gap-2">
+      <Avatar size="md" url={user.photoUrl} name={user.name} online />
+      <button
+        onClick={() => setComposerOpen(true)}
+        className="flex-1 text-left border border-slate-100 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600 text-sm"
+      >
+        Start a post
+      </button>
+    </div>
+  </Card>
+</div>
+
 
       {/* Keep total width tight and ensure equal margins on both sides */}
       {/*<main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
@@ -3390,7 +3405,8 @@ async function clearNotificationsServerBacked() {
           
           <ErrorBoundary>
             {/*<Card>*/}
-              <Card className="mx-2 sm:mx-0">
+              {/*<Card className="mx-2 sm:mx-0">*/}
+                <Card className="hidden lg:block mx-2 sm:mx-0">
               {!composerOpen ? (
                   <div className="flex items-center gap-2 sm:gap-3 px-1 sm:px-0">
                   <Avatar size="md" url={user.photoUrl} name={user.name} online />
