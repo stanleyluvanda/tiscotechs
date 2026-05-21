@@ -3386,8 +3386,8 @@ async function clearNotificationsServerBacked() {
 
         {/* CENTER: Composer + Feed */}
         {/*<section className="space-y-4 min-w-0">*/}
-        {/*<section className="w-full min-w-0 space-y-3 sm:space-y-4">*/}
-          <section className="w-full min-w-0 space-y-3 sm:space-y-4 -mt-28 sm:mt-0">
+        <section className="w-full min-w-0 space-y-3 sm:space-y-4">
+          
           <ErrorBoundary>
             <Card>
               {!composerOpen ? (
