@@ -1326,10 +1326,20 @@ const files = mergedFiles.filter((a) => {
           <div className="text-xs text-slate-500">
             {(post.authorProgram||post.type)} • {post.time || ""} • {post.audience==="GLOBAL"?"Public":post.audience?.startsWith("FACULTY__")?"Faculty":"Program"}
           </div>
+
+          <div className="mt-1 sm:hidden">
+  <span className="inline-flex text-[11px] rounded-full border border-slate-100 px-2 py-0.5 bg-slate-50 text-slate-600">
+    {post.type}
+  </span>
+</div>
         </div>
 
+        <span className="hidden sm:inline-flex ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
+  {post.type}
+</span>
+
         {/*<span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>*/}
-        <div className="flex flex-col items-end shrink-0">
+        {/*<div className="flex flex-col items-end shrink-0">
   <span
     className="
       text-[11px] rounded-full border border-slate-100 px-2 py-0.5
@@ -1339,7 +1349,7 @@ const files = mergedFiles.filter((a) => {
   >
     {post.type}
   </span>
-</div>
+</div>*/}
 
         {/* NEW: delete control (student can delete own posts) */}
         {canDelete && (
