@@ -1323,9 +1323,18 @@ const files = mergedFiles.filter((a) => {
               </span>
             )}
           </div>
-          <div className="text-xs text-slate-500">
+          {/*<div className="text-xs text-slate-500">
             {(post.authorProgram||post.type)} • {post.time || ""} • {post.audience==="GLOBAL"?"Public":post.audience?.startsWith("FACULTY__")?"Faculty":"Program"}
-          </div>
+          </div>*/}
+          <div className="text-xs text-slate-500">
+  <span className="sm:hidden">
+    {(post.authorProgram || post.type)} {post.time ? `• ${post.time}` : ""}
+  </span>
+
+  <span className="hidden sm:inline">
+    {(post.authorProgram || post.type)} • {post.time || ""} • {post.audience==="GLOBAL"?"Public":post.audience?.startsWith("FACULTY__")?"Faculty":"Program"}
+  </span>
+</div>
 
           <div className="mt-1 sm:hidden">
   <span className="inline-flex text-[11px] rounded-full border border-slate-100 px-2 py-0.5 bg-slate-50 text-slate-600">
