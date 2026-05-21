@@ -3940,7 +3940,8 @@ async function clearNotificationsServerBacked() {
     </section>
 
         {/* RIGHT: Updates*/}
-        <aside className="space-y-4 min-w-0 w-full max-w-full">
+        {/*<aside className="space-y-4 min-w-0 w-full max-w-full">*/}
+          <aside className="hidden lg:block space-y-4 min-w-0 w-full max-w-full">
           <Card className="overflow-hidden">
   <div className="font-semibold text-slate-900 text-center">Updates for Lecturers</div>
 
