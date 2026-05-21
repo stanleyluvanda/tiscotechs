@@ -1440,10 +1440,11 @@ const files = mergedFiles.filter((a) => {
     {images.length === 1 ? (
       <div className="sm:hidden">
         <AttachmentImage
-          att={images[0]}
-          className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
-          onClick={() => openLightbox(images, 0)}
-        />
+  key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
+  att={images[0]}
+  className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
+  onClick={() => openLightbox(images, 0)}
+/>
       </div>
     ) : null}
 
