@@ -3409,10 +3409,13 @@ async function clearNotificationsServerBacked() {
                 <form onSubmit={onPost}>
                   {/* Header */}
                   {/*<div className="flex items-center gap-3">*/}
-                    <div className="flex items-start gap-2 sm:gap-3">
+                    {/*<div className="flex items-start gap-2 sm:gap-3">*/}
+                      <div className="flex items-start gap-3">
                     <Avatar size="md" url={user.photoUrl} name={user.name} online />
-                    <div>
-                      <div className="font-semibold text-slate-900">
+                    {/*<div>*/}
+                      <div className="min-w-0 flex-1">
+                      {/*</div><div className="font-semibold text-slate-900">*/}
+                      <div className="font-semibold text-slate-900 truncate">
                         {user.title ? `${user.title} ` : ""}{user.name}
                       </div>
                       <label className="flex items-center gap-2 text-xs text-slate-600">
@@ -4378,7 +4381,8 @@ function ToolbarButton({ onClick, label, title }) {
 /* Avatar with optional online dot */
 function Avatar({ size = "md", url, name, online=false }) {
   const sizeClass = size === "lg" ? "h-16 w-16" : size === "sm" ? "h-8 w-8" : "h-10 w-10";
-  const container = `${sizeClass} relative rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;
+  /*const container = `${sizeClass} relative rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;*/
+  const container = `${sizeClass} relative shrink-0 rounded-full bg-slate-300 flex items-center justify-center overflow-hidden`;
   return (
     <div className={container}>
       {url ? (
