@@ -1316,7 +1316,8 @@ const SimpleHTMLEditor = memo(
     };
 
     return (
-      <div className="border border-slate-200 rounded">
+      /*<div className="border border-slate-200 rounded">*/
+        <div className="w-full max-w-full overflow-x-hidden border border-slate-200 rounded-xl">
         <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
           <ToolbarButton onAction={() => wrapSel("<strong>", "</strong>")} title="Bold">
             B
@@ -1345,7 +1346,8 @@ const SimpleHTMLEditor = memo(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"
+          /*className="min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"*/
+          className="min-h-[190px] sm:min-h-[96px] w-full max-w-full overflow-auto px-3 py-3 text-sm outline-none"
           dir="ltr"
           style={{
             direction: "ltr",
@@ -2783,7 +2785,9 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   />
 </div>
                  
-                      <div className="mt-2 flex items-center gap-2">
+                      {/*<div className="mt-2 flex items-center gap-2">*/}
+                      {/*<div className="mt-3 flex flex-wrap items-center gap-2 w-full overflow-x-hidden">*/}
+                      <div className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-2">
                         {/*<label className="text-xs border border-slate-200 rounded-full px-3 py-1.5 cursor-pointer hover:bg-slate-50">
                           📎 Attach images/files
                           <input type="file" className="hidden" multiple onChange={onPickAskFiles} />
