@@ -1038,12 +1038,17 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   if (!replies.length) return null;
 
   return (
-    <div className="mt-2 pl-6 space-y-2">
+    /*<div className="mt-2 pl-6 space-y-2">*/
+    <div className="mt-2 pl-2 sm:pl-6 space-y-2 border-l-4 border-red-500">
       {replies.map((r, index) => (
-        <div
+        /*<div
           key={r?.id || `${comment.id || "comment"}-reply-${index}`}
           className="flex items-start gap-2"
-        >
+        >*/
+          <div
+  key={r?.id || `${comment.id || "comment"}-reply-${index}`}
+  className="flex items-start gap-2"
+>
           <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
           <div>
             {/*<div className="font-medium text-slate-800">{r?.author}</div>
