@@ -3909,6 +3909,35 @@ async function clearNotificationsServerBacked() {
             </Card>
           </ErrorBoundary>
 
+
+          {/* MOBILE: Lecturer quick pills */}
+<div className="lg:hidden px-2">
+  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+    <button
+      type="button"
+      onClick={() => setComposerOpen(true)}
+      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+    >
+      Common post
+    </button>
+
+    <button
+      type="button"
+      onClick={() => setComposerOpen(true)}
+      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+    >
+      Post Type
+    </button>
+
+    <Link
+      to="/platform/university"
+      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+    >
+      Platform
+    </Link>
+  </div>
+</div>
+
           {/* Feed (deduped multi-program posts) */}
           
 
