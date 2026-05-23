@@ -541,7 +541,14 @@ const initialUser = {
 };
 
 /* ================= Reusable UI ================= */
-function Card({ className="", children }) { return <div className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>{children}</div>; }
+/*function Card({ className="", children }) { return <div className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>{children}</div>; }*/
+function Card({ className="", children }) {
+  return (
+    <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
+      {children}
+    </div>
+  );
+}
 function DashLink({ to, label }) { return <Link to={to} className="block rounded px-2 py-2 hover:bg-slate-50 text-slate-700 text-center">{label}</Link>; }
 /* NEW: Academic Platform style header bar + square sidebar card */
 function HeaderBar({ title }) {
@@ -1304,7 +1311,8 @@ const files = mergedFiles.filter((a) => {
   const canDelete = post.authorType === "student" && post.author === (currentUser?.name || "");
 
   return (
-    <div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
+    /*<div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>*/
+      <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
       {/*<div className="flex items-center gap-3">*/}
       <div className="flex items-start gap-3">
         <Avatar size="md" url={post.authorPhoto} name={post.author}/>
@@ -1438,14 +1446,24 @@ const files = mergedFiles.filter((a) => {
       {post.type !== "Academic Books" && images.length > 0 && (
   <div className="mt-3">
     {images.length === 1 ? (
-      <div className="sm:hidden">
+      /*<div className="sm:hidden">
         <AttachmentImage
   key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
   att={images[0]}
   className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
   onClick={() => openLightbox(images, 0)}
 />
-      </div>
+      </div>*/
+
+      <div className="-mx-3 sm:hidden">
+  <AttachmentImage
+    key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
+    att={images[0]}
+    className="w-full max-h-[420px] object-cover rounded-none cursor-zoom-in"
+    onClick={() => openLightbox(images, 0)}
+  />
+</div>
+
     ) : null}
 
     <div className={images.length === 1 ? "hidden sm:block" : ""}>
