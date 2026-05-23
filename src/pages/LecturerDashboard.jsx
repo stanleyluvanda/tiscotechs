@@ -708,7 +708,8 @@ function ImageGrid({
             <div key={`${(img.id || img.dataUrl || img.name || "img")}-${start}-${idx}`} className="relative">
               <AttachmentImage
                 att={img}
-                className={`w-full ${tileClass} object-cover rounded cursor-zoom-in`}
+                /*className={`w-full ${tileClass} object-cover rounded cursor-zoom-in`}*/
+                className={`w-[calc(100%+24px)] sm:w-full max-w-none -mx-3 sm:mx-0 ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}
                 onClick={() => openAt(idx)}
               />
               {isLastTile && (
