@@ -47,31 +47,6 @@ async function addPastedImagesToUploadAtts(cb, setAskUploadAtts) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ============ Utils & Storage ============ */
 function safeParse(json) {
   try {
@@ -1316,8 +1291,10 @@ const SimpleHTMLEditor = memo(
     };
 
     return (
-      <div className="border border-slate-200 rounded">
-        <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
+      /*<div className="border border-slate-200 rounded">*/
+      <div className="w-full max-w-full overflow-hidden border border-slate-200 rounded-xl">
+        {/*</div><div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">*/}
+          <div className="flex flex-wrap gap-1.5 p-1.5 border-b border-slate-200 bg-slate-50 overflow-hidden">
           <ToolbarButton onAction={() => wrapSel("<strong>", "</strong>")} title="Bold">
             B
           </ToolbarButton>
@@ -1345,7 +1322,8 @@ const SimpleHTMLEditor = memo(
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"
+          /*className="min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"*/
+          className="min-h-[190px] sm:min-h-[96px] max-h-[45vh] w-full max-w-full overflow-auto px-3 py-3 text-sm outline-none"
           dir="ltr"
           style={{
             direction: "ltr",
@@ -2712,8 +2690,10 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
         {/* CENTER */}
         <section className="min-w-0 space-y-3 lg:space-y-4">
-          <Card>
-            <div className="p-4">
+          {/*</section><Card>
+            <div className="p-4">*/}
+              <Card className="mx-3 sm:mx-0 overflow-hidden">
+              <div className="p-3 sm:p-4">
               {!editorOpen ? (
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Avatar url={user?.photoUrl} name={user?.name} size="md" online={true} />
@@ -2725,7 +2705,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   </button>
                 </div>
               ) : (
-                <form onSubmit={postQuestion}>
+                /*<form onSubmit={postQuestion}>*/
+                <form onSubmit={postQuestion} className="w-full max-w-full overflow-hidden">
                   <div className="flex items-start gap-3">
                     <Avatar url={user?.photoUrl} name={user?.name} size="md" online={true} />
                     <div className="flex-1 min-w-0">
@@ -2733,7 +2714,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         value={askTitle}
                         onChange={(e) => setAskTitle(e.target.value)}
                         placeholder="Add a title"
-                        className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
+                        /*className="w-full border border-slate-200 rounded px-3 py-2 text-sm"*/
+                        className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none"
                       />
                       {/*<div className="mt-2">
                         
@@ -2783,7 +2765,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   />
 </div>
                  
-                      <div className="mt-2 flex items-center gap-2">
+                      /*</div><div className="mt-2 flex items-center gap-2">*/
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:items-center">
                         {/*<label className="text-xs border border-slate-200 rounded-full px-3 py-1.5 cursor-pointer hover:bg-slate-50">
                           📎 Attach images/files
                           <input type="file" className="hidden" multiple onChange={onPickAskFiles} />
@@ -2794,7 +2777,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
 
 
-                        <div className="ml-auto flex items-center gap-2">
+                        /*</div><div className="ml-auto flex items-center gap-2">*/
+                        <div className="contents sm:ml-auto sm:flex sm:items-center sm:gap-2">
                           <select
                             value={selectedCategory}
                             onChange={(e) => {
@@ -2802,7 +2786,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                               setSelectedCategory(c);
                               setSelectedTopic("All");
                             }}
-                            className="min-w-0 flex-1 sm:flex-none border border-slate-200 rounded px-2 py-1.5 text-xs"
+                            /*className="min-w-0 flex-1 sm:flex-none border border-slate-200 rounded px-2 py-1.5 text-xs"*/
+                            className="min-w-0 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white"
                           >
                             {CATEGORIES.map((c) => (
                               <option key={c} value={c}>
@@ -2813,7 +2798,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                           <select
                             value={selectedTopic}
                             onChange={(e) => setSelectedTopic(e.target.value)}
-                            className="border border-slate-200 rounded px-2 py-1 text-xs"
+                            /*className="border border-slate-200 rounded px-2 py-1 text-xs"*/
+                            className="min-w-0 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white"
                           >
                             {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
                               (t) => (
@@ -2823,7 +2809,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                               )
                             )}
                           </select>
-                          <button className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700">
+                          {/*<button className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700">*/}
+                            <button className="w-full sm:w-auto rounded-full bg-blue-600 text-white px-5 py-2.5 text-sm font-semibold shadow-sm">
                             Post
                           </button>
                           <button
@@ -2835,7 +2822,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                               /*setAskAtts([]);*/
                               setAskUploadAtts([]);
                             }}
-                            className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
+                            /*className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"*/
+                            className="w-full sm:w-auto rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm text-slate-700"
                           >
                             Cancel
                           </button>
