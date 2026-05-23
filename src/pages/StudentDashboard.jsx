@@ -1039,7 +1039,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
 
   return (
     /*<div className="mt-2 pl-6 space-y-2">*/
-    <div className="mt-2 pl-2 sm:pl-6 space-y-2 border-l-4 border-red-500">
+    <div className="mt-2 pl-2 sm:pl-6 space-y-2">
       {replies.map((r, index) => (
         /*<div
           key={r?.id || `${comment.id || "comment"}-reply-${index}`}
