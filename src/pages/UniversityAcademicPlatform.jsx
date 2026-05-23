@@ -788,7 +788,7 @@ function AttachmentStrip({ atts = [], onPreview }) {
 
   return (
     <div className="mt-2 space-y-2">
-      {images.length > 0 && (
+      {/*{images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {images.map((img) => (
             <button
@@ -809,7 +809,63 @@ function AttachmentStrip({ atts = [], onPreview }) {
             </button>
           ))}
         </div>
-      )}
+      )}*/}
+
+      {images.length > 0 && (
+  <>
+    {/* Mobile */}
+    <div className="-mx-3 grid grid-cols-2 gap-1 sm:hidden">
+      {images.slice(0, 4).map((img, idx) => {
+        const isLast = idx === 3 && images.length > 4;
+
+        return (
+          <button
+            key={img.id || `${img.name}-${img.dataUrl}-${idx}`}
+            type="button"
+            onClick={() => onPreview && onPreview(img)}
+            className="relative group"
+            title="Click to enlarge"
+          >
+            <img
+              src={img.dataUrl}
+              alt={img.name}
+              className="w-full h-44 object-cover rounded-none"
+            />
+
+            {isLast && (
+              <span className="absolute inset-0 bg-black/50 text-white font-semibold text-sm flex items-center justify-center">
+                +{images.length - 4} more
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+
+    {/* Desktop */}
+    <div className="hidden sm:grid sm:grid-cols-3 gap-2">
+      {images.map((img) => (
+        <button
+          key={img.id || `${img.name}-${img.dataUrl}`}
+          type="button"
+          onClick={() => onPreview && onPreview(img)}
+          className="relative group"
+          title="Click to enlarge"
+        >
+          <img
+            src={img.dataUrl}
+            alt={img.name}
+            className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
+          />
+
+          <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
+            Zoom
+          </span>
+        </button>
+      ))}
+    </div>
+  </>
+)}
 
       {files.length > 0 && (
         <div className="space-y-2">
