@@ -1466,7 +1466,32 @@ const files = mergedFiles.filter((a) => {
 
     ) : null}
 
-    <div className={images.length === 1 ? "hidden sm:block" : ""}>
+    {/*<div className={images.length === 1 ? "hidden sm:block" : ""}>
+      <ImageGrid
+        images={images}
+        onOpen={(idx)=>openLightbox(images, idx)}
+        max={3}
+        tileClass="h-40"
+        withArrows
+      />
+    </div>*/}
+
+    {images.length > 1 && (
+  <>
+    {/* Mobile: show 4 photos in 2x2 grid */}
+    <div className="-mx-3 sm:hidden">
+      <ImageGrid
+        images={images}
+        onOpen={(idx) => openLightbox(images, idx)}
+        max={4}
+        tileClass="h-48"
+        cols="grid-cols-2"
+        withArrows
+      />
+    </div>
+
+    {/* Desktop: keep existing 3-photo layout */}
+    <div className="hidden sm:block">
       <ImageGrid
         images={images}
         onOpen={(idx)=>openLightbox(images, idx)}
@@ -1475,6 +1500,8 @@ const files = mergedFiles.filter((a) => {
         withArrows
       />
     </div>
+  </>
+)}
   </div>
 )}
 
