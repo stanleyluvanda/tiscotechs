@@ -1317,7 +1317,8 @@ const SimpleHTMLEditor = memo(
 
     return (
       /*<div className="border border-slate-200 rounded">*/
-        <div className="w-full max-w-full overflow-x-hidden border border-slate-200 rounded-xl">
+        /*<div className="w-full max-w-full overflow-x-hidden border border-slate-200 rounded-xl">*/
+        <div className="w-[calc(100%+6px)] sm:w-full max-w-none overflow-x-hidden border border-slate-200 rounded-xl">
         <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
           <ToolbarButton onAction={() => wrapSel("<strong>", "</strong>")} title="Bold">
             B
@@ -2730,7 +2731,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                 <form onSubmit={postQuestion}>
                   <div className="flex items-start gap-3">
                     <Avatar url={user?.photoUrl} name={user?.name} size="md" online={true} />
-                    <div className="flex-1 min-w-0">
+                    {/*</div><div className="flex-1 min-w-0">*/}
+                      <div className="flex-1 min-w-0 -ml-1 sm:ml-0">
                       <input
                         value={askTitle}
                         onChange={(e) => setAskTitle(e.target.value)}
@@ -2772,10 +2774,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 </div>
 
 
-
-
-
- <div className="mt-2">
+  <div className="mt-3 grid grid-cols-[1fr_64px_58px_68px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+  <div className="mt-2">
   <AttachmentUploader
     value={askUploadAtts}
     onChange={setAskUploadAtts}
@@ -2784,10 +2784,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     role={isLecturer ? "lecturer" : "student"}
   />
 </div>
-                 
-                      
 
-                      <div className="mt-3 grid grid-cols-[1fr_64px_58px_68px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
   <select
     value={selectedCategory}
     onChange={(e) => {
