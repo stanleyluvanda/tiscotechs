@@ -4688,15 +4688,39 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
       </div>
     ) : null}
 
-    <div className={images.length === 1 ? "hidden sm:block" : "-mx-3 sm:mx-0"}>
+    {/*<div className={images.length === 1 ? "hidden sm:block" : "-mx-3 sm:mx-0"}>
       <ImageGrid
         images={images}
         onOpen={(idx)=>openLightbox(images, idx)}
         max={3}
         tileClass="h-56 sm:h-40"
       />
-    </div>
+    </div>*/}
   </div>
+)}
+{images.length > 1 && (
+  <>
+    {/* Mobile: show 4 photos in 2x2 grid */}
+    <div className="-mx-3 sm:hidden">
+      <ImageGrid
+        images={images}
+        onOpen={(idx) => openLightbox(images, idx)}
+        max={4}
+        tileClass="h-48"
+        cols="grid-cols-2"
+      />
+    </div>
+
+    {/* Desktop: keep existing 3-photo layout */}
+    <div className="hidden sm:block">
+      <ImageGrid
+        images={images}
+        onOpen={(idx) => openLightbox(images, idx)}
+        max={3}
+        tileClass="h-40"
+      />
+    </div>
+  </>
 )}
 
 
@@ -4737,7 +4761,9 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
                   aria-label="Previous"
                   title="Previous"
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full shadow px-3 py-2 text-xl z-10"
-                  onPointerDown={(e) => { stop(e); step(-1); }}
+                  /*onPointerDown={(e) => { stop(e); step(-1); }}*/
+                  onClick={(e) => { stop(e); step(-1); }}
+                   onPointerDown={stop}
                 >
                   <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"
                     strokeLinecap="round" strokeLinejoin="round">
@@ -4749,7 +4775,9 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
                   aria-label="Next"
                   title="Next"
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full shadow px-3 py-2 text-xl z-10"
-                  onPointerDown={(e) => { stop(e); step(1); }}
+                  /*onPointerDown={(e) => { stop(e); step(1); }}*/
+                  onClick={(e) => { stop(e); step(1); }}
+                   onPointerDown={stop}
                 >
                   <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2"
                     strokeLinecap="round" strokeLinejoin="round">
@@ -5245,7 +5273,8 @@ function CommentThread({ comment, onAddReply }) {
                   type="button"
                   className="absolute -top-3 -right-3 bg-white rounded-full px-2 py-1 text-sm shadow z-10"
                   aria-label="Close"
-                  onPointerDown={(e) => { stop(e); closeLightbox(); }}
+                  /*onPointerDown={(e) => { stop(e); closeLightbox(); }}*/
+                  onClick={(e) => {stop(e);closeLightbox()}}onPointerDown={stop}
                 >
                   ✕
                 </button>
