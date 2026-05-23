@@ -1075,6 +1075,7 @@ export default function LecturerDashboard() {
   const [unseenCount, setUnseenCount] = useState(0);
   const [forceOpenKey, setForceOpenKey] = useState(null);
   const showUnreadOnly = !notifOpen; // when tray is open, show all
+  const [mobilePanel, setMobilePanel] = useState("");
   
 useEffect(() => {
   if (notifications && notifications.length > 0) {
@@ -3910,32 +3911,106 @@ async function clearNotificationsServerBacked() {
           </ErrorBoundary>
 
 
-          {/* MOBILE: Lecturer quick pills */}
+         {/* MOBILE: Lecturer quick pills */}
 <div className="lg:hidden px-2">
   <div className="flex items-center gap-2 overflow-x-auto pb-1">
     <button
       type="button"
-      onClick={() => setComposerOpen(true)}
-      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+      onClick={() => setMobilePanel((v) => v === "common" ? "" : "common")}
+      className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${
+        mobilePanel === "common" ? "bg-[rgb(102,0,102)] text-white" : "bg-white text-slate-700 border-slate-200"
+      }`}
     >
-      Common post
+      Common posts
     </button>
 
     <button
       type="button"
-      onClick={() => setComposerOpen(true)}
-      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+      onClick={() => setMobilePanel((v) => v === "academic" ? "" : "academic")}
+      className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${
+        mobilePanel === "academic" ? "bg-[rgb(102,0,102)] text-white" : "bg-white text-slate-700 border-slate-200"
+      }`}
     >
-      Post Type
+      Academic posts
     </button>
 
-    <Link
-      to="/platform/university"
-      className="shrink-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+    <button
+      type="button"
+      onClick={() => setMobilePanel((v) => v === "platforms" ? "" : "platforms")}
+      className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${
+        mobilePanel === "platforms" ? "bg-[rgb(102,0,102)] text-white" : "bg-white text-slate-700 border-slate-200"
+      }`}
     >
-      Platform
-    </Link>
+      Academic platforms
+    </button>
   </div>
+</div>
+
+
+
+{/* MOBILE: Panels opened by pills */}
+<div className="lg:hidden px-2">
+  {mobilePanel === "common" && (
+    <Card>
+      <div className="text-center font-semibold text-slate-900">
+        Common posts
+      </div>
+
+      <div className="mt-3 flex justify-center">
+        <button
+          onClick={() => setShowFacultyOnly((v) => !v)}
+          className={`px-4 py-1 rounded-full text-sm ${
+            showFacultyOnly ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          {showFacultyOnly ? "On" : "Off"}
+        </button>
+      </div>
+
+      <p className="mt-2 text-xs text-slate-600 text-center">
+        When on, you’ll only see {facultyLabel.toLowerCase()} posts you created.
+      </p>
+    </Card>
+  )}
+
+  {mobilePanel === "academic" && (
+    <Card>
+      <div className="text-center font-semibold text-slate-900">
+        Academic posts
+      </div>
+
+      <div className="mt-3 space-y-2 text-sm">
+        <FilterPill label="All" active={filterType === "All"} onClick={() => setFilterType("All")} />
+        {POST_TYPES.map((t) => (
+          <FilterPill key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
+        ))}
+      </div>
+    </Card>
+  )}
+
+  {mobilePanel === "platforms" && (
+    <Card>
+      <div className="text-center font-semibold text-slate-900 rounded-lg px-3 py-2 bg-sky-100">
+        Academic platforms
+      </div>
+
+      <div className="mt-3 space-y-2 text-sm">
+        <Link
+          to="/platform/university"
+          className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        >
+          University Academic Platform
+        </Link>
+
+        <Link
+          to="/platform/global"
+          className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        >
+          Global Academic Platform
+        </Link>
+      </div>
+    </Card>
+  )}
 </div>
 
           {/* Feed (deduped multi-program posts) */}
