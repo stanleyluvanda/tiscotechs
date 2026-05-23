@@ -2785,66 +2785,60 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   />
 </div>
                  
-                      {/*<div className="mt-2 flex items-center gap-2">*/}
-                      {/*<div className="mt-3 flex flex-wrap items-center gap-2 w-full overflow-x-hidden">*/}
-                      <div className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-2">
-                        {/*<label className="text-xs border border-slate-200 rounded-full px-3 py-1.5 cursor-pointer hover:bg-slate-50">
-                          📎 Attach images/files
-                          <input type="file" className="hidden" multiple onChange={onPickAskFiles} />
-                        </label>*/}
-                        {/*<div className="mt-2">*/}
-  
+                      
+
+                      <div className="mt-3 grid grid-cols-[1fr_64px_58px_68px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+  <select
+    value={selectedCategory}
+    onChange={(e) => {
+      const c = e.target.value;
+      setSelectedCategory(c);
+      setSelectedTopic("All");
+    }}
+    className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {CATEGORIES.map((c) => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </select>
+
+  <select
+    value={selectedTopic}
+    onChange={(e) => setSelectedTopic(e.target.value)}
+    className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
+      (t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      )
+    )}
+  </select>
+
+  <button className="w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-2 text-xs sm:text-sm font-semibold shadow-sm">
+    Post
+  </button>
+
+  <button
+    type="button"
+    onClick={() => {
+      setEditorOpen(false);
+      setAskTitle("");
+      setAskBodyHtml("");
+      setAskUploadAtts([]);
+    }}
+    className="w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-2 text-xs sm:text-sm text-slate-700"
+  >
+    Cancel
+  </button>
+</div>
 
 
 
 
-                        <div className="ml-auto flex items-center gap-2">
-                          <select
-                            value={selectedCategory}
-                            onChange={(e) => {
-                              const c = e.target.value;
-                              setSelectedCategory(c);
-                              setSelectedTopic("All");
-                            }}
-                            className="min-w-0 flex-1 sm:flex-none border border-slate-200 rounded px-2 py-1.5 text-xs"
-                          >
-                            {CATEGORIES.map((c) => (
-                              <option key={c} value={c}>
-                                {c}
-                              </option>
-                            ))}
-                          </select>
-                          <select
-                            value={selectedTopic}
-                            onChange={(e) => setSelectedTopic(e.target.value)}
-                            className="border border-slate-200 rounded px-2 py-1 text-xs"
-                          >
-                            {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
-                              (t) => (
-                                <option key={t} value={t}>
-                                  {t}
-                                </option>
-                              )
-                            )}
-                          </select>
-                          <button className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700">
-                            Post
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditorOpen(false);
-                              setAskTitle("");
-                              setAskBodyHtml("");
-                              /*setAskAtts([]);*/
-                              setAskUploadAtts([]);
-                            }}
-                            className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </form>
