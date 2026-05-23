@@ -400,7 +400,7 @@ const Card = forwardRef(function Card(
     <div
       ref={ref}
       className={`${
-        square ? "rounded-none" : "rounded-2xl"
+        square ? "rounded-none" : "rounded-none sm:rounded-2xl"
       } border border-slate-200 bg-white shadow-sm ${className}`}
       {...rest}
     >
@@ -655,7 +655,7 @@ function fileIconDataUrl(filename = "") {
   return (
     <div className="mt-2 space-y-2">
       {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className={images.length === 1 ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 sm:grid-cols-3 gap-2"}>
           {images.map((img) => (
             <button
               key={img.id}
@@ -667,7 +667,7 @@ function fileIconDataUrl(filename = "") {
               <img
                 src={img.dataUrl}
                 alt={img.name}
-                className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
+                className={images.length === 1 ? "w-full max-h-[70vh] object-contain bg-slate-100 rounded transition-transform group-active:scale-95" : "w-full h-40 object-cover rounded transition-transform group-active:scale-95"}
               />
               <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
                 Zoom
@@ -788,7 +788,7 @@ function AttachmentStrip({ atts = [], onPreview }) {
 
   return (
     <div className="mt-2 space-y-2">
-      {/*{images.length > 0 && (
+      {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {images.map((img) => (
             <button
@@ -809,64 +809,7 @@ function AttachmentStrip({ atts = [], onPreview }) {
             </button>
           ))}
         </div>
-      )}*/}
-
-      {images.length > 0 && (
-  <>
-    {/* Mobile */}
-    <div className="-mx-3 grid grid-cols-2 gap-1 sm:hidden">
-      {images.slice(0, 4).map((img, idx) => {
-        const isLast = idx === 3 && images.length > 4;
-
-        return (
-          <button
-            key={img.id || `${img.name}-${img.dataUrl}-${idx}`}
-            type="button"
-            onClick={() => onPreview && onPreview(img)}
-            className="relative group"
-            title="Click to enlarge"
-          >
-            <img
-              src={img.dataUrl}
-              alt={img.name}
-              className="w-full h-44 object-cover rounded-none"
-            />
-
-            {isLast && (
-              <span className="absolute inset-0 bg-black/50 text-white font-semibold text-sm flex items-center justify-center">
-                +{images.length - 4} more
-              </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-
-    {/* Desktop */}
-    <div className="hidden sm:grid sm:grid-cols-3 gap-2">
-      {images.map((img) => (
-        <button
-          key={img.id || `${img.name}-${img.dataUrl}`}
-          type="button"
-          onClick={() => onPreview && onPreview(img)}
-          className="relative group"
-          title="Click to enlarge"
-        >
-          <img
-            src={img.dataUrl}
-            alt={img.name}
-            className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
-          />
-
-          <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
-            Zoom
-          </span>
-        </button>
-      ))}
-    </div>
-  </>
-)}
-
+      )}
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((f) => (
@@ -1476,7 +1419,7 @@ function NotificationTray({ userId, onOpenPost }) {
                   <div className="text-xs text-slate-600">
                     by {n.by} • {timeAgo(n.createdAt)} ago
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
                     <button
                       className="text-xs border border-slate-200 rounded px-2 py-0.5 hover:bg-slate-100"
                       onClick={() => {
@@ -2497,7 +2440,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </div>
 
       <div className="flex items-center gap-2 mt-2">
-        <div className="ml-auto flex items-center gap-2">
+        <div className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-2">
           <button className="rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50">
             Post
           </button>
@@ -2673,13 +2616,13 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </div>
 
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
+      <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
       
       {/* LEFT rail */}
-        <aside className="space-y-4 pb-24">
+        <aside className="hidden lg:block space-y-4 pb-24">
           <Card square>
             <HeaderBar title="University Academic Platform" square />
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
             </div>
           </Card>
@@ -2767,15 +2710,15 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         </aside>
 
         {/* CENTER */}
-        <section className="space-y-4">
+        <section className="min-w-0 space-y-3 lg:space-y-4">
           <Card>
             <div className="p-4">
               {!editorOpen ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Avatar url={user?.photoUrl} name={user?.name} size="md" online={true} />
                   <button
                     onClick={() => setEditorOpen(true)}
-                    className="flex-1 text-left border border-slate-200 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"
+                    className="flex-1 min-w-0 text-left border border-slate-200 rounded-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white hover:bg-slate-50 text-slate-600 text-sm sm:text-base"
                   >
                     What do you want to post, ask or share?
                   </button>
@@ -2858,7 +2801,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                               setSelectedCategory(c);
                               setSelectedTopic("All");
                             }}
-                            className="border border-slate-200 rounded px-2 py-1 text-xs"
+                            className="min-w-0 flex-1 sm:flex-none border border-slate-200 rounded px-2 py-1.5 text-xs"
                           >
                             {CATEGORIES.map((c) => (
                               <option key={c} value={c}>
@@ -2906,7 +2849,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
           {/* Sort + Search */}
           <Card>
-            <div className="p-3 flex flex-wrap items-center gap-2">
+            <div className="p-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
               <div className="text-sm">Showing:</div>
               <div className="flex items-center gap-1">
                 {["Top", "Newest", "Answered"].map((s) => (
@@ -2921,12 +2864,12 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   </button>
                 ))}
               </div>
-              <div className="ml-auto">
+              <div className="w-full sm:w-auto sm:ml-auto">
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search posts…"
-                  className="w-72 max-w-[60vw] border border-slate-200 rounded px-3 py-1.5 text-sm"
+                  className="w-full sm:w-72 sm:max-w-[60vw] border border-slate-200 rounded px-3 py-2 sm:py-1.5 text-sm"
                 />
               </div>
             </div>
@@ -2940,8 +2883,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                 if (el) postRefs.current[post.id] = el;
               }}
             >
-              <div className="p-4">
-                <div className="flex items-start gap-3">
+              <div className="p-3 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-3">
   <Avatar
     url={post.author?.photoUrl}
     name={post.author?.name}
@@ -3015,12 +2958,12 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   <AttachmentStrip atts={post.attachments} onPreview={setPreview} />
                 </div>
 
-                <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-slate-600">
                   <button onClick={() => toggleLike(post.id)} className="rounded px-2 py-1 hover:bg-slate-50">
                     👍 Upvote{" "}
                     {post.likes > 0 && <span className="text-slate-500">({post.likes})</span>}
                   </button>
-                  <span className="text-slate-400">•</span>
+                  <span className="hidden sm:inline text-slate-400">•</span>
                   <span className="text-slate-700">
                     {/*{(post.comments || []).filter((c) => c.parentId == null).length} Comments*/}
                     {normalizeThreadComments(post.comments).filter((c) => c.parentId == null).length} Comments
@@ -3037,7 +2980,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     🚩 Report
   </button>
 
-                  <button onClick={() => toggleSave(post.id)} className="ml-auto rounded px-2 py-1 hover:bg-slate-50">
+                  <button onClick={() => toggleSave(post.id)} className="sm:ml-auto rounded px-2 py-1 hover:bg-slate-50">
                     {post.saved ? "★ Saved" : "☆ Save"}
                   </button>
                 </div>
@@ -3051,7 +2994,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         </section>
 
         {/* RIGHT rail */}
-        <aside className="space-y-4 pb-24">
+        <aside className="hidden lg:block space-y-4 pb-24">
           <Card square>
             <HeaderBar title="Your Topics" square />
             <div className="p-3 space-y-1 text-sm max-h-[180px] overflow-auto">
