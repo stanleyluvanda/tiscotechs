@@ -4532,13 +4532,39 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
 
       
       {/* Images */}
-{images.length>0 && (
+{/*{images.length>0 && (
   <div className="mt-3 -mx-3 sm:mx-0">
     <ImageGrid
       images={images} onOpen={(idx)=>openLightbox(images, idx)} max={3}tileClass="h-56 sm:h-40"
     />
   </div>
+)}*/}
+{/* Images */}
+{images.length > 0 && (
+  <div className="mt-3">
+    {images.length === 1 ? (
+      <div className="-mx-3 sm:hidden">
+        <AttachmentImage
+          key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
+          att={images[0]}
+          className="w-full max-h-[420px] object-cover rounded-none cursor-zoom-in"
+          onClick={() => openLightbox(images, 0)}
+        />
+      </div>
+    ) : null}
+
+    <div className={images.length === 1 ? "hidden sm:block" : "-mx-3 sm:mx-0"}>
+      <ImageGrid
+        images={images}
+        onOpen={(idx)=>openLightbox(images, idx)}
+        max={3}
+        tileClass="h-56 sm:h-40"
+      />
+    </div>
+  </div>
 )}
+
+
 
       {/* Lightbox */}
       {lightbox.open && (
