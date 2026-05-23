@@ -709,7 +709,8 @@ function ImageGrid({
               <AttachmentImage
                 att={img}
                 /*className={`w-full ${tileClass} object-cover rounded cursor-zoom-in`}*/
-                className={`w-[calc(100%+24px)] sm:w-full max-w-none -mx-3 sm:mx-0 ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}
+                /*className={`w-[calc(100%+24px)] sm:w-full max-w-none -mx-3 sm:mx-0 ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}*/
+                className={`w-full ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}
                 onClick={() => openAt(idx)}
               />
               {isLastTile && (
@@ -4529,12 +4530,15 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
         </div>
       )}
 
+      
       {/* Images */}
-      {images.length>0 && (
-        <div className="mt-3">
-          <ImageGrid images={images} onOpen={(idx)=>openLightbox(images, idx)} max={3} /*tileClass="h-40"*/tileClass="h-56 sm:h-40" />
-        </div>
-      )}
+{images.length>0 && (
+  <div className="mt-3 -mx-3 sm:mx-0">
+    <ImageGrid
+      images={images} onOpen={(idx)=>openLightbox(images, idx)} max={3}tileClass="h-56 sm:h-40"
+    />
+  </div>
+)}
 
       {/* Lightbox */}
       {lightbox.open && (
