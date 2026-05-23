@@ -3389,7 +3389,8 @@ async function clearNotificationsServerBacked() {
           
           <ErrorBoundary>
             {/*<Card>*/}
-              <Card className="mx-2 sm:mx-0">
+              {/*<Card className="mx-2 sm:mx-0">*/}
+              <Card className="mx-0 sm:mx-0">
               {!composerOpen ? (
                   <div className="flex items-center gap-2 sm:gap-3 px-1 sm:px-0">
                   <Avatar size="md" url={user.photoUrl} name={user.name} online />
@@ -4022,7 +4023,8 @@ async function clearNotificationsServerBacked() {
       <button
         type="button"
         onClick={() => setNotifOpen(true)}
-        className="fixed z-[70] right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"
+        /*className="fixed z-[70] right-4 bottom-4 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"*/
+        className="fixed z-[70] right-3 sm:right-4 bottom-3 sm:bottom-4 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center"
       >
         <span className="text-xl">🔔</span>
         {unseenCount > 0 && (
@@ -4221,7 +4223,8 @@ async function clearNotificationsServerBacked() {
 function Card({ className = "", children }) {
   return (
     /*<div className={`w-full max-w-full box-border rounded-2xl border border-slate-100 bg-white p-4 shadow-sm overflow-hidden ${className}`}>*/
-    <div className={`w-full max-w-full box-border rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>
+    /*<div className={`w-full max-w-full box-border rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>*/
+    <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -4528,7 +4531,7 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
       {/* Images */}
       {images.length>0 && (
         <div className="mt-3">
-          <ImageGrid images={images} onOpen={(idx)=>openLightbox(images, idx)} max={3} tileClass="h-40" />
+          <ImageGrid images={images} onOpen={(idx)=>openLightbox(images, idx)} max={3} /*tileClass="h-40"*/tileClass="h-56 sm:h-40" />
         </div>
       )}
 
