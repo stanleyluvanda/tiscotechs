@@ -3410,39 +3410,59 @@ async function clearNotificationsServerBacked() {
                   {/* Header */}
                   {/*<div className="flex items-center gap-3">*/}
                     {/*<div className="flex items-start gap-2 sm:gap-3">*/}
-                      <div className="flex items-start gap-3">
-                    <Avatar size="md" url={user.photoUrl} name={user.name} online />
-                    {/*<div>*/}
-                      <div className="min-w-0 flex-1">
-                      {/*</div><div className="font-semibold text-slate-900">*/}
-                      <div className="font-semibold text-slate-900 truncate">
-                        {user.title ? `${user.title} ` : ""}{user.name}
-                      </div>
-                      <label className="flex items-center gap-2 text-xs text-slate-600">
-                        <input
-                          type="checkbox"
-                          checked={toFaculty}
-                          onChange={(e) => { setToFaculty(e.target.checked); if (e.target.checked) setSelectedPrograms([]); }}
-                        />
-                        <span>
-                          Check this to post to <strong>{facultyTerm}</strong>. You’ll still choose a <strong>Year of Study</strong>.
-                        </span>
-                      </label>
-                    </div>
-                    {/*<div className="ml-auto">*/}
-                      <div className="ml-auto shrink-0">
-                      <select
-                        value={composerType}
-                        onChange={(e) => setComposerType(e.target.value)}
-                        className="border border-slate-100 rounded px-2 py-1 text-sm"
-                        title="Select post type"
-                      >
-                        {POST_TYPES.map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+                      
+
+                  <div className="flex items-start gap-3">
+  <Avatar size="md" url={user.photoUrl} name={user.name} online />
+
+  <div className="min-w-0 flex-1">
+    <div className="font-semibold text-slate-900 truncate">
+      {user.title ? `${user.title} ` : ""}{user.name}
+    </div>
+
+    <label className="mt-1 flex items-start gap-2 text-xs text-slate-600">
+      <input
+        type="checkbox"
+        className="mt-0.5 shrink-0"
+        checked={toFaculty}
+        onChange={(e) => {
+          setToFaculty(e.target.checked);
+          if (e.target.checked) setSelectedPrograms([]);
+        }}
+      />
+      <span className="leading-4">
+        Check this to post to <strong>{facultyTerm}</strong>. You’ll still choose a <strong>Year of Study</strong>.
+      </span>
+    </label>
+
+    <select
+      value={composerType}
+      onChange={(e) => setComposerType(e.target.value)}
+      className="mt-2 w-full border border-slate-100 rounded px-2 py-1 text-sm"
+      title="Select post type"
+    >
+      {POST_TYPES.map((t) => (
+        <option key={t} value={t}>{t}</option>
+      ))}
+    </select>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                   {/* Title (used for all post types) */}
                   <label className="block mt-3 text-xs text-slate-600">
@@ -4593,7 +4613,7 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
       )}
     </div>
 
-    <div className="text-xs text-slate-500">
+    {/*<div className="text-xs text-slate-500">
       {programLabel || post.type} • {formatTimeAgo(post.createdAt || post.updatedAt)} •{" "}
       {post.audience === "GLOBAL"
         ? "Public"
@@ -4602,7 +4622,14 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
         : post.multiGroupId
         ? "Programs"
         : "Program"}
-    </div>
+    </div>*/}
+    <div className="text-xs text-slate-500">
+  {programLabel || post.type} • {formatTimeAgo(post.createdAt || post.updatedAt)}
+</div>
+
+
+
+
   </div>
 
   <span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
