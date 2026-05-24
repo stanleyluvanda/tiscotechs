@@ -2851,7 +2851,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </select>
 
   <div className="order-3 sm:order-none col-span-2 flex items-center gap-3 sm:contents">
-    <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden">
+    {/*<div className="shrink-0 w-[74px] sm:w-auto overflow-hidden">*/}
+      <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
       <AttachmentUploader
         value={askUploadAtts}
         onChange={setAskUploadAtts}
@@ -2873,7 +2874,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         setAskBodyHtml("");
         setAskUploadAtts([]);
       }}
-      className="shrink-0 h-9 w-[96px] sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 text-xs sm:text-sm text-slate-700"
+      /*className="shrink-0 h-9 w-[96px] sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 text-xs sm:text-sm text-slate-700"*/
+      className="shrink-0 h-9 w-[96px] sm:w-auto rounded-full border border-amber-200 bg-amber-50 px-2 sm:px-5 text-xs sm:text-sm text-amber-700"
     >
       Cancel
     </button>
