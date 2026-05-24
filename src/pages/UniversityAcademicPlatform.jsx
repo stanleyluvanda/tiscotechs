@@ -2776,7 +2776,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
   {/*</div><div className="mt-3 grid grid-cols-[1fr_64px_58px_68px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
     {/*<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-    <div className="mt-3 grid grid-cols-[1fr_1fr] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+    {/*<div className="mt-3 grid grid-cols-[1fr_1fr] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
+    <div className="mt-3 grid grid-cols-[48px_1fr_1fr] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
   {/*<div className="mt-2">*/}
   {/*</div><div className="order-3 sm:order-none col-span-1 mt-0">*/}
     <div className="order-3 sm:order-none mt-0">
@@ -2797,7 +2798,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       setSelectedTopic("All");
     }}
     /*className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
-    className="order-1 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+    /*className="order-1 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
+    className="order-1 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
   >
     {CATEGORIES.map((c) => (
       <option key={c} value={c}>
@@ -2810,7 +2812,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     value={selectedTopic}
     onChange={(e) => setSelectedTopic(e.target.value)}
     /*className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
-    className="order-2 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+    /*className="order-2 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
+    className="order-2 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
   >
     {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
       (t) => (
@@ -2823,7 +2826,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
   {/*<button className="w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-2 text-xs sm:text-sm font-semibold shadow-sm">*/}
     {/*<button className="order-4 sm:order-none w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-2 text-xs sm:text-sm font-semibold shadow-sm">*/}
-      <button className="order-4 sm:order-none w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold shadow-sm">
+      {/*<button className="order-4 sm:order-none w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold shadow-sm">*/}
+        <button className="order-4 sm:order-none h-8 rounded-full bg-blue-600 text-white px-2 sm:px-5 text-[11px] sm:text-sm font-semibold shadow-sm">
     Post
   </button>
 
@@ -2837,7 +2841,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     }}
     /*className="w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-2 text-xs sm:text-sm text-slate-700"*/
     /*className="order-5 sm:order-none w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-2 text-xs sm:text-sm text-slate-700"*/
-    className="order-5 sm:order-none w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm text-slate-700"
+    /*className="order-5 sm:order-none w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm text-slate-700"*/
+    className="order-5 sm:order-none h-8 rounded-full border border-slate-200 bg-white px-2 sm:px-5 text-[11px] sm:text-sm text-slate-700"
   >
     Cancel
   </button>
