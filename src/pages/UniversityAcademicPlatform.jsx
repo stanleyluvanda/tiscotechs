@@ -2739,20 +2739,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         placeholder="Add a title"
                         className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
                       />
-                      {/*<div className="mt-2">
-                        
-                    <SimpleHTMLEditor html={askBodyHtml} onChange={setAskBodyHtml} placeholder="Write your post…" />
-                      </div>
-                      <AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
                      
-
-{/* Optional: show selected attachments preview (remove if you don’t want it) */}
-{/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
-
-{/*<div className="mt-2">
-  <SimpleHTMLEditor html={askBodyHtml} onChange={setAskBodyHtml} placeholder="Write your post…" />
-</div>*/}
-
 <div
   className="mt-2"
   onPasteCapture={async (e) => {
@@ -2773,14 +2760,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   />
 </div>
 
-
-  {/*</div><div className="mt-3 grid grid-cols-[1fr_64px_58px_68px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-    {/*<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-    {/*<div className="mt-3 grid grid-cols-[1fr_1fr] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-    {/*<div className="mt-3 grid grid-cols-[48px_1fr_1fr] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-    <div className="mt-3 grid grid-cols-[56px_88px_88px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
-  {/*<div className="mt-2">*/}
-  {/*</div><div className="order-3 sm:order-none col-span-1 mt-0">*/}
+    {/*<div className="mt-3 grid grid-cols-[56px_88px_88px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
     <div className="order-3 sm:order-none mt-0">
   <AttachmentUploader
     value={askUploadAtts}
@@ -2798,8 +2778,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       setSelectedCategory(c);
       setSelectedTopic("All");
     }}
-    /*className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
-    /*className="order-1 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
     className="order-1 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
   >
     {CATEGORIES.map((c) => (
@@ -2812,8 +2790,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   <select
     value={selectedTopic}
     onChange={(e) => setSelectedTopic(e.target.value)}
-    /*className="min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
-    /*className="order-2 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"*/
     className="order-2 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
   >
     {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
@@ -2825,10 +2801,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     )}
   </select>
 
-  {/*<button className="w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-2 text-xs sm:text-sm font-semibold shadow-sm">*/}
-    {/*<button className="order-4 sm:order-none w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-2 text-xs sm:text-sm font-semibold shadow-sm">*/}
-      {/*<button className="order-4 sm:order-none w-full sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm font-semibold shadow-sm">*/}
-        {/*<button className="order-4 sm:order-none h-8 rounded-full bg-blue-600 text-white px-2 sm:px-5 text-[11px] sm:text-sm font-semibold shadow-sm">*/}
          <button className="order-4 sm:order-none h-7 rounded-full bg-blue-600 text-white px-1 sm:px-5 text-[10px] sm:text-sm font-semibold shadow-sm">
     Post
   </button>
@@ -2841,15 +2813,86 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       setAskBodyHtml("");
       setAskUploadAtts([]);
     }}
-    /*className="w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-2 text-xs sm:text-sm text-slate-700"*/
-    /*className="order-5 sm:order-none w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-2 text-xs sm:text-sm text-slate-700"*/
-    /*className="order-5 sm:order-none w-full sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-sm text-slate-700"*/
-    /*className="order-5 sm:order-none h-8 rounded-full border border-slate-200 bg-white px-2 sm:px-5 text-[11px] sm:text-sm text-slate-700"*/
     className="order-5 sm:order-none h-7 rounded-full border border-slate-200 bg-white px-1 sm:px-5 text-[10px] sm:text-sm text-slate-700"
   >
     Cancel
   </button>
+</div>*/}
+
+<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+  <select
+    value={selectedCategory}
+    onChange={(e) => {
+      const c = e.target.value;
+      setSelectedCategory(c);
+      setSelectedTopic("All");
+    }}
+    className="order-1 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {CATEGORIES.map((c) => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </select>
+
+  <select
+    value={selectedTopic}
+    onChange={(e) => setSelectedTopic(e.target.value)}
+    className="order-2 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
+      (t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      )
+    )}
+  </select>
+
+  <div className="order-3 sm:order-none col-span-2 flex items-center gap-3 sm:contents">
+    <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden">
+      <AttachmentUploader
+        value={askUploadAtts}
+        onChange={setAskUploadAtts}
+        folder={`uni/${uni || "unknown"}/posts`}
+        maxFiles={5}
+        role={isLecturer ? "lecturer" : "student"}
+      />
+    </div>
+
+    <button className="shrink-0 h-9 w-[92px] sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 text-xs sm:text-sm font-semibold shadow-sm">
+      Post
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        setEditorOpen(false);
+        setAskTitle("");
+        setAskBodyHtml("");
+        setAskUploadAtts([]);
+      }}
+      className="shrink-0 h-9 w-[96px] sm:w-auto rounded-full border border-slate-200 bg-white px-2 sm:px-5 text-xs sm:text-sm text-slate-700"
+    >
+      Cancel
+    </button>
+  </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     </div>
                   </div>
