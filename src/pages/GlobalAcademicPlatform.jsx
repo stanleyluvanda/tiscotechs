@@ -2479,7 +2479,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </div>*/}
 
       <div
-  className="mt-2"
+  /*className="mt-2"*/
+  className="mt-2 -ml-9 sm:ml-0"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
@@ -2819,9 +2820,11 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   </div>
                 ) : (
                   <form onSubmit={postQuestion}>
-                    <div className="flex items-start gap-3">
+                    {/*<div className="flex items-start gap-3">*/}
+                    <div className="flex items-start gap-2 sm:gap-3">
                       <Avatar url={user?.photoUrl} name={userDisplayName} size="md" online={true} />
-                      <div className="flex-1 min-w-0">
+                      {/*<div className="flex-1 min-w-0">*/}
+                      <div className="flex-1 min-w-0 -ml-1 sm:ml-0">
                         <input
                           value={askTitle}
                           onChange={(e) => setAskTitle(e.target.value)}
@@ -2852,72 +2855,108 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
              
                         </div>
-                        <AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />
+                        {/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
                         <div className="mt-1">
-                            <AttachmentUploader
+  {/*<AttachmentUploader
     value={askUploadAtts}
     onChange={setAskUploadAtts}
     folder="global/posts"
     maxFiles={5}
     role={isLecturer ? "lecturer" : "student"}
-  />
+  />*/}
+  <AttachmentUploader
+  value={askUploadAtts}
+  onChange={setAskUploadAtts}
+  folder="global/posts"
+  maxFiles={5}
+  role={isLecturer ? "lecturer" : "student"}
+  showList={false}
+/>
 </div>
                         
-
-                        <div className="mt-2 flex items-center gap-2">
-                          {/*<label className="text-xs border border-slate-200 rounded-full px-3 py-1.5 cursor-pointer hover:bg-slate-50">
-                            📎 Attach images/files
-                            <input type="file" className="hidden" multiple onChange={onPickAskFiles} />
-                          </label>*/}
-                          
-  
+                           
 
 
-                          <div className="ml-auto flex items-center gap-2">
-                            <select
-                              value={selectedCategory}
-                              onChange={(e) => {
-                                const c = e.target.value;
-                                setSelectedCategory(c);
-                                setSelectedTopic("All");
-                              }}
-                              className="border border-slate-200 rounded px-2 py-1 text-xs"
-                            >
-                              {CATEGORIES.map((c) => (
-                                <option key={c} value={c}>
-                                  {c}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              value={selectedTopic}
-                              onChange={(e) => setSelectedTopic(e.target.value)}
-                              className="border border-slate-200 rounded px-2 py-1 text-xs"
-                            >
-                              {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map((t) => (
-                                <option key={t} value={t}>
-                                  {t}
-                                </option>
-                              ))}
-                            </select>
-                            <button className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700">Post</button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditorOpen(false);
-                                setAskTitle("");
-                                setAskBodyHtml("");
-                                /*setAskAtts([]);*/
-                                setAskUploadAtts([]);
-                              }}
-                              className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
-                            >
-                              Cancel
-                            </button>
-                          </div>
+
+
+
+
+
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+  <select
+    value={selectedCategory}
+    onChange={(e) => {
+      const c = e.target.value;
+      setSelectedCategory(c);
+      setSelectedTopic("All");
+    }}
+    className="order-1 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {CATEGORIES.map((c) => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </select>
+
+  <select
+    value={selectedTopic}
+    onChange={(e) => setSelectedTopic(e.target.value)}
+    className="order-2 sm:order-none min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
+  >
+    {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map((t) => (
+      <option key={t} value={t}>
+        {t}
+      </option>
+    ))}
+  </select>
+
+  <div className="order-3 sm:order-none col-span-2 flex items-center gap-3 sm:contents">
+    <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
+      <AttachmentUploader
+        value={askUploadAtts}
+        onChange={setAskUploadAtts}
+        folder="global/posts"
+        maxFiles={5}
+        role={isLecturer ? "lecturer" : "student"}
+        showList={false}
+      />
+    </div>
+
+    <button className="shrink-0 h-9 w-[92px] sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 text-xs sm:text-sm font-semibold shadow-sm">
+      Post
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        setEditorOpen(false);
+        setAskTitle("");
+        setAskBodyHtml("");
+        setAskUploadAtts([]);
+      }}
+      className="shrink-0 h-9 w-[96px] sm:w-auto rounded-full border border-amber-200 bg-amber-50 px-2 sm:px-5 text-xs sm:text-sm text-amber-700"
+    >
+      Cancel
+    </button>
+  </div>
                         </div>
                       </div>
                     </div>
+
+
+                    {/* preview BELOW controls */}
+<div className="mt-3 pt-3 border-t border-slate-200 sm:mt-4 sm:pt-4">
+  <div className="max-w-[170px] sm:max-w-none">
+    <AttachmentStripEditable
+      atts={askAtts}
+      onRemove={removeAskAttachment}
+      onPreview={setPreview}
+    />
+  </div>
+</div>
+
                   </form>
                 )}
               </div>
