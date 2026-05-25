@@ -2415,6 +2415,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         onPreview={setPreview}
       />
 
+
       {/*<div className="mt-2">
         <SimpleHTMLEditor html={html} onChange={setHtml} placeholder={placeholder} />
       </div>*/}
@@ -2441,13 +2442,23 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
      
 
 <div className="mt-2 max-w-[520px] sm:block hidden">
-  <AttachmentUploader
+  {/*<AttachmentUploader
     value={uploadAtts}
     onChange={setUploadAtts}
     folder={`uni/${uni || "unknown"}/comments`}
     maxFiles={5}
     role={isLecturer ? "lecturer" : "student"}
-  />
+  />*/}
+  <AttachmentUploader
+  value={uploadAtts}
+  onChange={setUploadAtts}
+  folder={`uni/${uni || "unknown"}/comments`}
+  maxFiles={5}
+  role={isLecturer ? "lecturer" : "student"}
+  showList={false}
+/>
+
+
 </div>
 
 {/* Mobile only: attachment + Cancel + Post in one row */}
