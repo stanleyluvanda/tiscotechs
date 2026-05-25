@@ -935,7 +935,8 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
                 title="Click to enlarge"
                 className="w-full"
               >
-                <img src={img.dataUrl} alt={img.name} className="w-full h-40 object-cover rounded" />
+                {/*<img src={img.dataUrl} alt={img.name} className="w-full h-40 object-cover rounded" />*/}
+                <img src={img.dataUrl} alt={img.name} className="w-[160px] sm:w-full max-w-[70vw] h-auto sm:h-40 object-cover rounded"/>
               </button>
               <button
                 type="button"
