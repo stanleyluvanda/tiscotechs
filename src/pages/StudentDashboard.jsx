@@ -4767,9 +4767,9 @@ const feedCombined = useMemo(() => {
   }}
   className="rounded-full px-3 py-1.5 text-sm border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
 >
-        <option value="" disabled>Platform</option>
-        <option value="/platform/university">University Platform</option>
-        <option value="/platform/global">Global Platform</option>
+        <option value="" disabled>Academic Platform</option>
+        <option value="/platform/university">University Academic Platform</option>
+        <option value="/platform/global">Global Academic Platform</option>
       </select>
 
     </div>
