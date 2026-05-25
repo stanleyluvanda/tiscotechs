@@ -2438,7 +2438,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
 
       {/* ✅ Use uploader (CloudFront URLs) instead of <input type="file"> */}
-      <div className="mt-2 max-w-[520px]">
+      {/*<div className="mt-2 max-w-[520px]">
         <AttachmentUploader
           value={uploadAtts}
           onChange={setUploadAtts}
@@ -2464,8 +2464,40 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
           >
             Cancel
           </button>
-        </div>
-      </div>
+        </div>*/}
+
+        <div className="mt-2 flex items-center gap-2">
+  {/* attachment */}
+  <div className="rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
+    <AttachmentUploader
+      value={uploadAtts}
+      onChange={setUploadAtts}
+      folder={`uni/${uni || "unknown"}/comments`}
+      maxFiles={5}
+      role={isLecturer ? "lecturer" : "student"}
+    />
+  </div>
+
+  {/* cancel */}
+  <button
+    type="button"
+    onClick={() => {
+      setOpen(false);
+      setHtml("");
+      setUploadAtts([]);
+    }}
+    className="h-8 rounded-full border border-amber-200 bg-amber-50 px-4 text-xs text-amber-700 hover:bg-amber-100"
+  >
+    Cancel
+  </button>
+
+  {/* post */}
+  <button
+    className="h-8 rounded-full bg-blue-600 text-white px-4 text-xs font-semibold shadow-sm hover:bg-blue-700"
+  >
+    Post
+  </button>
+</div>
     </form>
   );
 }
