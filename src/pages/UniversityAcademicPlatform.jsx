@@ -2422,7 +2422,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </div>*/}
 
       <div
-  className="mt-2"
+  /*className="mt-2"*/
+  className="mt-2 -ml-9 sm:ml-0"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
