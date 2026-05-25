@@ -801,7 +801,8 @@ function AttachmentStrip({ atts = [], onPreview }) {
               <img
                 src={img.dataUrl}
                 alt={img.name}
-                className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
+                /*className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"*/
+                className="w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"
               />
               <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
                 Zoom
@@ -920,7 +921,8 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
   return (
     <div className="mt-2 space-y-2">
       {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        /*<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">*/
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2">
           {images.map((img) => (
             <div key={img.id} className="relative">
               <button
