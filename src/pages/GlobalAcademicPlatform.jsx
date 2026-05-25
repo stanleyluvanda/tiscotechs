@@ -686,22 +686,19 @@ function AttachmentStrip({ atts = [], onPreview }) {
   return (
     <div className="mt-2 space-y-2">
       {images.length > 0 && (
-        /*<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">*/
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 w-full">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {images.map((img) => (
             <button
               key={img.id || attHref(img) || uid()}
               type="button"
               onClick={() => onPreview && onPreview(img)}
-              /*className="relative group"*/
-              className="relative group w-full block"
+              className="relative group"
               title="Click to enlarge"
             >
               <img
                 src={attHref(img)}
                 alt={img.name}
-                /*className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"*/
-                className="block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"
+                className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
               />
               <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
                 Zoom
@@ -2725,7 +2722,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
         <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
           {/* LEFT rail */}
-          <aside className="space-y-4 pb-24">
+          {/*<aside className="space-y-4 pb-24">*/}
+            <aside className="hidden lg:block space-y-4 pb-24">
             <Card square>
               <HeaderBar title="Global Academic Platform" square />
               <div className="p-4">
