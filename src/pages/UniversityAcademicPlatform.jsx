@@ -2544,7 +2544,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
               </div>
 
               {/* bubble content only */}
-              <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100">
+              {/*<div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100">*/}
+                <div className="mt-1 bg-white rounded-2xl px-0 sm:px-3 py-2 border border-transparent sm:border-slate-100 -ml-10 sm:ml-0">
                 <HTMLReadMore html={r.html} lines={3} />
                 <AttachmentStrip atts={r.attachments} onPreview={setPreview} />
               </div>
