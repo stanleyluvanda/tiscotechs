@@ -2463,7 +2463,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 </div>
 
 {/* Mobile only: attachment + Cancel + Post in one row */}
-<div className="mt-2 flex sm:hidden items-center gap-2">
+{/*</form><div className="mt-2 flex sm:hidden items-center gap-2">
   <div className="shrink-0 rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
     <AttachmentUploader
       value={uploadAtts}
@@ -2471,6 +2471,16 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       folder={`uni/${uni || "unknown"}/comments`}
       maxFiles={5}
       role={isLecturer ? "lecturer" : "student"}
+    />*/}
+    <div className="mt-2 flex sm:hidden items-center gap-2">
+  <div className="shrink-0 rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
+    <AttachmentUploader
+      value={uploadAtts}
+      onChange={setUploadAtts}
+      folder={`uni/${uni || "unknown"}/comments`}
+      maxFiles={5}
+      role={isLecturer ? "lecturer" : "student"}
+      showList={false}
     />
   </div>
 
