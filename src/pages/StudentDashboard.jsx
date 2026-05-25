@@ -1451,14 +1451,15 @@ const files = mergedFiles.filter((a) => {
       {post.type !== "Academic Books" && images.length > 0 && (
   <div className="mt-3">
     {images.length === 1 ? (
-      /*<div className="sm:hidden">
+      <>
+      {/*<div className="sm:hidden">
         <AttachmentImage
   key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
   att={images[0]}
   className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
   onClick={() => openLightbox(images, 0)}
 />
-      </div>*/
+      </div>
 
       <div className="-mx-3 sm:hidden">
   <AttachmentImage
@@ -1467,7 +1468,28 @@ const files = mergedFiles.filter((a) => {
     className="w-full max-h-[420px] object-cover rounded-none cursor-zoom-in"
     onClick={() => openLightbox(images, 0)}
   />
-</div>
+</div>*/}
+
+ {/* Mobile single image */}
+    <div className="-mx-3 sm:hidden">
+      <AttachmentImage
+        key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
+        att={images[0]}
+        className="w-full max-h-[420px] object-cover rounded-none cursor-zoom-in"
+        onClick={() => openLightbox(images, 0)}
+      />
+    </div>
+
+    {/* Desktop single image */}
+    <div className="hidden sm:block">
+      <AttachmentImage
+        key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
+        att={images[0]}
+        className="w-full max-h-[520px] object-cover rounded-lg cursor-zoom-in"
+        onClick={() => openLightbox(images, 0)}
+      />
+    </div>
+  </>
 
     ) : null}
 
