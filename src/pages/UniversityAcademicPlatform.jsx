@@ -2525,7 +2525,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
       {/* replies */}
       {(byParent[a.id] || []).map((r) => (
-        <div key={r.id} className="mt-3 pl-4 border-l border-slate-200">
+        /*<div key={r.id} className="mt-3 pl-4 border-l border-slate-200">*/
+        <div key={r.id} className="mt-3 pl-0 sm:pl-4 sm:border-l sm:border-slate-200">
           <div className="flex items-start gap-2">
             <Avatar url={r.authorPhoto} name={r.author} size="sm" online={isOnline(r.authorId)} />
 
