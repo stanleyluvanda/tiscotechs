@@ -2859,22 +2859,22 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         </div>
                         {/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
                         <div className="mt-1">
-  {/*<AttachmentUploader
+  <AttachmentUploader
     value={askUploadAtts}
     onChange={setAskUploadAtts}
     folder="global/posts"
     maxFiles={5}
     role={isLecturer ? "lecturer" : "student"}
-  />*/}
+  />
 
-  <AttachmentUploader
+  {/*<AttachmentUploader
   value={askUploadAtts}
   onChange={setAskUploadAtts}
   folder="global/posts"
   maxFiles={5}
   role={isLecturer ? "lecturer" : "student"}
   showList={false}
-/>
+/>*/}
 </div>
                         
                            
