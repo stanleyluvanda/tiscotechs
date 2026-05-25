@@ -2555,9 +2555,11 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       ))}
 
       {/* Reply composer */}
-      <div className="mt-2 pl-8 flex items-start gap-2">
+      {/*<div className="mt-2 pl-8 flex items-start gap-2">*/}
+        <div className="mt-2 pl-0 sm:pl-8 flex items-start gap-2">
         <Avatar url={user?.photoUrl} name={user?.name} size="sm" online />
-        <div className="flex-1">
+        {/*<div className="flex-1">*/}
+        <div className="flex-1 -ml-10 sm:ml-0">
           <InlineComposer
             placeholder="Reply…"
             onSubmit={(v, ra) => addReply(post.id, a.id, v, ra)}
