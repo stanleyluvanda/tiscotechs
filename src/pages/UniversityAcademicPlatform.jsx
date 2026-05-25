@@ -2958,12 +2958,21 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     </button>
   </div>
 </div>
-<div className="mt-4 pt-4 border-t border-slate-200">
+{/*<div className="mt-4 pt-4 border-t border-slate-200">
   <AttachmentStripEditable
     atts={askAtts}
     onRemove={removeAskAttachment}
     onPreview={setPreview}
   />
+</div>*/}
+<div className="mt-3 pt-3 border-t border-slate-200 sm:mt-4 sm:pt-4">
+  <div className="max-w-[170px] sm:max-w-none">
+    <AttachmentStripEditable
+      atts={askAtts}
+      onRemove={removeAskAttachment}
+      onPreview={setPreview}
+    />
+  </div>
 </div>
 
 
