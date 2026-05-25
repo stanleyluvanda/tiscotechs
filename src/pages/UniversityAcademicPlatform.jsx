@@ -2920,13 +2920,23 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   <div className="order-3 sm:order-none col-span-2 flex items-center gap-3 sm:contents">
     {/*<div className="shrink-0 w-[74px] sm:w-auto overflow-hidden">*/}
       <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
-      <AttachmentUploader
+      {/*<AttachmentUploader
         value={askUploadAtts}
         onChange={setAskUploadAtts}
         folder={`uni/${uni || "unknown"}/posts`}
         maxFiles={5}
         role={isLecturer ? "lecturer" : "student"}
-      />
+      />*/}
+      <AttachmentUploader
+  value={askUploadAtts}
+  onChange={setAskUploadAtts}
+  folder={`uni/${uni || "unknown"}/posts`}
+  maxFiles={5}
+  role={isLecturer ? "lecturer" : "student"}
+  showList={false}
+/>
+
+
     </div>
 
     <button className="shrink-0 h-9 w-[92px] sm:w-auto rounded-full bg-blue-600 text-white px-2 sm:px-5 text-xs sm:text-sm font-semibold shadow-sm">
@@ -2948,6 +2958,15 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     </button>
   </div>
 </div>
+<div className="mt-4 pt-4 border-t border-slate-200">
+  <AttachmentStripEditable
+    atts={askAtts}
+    onRemove={removeAskAttachment}
+    onPreview={setPreview}
+  />
+</div>
+
+
 
                     </div>
                   </div>
