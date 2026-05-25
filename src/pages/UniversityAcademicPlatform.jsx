@@ -2882,20 +2882,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     </div>
                   </div>
                 </form>
@@ -3128,11 +3114,28 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   )}
 </div>
 
-                <div className="mt-2">
+                {/*<div className="mt-2">
                   <div className="text-lg font-semibold text-slate-900">{post.title}</div>
                   {post.bodyHtml && <HTMLReadMore html={post.bodyHtml} lines={3} />}
                   <AttachmentStrip atts={post.attachments} onPreview={setPreview} />
-                </div>
+                </div>*/}
+
+                <div className="mt-2">
+  <div className="px-3 sm:px-0">
+    <div className="text-lg font-semibold text-slate-900">{post.title}</div>
+
+    {post.bodyHtml && (
+      <HTMLReadMore html={post.bodyHtml} lines={3} />
+    )}
+  </div>
+
+  <div className="-mx-3 sm:mx-0 mt-2 overflow-hidden sm:rounded-xl">
+    <AttachmentStrip
+      atts={post.attachments}
+      onPreview={setPreview}
+    />
+  </div>
+</div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-slate-600">
                   <button onClick={() => toggleLike(post.id)} className="rounded px-2 py-1 hover:bg-slate-50">
