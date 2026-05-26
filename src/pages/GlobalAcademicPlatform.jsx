@@ -3056,13 +3056,20 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </summary>
 
       <div className="absolute left-0 z-30 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-        <button
+       {/* <button
           type="button"
           onClick={() => navigate("/university-academic-platform")}
           className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
         >
           🎓 University Academic Platform
-        </button>
+        </button>*/}
+        <button
+  type="button"
+  onClick={() => navigate("/university-academic-platform")}
+  className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+>
+  🎓 University Academic Platform
+</button>
 
         {!isLecturer && (
           <>
