@@ -579,13 +579,15 @@ function HTMLReadMore({ html = "", lines = 3 }) {
 
   return (
     <div
-      className="text-sm text-slate-800 force-ltr"
+      /*className="text-sm text-slate-800 force-ltr"*/
+      className="text-sm text-slate-800 force-ltr max-w-full overflow-hidden break-words"
       dir="ltr"
       style={{ direction: "ltr", unicodeBidi: "plaintext", textAlign: "left", writingMode: "horizontal-tb" }}
     >
       <div
         ref={shellRef}
-        className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"
+        /*className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"*/
+        className="prose prose-sm max-w-full overflow-hidden break-words [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all [&_a]:overflow-wrap-anywhere"
         style={open ? { maxHeight: "none", overflow: "visible" } : undefined}
         dangerouslySetInnerHTML={{ __html: html || "" }}
       />
