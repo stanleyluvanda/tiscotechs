@@ -1228,6 +1228,12 @@ const SafeTextEditor = memo(
       });
     };
 
+    useEffect(() => {
+  if (ref.current && !ref.current.innerHTML && html) {
+    ref.current.innerHTML = html;
+  }
+}, []);
+
     return (
       <div className="border border-slate-200 rounded">
         <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
@@ -1276,7 +1282,7 @@ const SafeTextEditor = memo(
             writingMode: "horizontal-tb",
           }}
         />*/}
-        <div
+       <div
   ref={ref}
   contentEditable
   suppressContentEditableWarning
@@ -1286,12 +1292,8 @@ const SafeTextEditor = memo(
   onPaste={(e) => {
     const items = Array.from(e.clipboardData?.items || []);
     const hasImage = items.some((item) => item.type?.startsWith("image/"));
-
-    if (hasImage) {
-      e.preventDefault();
-    }
+    if (hasImage) e.preventDefault();
   }}
-  dangerouslySetInnerHTML={{ __html: html }}
   onInput={(e) => onChange(e.currentTarget.innerHTML)}
   style={{
     direction: "ltr",
