@@ -2504,12 +2504,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
 
 
-
-
-
-
-
-
       <div className="flex items-center gap-2 mt-2">
         <div className="mt-2">
           <AttachmentUploader
@@ -2845,6 +2839,11 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         {/*<div className="mt-2">
                           <SafeTextEditor html={askBodyHtml} onChange={setAskBodyHtml}/>
                         </div>*/}
+  <AttachmentStripEditable
+  atts={askAtts}
+  onRemove={removeAskAttachment}
+  onPreview={setPreview}
+/>
 
                           <div
   className="mt-2"
@@ -2867,13 +2866,13 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                         {/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
                         <div className="mt-1">
   <AttachmentUploader
-    value={askUploadAtts}
-    onChange={setAskUploadAtts}
-    folder="global/posts"
-    maxFiles={5}
-    role={isLecturer ? "lecturer" : "student"}
-    showList={false}
-  />
+  value={askUploadAtts}
+  onChange={setAskUploadAtts}
+  folder="global/posts"
+  maxFiles={5}
+  role={isLecturer ? "lecturer" : "student"}
+  showList={false}
+/>
 
   {/*<AttachmentUploader
   value={askUploadAtts}
