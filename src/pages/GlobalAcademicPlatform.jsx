@@ -554,9 +554,7 @@ function HTMLReadMore({ html = "", lines = 3 }) {
   const [open, setOpen] = useState(false);
   const [needs, setNeeds] = useState(false);
   const shellRef = useRef(null);
-  const [showMobilePlatforms, setShowMobilePlatforms] = useState(false);
-  const [showMobileTopics, setShowMobileTopics] = useState(false);
-
+  
   useEffect(() => {
     const el = shellRef.current;
     if (!el) return;
@@ -1621,6 +1619,8 @@ const seeded = useMemo(() => {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("Top");
   const [myOnly, setMyOnly] = useState(false);
+  const [showMobilePlatforms, setShowMobilePlatforms] = useState(false);
+  const [showMobileTopics, setShowMobileTopics] = useState(false);
 
   /* Composer */
   const [editorOpen, setEditorOpen] = useState(false);
