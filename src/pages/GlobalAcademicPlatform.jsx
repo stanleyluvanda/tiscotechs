@@ -392,7 +392,8 @@ const Card = forwardRef(function Card({ className = "", children, square = false
   return (
     <div
       ref={ref}
-      className={`${square ? "rounded-none" : "rounded-2xl"} border border-slate-200 bg-white shadow-sm ${className}`}
+      /*className={`${square ? "rounded-none" : "rounded-2xl"} border border-slate-200 bg-white shadow-sm ${className}`}*/
+      className={`${square ? "rounded-none" : "rounded-none sm:rounded-2xl"} border border-slate-200 bg-white shadow-sm ${className}`}
       {...rest}
     >
       {children}
