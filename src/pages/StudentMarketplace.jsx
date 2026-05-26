@@ -2106,190 +2106,207 @@ const filtered = visibleItems
                   </button>
                 </div>
               ) : (
-                <form onSubmit={onCreate} className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar url={user?.photoUrl} name={user?.name} />
-                    <div className="min-w-0">
-                      <div className="font-semibold text-slate-900">{user?.name}</div>
-                      <div className="text-xs text-slate-600">{user?.program}</div>
-                    </div>
-                    <div className="ml-auto flex items-center gap-2">
-                      <select
-                        value={mainCategory}
-                        onChange={(e) => setMainCategory(e.target.value)}
-                        className="border border-slate-200 rounded px-2 py-1 text-sm"
-                      >
-                        {MAIN_CATEGORIES.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                      {CATEGORY_MAP[mainCategory]?.length > 0 && (
-                        <select
-                          value={subCategory}
-                          onChange={(e) => setSubCategory(e.target.value)}
-                          className="border border-slate-200 rounded px-2 py-1 text-sm"
-                        >
-                          {CATEGORY_MAP[mainCategory].map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Title (e.g., Dell XPS 13, 16GB RAM)"
-                      className="w-full border border-slate-200 rounded px-3 py-2"
-                    />
-                    <div className="flex items-center gap-2">
-                      <input
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                        placeholder="$"
-                        className="w-16 border border-slate-200 rounded px-3 py-2"
-                        maxLength={4}
-                      />
-                      <input
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ""))}
-                        placeholder="Price"
-                        className="w-full border border-slate-200 rounded px-3 py-2"
-                      />
-                    </div>
-                  </div>
+                
+               <form onSubmit={onCreate} className="space-y-3 px-4 sm:px-0">
+  <div className="flex items-center gap-3">
+    <Avatar url={user?.photoUrl} name={user?.name} />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/*<select
-                      value={condition}
-                      onChange={(e) => setCondition(e.target.value)}
-                      className="border border-slate-200 rounded px-3 py-2"
-                    >
-                      <option value="">Condition (optional)</option>
-                      <option>New Arrivals</option>
-                      <option>Brand New</option>
-                      <option>Used-like New</option>
-                      <option>Used-Good</option>
-                      <option>Used-Fair</option>
-                    </select>*/}
+    <div className="min-w-0 flex-1">
+      <div className="text-base sm:text-sm font-semibold text-slate-900 truncate">
+        {user?.name}
+      </div>
+      <div className="text-sm sm:text-xs text-slate-600 truncate">
+        {user?.program}
+      </div>
+    </div>
 
-                    <select
-  value={condition}
-  onChange={(e) => setCondition(e.target.value)}
-  className={`border border-slate-200 rounded px-3 py-2 font-semibold ${
-    condition === "New Arrivals"
-      ? "text-green-600"
-      : condition === "Brand New"
-      ? "text-purple-600"
-      : condition === "Used-like New"
-      ? "text-blue-600"
-      : condition === "Used-Good"
-      ? "text-blue-900"
-      : condition === "Used-Fair"
-      ? "text-black"
-      : "text-slate-700"
-  }`}
->
-  <option value="" className="font-semibold text-slate-700">
-    Condition (optional)
-  </option>
+    <div className="hidden sm:flex ml-auto items-center gap-2">
+      <select
+        value={mainCategory}
+        onChange={(e) => setMainCategory(e.target.value)}
+        className="border border-slate-200 rounded px-2 py-1 text-sm"
+      >
+        {MAIN_CATEGORIES.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
 
-  {/*<option className="font-semibold text-green-600">New Arrivals</option>*/}
-  <option className="font-semibold text-purple-600">Brand New</option>
-  <option className="font-semibold text-blue-600">Used-like New</option>
-  <option className="font-semibold text-blue-900">Used-Good</option>
-  <option className="font-semibold text-black">Used-Fair</option>
-</select>
+      {CATEGORY_MAP[mainCategory]?.length > 0 && (
+        <select
+          value={subCategory}
+          onChange={(e) => setSubCategory(e.target.value)}
+          className="border border-slate-200 rounded px-2 py-1 text-sm"
+        >
+          {CATEGORY_MAP[mainCategory].map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      )}
+    </div>
+  </div>
+
+  <div className="grid grid-cols-2 gap-2 sm:hidden">
+    <select
+      value={mainCategory}
+      onChange={(e) => setMainCategory(e.target.value)}
+      className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm bg-white"
+    >
+      {MAIN_CATEGORIES.map((c) => (
+        <option key={c} value={c}>{c}</option>
+      ))}
+    </select>
+
+    {CATEGORY_MAP[mainCategory]?.length > 0 && (
+      <select
+        value={subCategory}
+        onChange={(e) => setSubCategory(e.target.value)}
+        className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm bg-white"
+      >
+        {CATEGORY_MAP[mainCategory].map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </select>
+    )}
+  </div>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <input
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      placeholder="Title (e.g., Dell XPS 13, 16GB RAM)"
+      className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+    />
+
+    <div className="flex items-center gap-2">
+      <input
+        value={currency}
+        onChange={(e) => setCurrency(e.target.value)}
+        placeholder="$"
+        className="w-16 sm:w-16 border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-center text-sm"
+        maxLength={4}
+      />
+      <input
+        value={price}
+        onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ""))}
+        placeholder="Price"
+        className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+      />
+    </div>
+  </div>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <select
+      value={condition}
+      onChange={(e) => setCondition(e.target.value)}
+      className={`border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 font-semibold bg-white ${
+        condition === "New Arrivals"
+          ? "text-green-600"
+          : condition === "Brand New"
+          ? "text-purple-600"
+          : condition === "Used-like New"
+          ? "text-blue-600"
+          : condition === "Used-Good"
+          ? "text-blue-900"
+          : condition === "Used-Fair"
+          ? "text-black"
+          : "text-slate-700"
+      }`}
+    >
+      <option value="" className="font-semibold text-slate-700">
+        Condition (optional)
+      </option>
+      <option className="font-semibold text-purple-600">Brand New</option>
+      <option className="font-semibold text-blue-600">Used-like New</option>
+      <option className="font-semibold text-blue-900">Used-Good</option>
+      <option className="font-semibold text-black">Used-Fair</option>
+    </select>
+
+    <label className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2 bg-white">
+      📷 Photos (max 6)
+      <input type="file" accept="image/*" multiple className="hidden" onChange={onPickPhotos} />
+    </label>
+  </div>
+
+  <textarea
+    value={desc}
+    onChange={(e) => setDesc(e.target.value)}
+    rows={3}
+    placeholder="Describe the item, condition, campus pickup point…"
+    className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+  />
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <input
+      value={sellerWhatsapp}
+      onChange={(e) => setSellerWhatsapp(e.target.value)}
+      placeholder="WhatsApp number (optional) e.g. +1 202 555 0123"
+      className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+    />
+    <input
+      value={sellerMobile}
+      onChange={(e) => setSellerMobile(e.target.value)}
+      placeholder="Mobile number (optional) e.g. +1 202 555 0456"
+      className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+    />
+    <input
+      value={sellerLocation}
+      onChange={(e) => setSellerLocation(e.target.value)}
+      placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
+      className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
+    />
+  </div>
+
+  {photos.length > 0 && (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      {photos.map((img, idx) => (
+        <div key={idx} className="relative">
+          <img src={img.dataUrl} alt={img.name} className="w-full h-32 object-cover rounded" />
+          <button
+            type="button"
+            onClick={() => setPhotos((arr) => arr.filter((_, i) => i !== idx))}
+            className="absolute right-1 top-1 bg-white/80 text-xs px-1 rounded"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+
+  <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-end">
+    <button
+      type="button"
+      onClick={() => {
+        setOpenComposer(false);
+        setTitle("");
+        setPrice("");
+        setDesc("");
+        setPhotos([]);
+        setCurrency("$");
+        setMainCategory(MAIN_CATEGORIES[0]);
+        setSubCategory(CATEGORY_MAP[MAIN_CATEGORIES[0]][0] || "");
+        setCondition("");
+        setSellerMobile("");
+        setSellerWhatsapp("");
+        setSellerLocation("");
+      }}
+      className="rounded-full border border-slate-200 px-4 py-3 sm:py-2 text-sm font-semibold hover:bg-slate-50"
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="rounded-full bg-blue-600 text-white px-4 py-3 sm:py-2 text-sm font-semibold hover:bg-blue-700"
+    >
+      Post
+    </button>
+  </div>
+</form>
 
 
 
-                    <label className="text-sm text-slate-700 cursor-pointer inline-flex items-center gap-2">
-                      📷 Photos (max 6)
-                      <input type="file" accept="image/*" multiple className="hidden" onChange={onPickPhotos} />
-                    </label>
-                  </div>
-
-                  <textarea
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    placeholder="Describe the item, condition, campus pickup point…"
-                    className="w-full border border-slate-200 rounded px-3 py-2"
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      value={sellerWhatsapp}
-                      onChange={(e) => setSellerWhatsapp(e.target.value)}
-                      placeholder="WhatsApp number (optional) e.g. +1 202 555 0123"
-                      className="w-full border border-slate-200 rounded px-3 py-2"
-                    />
-                    <input
-                      value={sellerMobile}
-                      onChange={(e) => setSellerMobile(e.target.value)}
-                      placeholder="Mobile number (optional) e.g. +1 202 555 0456"
-                      className="w-full border border-slate-200 rounded px-3 py-2"
-                    />
-                    <input
-                      value={sellerLocation}
-                      onChange={(e) => setSellerLocation(e.target.value)}
-                      placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
-                      className="w-full border border-slate-200 rounded px-3 py-2"
-                    />
-                  </div>
-
-                  {photos.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {photos.map((img, idx) => (
-                        <div key={idx} className="relative">
-                          <img src={img.dataUrl} alt={img.name} className="w-full h-32 object-cover rounded" />
-                          <button
-                            type="button"
-                            onClick={() => setPhotos((arr) => arr.filter((_, i) => i !== idx))}
-                            className="absolute right-1 top-1 bg-white/80 text-xs px-1 rounded"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOpenComposer(false);
-                        setTitle("");
-                        setPrice("");
-                        setDesc("");
-                        setPhotos([]);
-                        setCurrency("$");
-                        setMainCategory(MAIN_CATEGORIES[0]);
-                        setSubCategory(CATEGORY_MAP[MAIN_CATEGORIES[0]][0] || "");
-                        setCondition("");
-                        setSellerMobile("");
-                        setSellerWhatsapp("");
-                        setSellerLocation("");
-                      }}
-                      className="rounded-full border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                    >
-                      Post
-                    </button>
-                  </div>
-                </form>
               )}
             </CardBody>
           </Card>
