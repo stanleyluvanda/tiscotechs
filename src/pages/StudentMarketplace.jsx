@@ -1890,9 +1890,11 @@ const filtered = visibleItems
 
       {/* Layout */}
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      <main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">
+      {/*<main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
+        <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
         {/* LEFT: Filters */}
-        <aside className="space-y-4 pb-32">
+        {/*<aside className="space-y-4 pb-32">*/}
+        <aside className="hidden lg:block space-y-4 pb-32">
           {/*<Card square>
             <CardHeader title="Student Marketplace" square />
             <CardBody>
@@ -2673,7 +2675,8 @@ const filtered = visibleItems
         </section>
 
         {/* RIGHT: Tips / rules */}
-        <aside className="space-y-4 pb-32">
+        {/*<aside className="space-y-4 pb-32">*/}
+        <aside className="hidden lg:block space-y-4 pb-32">
           <Card square>
              <Card square>
              
