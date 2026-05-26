@@ -772,7 +772,8 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
                 <img
                   src={attHref(img)}
                   alt={img.name}
-                  className="w-full h-40 object-cover rounded"
+                  /*className="w-full h-40 object-cover rounded"*/
+                  className="w-[180px] sm:w-full max-w-[70vw] h-auto sm:h-40 object-cover rounded"
                 />
               </button>
               <button
@@ -2867,6 +2868,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     folder="global/posts"
     maxFiles={5}
     role={isLecturer ? "lecturer" : "student"}
+    showList={false}
   />
 
   {/*<AttachmentUploader
@@ -3235,7 +3237,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                     <AttachmentStrip atts={post.attachments} onPreview={setPreview} />
                   </div>
 
-                  <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
+                  {/*</div><div className="mt-3 flex items-center gap-4 text-sm text-slate-600">*/}
+                  {/*<div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">
                     <button onClick={() => toggleLike(post.id)} className="rounded px-2 py-1 hover:bg-slate-50">
                       👍 Upvote {post.likes > 0 && <span className="text-slate-500">({post.likes})</span>}
                     </button>
@@ -3255,7 +3258,54 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                       {post.saved ? "★ Saved" : "☆ Save"}
                     </button>
 
-                  </div>
+                  </div>*/}
+
+
+                  <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">
+  <button
+    onClick={() => toggleLike(post.id)}
+    className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
+  >
+    <div>👍</div>
+    <div>Upvote</div>
+    {post.likes > 0 && (
+      <div className="text-[10px] text-slate-500">{post.likes}</div>
+    )}
+  </button>
+
+  <div className="min-w-0 flex flex-col items-center justify-center">
+    <div>{(post.comments || []).filter((c) => !c.parentId).length}</div>
+    <div>Comments</div>
+  </div>
+
+  <div className="min-w-0 flex flex-col items-center justify-center">
+    <div>{post.views || 0}</div>
+    <div>Views</div>
+  </div>
+
+  <button
+    type="button"
+    onClick={() =>
+      onReport({
+        itemType: "post",
+        itemId: post.id,
+        postId: post.id,
+      })
+    }
+    className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
+  >
+    <div>🚩</div>
+    <div>Report</div>
+  </button>
+
+  <button
+    onClick={() => toggleSave(post.id)}
+    className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
+  >
+    <div>{post.saved ? "★" : "☆"}</div>
+    <div>{post.saved ? "Saved" : "Save"}</div>
+  </button>
+</div>
 
                   <div className="mt-2">
                     <AnswerThread post={post} />
