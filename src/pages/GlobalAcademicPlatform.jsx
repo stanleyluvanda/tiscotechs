@@ -1619,9 +1619,7 @@ const seeded = useMemo(() => {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("Top");
   const [myOnly, setMyOnly] = useState(false);
-  const [showMobilePlatforms, setShowMobilePlatforms] = useState(false);
-  const [showMobileTopics, setShowMobileTopics] = useState(false);
-
+  
   /* Composer */
   const [editorOpen, setEditorOpen] = useState(false);
   const [askTitle, setAskTitle] = useState("");
@@ -3003,7 +3001,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       ))}
     </div>
 
-    <div className="grid grid-cols-3 gap-2 sm:hidden">
+  {/*<div className="grid grid-cols-3 gap-2 sm:hidden"> 
   <button
     onClick={() => setMyOnly((v) => !v)}
     className={`rounded-full px-3 py-2 text-xs border ${
@@ -3036,6 +3034,94 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   >
     Topics
   </button>
+</div>*/}
+
+<div className="lg:hidden mt-3 mb-3">
+  <div className="grid grid-cols-3 gap-2">
+    <button
+      type="button"
+      onClick={() => setMyOnly((v) => !v)}
+      className={`rounded-full px-3 py-2 text-xs font-semibold border transition ${
+        myOnly
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-white text-slate-700 border-slate-200"
+      }`}
+    >
+      My Posts
+    </button>
+
+    <details className="relative">
+      <summary className="list-none cursor-pointer rounded-full px-3 py-2 text-xs font-semibold border border-slate-200 bg-white text-slate-700 text-center">
+        Platforms
+      </summary>
+
+      <div className="absolute left-0 z-30 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => navigate("/university-academic-platform")}
+          className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+        >
+          🎓 University Academic Platform
+        </button>
+
+        {!isLecturer && (
+          <>
+            <button
+              type="button"
+              onClick={() => navigate("/student-marketplace")}
+              className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+            >
+              🛒 Student Market Place
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/profile")}
+              className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
+            >
+              👤 View My Profile
+            </button>
+          </>
+        )}
+      </div>
+    </details>
+
+    <details className="relative">
+      <summary className="list-none cursor-pointer rounded-full px-3 py-2 text-xs font-semibold border border-slate-200 bg-white text-slate-700 text-center">
+        Topics
+      </summary>
+
+      <div className="absolute right-0 z-30 mt-2 w-64 rounded-2xl border border-slate-200 bg-white shadow-xl p-3 space-y-3">
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            const c = e.target.value;
+            setSelectedCategory(c);
+            setSelectedTopic("All");
+          }}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedTopic}
+          onChange={(e) => setSelectedTopic(e.target.value)}
+          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
+        >
+          {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </div>
+    </details>
+  </div>
 </div>
 
     <div className="sm:ml-auto">
