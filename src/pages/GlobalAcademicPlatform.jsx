@@ -3063,13 +3063,12 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         >
           🎓 University Academic Platform
         </button>*/}
-        <button
-  type="button"
-  onClick={() => navigate("/university-academic-platform")}
-  className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+        <Link
+  to="/university-academic-platform"
+  className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
 >
   🎓 University Academic Platform
-</button>
+</Link>
 
         {!isLecturer && (
           <>
