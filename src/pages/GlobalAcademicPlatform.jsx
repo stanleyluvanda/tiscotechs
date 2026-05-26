@@ -1231,29 +1231,35 @@ const SafeTextEditor = memo(
     return (
       <div className="border border-slate-200 rounded">
         <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
-          <ToolbarButton onAction={() => wrap("**")} title="Bold">
+          {/*<ToolbarButton onAction={() => wrap("**")} title="Bold">*/}
+          <ToolbarButton onAction={() => document.execCommand("bold", false)} title="Bold">
             B
           </ToolbarButton>
-          <ToolbarButton onAction={() => wrap("*")} title="Italic">
+          {/*<ToolbarButton onAction={() => wrap("*")} title="Italic">*/}
+          <ToolbarButton onAction={() => document.execCommand("italic", false)} title="Italic">
             <span className="italic">I</span>
           </ToolbarButton>
-          <ToolbarButton onAction={() => wrap("__")} title="Underline">
+          {/*<ToolbarButton onAction={() => wrap("__")} title="Underline">*/}
+          <ToolbarButton onAction={() => document.execCommand("underline", false)} title="Underline">
             <span className="underline">U</span>
           </ToolbarButton>
-          <ToolbarButton onAction={makeLink} title="Insert link">
+          {/*<ToolbarButton onAction={makeLink} title="Insert link">*/}
+            <ToolbarButton onAction={() => { const url = prompt("Enter URL");if (url) document.execCommand("createLink", false, url);}}title="Insert link">
             Link
           </ToolbarButton>
-          <ToolbarButton onAction={() => toggleList(false)} title="Bulleted list">
+          {/*<ToolbarButton onAction={() => toggleList(false)} title="Bulleted list">*/}
+          <ToolbarButton onAction={() => document.execCommand("insertUnorderedList", false)} title="Bulleted list">
             • List
           </ToolbarButton>
-          <ToolbarButton onAction={() => toggleList(true)} title="Numbered list">
+          {/*<ToolbarButton onAction={() => toggleList(true)} title="Numbered list">*/}
+            <ToolbarButton onAction={() => document.execCommand("insertOrderedList", false)}title="Numbered list">
             1. List
           </ToolbarButton>
           <ToolbarButton onAction={() => setText("")} title="Clear formatting">
             Clear
           </ToolbarButton>
         </div>
-        <textarea
+        {/*<textarea
           ref={ref}
           className="force-ltr min-h-[96px] max-h-[45vh] w-full resize-y px-3 py-2 text-sm outline-none"
           value={text}
@@ -1269,7 +1275,33 @@ const SafeTextEditor = memo(
             wordBreak: "break-word",
             writingMode: "horizontal-tb",
           }}
-        />
+        />*/}
+        <div
+  ref={ref}
+  contentEditable
+  suppressContentEditableWarning
+  className="force-ltr min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"
+  dir="ltr"
+  spellCheck
+  onPaste={(e) => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const hasImage = items.some((item) => item.type?.startsWith("image/"));
+
+    if (hasImage) {
+      e.preventDefault();
+    }
+  }}
+  dangerouslySetInnerHTML={{ __html: html }}
+  onInput={(e) => onChange(e.currentTarget.innerHTML)}
+  style={{
+    direction: "ltr",
+    unicodeBidi: "plaintext",
+    textAlign: "left",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    writingMode: "horizontal-tb",
+  }}
+/>
       </div>
     );
   },
