@@ -2486,7 +2486,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
       <div
   /*className="mt-2"*/
-  className="mt-2 -ml-9 sm:ml-0"
+  /*className="mt-2 -ml-9 sm:ml-0"*/
+  className="mt-2 -ml-2 sm:ml-0"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
@@ -2643,7 +2644,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   ))}
 
                   {/* Reply composer */}
-                  <div className="mt-2 pl-8 flex items-start gap-2">
+                  {/*<div className="mt-2 pl-8 flex items-start gap-2">*/}
+                  <div className="mt-2 pl-2 sm:pl-8 flex items-start gap-2">
                     <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
                     <div className="flex-1">
                       <InlineComposer
@@ -2845,7 +2847,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   onPreview={setPreview}
 />
 
-                          <div
+  <div
   className="mt-2"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
