@@ -3185,13 +3185,22 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                 </div>*/}
 
                 <div className="mt-2">
-  <div className="px-3 sm:px-0">
+  {/*<div className="px-3 sm:px-0">
     <div className="text-lg font-semibold text-slate-900">{post.title}</div>
 
     {post.bodyHtml && (
       <HTMLReadMore html={post.bodyHtml} lines={3} />
     )}
-  </div>
+  </div>*/}
+  <div className="px-3 sm:px-0">
+  <div className="text-lg font-semibold text-slate-900">{post.title}</div>
+
+  {post.bodyHtml && (
+    <div className="text-[15px] leading-6">
+      <HTMLReadMore html={post.bodyHtml} lines={3} />
+    </div>
+  )}
+</div>
 
   <div className="-mx-3 sm:mx-0 mt-2 overflow-hidden sm:rounded-xl">
     <AttachmentStrip
