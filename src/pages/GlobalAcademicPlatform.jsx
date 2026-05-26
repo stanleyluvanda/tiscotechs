@@ -1286,7 +1286,8 @@ const SafeTextEditor = memo(
   ref={ref}
   contentEditable
   suppressContentEditableWarning
-  className="force-ltr min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"
+  /*className="force-ltr min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"*/
+  className="force-ltr min-h-[96px] max-h-[45vh] w-full max-w-full overflow-x-hidden overflow-y-auto px-3 py-2 text-sm outline-none break-words [&_a]:break-all [&_a]:max-w-full"
   dir="ltr"
   spellCheck
   onPaste={(e) => {
@@ -1300,6 +1301,7 @@ const SafeTextEditor = memo(
     unicodeBidi: "plaintext",
     textAlign: "left",
     whiteSpace: "pre-wrap",
+    overflowWrap: "anywhere",
     wordBreak: "break-word",
     writingMode: "horizontal-tb",
   }}
