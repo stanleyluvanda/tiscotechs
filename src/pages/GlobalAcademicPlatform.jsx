@@ -2813,7 +2813,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                     <Avatar url={user?.photoUrl} name={userDisplayName} size="md" online={true} />
                     <button
                       onClick={() => setEditorOpen(true)}
-                      className="flex-1 text-left border border-slate-200 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600 force-ltr"
+                      /*className="flex-1 text-left border border-slate-200 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600 force-ltr"*/
+                      className="flex-1 min-w-0 text-left border border-slate-200 rounded-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white hover:bg-slate-50 text-slate-600 text-sm sm:text-base whitespace-nowrap overflow-hidden text-ellipsis force-ltr"
                       dir="ltr"
                       style={{ direction: "ltr", unicodeBidi: "plaintext", textAlign: "left", writingMode: "horizontal-tb" }}
                     >
@@ -2886,68 +2887,72 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
 
 
-                    <div className="mt-2 flex items-center gap-2">
-                        
-                          {/*<label className="text-xs border border-slate-200 rounded-full px-3 py-1.5 cursor-pointer hover:bg-slate-50">
-                            📎 Attach images/files
-                            <input type="file" className="hidden" multiple onChange={onPickAskFiles} />
-                          </label>*/}
-                          
-  
+                    
 
 
-                          <div className="ml-auto flex items-center gap-2">
-                            <select
-                              value={selectedCategory}
-                              onChange={(e) => {
-                                const c = e.target.value;
-                                setSelectedCategory(c);
-                                setSelectedTopic("All");
-                              }}
-                              className="border border-slate-200 rounded px-2 py-1 text-xs"
-                            >
-                              {CATEGORIES.map((c) => (
-                                <option key={c} value={c}>
-                                  {c}
-                                </option>
-                              ))}
-                            </select>
-                            <select
-                              value={selectedTopic}
-                              onChange={(e) => setSelectedTopic(e.target.value)}
-                              className="border border-slate-200 rounded px-2 py-1 text-xs"
-                            >
-                              {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map((t) => (
-                                <option key={t} value={t}>
-                                  {t}
-                                </option>
-                              ))}
-                            </select>
-                            <button className="rounded-full bg-blue-600 text-white px-4 py-1.5 text-sm font-semibold hover:bg-blue-700">Post</button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditorOpen(false);
-                                setAskTitle("");
-                                setAskBodyHtml("");
-                                /*setAskAtts([]);*/
-                                setAskUploadAtts([]);
-                              }}
-                              className="rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
+
+                    <div className="mt-2 space-y-2 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
+  <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 sm:ml-auto">
+    <select
+      value={selectedCategory}
+      onChange={(e) => {
+        const c = e.target.value;
+        setSelectedCategory(c);
+        setSelectedTopic("All");
+      }}
+      className="w-full sm:w-auto border border-slate-200 rounded px-2 py-2 sm:py-1 text-xs"
+    >
+      {CATEGORIES.map((c) => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+    </select>
+
+    <select
+      value={selectedTopic}
+      onChange={(e) => setSelectedTopic(e.target.value)}
+      className="w-full sm:w-auto border border-slate-200 rounded px-2 py-2 sm:py-1 text-xs"
+    >
+      {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map((t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div className="flex items-center gap-2 justify-center sm:justify-start">
+    <button className="rounded-full bg-blue-600 text-white px-6 sm:px-4 py-2 sm:py-1.5 text-sm font-semibold hover:bg-blue-700">
+      Post
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        setEditorOpen(false);
+        setAskTitle("");
+        setAskBodyHtml("");
+        setAskUploadAtts([]);
+      }}
+      className="rounded-full border border-slate-200 px-5 sm:px-3 py-2 sm:py-1.5 text-sm hover:bg-slate-50"
+    >
+      Cancel
+    </button>
+  </div>
+</div>
                       </div>
                     </div>
+
+
+
                   </form>
                 )}
               </div>
             </Card>
 
             {/* Sort + Search */}
-            <Card>
+            {/*<Card>
               <div className="p-3 flex flex-wrap items-center gap-2">
                 <div className="text-sm">Showing:</div>
                 <div className="flex items-center gap-1">
@@ -2974,7 +2979,72 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   />
                 </div>
               </div>
-            </Card>
+            </Card>*/}
+
+            <Card>
+  <div className="p-3 space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="text-sm">Showing:</div>
+
+      {["Top", "Newest", "Answered"].map((s) => (
+        <button
+          key={s}
+          onClick={() => setSort(s)}
+          className={`rounded-full px-3 py-1.5 text-xs border ${
+            sort === s
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+
+    <div className="grid grid-cols-3 gap-2 sm:hidden">
+      <button
+        onClick={() => setMyOnly((v) => !v)}
+        className={`rounded-full px-3 py-2 text-xs border ${
+          myOnly
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white text-slate-700 border-slate-200"
+        }`}
+      >
+        My Posts
+      </button>
+
+      <Link
+        to="/university-academic-platform"
+        className="text-center rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
+      >
+        Platforms
+      </Link>
+
+      <button
+        type="button"
+        className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
+      >
+        Topics
+      </button>
+    </div>
+
+    <div className="sm:ml-auto">
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search posts..."
+        className="w-full sm:w-72 sm:max-w-[60vw] border border-slate-200 rounded px-3 py-2 sm:py-1.5 text-sm force-ltr"
+        dir="ltr"
+        style={{
+          direction: "ltr",
+          unicodeBidi: "plaintext",
+          textAlign: "left",
+          writingMode: "horizontal-tb",
+        }}
+      />
+    </div>
+  </div>
+</Card>
 
             {loading && (
               <Card>
