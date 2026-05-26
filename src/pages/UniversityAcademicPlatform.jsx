@@ -50,28 +50,6 @@ async function addPastedImagesToUploadAtts(cb, setAskUploadAtts) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ============ Utils & Storage ============ */
 function safeParse(json) {
   try {

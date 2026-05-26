@@ -3064,7 +3064,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
           🎓 University Academic Platform
         </button>*/}
         <Link
-  to="/university-academic-platform"
+  to="/platform/university"
   className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
 >
   🎓 University Academic Platform
