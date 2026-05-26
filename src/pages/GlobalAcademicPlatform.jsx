@@ -554,6 +554,8 @@ function HTMLReadMore({ html = "", lines = 3 }) {
   const [open, setOpen] = useState(false);
   const [needs, setNeeds] = useState(false);
   const shellRef = useRef(null);
+  const [showMobilePlatforms, setShowMobilePlatforms] = useState(false);
+  const [showMobileTopics, setShowMobileTopics] = useState(false);
 
   useEffect(() => {
     const el = shellRef.current;
@@ -3002,31 +3004,39 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     </div>
 
     <div className="grid grid-cols-3 gap-2 sm:hidden">
-      <button
-        onClick={() => setMyOnly((v) => !v)}
-        className={`rounded-full px-3 py-2 text-xs border ${
-          myOnly
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white text-slate-700 border-slate-200"
-        }`}
-      >
-        My Posts
-      </button>
+  <button
+    onClick={() => setMyOnly((v) => !v)}
+    className={`rounded-full px-3 py-2 text-xs border ${
+      myOnly
+        ? "bg-blue-600 text-white border-blue-600"
+        : "bg-white text-slate-700 border-slate-200"
+    }`}
+  >
+    My Posts
+  </button>
 
-      <Link
-        to="/university-academic-platform"
-        className="text-center rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
-      >
-        Platforms
-      </Link>
+  <button
+    type="button"
+    onClick={() => {
+      setShowMobilePlatforms((v) => !v);
+      setShowMobileTopics(false);
+    }}
+    className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
+  >
+    Platforms
+  </button>
 
-      <button
-        type="button"
-        className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
-      >
-        Topics
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={() => {
+      setShowMobileTopics((v) => !v);
+      setShowMobilePlatforms(false);
+    }}
+    className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
+  >
+    Topics
+  </button>
+</div>
 
     <div className="sm:ml-auto">
       <input
