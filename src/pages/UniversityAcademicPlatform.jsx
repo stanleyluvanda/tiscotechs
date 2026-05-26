@@ -482,10 +482,12 @@ function HTMLReadMore({ html = "", lines = 3 }) {
   if (!html) return null;
 
   return (
-    <div className="text-sm text-slate-800">
+    /*<div className="text-sm text-slate-800">*/
+    <div className="text-sm text-slate-800 max-w-full overflow-hidden break-words">
       <div
         ref={shellRef}
-        className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"
+        /*className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"*/
+        className="prose prose-sm max-w-full overflow-hidden break-words [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"
         style={open ? { maxHeight: "none", overflow: "visible" } : undefined}
         dangerouslySetInnerHTML={{ __html: html }}
       />
@@ -1242,116 +1244,98 @@ function ToolbarButton({ onAction, children, title }) {
   );
 }
 
+
+
 const SimpleHTMLEditor = memo(
   function SimpleHTMLEditor({ html, onChange, placeholder = "Write here…" }) {
     const ref = useRef(null);
-    const value = html || "";
 
-    const wrapSel = (before, after) => {
-      const ta = ref.current;
-      if (!ta) return;
-      const start = ta.selectionStart ?? 0;
-      const end = ta.selectionEnd ?? 0;
-      const selected = value.slice(start, end);
-      const next = value.slice(0, start) + before + selected + after + value.slice(end);
-      onChange(next);
-      requestAnimationFrame(() => {
-        ta.focus();
-        const s = start + before.length;
-        const e = s + selected.length;
-        ta.setSelectionRange(s, e);
-      });
-    };
+    useEffect(() => {
+      if (ref.current && !ref.current.innerHTML && html) {
+        ref.current.innerHTML = html;
+      }
+    }, []);
 
-    const makeList = (ordered = false) => {
-      const ta = ref.current;
-      if (!ta) return;
-      const start = ta.selectionStart ?? 0;
-      const end = ta.selectionEnd ?? 0;
-      const before = value.lastIndexOf("\n", start - 1) + 1;
-      const after = value.indexOf("\n", end);
-      const to = after === -1 ? value.length : after;
-      const block = value.slice(before, to);
-      const lines = block
-        .split("\n")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-      if (!lines.length) return;
-      const items = lines.map((s) => `<li>${s}</li>`).join("");
-      const wrapped = ordered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
-      const next = value.slice(0, before) + wrapped + value.slice(to);
-      onChange(next);
-      requestAnimationFrame(() => {
-        ta.focus();
-      });
+    const runCommand = (command, value = null) => {
+      ref.current?.focus();
+      document.execCommand(command, false, value);
+      onChange(ref.current?.innerHTML || "");
     };
 
     const createLink = () => {
-      const sel = ref.current;
-      if (!sel) return;
-      const url = prompt("Enter link URL:");
+      const url = prompt("Enter URL:");
       if (!url) return;
-      wrapSel(`<a href="${url}" target="_blank" rel="noopener">`, "</a>");
+      runCommand("createLink", url);
     };
 
     const clearFormatting = () => {
-      const stripped = value.replace(/<\/?[^>]+>/g, "");
-      onChange(stripped);
-      requestAnimationFrame(() => ref.current?.focus());
+      if (!ref.current) return;
+      ref.current.innerHTML = ref.current.innerText || "";
+      onChange(ref.current.innerHTML);
+      ref.current.focus();
     };
 
     return (
-      /*<div className="border border-slate-200 rounded">*/
-        /*<div className="w-full max-w-full overflow-x-hidden border border-slate-200 rounded-xl">*/
-        <div className="w-[calc(100%+6px)] sm:w-full max-w-none overflow-x-hidden border border-slate-200 rounded-xl">
+      <div className="w-[calc(100%+6px)] sm:w-full max-w-none overflow-x-hidden border border-slate-200 rounded-xl">
         <div className="flex flex-wrap gap-1 p-1 border-b border-slate-200 bg-slate-50">
-          <ToolbarButton onAction={() => wrapSel("<strong>", "</strong>")} title="Bold">
+          <ToolbarButton onAction={() => runCommand("bold")} title="Bold">
             B
           </ToolbarButton>
-          <ToolbarButton onAction={() => wrapSel("<em>", "</em>")} title="Italic">
+
+          <ToolbarButton onAction={() => runCommand("italic")} title="Italic">
             <span className="italic">I</span>
           </ToolbarButton>
-          <ToolbarButton onAction={() => wrapSel("<u>", "</u>")} title="Underline">
+
+          <ToolbarButton onAction={() => runCommand("underline")} title="Underline">
             <span className="underline">U</span>
           </ToolbarButton>
-          <ToolbarButton onAction={() => makeList(false)} title="Bulleted list">
+
+          <ToolbarButton onAction={() => runCommand("insertUnorderedList")} title="Bulleted list">
             • List
           </ToolbarButton>
-          <ToolbarButton onAction={() => makeList(true)} title="Numbered list">
+
+          <ToolbarButton onAction={() => runCommand("insertOrderedList")} title="Numbered list">
             1. List
           </ToolbarButton>
+
           <ToolbarButton onAction={createLink} title="Insert link">
             Link
           </ToolbarButton>
+
           <ToolbarButton onAction={clearFormatting} title="Clear formatting">
             Clear
           </ToolbarButton>
         </div>
-        <textarea
+
+        <div
           ref={ref}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          /*className="min-h-[96px] max-h-[45vh] w-full overflow-auto px-3 py-2 text-sm outline-none"*/
-          className="min-h-[190px] sm:min-h-[96px] w-full max-w-full overflow-auto px-3 py-3 text-sm outline-none"
+          contentEditable
+          suppressContentEditableWarning
+          className="min-h-[190px] sm:min-h-[96px] max-h-[45vh] w-full max-w-full overflow-x-hidden overflow-y-auto px-3 py-3 text-sm outline-none break-words [&_a]:break-all [&_a]:max-w-full"
           dir="ltr"
+          spellCheck
+          onPaste={(e) => {
+            const items = Array.from(e.clipboardData?.items || []);
+            const hasImage = items.some((item) => item.type?.startsWith("image/"));
+            if (hasImage) e.preventDefault();
+          }}
+          onInput={(e) => onChange(e.currentTarget.innerHTML)}
           style={{
             direction: "ltr",
-            unicodeBidi: "normal",
+            unicodeBidi: "plaintext",
             textAlign: "left",
             whiteSpace: "pre-wrap",
+            overflowWrap: "anywhere",
             wordBreak: "break-word",
-            resize: "vertical",
+            writingMode: "horizontal-tb",
           }}
         />
-        <div className="px-3 py-1 border-t border-slate-100 text-[11px] text-slate-500">
-          Tip: toolbar inserts simple HTML tags. New lines will be preserved.
-        </div>
       </div>
     );
   },
   (p, n) => p.html === n.html && p.onChange === n.onChange
 );
+
 
 /* Notifications tray (isolated so it doesn't re-render the whole page) */
 function NotificationTray({ userId, onOpenPost }) {
