@@ -2605,7 +2605,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
                   {/* Replies */}
                   {(byParent[a.id] || []).map((r) => (
-                    <div key={r.id} className="mt-3 pl-4 border-l border-slate-200">
+                   
+                    <div key={r.id} className="mt-3 pl-2 sm:pl-4 border-l border-slate-200">
                       <div className="flex items-start gap-2">
                         <Avatar
                           url={r.authorPhoto}
@@ -2634,7 +2635,8 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                             </span>
                           </div>
 
-                          <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full">
+                          {/*<div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full">*/}
+                          <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full -ml-6 sm:ml-0 sm:w-full">
                             <HTMLReadMore html={r.html} lines={3} />
                             <AttachmentStrip atts={r.attachments} onPreview={setPreview} />
                           </div>
