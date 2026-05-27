@@ -2416,16 +2416,6 @@ const filtered = visibleItems
     {item.mainCategory}
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </Badge>
-
-  {/*{seller.id === userId && (
-    <button
-      onClick={() => deleteListing(item.id)}
-      className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
-      title="Delete listing"
-    >
-      Delete
-    </button>
-  )}*/}
 </div>
 
 {/* Mobile seller header */}
@@ -2454,9 +2444,8 @@ const filtered = visibleItems
     </div>
 
     
-    <div className="mt-1 flex items-center gap-2">
-  {/*<span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">*/}
-    <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">
+    <div className="mt-1 flex justify-center sm:justify-start">
+  <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">
     {item.mainCategory}
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </span>
