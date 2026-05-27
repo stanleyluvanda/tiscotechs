@@ -2431,7 +2431,7 @@ const filtered = visibleItems
       {seller.program}
     </div>
 
-    <div className="mt-1 flex items-center gap-2">
+    {/*<div className="mt-1 flex items-center gap-2">
       <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">
         {item.mainCategory}
         {item.subCategory ? ` • ${item.subCategory}` : ""}
@@ -2446,7 +2446,13 @@ const filtered = visibleItems
           Delete
         </button>
       )}
-    </div>
+    </div>*/}
+    <div className="mt-1 flex items-center gap-2">
+  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">
+    {item.mainCategory}
+    {item.subCategory ? ` • ${item.subCategory}` : ""}
+  </span>
+</div>
 
     {item.createdAt && (
       <div className="mt-1 text-xs text-slate-500">
