@@ -2386,7 +2386,7 @@ const filtered = visibleItems
           University Academic Platform
         </Link>
 
-        <Link to="/global-academic-platform" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+        <Link to="/platform/global" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
           Global Academic Platform
         </Link>
 
