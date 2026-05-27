@@ -2417,7 +2417,7 @@ const filtered = visibleItems
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </Badge>
 
-  {seller.id === userId && (
+  {/*{seller.id === userId && (
     <button
       onClick={() => deleteListing(item.id)}
       className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
@@ -2425,14 +2425,26 @@ const filtered = visibleItems
     >
       Delete
     </button>
-  )}
+  )}*/}
 </div>
 
 {/* Mobile seller header */}
 <div className="sm:hidden flex items-start gap-3">
   <Avatar url={seller.photoUrl} name={seller.name} />
 
-  <div className="min-w-0 flex-1">
+  <div className="min-w-0 flex-1 relative pr-16">
+
+    {seller.id === userId && (
+      <button
+        type="button"
+        onClick={() => deleteListing(item.id)}
+        className="absolute top-0 right-0 shrink-0 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
+        title="Delete listing"
+      >
+        Delete
+      </button>
+    )}
+
     <div className="font-semibold text-slate-900 text-[15px] leading-5 truncate">
       {seller.name}
     </div>
@@ -2441,22 +2453,7 @@ const filtered = visibleItems
       {seller.program}
     </div>
 
-    {/*<div className="mt-1 flex items-center gap-2">
-      <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">
-        {item.mainCategory}
-        {item.subCategory ? ` • ${item.subCategory}` : ""}
-      </span>
-
-      {seller.id === userId && (
-        <button
-          onClick={() => deleteListing(item.id)}
-          className="ml-auto shrink-0 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
-          title="Delete listing"
-        >
-          Delete
-        </button>
-      )}
-    </div>*/}
+    
     <div className="mt-1 flex items-center gap-2">
   {/*<span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">*/}
     <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">
