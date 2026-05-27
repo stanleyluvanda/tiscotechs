@@ -2445,7 +2445,8 @@ const filtered = visibleItems
 
     
     <div className="mt-1 flex justify-center sm:justify-start">
-  <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">
+  {/*<span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">*/}
+    <span className="inline-flex items-center whitespace-nowrap rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200 max-w-full overflow-hidden text-ellipsis">
     {item.mainCategory}
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </span>
