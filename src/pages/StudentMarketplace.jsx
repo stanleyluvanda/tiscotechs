@@ -2313,6 +2313,71 @@ const filtered = visibleItems
             </CardBody>
           </Card>
 
+
+
+          {/* MOBILE marketplace navigation/filter card */}
+<Card className="block lg:hidden overflow-hidden">
+  <div className="border border-slate-200 bg-white">
+
+    {/* Top row */}
+    <div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">
+      <span>Showing:</span>
+
+      <button className="rounded-full bg-blue-600 text-white px-3 py-1 text-xs font-medium">
+        Top
+      </button>
+
+      <button className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs">
+        Newest
+      </button>
+
+      <button
+        onClick={() => toggleSave(item.id)}
+        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs"
+      >
+        Saved
+      </button>
+    </div>
+
+    {/* Middle row */}
+    <div className="px-4 py-3 grid grid-cols-3 gap-2">
+      <button
+        type="button"
+        onClick={() => setShowMine((v) => !v)}
+        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+      >
+        My listings
+      </button>
+
+      <button
+        type="button"
+        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+      >
+        Students' links
+      </button>
+
+      <button
+        type="button"
+        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+      >
+        Category
+      </button>
+    </div>
+
+    {/* Search */}
+    <div className="px-4 pb-4">
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search listings..."
+        className="w-full rounded border border-slate-200 px-3 py-3 text-sm"
+      />
+    </div>
+
+  </div>
+</Card>
+
+
           {filtered.map((item) => {
             const sellerFromPost = item.seller && typeof item.seller === "object" ? item.seller : {};
 
