@@ -2112,7 +2112,17 @@ const filtered = visibleItems
   <div className="flex items-center gap-3">
     <Avatar url={user?.photoUrl} name={user?.name} />
 
-    <div className="min-w-0 flex-1">
+    {/*<div className="min-w-0 flex-1">*/}
+      <div className="min-w-0 flex-1 relative pr-16">
+  {seller.id === userId && (
+  <button
+    onClick={() => deleteListing(item.id)}
+    className="absolute top-0 right-0 shrink-0 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
+    title="Delete listing"
+  >
+    Delete
+  </button>
+)}
       <div className="text-base sm:text-sm font-semibold text-slate-900 truncate">
         {user?.name}
       </div>
@@ -2448,7 +2458,8 @@ const filtered = visibleItems
       )}
     </div>*/}
     <div className="mt-1 flex items-center gap-2">
-  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">
+  {/*<span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">*/}
+    <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-800 px-3 py-1 text-xs font-medium border border-rose-200">
     {item.mainCategory}
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </span>
