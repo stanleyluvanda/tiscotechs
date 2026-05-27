@@ -2368,7 +2368,7 @@ const filtered = visibleItems
             return (
               <Card key={item.id} id={`listing-${item.id}`}>
                 <CardBody>
-                  <div className="flex items-center gap-3">
+                  {/*<div className="flex items-center gap-3">
                     <Avatar url={seller.photoUrl} name={seller.name} />
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-900">{seller.name}</div>
@@ -2390,7 +2390,71 @@ const filtered = visibleItems
                         Delete
                       </button>
                     )}
-                  </div>
+                  </div>*/}
+                  {/* Desktop seller header - unchanged */}
+<div className="hidden sm:flex items-center gap-3">
+  <Avatar url={seller.photoUrl} name={seller.name} />
+
+  <div className="min-w-0">
+    <div className="font-semibold text-slate-900">{seller.name}</div>
+    <div className="text-xs text-slate-500">
+      {seller.program} {item.createdAt ? `• ${new Date(item.createdAt).toLocaleString()}` : ""}
+    </div>
+  </div>
+
+  <Badge>
+    {item.mainCategory}
+    {item.subCategory ? ` • ${item.subCategory}` : ""}
+  </Badge>
+
+  {seller.id === userId && (
+    <button
+      onClick={() => deleteListing(item.id)}
+      className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
+      title="Delete listing"
+    >
+      Delete
+    </button>
+  )}
+</div>
+
+{/* Mobile seller header */}
+<div className="sm:hidden flex items-start gap-3">
+  <Avatar url={seller.photoUrl} name={seller.name} />
+
+  <div className="min-w-0 flex-1">
+    <div className="font-semibold text-slate-900 text-[15px] leading-5 truncate">
+      {seller.name}
+    </div>
+
+    <div className="text-xs text-slate-500 truncate">
+      {seller.program}
+    </div>
+
+    <div className="mt-1 flex items-center gap-2">
+      <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700">
+        {item.mainCategory}
+        {item.subCategory ? ` • ${item.subCategory}` : ""}
+      </span>
+
+      {seller.id === userId && (
+        <button
+          onClick={() => deleteListing(item.id)}
+          className="ml-auto shrink-0 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
+          title="Delete listing"
+        >
+          Delete
+        </button>
+      )}
+    </div>
+
+    {item.createdAt && (
+      <div className="mt-1 text-xs text-slate-500">
+        {new Date(item.createdAt).toLocaleString()}
+      </div>
+    )}
+  </div>
+</div>
 
                   <div className="mt-2">
                     <div className="text-lg font-semibold text-slate-900">{item.title}</div>
