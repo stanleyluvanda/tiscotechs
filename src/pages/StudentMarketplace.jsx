@@ -2412,11 +2412,25 @@ const filtered = visibleItems
     </div>
   </div>
 
+  
+
   <Badge>
     {item.mainCategory}
     {item.subCategory ? ` • ${item.subCategory}` : ""}
   </Badge>
+
+  {seller.id === userId && (
+  <button
+    type="button"
+    onClick={() => deleteListing(item.id)}
+    className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
+    title="Delete listing"
+  >
+    Delete
+  </button>
+)}
 </div>
+
 
 {/* Mobile seller header */}
 <div className="sm:hidden flex items-start gap-3">
@@ -2631,71 +2645,7 @@ const filtered = visibleItems
                    >
                   🚩 Report misconduct
                     </button>
-
-                    {/*<button
-  type="button"
-  onClick={() => {
-    // show all listings by this seller
-    const sid = String(seller?.id || "").trim();
-    if (!sid) return;
-
-    setSellerOnlyId(sid);
-    setShowMine(false); // avoid conflict with sellerOnlyId
-    // optional: clear search so user sees everything
-    // setQ("");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }}
-  className="text-blue-600 underline"
->
-  View all listings
-</button>*/}
-
-{/*<button
-  type="button"
-  onClick={() => {
-    const sid = String(seller?.id || "").trim();
-    if (!sid) return;
-
-    setShowMine(false);
-    setSellerFilter(sid);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }}
-  className="text-blue-600 underline"
->
-  View all listings
-</button>
-
-                    <Link to="/student-dashboard" className="ml-auto text-blue-600 underline">
-                      Back to Dashboard
-                    </Link>*/}
-
-                    {/*<button
-  type="button"
-  onClick={() => {
-    const sid = String(seller?.id || "").trim();
-    if (!sid) return;
-
-    setShowMine(false);
-    setSellerFilter(sid);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }}
-  className="text-blue-600 underline"
->
-  View all listings
-</button>
-
-{sellerOnlyId && (
-  <button
-    type="button"
-    onClick={() => {
-      setSellerFilter(null); // ✅ clears seller filter
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }}
-    className="text-blue-600 underline"
-  >
-    Back to all listings
-  </button>
-)}*/}
+                                     
 {String(sellerOnlyId || "") === String(seller?.id || "") ? (
   // ✅ Already viewing this seller => hide "View all listings"
   <button
@@ -2732,6 +2682,13 @@ const filtered = visibleItems
   Back to Dashboard
 </Link>
 </div>
+
+
+
+
+
+
+
 
                   {/* ✅ Lazy-loaded comments: use cache + onOpen */}
                   <Comments
