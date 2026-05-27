@@ -1618,6 +1618,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   const [catFilter, setCatFilter] = useState("All");
   const [subFilter, setSubFilter] = useState("All");
   const [showMine, setShowMine] = useState(false);
+  const [mobileMarketPanel, setMobileMarketPanel] = useState("");
 
   // ✅ NEW: show listings for a specific seller (set by "View all listings")
   /*const [sellerOnlyId, setSellerOnlyId] = useState(null); // string | null*/
@@ -2319,7 +2320,6 @@ const filtered = visibleItems
 <Card className="block lg:hidden overflow-hidden">
   <div className="border border-slate-200 bg-white">
 
-    {/* Top row */}
     <div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">
       <span>Showing:</span>
 
@@ -2331,40 +2331,102 @@ const filtered = visibleItems
         Newest
       </button>
 
-      <button
-        onClick={() => toggleSave(item.id)}
-        className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs"
-      >
+      <button className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs">
         Saved
       </button>
     </div>
 
-    {/* Middle row */}
     <div className="px-4 py-3 grid grid-cols-3 gap-2">
       <button
         type="button"
-        onClick={() => setShowMine((v) => !v)}
-        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+        onClick={() => {
+          setShowMine((v) => !v);
+          setSellerFilter(null);
+          setMobileMarketPanel("");
+        }}
+        className={`rounded-full border px-3 py-2 text-xs font-medium ${
+          showMine ? "bg-blue-600 text-white border-blue-600" : "bg-white border-slate-200"
+        }`}
       >
         My listings
       </button>
 
       <button
         type="button"
-        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+        onClick={() =>
+          setMobileMarketPanel((p) => (p === "links" ? "" : "links"))
+        }
+        className={`rounded-full border px-3 py-2 text-xs font-medium ${
+          mobileMarketPanel === "links"
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white border-slate-200"
+        }`}
       >
         Students' links
       </button>
 
       <button
         type="button"
-        className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
+        onClick={() =>
+          setMobileMarketPanel((p) => (p === "category" ? "" : "category"))
+        }
+        className={`rounded-full border px-3 py-2 text-xs font-medium ${
+          mobileMarketPanel === "category"
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white border-slate-200"
+        }`}
       >
         Category
       </button>
     </div>
 
-    {/* Search */}
+    {mobileMarketPanel === "links" && (
+      <div className="px-4 pb-3 grid grid-cols-1 gap-2">
+        <Link to="/university-academic-platform" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+          University Academic Platform
+        </Link>
+
+        <Link to="/global-academic-platform" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+          Global Academic Platform
+        </Link>
+
+        <Link to="/student-profile" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+          View My Profile
+        </Link>
+      </div>
+    )}
+
+    {mobileMarketPanel === "category" && (
+      <div className="px-4 pb-3 grid grid-cols-1 gap-2">
+        <select
+          value={catFilter}
+          onChange={(e) => {
+            setCatFilter(e.target.value);
+            setSubFilter("All");
+          }}
+          className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm bg-white"
+        >
+          <option value="All">All categories</option>
+          {MAIN_CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+
+        {subFilterOptions.length > 0 && (
+          <select
+            value={subFilter}
+            onChange={(e) => setSubFilter(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm bg-white"
+          >
+            <option value="All">All subcategories</option>
+            {subFilterOptions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        )}
+      </div>
+    )}
+
     <div className="px-4 pb-4">
       <input
         value={q}
@@ -2373,10 +2435,8 @@ const filtered = visibleItems
         className="w-full rounded border border-slate-200 px-3 py-3 text-sm"
       />
     </div>
-
   </div>
 </Card>
-
 
           {filtered.map((item) => {
             const sellerFromPost = item.seller && typeof item.seller === "object" ? item.seller : {};
