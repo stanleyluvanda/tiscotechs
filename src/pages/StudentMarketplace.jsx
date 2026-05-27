@@ -2113,16 +2113,8 @@ const filtered = visibleItems
     <Avatar url={user?.photoUrl} name={user?.name} />
 
     {/*<div className="min-w-0 flex-1">*/}
-      <div className="min-w-0 flex-1 relative pr-16">
-  {seller.id === userId && (
-  <button
-    onClick={() => deleteListing(item.id)}
-    className="absolute top-0 right-0 shrink-0 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
-    title="Delete listing"
-  >
-    Delete
-  </button>
-)}
+      <div className="min-w-0 flex-1">
+  
       <div className="text-base sm:text-sm font-semibold text-slate-900 truncate">
         {user?.name}
       </div>
@@ -2617,7 +2609,9 @@ const filtered = visibleItems
                     </div>
                   )}
 
-                  <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
+                 
+{/*<div className="mt-3 flex items-center gap-6 text-sm text-slate-600">*/}
+<div className="mt-3 flex flex-wrap sm:flex-nowrap items-center gap-x-6 gap-y-3 text-sm text-slate-600">
                     <button onClick={() => toggleLike(item.id)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
                       👍 Like {item.likes > 0 && <span className="text-slate-500">({item.likes})</span>}
                     </button>
@@ -2655,7 +2649,8 @@ const filtered = visibleItems
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}
     /*className="text-blue-600 underline"*/
-    className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-green-100"
+    /*className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-green-100"*/
+    className="w-full sm:w-auto justify-center sm:justify-start inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-green-100"
   >
     Back to all listings
   </button>
@@ -2672,13 +2667,15 @@ const filtered = visibleItems
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}
     /*className="text-blue-600 underline"*/
-    className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+    /*className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"*/
+    className="w-full sm:w-auto justify-center sm:justify-start inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100"
   >
     View all listings of this seller
   </button>
 )}
 
-<Link to="/student-dashboard" className="ml-auto text-purple-600 underline">
+{/*<Link to="/student-dashboard" className="ml-auto text-purple-600 underline">*/}
+<Link to="/student-dashboard" className="w-full text-center sm:w-auto sm:text-left sm:ml-auto text-purple-600 underline">
   Back to Dashboard
 </Link>
 </div>
