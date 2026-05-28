@@ -2382,7 +2382,7 @@ const filtered = visibleItems
 
     {mobileMarketPanel === "links" && (
       <div className="px-4 pb-3 grid grid-cols-1 gap-2">
-        <Link to="/university-academic-platform" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+        <Link to="/platform/university" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
           University Academic Platform
         </Link>
 
