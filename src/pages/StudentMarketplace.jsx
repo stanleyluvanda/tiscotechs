@@ -230,11 +230,22 @@ async function fileToDownscaledDataURL(file, maxW, maxH, quality = 0.84, targetK
 }
 
 /* ============ Tiny UI bits ============ */
-function Card({ className = "", children, square = false }) {
+/*function Card({ className = "", children, square = false }) {
   return (
     <div
       className={`${
         square ? "rounded-none" : "rounded-2xl"
+      } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
+    >
+      {children}
+    </div>
+  );
+}*/
+function Card({ className = "", children, square = false }) {
+  return (
+    <div
+      className={`${
+        square ? "rounded-none" : "rounded-none sm:rounded-2xl"
       } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
     >
       {children}
@@ -252,8 +263,11 @@ function CardHeader({ title, small = false, square = false }) {
     </div>
   );
 }
-function CardBody({ className = "", children }) {
+/*function CardBody({ className = "", children }) {
   return <div className={`p-4 ${className}`}>{children}</div>;
+}*/
+function CardBody({ className = "", children }) {
+  return <div className={`p-3 sm:p-4 ${className}`}>{children}</div>;
 }
 function Badge({ children }) {
   return (  
@@ -1924,7 +1938,8 @@ const filtered =
       {/* Layout */}
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
       {/*<main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-        <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
+        {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
+        <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT: Filters */}
         {/*<aside className="space-y-4 pb-32">*/}
         <aside className="hidden lg:block space-y-4 pb-32">
@@ -2124,7 +2139,8 @@ const filtered =
         </aside>
 
         {/* CENTER: Composer + Feed */}
-        <section className="space-y-4">
+        {/*<section className="space-y-4">*/}
+        <section className="space-y-2 sm:space-y-4">
           <Card>
             <CardBody>
               {!openComposer ? (
