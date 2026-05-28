@@ -3403,30 +3403,14 @@ const filtered =
           </div>
         </div>
       )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
+  
 
 {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
 {payOpen && (
-  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] flex items-center justify-center px-4">
-    <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+ 
+  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] overflow-y-auto px-3 py-4 sm:px-4 sm:py-8">
+    {/*<div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">*/}
+    <div className="mx-auto w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
         <div className="flex items-start gap-4">
