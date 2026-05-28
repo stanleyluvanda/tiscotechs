@@ -671,14 +671,97 @@ const CATEGORY_MAP = {
     "Press-on Nails",
     "Nail Art",
   ],
+  "Lashes & Brows": [
+    "Lashes & Brows general service",
+    "Eyelash Extensions",
+    "Classic Lashes",
+    "Hybrid Lashes",
+    "Volume Lashes",
+    "Lash Lifts",
+    "Brow Shaping",
+    "Brow Waxing",
+    "Brow Threading",
+    "Brow Tinting",
+  ],
+
+  "Makeup Services": [
+    "Makeup Services for all events",
+    "Event Makeup",
+    "Party Makeup",
+    "Dinner Makeup",
+    "Photoshoot Makeup",
+    "Graduation Makeup",
+    "Everyday Makeup",
+    "Makeup Lessons",
+  ],
+
+  "Skincare & Wellness": [
+    "Skincare & Wellness general",
+    "Facials",
+    "Deep Cleansing Facial",
+    "Hydrating Facial",
+    "Acne Treatment Sessions",
+    "Body Waxing",
+    "Massage Services",
+    "Aromatherapy",
+    "Skincare Consultations",
+    "Product Guidance",
+  ],
+
+  "Beauty & Style Add-ons": [
+    "Personal Styling",
+    "Outfit Coordination",
+    "Event Styling",
+    "Wardrobe Planning",
+    "Wardrobe Makeovers",
+    "Photo-Ready Styling",
+    "Jewelry & Accessory Styling",
+  ],
+
+  "Photography & Media": [
+    "Social Media Shoots",
+    "Instagram Shoots",
+    "Graduation Photography",
+    "Portrait Sessions",
+  ],
+
+  "Fitness & Wellness Coaching": [
+    "Personal Training",
+    "Yoga Instruction",
+    "Flexibility & Strength Coaching",
+    "Weight‑Loss Training",
+  ],
+
+  "Home & Dorm Décor": [
+    "Dorm Setup",
+    "Room Makeovers",
+    "Aesthetic Interior Design",
+  ],
+
+  "Tailoring & Alterations": [
+    "Clothing Repairs",
+    "Custom Tailoring",
+    "Fit Adjustments",
+  ],
+
+  "Meal Prep & Nutrition": [
+    "Weekly Meal Prep",
+    "Diet-Specific Cooking",
+    "Healthy Eating Plans",
+  ],
 
   "Men Grooming Services": [
     "Haircut",
-    "Beard Trim",
+    "Beard Trims & Shaping",
     "Hair Coloring",
     "Waves Styling",
     "Dreadlocks Maintenance",
   ],
+"Fitness & Strength Coaching":["Gym Coaching",
+"Bodybuilding Programs",
+"Weight‑Loss Training",
+"Strength & Conditioning Plans",
+],
 
   "Phone Repair Services": [
     "Screen Replacement",
@@ -695,8 +778,25 @@ const CATEGORY_MAP = {
     "Virus Removal",
     "Software Installation",
   ],
+  "Car Care & Maintenance": [
+    "CarCare & Maintenance services",
+    "Car Wash (Interior/Exterior)",
+    "Auto Detailing",
+    "Jump‑Start Assistance",
+    "Virus Removal",
+    "Tire Pressure & Fluids Check",
+  ],
+  "Gaming & PC Services": [
+    "Gaming & PC Services",
+    "Console Repair",
+    "PC Building",
+    "Gaming Setup Optimization",
+    "RGB & Accessory Installation",
+  ],
+
 
   "Tutoring Services": [
+    "Tutoring Services",
     "Math Tutoring",
     "Economics Tutoring",
     "Accounting Tutoring",
@@ -705,11 +805,32 @@ const CATEGORY_MAP = {
   ],
 
   "Printing & Typing Services": [
+    "Printing & Typing Services",
     "Printing",
     "Document Typing",
     "CV Formatting",
     "Assignment Formatting",
     "Scanning",
+  ],
+  "Photography & Videography": [
+    "Photography & Videography",
+    "Event Photography",
+    "YouTube/Content Creation Filming",
+    "Video Editing",
+    "Portrait Sessions",  
+  ],
+  "Assembly & Setup Services": [
+    "Furniture Assembly",
+    "Dorm Room Setup",
+    "Small Repairs & Adjustments",
+    "IKEA Builds",  
+  ],
+  "Moving & Labor Services": [
+    "Moving & Labor Services",
+    "Dorm Move‑In/Move‑Out",
+    "Heavy Lifting",
+    "Furniture Transport",
+    "Packing & Loading Help",  
   ],
 
   "Men's shoes": ["Athletic", "Loafers", "Slip-ons", "Sandals", "Slippers","Boat shoes", "Boots", "Chelsea boots", "Chukka boots", "Derbies", "Dress shoes", "Flip-flops", "Hiking boots", "Moccasins", "Monk straps", "Oxfords", "Running shoes","Sneakers", "Training shoes", "Work boots", "Other"],
@@ -758,19 +879,21 @@ const CATEGORY_MAP = {
 const CATEGORY_GROUPS = [
   {
     label: "Women's Services",
-    categories: ["Hair & Beauty Services", "Nail Services"],
+    categories: ["Hair & Beauty Services", "Nail Services","Lashes & Brows",
+      "Makeup Services","Skincare & Wellness","Beauty & Style Add-ons","Photography & Media","Fitness & Wellness Coaching","Home & Dorm Décor",
+      "Tailoring & Alterations","Meal Prep & Nutrition",],
   },
   {
     label: "Men's Services",
-    categories: ["Men Grooming Services"],
+    categories: ["Men Grooming Services","Fitness & Strength Coaching"],
   },
   {
     label: "Technical Services",
-    categories: ["Phone Repair Services", "Laptop Repair Services"],
+    categories: ["Phone Repair Services", "Laptop Repair Services","Car Care & Maintenance"],
   },
   {
     label: "General Student Services",
-    categories: ["Tutoring Services", "Printing & Typing Services"],
+    categories: ["Tutoring Services", "Printing & Typing Services","Photography & Videography","Assembly & Setup Services"],
   },
 ];
 
