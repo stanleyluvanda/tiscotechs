@@ -696,7 +696,7 @@ const CATEGORY_MAP = {
   ],
 
   "Skincare & Wellness": [
-    "Skincare & Wellness general",
+    "Skincare & Wellness all services",
     "Facials",
     "Deep Cleansing Facial",
     "Hydrating Facial",
@@ -751,6 +751,7 @@ const CATEGORY_MAP = {
   ],
 
   "Men Grooming Services": [
+    "Men hair-all Services",
     "Haircut",
     "Beard Trims & Shaping",
     "Hair Coloring",
@@ -2317,7 +2318,21 @@ const filtered =
 ))}
 
 {CATEGORY_GROUPS.map((group) => (
-  <optgroup key={group.label} label={group.label}>
+ 
+  <optgroup
+  key={group.label}
+  label={"━━ " + group.label + " ━━"}
+  className={
+    group.label === "Women's Services"
+      ? "bg-pink-100 text-pink-700 font-bold"
+      : group.label === "Men's Services"
+      ? "bg-blue-100 text-blue-700 font-bold"
+      : group.label === "Technical Services"
+      ? "bg-indigo-100 text-indigo-700 font-bold"
+      : "bg-amber-100 text-amber-700 font-bold"
+  }
+>
+   
     {group.categories.map((c) => (
       <option key={c} value={c}>
         {c}
@@ -2422,7 +2437,20 @@ const filtered =
 ))}
 
 {CATEGORY_GROUPS.map((group) => (
-  <optgroup key={group.label} label={group.label}>
+ 
+    <optgroup
+  key={group.label}
+  label={"━━ " + group.label + " ━━"}
+  className={
+    group.label === "Women's Services"
+      ? "bg-pink-100 text-pink-700 font-bold"
+      : group.label === "Men's Services"
+      ? "bg-blue-100 text-blue-700 font-bold"
+      : group.label === "Technical Services"
+      ? "bg-indigo-100 text-indigo-700 font-bold"
+      : "bg-amber-100 text-amber-700 font-bold"
+  }
+>
     {group.categories.map((c) => (
       <option key={c} value={c}>{c}</option>
     ))}
@@ -2455,7 +2483,19 @@ const filtered =
 ))}
 
 {CATEGORY_GROUPS.map((group) => (
-  <optgroup key={group.label} label={group.label}>
+    <optgroup
+  key={group.label}
+  label={"━━ " + group.label + " ━━"}
+  className={
+    group.label === "Women's Services"
+      ? "bg-pink-100 text-pink-700 font-bold"
+      : group.label === "Men's Services"
+      ? "bg-blue-100 text-blue-700 font-bold"
+      : group.label === "Technical Services"
+      ? "bg-indigo-100 text-indigo-700 font-bold"
+      : "bg-amber-100 text-amber-700 font-bold"
+  }
+>
     {group.categories.map((c) => (
       <option key={c} value={c}>{c}</option>
     ))}
