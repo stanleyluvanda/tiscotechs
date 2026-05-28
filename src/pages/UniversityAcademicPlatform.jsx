@@ -3303,7 +3303,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                     to="/student-dashboard?tab=profile"
                     className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
                   >
-                    View My Profile
+                    Back to dashboard
                   </Link>
                 </>
               )}

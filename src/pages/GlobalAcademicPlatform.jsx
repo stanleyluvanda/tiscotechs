@@ -3133,7 +3133,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
               onClick={() => navigate("/profile")}
               className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
             >
-              👤 View My Profile
+              👤 Back to dashboard
             </button>
           </>
         )}
