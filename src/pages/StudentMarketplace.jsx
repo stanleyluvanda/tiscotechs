@@ -2390,8 +2390,8 @@ const filtered = visibleItems
           Global Academic Platform
         </Link>
 
-        <Link to="/student-profile" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
-          View My Profile
+        <Link to="/student-dashboard?tab=profile" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+          Back to dashboard
         </Link>
       </div>
     )}
