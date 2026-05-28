@@ -1619,6 +1619,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   const [subFilter, setSubFilter] = useState("All");
   const [showMine, setShowMine] = useState(false);
   const [mobileMarketPanel, setMobileMarketPanel] = useState("");
+  const [mobileSort, setMobileSort] = useState("top");
 
   // ✅ NEW: show listings for a specific seller (set by "View all listings")
   /*const [sellerOnlyId, setSellerOnlyId] = useState(null); // string | null*/
@@ -1636,11 +1637,11 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
         : true
     );*/
 
-    const visibleItems = items
+  const visibleItems = items
   .filter((i) => !i.deleted)
   .filter((i) => i.university === uni);
 
-const filtered = visibleItems
+/*const filtered = visibleItems
   .filter((i) => (catFilter === "All" ? true : i.mainCategory === catFilter))
   .filter((i) => (subFilter === "All" ? true : (i.subCategory || "") === subFilter))
   // ✅ If sellerOnlyId is set, show only that seller’s listings.
@@ -1656,7 +1657,38 @@ const filtered = visibleItems
       ? i.title.toLowerCase().includes(q.toLowerCase()) ||
         i.description.toLowerCase().includes(q.toLowerCase())
       : true
+  );*/
+  const filteredBase = visibleItems
+  .filter((i) => (catFilter === "All" ? true : i.mainCategory === catFilter))
+  .filter((i) => (subFilter === "All" ? true : (i.subCategory || "") === subFilter))
+  // ✅ If sellerOnlyId is set, show only that seller’s listings.
+  // Otherwise, keep your existing "My listings" toggle behavior.
+  .filter((i) => {
+    const sid = String(i?.seller?.id || "").trim();
+
+    if (sellerOnlyId) return sid === String(sellerOnlyId);
+
+    if (showMine) return sid === String(userId);
+
+    return true;
+  })
+  .filter((i) =>
+    q
+      ? i.title.toLowerCase().includes(q.toLowerCase()) ||
+        i.description.toLowerCase().includes(q.toLowerCase())
+      : true
   );
+
+const filtered =
+  mobileSort === "saved"
+    ? filteredBase.filter((i) => i.saved)
+    : mobileSort === "newest"
+    ? [...filteredBase].sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      )
+    : filteredBase;
 
 
 
@@ -2321,20 +2353,47 @@ const filtered = visibleItems
   <div className="border border-slate-200 bg-white">
 
     <div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">
-      <span>Showing:</span>
+  <span>Showing:</span>
 
-      <button className="rounded-full bg-blue-600 text-white px-3 py-1 text-xs font-medium">
-        Top
-      </button>
+  <button
+    type="button"
+    onClick={() => setMobileSort("top")}
+    className={
+      "rounded-full px-3 py-1 text-xs font-medium " +
+      (mobileSort === "top"
+        ? "bg-blue-600 text-white"
+        : "border border-slate-200 bg-white")
+    }
+  >
+    Top
+  </button>
 
-      <button className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs">
-        Newest
-      </button>
+  <button
+    type="button"
+    onClick={() => setMobileSort("newest")}
+    className={
+      "rounded-full px-3 py-1 text-xs font-medium " +
+      (mobileSort === "newest"
+        ? "bg-blue-600 text-white"
+        : "border border-slate-200 bg-white")
+    }
+  >
+    Newest
+  </button>
 
-      <button className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs">
-        Saved
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={() => setMobileSort("saved")}
+    className={
+      "rounded-full px-3 py-1 text-xs font-medium " +
+      (mobileSort === "saved"
+        ? "bg-blue-600 text-white"
+        : "border border-slate-200 bg-white")
+    }
+  >
+    Saved
+  </button>
+</div>
 
     <div className="px-4 py-3 grid grid-cols-3 gap-2">
       <button
