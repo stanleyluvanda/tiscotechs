@@ -2395,6 +2395,21 @@ const filtered =
   </button>
 </div>
 
+<button
+  type="button"
+  onClick={() =>
+    setMobileMarketPanel((p) => (p === "safety" ? "" : "safety"))
+  }
+  className={
+    "rounded-full px-3 py-1 text-xs font-medium " +
+    (mobileMarketPanel === "safety"
+      ? "bg-blue-600 text-white"
+      : "border border-slate-200 bg-white")
+  }
+>
+  Safety tips
+</button>
+
     <div className="px-4 py-3 grid grid-cols-3 gap-2">
       <button
         type="button"
