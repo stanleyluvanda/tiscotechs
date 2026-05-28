@@ -2407,7 +2407,7 @@ const filtered =
         : "border border-slate-200 bg-white")
     }
   >
-    Safety tips
+    ⚠️ Safety tips
   </button>
 </div>
 
