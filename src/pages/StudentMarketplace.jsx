@@ -3406,151 +3406,151 @@ const filtered =
   
 
 {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
+
+{/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
 {payOpen && (
- 
-  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] flex items-start justify-center overflow-y-auto px-3 py-4 sm:items-center sm:px-4 sm:py-8">
-    {/*<div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">*/}
-    <div className="w-full max-w-2xl max-h-[calc(100svh-32px)] overflow-y-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200">
-      {/* Header */}
-      <div className="px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center text-2xl">
-            🛍️
-          </div>
+  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px]">
+    <div className="h-[100dvh] overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-8">
+      <div className="mx-auto w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+        {/* Header */}
+        <div className="px-4 py-4 sm:px-6 sm:py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center text-2xl">
+              🛍️
+            </div>
 
-          <div className="min-w-0">
-            <div className="text-sm uppercase tracking-wide text-white/85">
-              Welcome to Student Marketplace
-            </div>
-            <div className="text-2xl font-bold leading-tight">
-              Subscribe to Marketplace Unlimited
-            </div>
-            <div className="mt-1 text-sm text-white/90">
-              Reach your fellow students as your immediate market — faster, easier, and trusted.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      {/*<div className="px-6 py-6">*/}
-      <div className="px-4 py-5 pb-24 sm:px-6 sm:py-6 sm:pb-6">
-        {/* Value cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              📣 Visibility
-            </div>
-            <div className="mt-1 text-xs text-slate-600">
-              Put your listings in front of students at your university.
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              ⚡ Speed
-            </div>
-            <div className="mt-1 text-xs text-slate-600">
-              Post without limits and respond to buyers instantly.
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-              🎓 Semester Access
-            </div>
-            <div className="mt-1 text-xs text-slate-600">
-              Unlimited listings for one semester.
+            <div className="min-w-0">
+              <div className="text-sm uppercase tracking-wide text-white/85">
+                Welcome to Student Marketplace
+              </div>
+              <div className="text-xl sm:text-2xl font-bold leading-tight">
+                Subscribe to Marketplace Unlimited
+              </div>
+              <div className="mt-1 text-sm text-white/90">
+                Reach your fellow students as your immediate market — faster, easier, and trusted.
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Pricing */}
-        <div className="mt-5 rounded-2xl border border-slate-200 p-4">
-          {/* ✅ Plan selector (monthly first, then semester) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setPayPlan("month")}
-              className={`rounded-2xl border p-4 text-left ${
-                payPlan === "month"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-slate-200 bg-white hover:bg-slate-50"
-              }`}
-            >
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold text-slate-900">Monthly</div>
-                <div className="text-xs text-slate-600">
-                  You’ve used your 1 free listing. Unlock unlimited listings for <b>1 month</b>.
+        {/* Body */}
+        <div className="px-4 py-5 pb-28 sm:px-6 sm:py-6 sm:pb-6">
+          {/* Value cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                📣 Visibility
+              </div>
+              <div className="mt-1 text-xs text-slate-600">
+                Put your listings in front of students at your university.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                ⚡ Speed
+              </div>
+              <div className="mt-1 text-xs text-slate-600">
+                Post without limits and respond to buyers instantly.
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                🎓 Semester Access
+              </div>
+              <div className="mt-1 text-xs text-slate-600">
+                Unlimited listings for one semester.
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="mt-5 rounded-2xl border border-slate-200 p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setPayPlan("month")}
+                className={`rounded-2xl border p-4 text-left ${
+                  payPlan === "month"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold text-slate-900">Monthly</div>
+                  <div className="text-xs text-slate-600">
+                    You’ve used your 1 free listing. Unlock unlimited listings for <b>1 month</b>.
+                  </div>
                 </div>
-              </div>
-              <div className="mt-3">
-                <div className="text-xs text-slate-500">Subscription</div>
-                <div className="text-2xl font-extrabold text-slate-900">$39.99</div>
-              </div>
+                <div className="mt-3">
+                  <div className="text-xs text-slate-500">Subscription</div>
+                  <div className="text-2xl font-extrabold text-slate-900">$39.99</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPayPlan("semester")}
+                className={`rounded-2xl border p-4 text-left ${
+                  payPlan === "semester"
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                <div className="flex flex-col gap-1">
+                  <div className="text-sm font-semibold text-slate-900">Semester</div>
+                  <div className="text-xs text-slate-600">
+                    You’ve used your 1 free listing. Unlock unlimited listings for <b>one semester</b>.
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-xs text-slate-500">Subscription</div>
+                  <div className="text-2xl font-extrabold text-slate-900">$99.99</div>
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-3 text-xs text-slate-500">
+              {payInfo?.paidUntil
+                ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}`
+                : "🔒 Secure checkout. Subscription activates instantly after payment."}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="mt-5 grid grid-cols-1 gap-2">
+            <button
+              disabled={payBusy}
+              onClick={() => beginCheckout("stripe")}
+              className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 text-sm font-semibold shadow hover:opacity-95 disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <span className="text-base">💳</span>
+              Subscribe with Card (Stripe)
             </button>
 
             <button
-              type="button"
-              onClick={() => setPayPlan("semester")}
-              className={`rounded-2xl border p-4 text-left ${
-                payPlan === "semester"
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-slate-200 bg-white hover:bg-slate-50"
-              }`}
+              disabled={payBusy}
+              onClick={() => beginCheckout("flutterwave")}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <div className="flex flex-col gap-1">
-                <div className="text-sm font-semibold text-slate-900">Semester</div>
-                <div className="text-xs text-slate-600">
-                  You’ve used your 1 free listing. Unlock unlimited listings for <b>one semester</b>.
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="text-xs text-slate-500">Subscription</div>
-                <div className="text-2xl font-extrabold text-slate-900">$99.99</div>
-              </div>
+              <span className="text-base">📱</span>
+              Subscribe with Mobile Money (Flutterwave)
+            </button>
+
+            <button
+              disabled={payBusy}
+              onClick={() => setPayOpen(false)}
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50 flex items-center justify-center gap-2"
+            >
+              <span className="text-base">⏸️</span>
+              Not now
             </button>
           </div>
 
-          <div className="mt-3 text-xs text-slate-500">
-            {payInfo?.paidUntil
-              ? `Current access ends: ${new Date(payInfo.paidUntil).toLocaleString()}`
-              : "🔒 Secure checkout. Subscription activates instantly after payment."}
+          <div className="mt-4 text-[11px] text-slate-500 text-center">
+            By subscribing, you agree to the marketplace rules and safety guidelines.
           </div>
-        </div>
-
-        {/* Actions (logic unchanged) */}
-        <div className="mt-5 grid grid-cols-1 gap-2">
-          <button
-            disabled={payBusy}
-            onClick={() => beginCheckout("stripe")}
-            className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 text-sm font-semibold shadow hover:opacity-95 disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            <span className="text-base">💳</span>
-            Subscribe with Card (Stripe)
-          </button>
-
-          <button
-            disabled={payBusy}
-            onClick={() => beginCheckout("flutterwave")}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            <span className="text-base">📱</span>
-            Subscribe with Mobile Money (Flutterwave)
-          </button>
-
-          <button
-            disabled={payBusy}
-            onClick={() => setPayOpen(false)}
-            className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm hover:bg-slate-50 flex items-center justify-center gap-2"
-          >
-            <span className="text-base">⏸️</span>
-            Not now
-          </button>
-        </div>
-
-        <div className="mt-4 text-[11px] text-slate-500 text-center">
-          By subscribing, you agree to the marketplace rules and safety guidelines.
         </div>
       </div>
     </div>
