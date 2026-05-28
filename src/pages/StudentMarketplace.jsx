@@ -533,6 +533,8 @@ function NewPostBadge() {
 
 
 
+
+
 /* ============ Categories ============ */
 const CATEGORY_MAP = {
   "Laptops": [ "Acer",  "Apple","Toshiba", "ASUS", "Dell","Infinix", "Razer","LG", "Lenovo", "Microsoft Surface","Samsung", "Panasonic","Alienware", "AORUS","Dynabook", "Eluktronics", "Eurocom", "Fujitsu", "Framework", "Gigabyte", "Honor", "HP", "Huawei",
@@ -573,6 +575,7 @@ const CATEGORY_MAP = {
     "Toshiba",
     "Otherbrands",
   ],
+
   "Tablet Accessories": [
     "Bags",
     "Cases",
@@ -586,6 +589,7 @@ const CATEGORY_MAP = {
     "Tablet holders",
     "Other",
   ],
+
   "Mobile Phones": [
     "Alcatel",
     "Apple iPhone",
@@ -610,6 +614,7 @@ const CATEGORY_MAP = {
     "Tecno",
     "Vivo",
   ],
+
   "Mobile Phone Accessories": [
     "Cases",
     "Chargers",
@@ -621,6 +626,7 @@ const CATEGORY_MAP = {
     "Selfie sticks",
     "Other",
   ],
+
   "Camera Brands": [
     "Canon",
     "Nikon",
@@ -634,6 +640,7 @@ const CATEGORY_MAP = {
     "Hasselblad",
     "Other",
   ],
+
   "Webcam Brands": [
     "Logitech",
     "Razer",
@@ -646,6 +653,65 @@ const CATEGORY_MAP = {
     "A4Tech",
     "Other",
   ],
+
+  "Hair & Beauty Services": [
+    "Braiding Services",
+    "Wig installation",
+    "Hair styling",
+    "Loc Maintenance",
+    "Weave & Sew-ins",
+    "Hair coloring",
+    "Natural Hair care",
+  ],
+
+  "Nail Services": [
+    "Acrylic Nails",
+    "Gel Manicure",
+    "Pedicure",
+    "Press-on Nails",
+    "Nail Art",
+  ],
+
+  "Men Grooming Services": [
+    "Haircut",
+    "Beard Trim",
+    "Hair Coloring",
+    "Waves Styling",
+    "Dreadlocks Maintenance",
+  ],
+
+  "Phone Repair Services": [
+    "Screen Replacement",
+    "Battery Replacement",
+    "Charging Port Repair",
+    "Software Unlocking",
+    "Phone Setup",
+  ],
+
+  "Laptop Repair Services": [
+    "Keyboard Repair",
+    "Screen Repair",
+    "OS Installation",
+    "Virus Removal",
+    "Software Installation",
+  ],
+
+  "Tutoring Services": [
+    "Math Tutoring",
+    "Economics Tutoring",
+    "Accounting Tutoring",
+    "Programming Tutoring",
+    "Writing Help",
+  ],
+
+  "Printing & Typing Services": [
+    "Printing",
+    "Document Typing",
+    "CV Formatting",
+    "Assignment Formatting",
+    "Scanning",
+  ],
+
   "Men's shoes": ["Athletic", "Loafers", "Slip-ons", "Sandals", "Slippers","Boat shoes", "Boots", "Chelsea boots", "Chukka boots", "Derbies", "Dress shoes", "Flip-flops", "Hiking boots", "Moccasins", "Monk straps", "Oxfords", "Running shoes","Sneakers", "Training shoes", "Work boots", "Other"],
   
   "Women shoes": [
@@ -668,21 +734,19 @@ const CATEGORY_MAP = {
 "Yves Saint Laurent (YSL)","Other brands"
     ],
 
-"Men's Clothing": ["Athletic tops", "Belts","Blazers", "Boxers", "Briefs", "Cardigans", "Coats", "Compression shirts", "Dress shirts", "Gloves", "Hats", "Hoodies", "Jackets", "Jeans", "Joggers", "Long-sleeve shirts",
+  "Men's Clothing": ["Athletic tops", "Belts","Blazers", "Boxers", "Briefs", "Cardigans", "Coats", "Compression shirts", "Dress shirts", "Gloves", "Hats", "Hoodies", "Jackets", "Jeans", "Joggers", "Long-sleeve shirts",
    "Overcoats", "Pants", "Polo shirts", "Puffer jackets", "Scarves", "Shirts", "Shorts", "Socks", "Suits", "Sweaters", "Sweatpants", "Sweatshirts", "Tank tops", "Ties", "Trousers", "T-shirts", "Underwear", "Vests"],    
 
-   "Women's perfumes and fragrances": ["Perfumes", "Fragrances", "Afnan", "Ajmal", "Amouage", "Armaf", "Bvlgari", "Byredo", "Calvin Klein", "Carolina Herrera", "Chanel", "Chloé", 
+  "Women's perfumes and fragrances": ["Perfumes", "Fragrances", "Afnan", "Ajmal", "Amouage", "Armaf", "Bvlgari", "Byredo", "Calvin Klein", "Carolina Herrera", "Chanel", "Chloé", 
     "Creed", "Dior", "Dolce & Gabbana", "Givenchy", "Giorgio Armani", "Gucci", "Issey Miyake", "Jean Paul Gaultier", "Jo Malone London", "Kayali", "Lancôme", "Lattafa", "Le Labo",
      "Maison Francis Kurkdjian (MFK)", "Mancera", "Marc Jacobs", "Montale", "Nishane", "Paco Rabanne", "Parfums de Marly", "Penhaligon’s", "Prada", "Ralph Lauren", "Rasasi", "Swiss Arabian", 
      "Tiffany & Co.", "Tom Ford", "Viktor & Rolf", "Xerjoff","Other brands"
    ],
 
-   "Women's Clothing": ["Athletic tops", "Belts", "Blazers", "Blouses", "Bodysuits", "Boyshorts", "Bras", "Bralettes", "Bustiers", "Camisoles", "Capris", "Cardigans", "Coats", "Compression leggings", 
-    "Corsets", "Crop tops", "Culottes", "Denim jackets", "Dresses", "Gloves", "Hats", "High‑waist pants", "Hoodies", "Jackets", "Jeans", "Jumpsuits", "Leg warmers", "Leggings", "Leather jackets", "Overalls",
-     "Panties", "Pants", "Peplum tops", "Puffer jackets", "Rompers", "Scarves", "Shapewear", "Shawls", "Shirts", "Shorts", "Skirts", "Socks", "Sports bras", "Stockings", "Sweaters", "Tank tops", "Tights", "T‑shirts",
+  "Women's Clothing": ["Athletic tops", "Belts", "Blazers", "Blouses", "Bodysuits", "Boyshorts", "Bras", "Bralettes", "Bustiers", "Camisoles", "Capris", "Cardigans", "Coats", "Compression leggings", 
+    "Corsets", "Crop tops", "Culottes", "Denim jackets", "Dresses", "Gloves", "Hats", "High-waist pants", "Hoodies", "Jackets", "Jeans", "Jumpsuits", "Leg warmers", "Leggings", "Leather jackets", "Overalls",
+     "Panties", "Pants", "Peplum tops", "Puffer jackets", "Rompers", "Scarves", "Shapewear", "Shawls", "Shirts", "Shorts", "Skirts", "Socks", "Sports bras", "Stockings", "Sweaters", "Tank tops", "Tights", "T-shirts",
      "Trench coats", "Wraps", "Yoga pants"],
-
-
 
   "Rooms & Hostel Items": ["On-Campus rooms", "Off-Campus Rooms", "Room seekers"],
   "Sports & Fitness": [],
@@ -690,7 +754,39 @@ const CATEGORY_MAP = {
   Services: [],
   Other: [],
 };
-const MAIN_CATEGORIES = Object.keys(CATEGORY_MAP);
+
+const CATEGORY_GROUPS = [
+  {
+    label: "Women's Services",
+    categories: ["Hair & Beauty Services", "Nail Services"],
+  },
+  {
+    label: "Men's Services",
+    categories: ["Men Grooming Services"],
+  },
+  {
+    label: "Technical Services",
+    categories: ["Phone Repair Services", "Laptop Repair Services"],
+  },
+  {
+    label: "General Student Services",
+    categories: ["Tutoring Services", "Printing & Typing Services"],
+  },
+];
+
+const GROUPED_CATEGORY_NAMES = new Set(
+  CATEGORY_GROUPS.flatMap((group) => group.categories)
+);
+
+const DEFAULT_MAIN_CATEGORIES = Object.keys(CATEGORY_MAP).filter(
+  (category) => !GROUPED_CATEGORY_NAMES.has(category)
+);
+
+const MAIN_CATEGORIES = [
+  ...DEFAULT_MAIN_CATEGORIES,
+  ...CATEGORY_GROUPS.flatMap((group) => group.categories),
+];
+
 const MARKETPLACE_SCOPE = "student-marketplace"; // ⬅️ NEW
 
 /* ============ Notifications storage helpers ============ */
@@ -2083,12 +2179,29 @@ const filtered =
                 }}
                 className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
               >
-                <option>All</option>
+                {/*<option>All</option>
                 {MAIN_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
-                ))}
+                ))}*/}
+<option value="All">All</option>
+
+{DEFAULT_MAIN_CATEGORIES.map((c) => (
+  <option key={c} value={c}>
+    {c}
+  </option>
+))}
+
+{CATEGORY_GROUPS.map((group) => (
+  <optgroup key={group.label} label={group.label}>
+    {group.categories.map((c) => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </optgroup>
+))}
               </select>
 
               {subFilterOptions.length > 0 && (
@@ -2178,9 +2291,20 @@ const filtered =
         onChange={(e) => setMainCategory(e.target.value)}
         className="border border-slate-200 rounded px-2 py-1 text-sm"
       >
-        {MAIN_CATEGORIES.map((c) => (
+        {/*{MAIN_CATEGORIES.map((c) => (
           <option key={c} value={c}>{c}</option>
-        ))}
+        ))}*/}
+        {DEFAULT_MAIN_CATEGORIES.map((c) => (
+  <option key={c} value={c}>{c}</option>
+))}
+
+{CATEGORY_GROUPS.map((group) => (
+  <optgroup key={group.label} label={group.label}>
+    {group.categories.map((c) => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </optgroup>
+))}
       </select>
 
       {CATEGORY_MAP[mainCategory]?.length > 0 && (
@@ -2203,9 +2327,17 @@ const filtered =
       onChange={(e) => setMainCategory(e.target.value)}
       className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm bg-white"
     >
-      {MAIN_CATEGORIES.map((c) => (
-        <option key={c} value={c}>{c}</option>
-      ))}
+      {DEFAULT_MAIN_CATEGORIES.map((c) => (
+  <option key={c} value={c}>{c}</option>
+))}
+
+{CATEGORY_GROUPS.map((group) => (
+  <optgroup key={group.label} label={group.label}>
+    {group.categories.map((c) => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </optgroup>
+))}
     </select>
 
     {CATEGORY_MAP[mainCategory]?.length > 0 && (
@@ -2528,10 +2660,23 @@ const filtered =
           }}
           className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm bg-white"
         >
-          <option value="All">All categories</option>
+          {/*<option value="All">All categories</option>
           {MAIN_CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
-          ))}
+          ))}*/}
+  <option value="All">All categories</option>
+
+{DEFAULT_MAIN_CATEGORIES.map((c) => (
+  <option key={c} value={c}>{c}</option>
+))}
+
+{CATEGORY_GROUPS.map((group) => (
+  <optgroup key={group.label} label={group.label}>
+    {group.categories.map((c) => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </optgroup>
+))}
         </select>
 
         {subFilterOptions.length > 0 && (
