@@ -2353,14 +2353,14 @@ const filtered =
   <div className="border border-slate-200 bg-white">
 
     {/*<div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">*/}
-    <div className="px-4 pt-3 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-sm text-slate-600 no-scrollbar">
-  <span>Showing:</span>
+    <div className="px-4 pt-3 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-sm text-slate-600">
+  <span className="shrink-0">Showing:</span>
 
   <button
     type="button"
     onClick={() => setMobileSort("top")}
     className={
-      "rounded-full px-3 py-1 text-xs font-medium " +
+      "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium " +
       (mobileSort === "top"
         ? "bg-blue-600 text-white"
         : "border border-slate-200 bg-white")
@@ -2373,7 +2373,7 @@ const filtered =
     type="button"
     onClick={() => setMobileSort("newest")}
     className={
-      "rounded-full px-2.5 py-1 text-xs font-medium " +
+      "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium " +
       (mobileSort === "newest"
         ? "bg-blue-600 text-white"
         : "border border-slate-200 bg-white")
@@ -2386,7 +2386,7 @@ const filtered =
     type="button"
     onClick={() => setMobileSort("saved")}
     className={
-      "rounded-full px-2.5 py-1 text-xs font-medium " +
+      "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium " +
       (mobileSort === "saved"
         ? "bg-blue-600 text-white"
         : "border border-slate-200 bg-white")
@@ -2394,22 +2394,22 @@ const filtered =
   >
     Saved
   </button>
-</div>
 
-<button
-  type="button"
-  onClick={() =>
-    setMobileMarketPanel((p) => (p === "safety" ? "" : "safety"))
-  }
-  className={
-    "rounded-full px-2.5 py-1 text-xs font-medium " +
-    (mobileMarketPanel === "safety"
-      ? "bg-blue-600 text-white"
-      : "border border-slate-200 bg-white")
-  }
->
-  Safety tips
-</button>
+  <button
+    type="button"
+    onClick={() =>
+      setMobileMarketPanel((p) => (p === "safety" ? "" : "safety"))
+    }
+    className={
+      "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium " +
+      (mobileMarketPanel === "safety"
+        ? "bg-blue-600 text-white"
+        : "border border-slate-200 bg-white")
+    }
+  >
+    Safety tips
+  </button>
+</div>
 
     <div className="px-4 py-3 grid grid-cols-3 gap-2">
       <button
