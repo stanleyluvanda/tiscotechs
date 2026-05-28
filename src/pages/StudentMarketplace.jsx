@@ -2135,7 +2135,7 @@ const filtered =
                     
                     className="flex-1 text-left border border-slate-200 rounded-full px-4 py-3 bg-white hover:bg-slate-50 text-slate-600"
                   >
-                    Create a listing
+                    Create listing to start your business
                   </button>
                 </div>
               ) : (
@@ -2453,6 +2453,37 @@ const filtered =
         Category
       </button>
     </div>
+
+    {mobileMarketPanel === "safety" && (
+  <div className="px-4 pb-3">
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="bg-[#7bdad1]/90 px-3 py-2 text-sm font-semibold text-slate-900">
+        <span className="inline-flex items-center gap-2">
+          <img
+            src="/images/Studentmarketsafety.jpg"
+            alt="Warning"
+            className="h-6 w-6 shrink-0 object-contain"
+          />
+          <span>Marketplace Safety tips</span>
+          <img
+            src="/images/Studentmarketsafety1.png"
+            alt="Safety"
+            className="h-6 w-6 shrink-0 object-contain"
+          />
+        </span>
+      </div>
+
+      <div className="p-4">
+        <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
+          <li>Meet on campus in public places.</li>
+          <li>Do not pay or send any money to anybody.</li>
+          <li>Check items before you pay.</li>
+          <li>Avoid scam or suspicious conversation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}
 
     {mobileMarketPanel === "links" && (
       <div className="px-4 pb-3 grid grid-cols-1 gap-2">
