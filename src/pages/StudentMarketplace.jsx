@@ -3408,9 +3408,9 @@ const filtered =
 {/* ✅ PAYWALL MODAL (inserted right before the page wrapper closes) */}
 {payOpen && (
  
-  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] overflow-y-auto px-3 py-4 sm:px-4 sm:py-8">
+  <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-[2px] flex items-start justify-center overflow-y-auto px-3 py-4 sm:items-center sm:px-4 sm:py-8">
     {/*<div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">*/}
-    <div className="mx-auto w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+    <div className="w-full max-w-2xl max-h-[calc(100svh-32px)] overflow-y-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200">
       {/* Header */}
       <div className="px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
         <div className="flex items-start gap-4">
@@ -3433,7 +3433,8 @@ const filtered =
       </div>
 
       {/* Body */}
-      <div className="px-6 py-6">
+      {/*<div className="px-6 py-6">*/}
+      <div className="px-4 py-5 pb-24 sm:px-6 sm:py-6 sm:pb-6">
         {/* Value cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
