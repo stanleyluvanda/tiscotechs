@@ -2352,7 +2352,8 @@ const filtered =
 <Card className="block lg:hidden overflow-hidden">
   <div className="border border-slate-200 bg-white">
 
-    <div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">
+    {/*<div className="px-4 pt-3 flex items-center gap-2 text-sm text-slate-600">*/}
+    <div className="px-4 pt-3 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-sm text-slate-600 no-scrollbar">
   <span>Showing:</span>
 
   <button
@@ -2372,7 +2373,7 @@ const filtered =
     type="button"
     onClick={() => setMobileSort("newest")}
     className={
-      "rounded-full px-3 py-1 text-xs font-medium " +
+      "rounded-full px-2.5 py-1 text-xs font-medium " +
       (mobileSort === "newest"
         ? "bg-blue-600 text-white"
         : "border border-slate-200 bg-white")
@@ -2385,7 +2386,7 @@ const filtered =
     type="button"
     onClick={() => setMobileSort("saved")}
     className={
-      "rounded-full px-3 py-1 text-xs font-medium " +
+      "rounded-full px-2.5 py-1 text-xs font-medium " +
       (mobileSort === "saved"
         ? "bg-blue-600 text-white"
         : "border border-slate-200 bg-white")
@@ -2401,7 +2402,7 @@ const filtered =
     setMobileMarketPanel((p) => (p === "safety" ? "" : "safety"))
   }
   className={
-    "rounded-full px-3 py-1 text-xs font-medium " +
+    "rounded-full px-2.5 py-1 text-xs font-medium " +
     (mobileMarketPanel === "safety"
       ? "bg-blue-600 text-white"
       : "border border-slate-200 bg-white")
