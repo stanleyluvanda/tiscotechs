@@ -2379,7 +2379,7 @@ const filtered =
         : "border border-slate-200 bg-white")
     }
   >
-    Newest
+    ⭐Newest
   </button>
 
   <button
