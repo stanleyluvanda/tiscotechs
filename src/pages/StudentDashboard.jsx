@@ -1399,13 +1399,36 @@ const files = mergedFiles.filter((a) => {
       {post.html && <ExpandableHtml html={post.html}/>}
 
       {/* NEW: Video post from lecturer (render like LinkedIn embed) */}
-      {post.type === "Video" && post.videoUrlOrId && (
+      {/*{post.type === "Video" && post.videoUrlOrId && (
         <div className="mt-3">
           <div className="aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
             <YouTubeEmbed idOrUrl={post.videoUrlOrId} title={post.title || "Video"} />
           </div>
         </div>
-      )}
+      )}*/}
+      {post.type === "Video" && post.videoUrlOrId && (
+  <div className="mt-3">
+    {/* Mobile edge-to-edge */}
+    <div className="-mx-3 sm:hidden">
+      <div className="aspect-video w-full overflow-hidden rounded-none border-y border-slate-100">
+        <YouTubeEmbed
+          idOrUrl={post.videoUrlOrId}
+          title={post.title || "Video"}
+        />
+      </div>
+    </div>
+
+    {/* Desktop unchanged */}
+    <div className="hidden sm:block">
+      <div className="aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
+        <YouTubeEmbed
+          idOrUrl={post.videoUrlOrId}
+          title={post.title || "Video"}
+        />
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Academic Books: show small cover that enlarges on click (cover carried in images[0]) */}
       {post.type === "Academic Books" && images.length > 0 && (
