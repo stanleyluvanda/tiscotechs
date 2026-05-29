@@ -4896,7 +4896,8 @@ const feedCombined = useMemo(() => {
           </div>
         )}
 
-        <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
+        {/*<div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">*/}
+        <div className="mt-3 -mx-3 aspect-video w-auto overflow-hidden rounded-none border-y border-slate-100">
           <YouTubeEmbed
             idOrUrl={latestVideo.videoUrlOrId}
             title={latestVideo.title || "ScholarsKnowledge Updates"}
