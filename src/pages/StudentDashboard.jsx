@@ -4129,7 +4129,8 @@ const feedCombined = useMemo(() => {
     <VerifyGate email={current?.email} />
     
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      <main className="max-w-[1360px] mx-auto px-2 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
+      {/*<main className="max-w-[1360px] mx-auto px-2 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
+        <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT */}
         {/* LEFT - DESKTOP ONLY */}
        <aside className="hidden lg:block space-y-4 pb-24">
@@ -4684,7 +4685,8 @@ const feedCombined = useMemo(() => {
 
 
           {/* MOBILE QUICK LINKS / FILTERS ONLY */}
-<div className="lg:hidden px-1">
+{/*<div className="lg:hidden px-1">*/}
+<div className="lg:hidden px-0">
   <div className="overflow-x-auto pb-1">
     <div className="flex items-center gap-2 min-w-max">
 
