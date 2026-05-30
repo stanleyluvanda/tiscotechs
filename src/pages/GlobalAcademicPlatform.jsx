@@ -1602,13 +1602,14 @@ export default function GlobalAcademicPlatform() {
         scope: SCOPE,
       });
 
-      const list = Array.isArray(res)
-        ? res
-        : res?.posts || res?.savedPosts || res?.items || [];
-
       const ids = new Set(
-        list
-          .map((x) => x?.postId || x?.id || x?.post?.id)
+        [
+          ...(Array.isArray(res?.savedPostIds) ? res.savedPostIds : []),
+          ...(Array.isArray(res?.saved) ? res.saved.map((x) => x?.postId || x?.id) : []),
+          ...(Array.isArray(res?.posts) ? res.posts.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+          ...(Array.isArray(res?.savedPosts) ? res.savedPosts.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+          ...(Array.isArray(res?.items) ? res.items.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+        ]
           .filter(Boolean)
           .map(String)
       );
@@ -1616,6 +1617,7 @@ export default function GlobalAcademicPlatform() {
       if (!alive) return;
 
       setSavedPostIds(ids);
+
       setPosts((prev) =>
         prev.map((p) => ({
           ...p,
@@ -1623,7 +1625,7 @@ export default function GlobalAcademicPlatform() {
         }))
       );
     } catch (err) {
-      console.error("Failed to fetch saved posts", err);
+      console.error("Failed to load saved posts", err);
     }
   }
 

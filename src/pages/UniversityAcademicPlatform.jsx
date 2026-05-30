@@ -1433,6 +1433,7 @@ export default function UniversityAcademicPlatform() {
   const STORE_KEY = `quora_uni_posts__${uni}`;
   const FOL_KEY = `quora_uni_follows__${user?.id || "anon"}__${uni}`;
   const isLecturer = typeof user?.role === "string" && /lecturer/i.test(user.role || "");
+  const PLATFORM_SCOPE = "uni-academic-platform";
 
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
@@ -1453,13 +1454,14 @@ export default function UniversityAcademicPlatform() {
         scope: PLATFORM_SCOPE,
       });
 
-      const list = Array.isArray(res)
-        ? res
-        : res?.posts || res?.savedPosts || res?.items || [];
-
       const ids = new Set(
-        list
-          .map((x) => x?.postId || x?.id || x?.post?.id)
+        [
+          ...(Array.isArray(res?.savedPostIds) ? res.savedPostIds : []),
+          ...(Array.isArray(res?.saved) ? res.saved.map((x) => x?.postId || x?.id) : []),
+          ...(Array.isArray(res?.posts) ? res.posts.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+          ...(Array.isArray(res?.savedPosts) ? res.savedPosts.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+          ...(Array.isArray(res?.items) ? res.items.map((x) => x?.postId || x?.id || x?.post?.id) : []),
+        ]
           .filter(Boolean)
           .map(String)
       );
@@ -1467,6 +1469,13 @@ export default function UniversityAcademicPlatform() {
       if (!alive) return;
 
       setSavedPostIds(ids);
+
+      setPosts((prev) =>
+        prev.map((p) => ({
+          ...p,
+          saved: ids.has(String(p.id)),
+        }))
+      );
     } catch (err) {
       console.error("Failed to load saved posts", err);
     }
@@ -1477,7 +1486,7 @@ export default function UniversityAcademicPlatform() {
   return () => {
     alive = false;
   };
-}, [user?.id]);
+}, [user?.id, PLATFORM_SCOPE]);
 
   /*const seeded = useMemo(() => {
     const now = Date.now();
@@ -1524,7 +1533,7 @@ const [posts, setPosts] = useState(() => []);
   const [follows, setFollows] = useState(() => safeParse(localStorage.getItem(FOL_KEY)) || {});
   const [toast, setToast] = useState("");
 
-  const PLATFORM_SCOPE = "uni-academic-platform";
+  /*const PLATFORM_SCOPE = "uni-academic-platform";*/
 
   function uploaderAttToUiAtt(a) {
   if (!a) return null;
