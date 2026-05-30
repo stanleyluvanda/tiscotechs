@@ -1635,7 +1635,7 @@ const files = mergedFiles.filter((a) => {
 )}
 
      <div className="mt-3 flex items-center gap-6 text-sm text-slate-600">
-        <button onClick={onToggleLike} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+        <button onClick={onToggleLike} className="hidden sm:flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
           <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked?"currentColor":"none"} stroke="currentColor"><path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z"/></svg>
           Like {post.likes>0 && <span className="text-slate-500">({post.likes})</span>}
         </button>
