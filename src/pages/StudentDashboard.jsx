@@ -4806,7 +4806,7 @@ if (showingTab === "Top") {
                     key={tab}
                     onClick={()=>setShowingTab(tab)}
                     /*className={`px-3 py-1.5 rounded-full text-sm ${showingTab===tab ? "bg-slate-900 text-white" : "border border-slate-200 hover:bg-slate-50"}`}*/
-                    className={`px-2 py-1.5 rounded-full text-[11px] whitespace-nowrap sm:px-3 sm:text-sm ${
+                    className={`px-2 py-1.5 rounded-text-xs whitespace-nowrap sm:px-3 sm:text-sm ${
   showingTab===tab
     ? tab === "Top"
       ? "bg-blue-600 text-white"
