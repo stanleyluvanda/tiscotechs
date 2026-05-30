@@ -913,6 +913,65 @@ export async function deletePostOnServer(arg1, arg2) {
   return deletePost(arg1, arg2);
 }
 
+
+/* ===================== Saved posts ===================== */
+
+export async function savePost({ userId, postId, scope = "student-dashboard" }) {
+  const uid = String(userId || "").trim();
+  const pid = String(postId || "").trim();
+
+  if (!uid || !pid) {
+    throw new Error("savePost requires userId and postId");
+  }
+
+  /*return doJsonFetch("/api/posts/save", {*/
+  return doJsonFetch("/posts/save", {
+    method: "POST",
+    body: {
+      userId: uid,
+      postId: pid,
+      scope,
+    },
+  });
+}
+
+export async function unsavePost({ userId, postId, scope = "student-dashboard" }) {
+  const uid = String(userId || "").trim();
+  const pid = String(postId || "").trim();
+
+  if (!uid || !pid) {
+    throw new Error("unsavePost requires userId and postId");
+  }
+
+  /*return doJsonFetch("/api/posts/save", {*/
+  return doJsonFetch("/posts/save", {
+    method: "DELETE",
+    body: {
+      userId: uid,
+      postId: pid,
+      scope,
+    },
+  });
+}
+
+export async function fetchSavedPosts({ userId, scope = "student-dashboard" }) {
+  const uid = String(userId || "").trim();
+
+  if (!uid) {
+    return { ok: true, saved: [], savedPostIds: [] };
+  }
+
+  return doJsonFetch(
+    /*buildPostsUrl("/api/posts/saved", {*/
+    buildPostsUrl("/posts/saved", {
+      userId: uid,
+      scope,
+    }),
+    { method: "GET" }
+  );
+}
+
+
 /* ===================== Marketplace helpers (keep using same API) ===================== */
 
 export async function createPostComment({

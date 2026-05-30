@@ -12,7 +12,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import AttachmentUploader from "../components/upload/AttachmentUploader"; // ⬅️ NEW
 //import { fetchPosts, createPost, deletePostOnServer } from "../lib/postsApi";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
-import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";
+/*import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";*/
+import {fetchPosts,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
@@ -1230,7 +1231,7 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
 }
 
 /* ====== Post card (with lightbox + prev/next) ====== */
-function PostCard({
+/*function PostCard({
   post,
   onToggleLike,
   onAddComment,
@@ -1239,7 +1240,21 @@ function PostCard({
   onReport,
   currentUser,
   isHighlighted,
+}) {*/
+
+  function PostCard({
+  post,
+  onToggleLike,
+  onToggleSavePost,
+  isSavedPost,
+  onAddComment,
+  onAddReply,
+  onDeletePost,
+  onReport,
+  currentUser,
+  isHighlighted,
 }) {
+
   const [showComments,setShowComments]=useState(true);
   const [cmt,setCmt]=useState("");
   const [cmtImages,setCmtImages]=useState([]); // [{name,dataUrl}]
@@ -1628,6 +1643,21 @@ const files = mergedFiles.filter((a) => {
           💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
         </button>
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
+
+        <button
+  type="button"
+  onClick={onToggleSavePost}
+  className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${
+    isSavedPost
+      ? "text-blue-600 font-semibold"
+      : "text-slate-600"
+  }`}
+  title={isSavedPost ? "Remove from saved posts" : "Save this post"}
+>
+  {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
+</button>
+
+
         {/* ✅ ADD THIS */}
   <button
     type="button"
@@ -3675,6 +3705,48 @@ const toggleLike = (postId) => {
   }));
 };
 
+const toggleSavePost = async (postId) => {
+  const uid = String(user?.id || "").trim();
+  const pid = String(postId || "").trim();
+  if (!uid || !pid) return;
+
+  const alreadySaved = savedPostIds.has(pid);
+
+  setSavedPostIds((prev) => {
+    const next = new Set(prev);
+    if (alreadySaved) next.delete(pid);
+    else next.add(pid);
+    return next;
+  });
+
+  try {
+    if (alreadySaved) {
+      await unsavePost({
+        userId: uid,
+        postId: pid,
+        scope: "student-dashboard",
+      });
+    } else {
+      await savePost({
+        userId: uid,
+        postId: pid,
+        scope: "student-dashboard",
+      });
+    }
+  } catch (err) {
+    console.error("[StudentDashboard] toggleSavePost failed", err);
+
+    setSavedPostIds((prev) => {
+      const next = new Set(prev);
+      if (alreadySaved) next.add(pid);
+      else next.delete(pid);
+      return next;
+    });
+  }
+};
+
+
+
 // ✅ NEW: sync updated post (with comments/replies) to the global posts API
 const syncPostToServer = async (updatedPost) => {
   if (!updatedPost?.id) return;
@@ -3996,6 +4068,38 @@ updatePostById(postId, (x) => {
   /* ===== Showing bar + Search ===== */
   const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "Answered"
   const [search, setSearch] = useState("");
+  const [savedPostIds, setSavedPostIds] = useState(() => new Set());
+
+useEffect(() => {
+  const uid = String(user?.id || "").trim();
+  if (!uid) return;
+
+  let cancelled = false;
+
+  (async () => {
+    try {
+      const res = await fetchSavedPosts({
+        userId: uid,
+        scope: "student-dashboard",
+      });
+
+      const ids = Array.isArray(res?.savedPostIds)
+        ? res.savedPostIds
+        : [];
+
+      if (!cancelled) {
+        setSavedPostIds(new Set(ids.map((x) => String(x))));
+      }
+    } catch (err) {
+      console.error("[StudentDashboard] fetchSavedPosts failed", err);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}, [user?.id]);
+
   const matchesSearch = (p) => {
     const q = search.trim().toLowerCase(); if (!q) return true;
     const plain = stripHtml(p.html||"").toLowerCase();
@@ -4061,9 +4165,23 @@ const feedCombined = useMemo(() => {
       : (p.audience === "GLOBAL" || p.audience === audKey)
   )
   .filter(matchesSearch);
-  if (showingTab === "Answered") filtered = filtered.filter(p => (p.comments?.length||0) > 0);
+  /*if (showingTab === "Answered") filtered = filtered.filter(p => (p.comments?.length||0) > 0);
   if (showingTab === "Top") filtered = filtered.slice().sort((a,b)=> (b.likes||0) - (a.likes||0));
-  else filtered = filtered.slice().sort((a,b)=> ts(b.createdAt||0) - ts(a.createdAt||0));
+  else filtered = filtered.slice().sort((a,b)=> ts(b.createdAt||0) - ts(a.createdAt||0));*/
+
+  if (showingTab === "Answered") {
+  filtered = filtered.filter((p) => (p.comments?.length || 0) > 0);
+}
+
+if (showingTab === "Saved Posts") {
+  filtered = filtered.filter((p) => savedPostIds.has(String(p.id || p.postId || "")));
+}
+
+if (showingTab === "Top") {
+  filtered = filtered.slice().sort((a, b) => (b.likes || 0) - (a.likes || 0));
+} else {
+  filtered = filtered.slice().sort((a, b) => ts(b.createdAt || 0) - ts(a.createdAt || 0));
+}
 
   /* ===== Manage profile ===== */
   //const [meOpen,setMeOpen]=useState(false);
@@ -4112,6 +4230,9 @@ const feedCombined = useMemo(() => {
   const [notifOpen,setNotifOpen] = useState(false);
   const [unseenCount,setUnseenCount] = useState(0);
   const [clearedAt, setClearedAt] = useState(()=> Number(localStorage.getItem(NOTIF_CLEARED_KEY(user.id)) || 0));
+
+
+
   const recomputeUnseen = useMemo(() => () => {
     const lastSeen = Number(localStorage.getItem(NOTIF_SEEN_KEY(user.id)) || 0);
     const cnt = allPostsForSignals.filter(p =>
@@ -4679,11 +4800,23 @@ const feedCombined = useMemo(() => {
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-600">Showing:</span>
-                {["Top","Newest","Answered"].map(tab => (
+                {/*{["Top","Newest","Answered"].map(tab => (*/}
+                {["Top","Newest","Answered","Saved Posts"].map(tab => (
                   <button
                     key={tab}
                     onClick={()=>setShowingTab(tab)}
-                    className={`px-3 py-1.5 rounded-full text-sm ${showingTab===tab ? "bg-slate-900 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
+                    /*className={`px-3 py-1.5 rounded-full text-sm ${showingTab===tab ? "bg-slate-900 text-white" : "border border-slate-200 hover:bg-slate-50"}`}*/
+                    className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
+  showingTab===tab
+    ? tab === "Top"
+      ? "bg-blue-600 text-white"
+      : tab === "Newest"
+      ? "bg-emerald-600 text-white"
+      : tab === "Answered"
+      ? "bg-purple-600 text-white"
+      : "bg-amber-500 text-white"
+    : "border border-slate-200 hover:bg-slate-50"
+}`}
                   >
                     {tab}
                   </button>
@@ -4873,6 +5006,8 @@ const feedCombined = useMemo(() => {
       <PostCard
         post={p}
         onToggleLike={() => toggleLike(p.id)}
+        onToggleSavePost={() => toggleSavePost(p.id || p.postId)}
+        isSavedPost={savedPostIds.has(String(p.id || p.postId || ""))}
         onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
         onAddReply={(commentId, text, images, files) =>
           addReply(p.id, commentId, text, images, files)
