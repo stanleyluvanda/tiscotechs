@@ -1775,6 +1775,17 @@ const files = mergedFiles.filter((a) => {
               </div>
             )}
           </form>
+          <div className="sm:hidden flex items-center justify-end gap-3 mt-1">
+  <button
+    type="button"
+    onClick={onToggleSavePost}
+    className={`text-sm font-semibold ${
+      isSavedPost ? "text-blue-600" : "text-blue-700"
+    }`}
+  >
+    {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
+  </button>
+</div>
           <button
   type="button"
   onClick={onToggleSavePost}
