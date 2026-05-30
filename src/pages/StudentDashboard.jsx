@@ -1786,21 +1786,12 @@ const files = mergedFiles.filter((a) => {
     {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
   </button>
 </div>
-          <button
-  type="button"
-  onClick={onToggleSavePost}
-  className={`sm:hidden mt-1 ml-[44px] text-sm font-semibold ${
-    isSavedPost ? "text-blue-600" : "text-blue-700"
-  }`}
->
-  {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
-</button>
-        </div>
+</div>
       )}
     </div>
   );
 }
-
+         
 /* ================= Presence (safe shim) ================= */
 function startPresenceHeartbeat(me, intervalMs = 60000) {
   // If you already have a real heartbeat elsewhere, this harmless shim will be replaced.
