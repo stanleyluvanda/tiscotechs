@@ -4798,8 +4798,7 @@ if (showingTab === "Top") {
           {/* Showing bar + Search under the composer */}
           <Card className="py-3">
             <div className="flex flex-col md:flex-row md:items-center gap-3">
-              {/*<div className="flex items-center gap-2">*/}
-              <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap w-full">
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-600">Showing:</span>
                 {/*{["Top","Newest","Answered"].map(tab => (*/}
                 {["Top","Newest","Answered","Saved Posts"].map(tab => (
@@ -4807,7 +4806,7 @@ if (showingTab === "Top") {
                     key={tab}
                     onClick={()=>setShowingTab(tab)}
                     /*className={`px-3 py-1.5 rounded-full text-sm ${showingTab===tab ? "bg-slate-900 text-white" : "border border-slate-200 hover:bg-slate-50"}`}*/
-                    className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
+                    className={`px-2 py-1.5 rounded-full text-[11px] whitespace-nowrap sm:px-3 sm:text-sm ${
   showingTab===tab
     ? tab === "Top"
       ? "bg-blue-600 text-white"
