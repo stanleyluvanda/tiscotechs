@@ -5,17 +5,15 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
-/*import {
-  fetchPosts,
-  createPost as createPostOnServer,
-  deletePost as deletePostOnServer,
-} from "../lib/postsApi.js";*/
 import {
   fetchPosts,
   createPost as createPostOnServer,
   deletePost as deletePostOnServer,
   postCommentToServer,
   postReplyToServer,
+  savePost,
+  unsavePost,
+  fetchSavedPosts,
 } from "../lib/postsApi.js";
 
 
@@ -1579,6 +1577,8 @@ export default function GlobalAcademicPlatform() {
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
   const [preview, setPreview] = useState(null);
+  const [savedPostIds, setSavedPostIds] = useState(() => new Set());
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
 
 
@@ -1589,6 +1589,50 @@ export default function GlobalAcademicPlatform() {
     const interval = setInterval(() => touchPresence(user?.id), 60_000);
     return () => clearInterval(interval);
   }, [user, navigate]);
+
+  useEffect(() => {
+  let alive = true;
+
+  async function loadSavedPosts() {
+    if (!user?.id) return;
+
+    try {
+      const res = await fetchSavedPosts({
+        userId: user.id,
+        scope: SCOPE,
+      });
+
+      const list = Array.isArray(res)
+        ? res
+        : res?.posts || res?.savedPosts || res?.items || [];
+
+      const ids = new Set(
+        list
+          .map((x) => x?.postId || x?.id || x?.post?.id)
+          .filter(Boolean)
+          .map(String)
+      );
+
+      if (!alive) return;
+
+      setSavedPostIds(ids);
+      setPosts((prev) =>
+        prev.map((p) => ({
+          ...p,
+          saved: ids.has(String(p.id)),
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch saved posts", err);
+    }
+  }
+
+  loadSavedPosts();
+
+  return () => {
+    alive = false;
+  };
+}, [user?.id, SCOPE]);
 
   // initial seed if server empty
   // initial seed if server empty  ✅ DISABLED (returns no posts)
@@ -1612,7 +1656,14 @@ const seeded = useMemo(() => {
         if (!list.length) {
           setPosts((prev) => (prev.length ? prev : seeded));
         } else {
-        const remoteNorm = (list || []).map(normalizePostShape);
+        /*const remoteNorm = (list || []).map(normalizePostShape);*/
+        const remoteNorm = (list || []).map((p) => {
+  const normalized = normalizePostShape(p);
+  return {
+    ...normalized,
+    saved: savedPostIds.has(String(normalized.id)),
+  };
+});
           
           setPosts((prev) => {
             const prevMap = new Map((prev || []).map((p) => [p.id, p]));
@@ -1653,7 +1704,8 @@ const seeded = useMemo(() => {
       alive = false;
       clearInterval(t);
     };
-  }, [SCOPE, seeded]);
+  /*}, [SCOPE, seeded]);*/
+  }, [SCOPE, seeded, savedPostIds]);
 
   const postRefs = useRef({});
 
@@ -2089,7 +2141,58 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
         p.id === id ? { ...p, likes: p._liked ? (p.likes || 0) - 1 : (p.likes || 0) + 1, _liked: !p._liked } : p
       )
     );
-  const toggleSave = (id) => setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));
+  /*const toggleSave = (id) => setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));*/
+  const toggleSavePost = async (postId) => {
+  if (!user?.id || !postId) return;
+
+  const id = String(postId);
+  const alreadySaved = savedPostIds.has(id);
+
+  setSavedPostIds((prev) => {
+    const next = new Set(prev);
+    alreadySaved ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  setPosts((prev) =>
+    prev.map((p) =>
+      String(p.id) === id ? { ...p, saved: !alreadySaved } : p
+    )
+  );
+
+  try {
+    if (alreadySaved) {
+      await unsavePost({
+        userId: user.id,
+        postId: id,
+        scope: SCOPE,
+      });
+    } else {
+      await savePost({
+        userId: user.id,
+        postId: id,
+        scope: SCOPE,
+      });
+    }
+  } catch (err) {
+    console.error("Save/unsave failed", err);
+
+    setSavedPostIds((prev) => {
+      const next = new Set(prev);
+      alreadySaved ? next.add(id) : next.delete(id);
+      return next;
+    });
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        String(p.id) === id ? { ...p, saved: alreadySaved } : p
+      )
+    );
+
+    setToast("Saved Posts update failed. Please try again.");
+    setTimeout(() => setToast(""), 4000);
+  }
+};
 
   const deletePost = async (id) => {
     // optimistic
@@ -2447,7 +2550,10 @@ setPosts(remoteNorm);
   const toggleFollow = (cat, topic) => setFollows((prev) => ({ ...prev, [followKey(cat, topic)]: !prev[followKey(cat, topic)] }));
 
   /* Derived lists (GLOBAL — no university filter) */
-  const visibleBase = posts;
+  /*const visibleBase = posts;*/
+  const visibleBase = showSavedOnly
+  ? posts.filter((p) => savedPostIds.has(String(p.id)) || p.saved)
+  : posts;
 
   const visible = visibleBase
     .filter((p) => (myOnly ? p.author?.id === user?.id : true))
@@ -2916,28 +3022,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   showList={false}
 />
 
-  {/*<AttachmentUploader
-  value={askUploadAtts}
-  onChange={setAskUploadAtts}
-  folder="global/posts"
-  maxFiles={5}
-  role={isLecturer ? "lecturer" : "student"}
-  showList={false}
-/>*/}
 </div>
-                        
-                           
-
-
-
-
-
-
-
-
-                    
-
-
 
                     <div className="mt-2 space-y-2 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
   <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 sm:ml-auto">
@@ -2999,93 +3084,47 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
               </div>
             </Card>
 
-            {/* Sort + Search */}
-            {/*<Card>
-              <div className="p-3 flex flex-wrap items-center gap-2">
-                <div className="text-sm">Showing:</div>
-                <div className="flex items-center gap-1">
-                  {["Top", "Newest", "Answered"].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSort(s)}
-                      className={`text-xs rounded-full px-3 py-1 border ${
-                        sort === s ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-                <div className="ml-auto">
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder="Search posts…"
-                    className="w-72 max-w-[60vw] border border-slate-200 rounded px-3 py-1.5 text-sm force-ltr"
-                    dir="ltr"
-                    style={{ direction: "ltr", unicodeBidi: "plaintext", textAlign: "left", writingMode: "horizontal-tb" }}
-                  />
-                </div>
-              </div>
-            </Card>*/}
+         
 
             <Card>
   <div className="p-3 space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-2">
     <div className="flex flex-wrap items-center gap-2">
       <div className="text-sm">Showing:</div>
 
-      {["Top", "Newest", "Answered"].map((s) => (
+      {/*{["Top", "Newest", "Answered"].map((s) => (*/}
+      {["Top", "Newest", "Answered", "Saved Posts"].map((s) => (
         <button
           key={s}
-          onClick={() => setSort(s)}
+          /*onClick={() => setSort(s)}*/
+          onClick={() => {
+  if (s === "Saved Posts") {
+    setShowSavedOnly((v) => !v);
+    setMyOnly(false);
+  } else {
+    setShowSavedOnly(false);
+    setSort(s);
+  }
+}}
           className={`rounded-full px-3 py-1.5 text-xs border ${
-            sort === s
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-          }`}
+  (s === "Saved Posts" && showSavedOnly) ||
+  (s !== "Saved Posts" && sort === s)
+    ? s === "Saved Posts"
+      ? "bg-amber-500 text-white border-amber-500"
+      : "bg-blue-600 text-white border-blue-600"
+    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+}`}
+    
         >
           {s}
         </button>
       ))}
     </div>
 
-  {/*<div className="grid grid-cols-3 gap-2 sm:hidden"> 
-  <button
-    onClick={() => setMyOnly((v) => !v)}
-    className={`rounded-full px-3 py-2 text-xs border ${
-      myOnly
-        ? "bg-blue-600 text-white border-blue-600"
-        : "bg-white text-slate-700 border-slate-200"
-    }`}
-  >
-    My Posts
-  </button>
-
-  <button
-    type="button"
-    onClick={() => {
-      setShowMobilePlatforms((v) => !v);
-      setShowMobileTopics(false);
-    }}
-    className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
-  >
-    Platforms
-  </button>
-
-  <button
-    type="button"
-    onClick={() => {
-      setShowMobileTopics((v) => !v);
-      setShowMobilePlatforms(false);
-    }}
-    className="rounded-full px-3 py-2 text-xs border border-slate-200 bg-white text-slate-700"
-  >
-    Topics
-  </button>
-</div>*/}
+  
 
 <div className="lg:hidden mt-3 mb-3">
-  <div className="grid grid-cols-3 gap-2">
+  {/*</div><div className="grid grid-cols-3 gap-2">*/}
+  <div className="grid grid-cols-4 gap-2">
     <button
       type="button"
       onClick={() => setMyOnly((v) => !v)}
@@ -3104,13 +3143,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </summary>
 
       <div className="absolute left-0 z-30 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-       {/* <button
-          type="button"
-          onClick={() => navigate("/university-academic-platform")}
-          className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
-        >
-          🎓 University Academic Platform
-        </button>*/}
+       
         <Link
   to="/platform/university"
   className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
@@ -3344,11 +3377,14 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </button>
 
   <button
-    onClick={() => toggleSave(post.id)}
+    /*onClick={() => toggleSave(post.id)}*/
+    onClick={() => toggleSavePost(post.id)}
     className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
   >
-    <div>{post.saved ? "★" : "☆"}</div>
-    <div>{post.saved ? "Saved" : "Save"}</div>
+    {/*<div>{post.saved ? "★" : "☆"}</div>
+    <div>{post.saved ? "Saved" : "Save"}</div>*/}
+    <div>{savedPostIds.has(String(post.id)) ? "★" : "☆"}</div>
+<div>{savedPostIds.has(String(post.id)) ? "Saved" : "Save Post"}</div>
   </button>
 </div>
 

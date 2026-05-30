@@ -11,6 +11,9 @@ import {
   deletePost as deletePostOnServer,
   postCommentToServer,
   postReplyToServer,
+  savePost,
+  unsavePost,
+  fetchSavedPosts,
 } from "../lib/postsApi.js";
 
 
@@ -1438,6 +1441,44 @@ export default function UniversityAcademicPlatform() {
     return () => clearInterval(interval);
   }, [user, navigate]);
 
+  useEffect(() => {
+  let alive = true;
+
+  async function loadSavedPosts() {
+    if (!user?.id) return;
+
+    try {
+      const res = await fetchSavedPosts({
+        userId: user.id,
+        scope: PLATFORM_SCOPE,
+      });
+
+      const list = Array.isArray(res)
+        ? res
+        : res?.posts || res?.savedPosts || res?.items || [];
+
+      const ids = new Set(
+        list
+          .map((x) => x?.postId || x?.id || x?.post?.id)
+          .filter(Boolean)
+          .map(String)
+      );
+
+      if (!alive) return;
+
+      setSavedPostIds(ids);
+    } catch (err) {
+      console.error("Failed to load saved posts", err);
+    }
+  }
+
+  loadSavedPosts();
+
+  return () => {
+    alive = false;
+  };
+}, [user?.id]);
+
   /*const seeded = useMemo(() => {
     const now = Date.now();
     return [
@@ -1803,6 +1844,8 @@ attachments: dedupeAttachments([
   [askUploadAtts]
     );
   const [preview, setPreview] = useState(null);
+  const [savedPostIds, setSavedPostIds] = useState(() => new Set());
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
 
   /*const onPickAskFiles = async (e) => {
     const chosen = await readFiles(e.target.files);
@@ -1972,8 +2015,59 @@ files: [],
         p.id === id ? { ...p, likes: p._liked ? p.likes - 1 : p.likes + 1, _liked: !p._liked } : p
       )
     );
-  const toggleSave = (id) =>
-    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));
+  /*const toggleSave = (id) =>
+    setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));*/
+  const toggleSavePost = async (postId) => {
+  if (!user?.id || !postId) return;
+
+  const id = String(postId);
+  const alreadySaved = savedPostIds.has(id);
+
+  setSavedPostIds((prev) => {
+    const next = new Set(prev);
+    alreadySaved ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  setPosts((prev) =>
+    prev.map((p) =>
+      String(p.id) === id ? { ...p, saved: !alreadySaved } : p
+    )
+  );
+
+  try {
+    if (alreadySaved) {
+      await unsavePost({
+        userId: user.id,
+        postId: id,
+        scope: PLATFORM_SCOPE,
+      });
+    } else {
+      await savePost({
+        userId: user.id,
+        postId: id,
+        scope: PLATFORM_SCOPE,
+      });
+    }
+  } catch (err) {
+    console.error("Save/unsave failed", err);
+
+    setSavedPostIds((prev) => {
+      const next = new Set(prev);
+      alreadySaved ? next.add(id) : next.delete(id);
+      return next;
+    });
+
+    setPosts((prev) =>
+      prev.map((p) =>
+        String(p.id) === id ? { ...p, saved: alreadySaved } : p
+      )
+    );
+
+    setToast("Saved Posts update failed. Please try again.");
+    setTimeout(() => setToast(""), 4000);
+  }
+};
 
   const deletePost = async (id) => {
     setPosts((prev) => prev.filter((p) => p.id !== id));
@@ -2305,7 +2399,12 @@ setPostsIfChanged((prev) => {
     setFollows((prev) => ({ ...prev, [followKey(cat, topic)]: !prev[followKey(cat, topic)] }));
 
   /* Derived lists */
-  const visibleBase = posts.filter((p) => p.university === uni);
+  /*const visibleBase = posts.filter((p) => p.university === uni);*/
+  const visibleBase = posts
+  .filter((p) => p.university === uni)
+  .filter((p) =>
+    showSavedOnly ? savedPostIds.has(String(p.id)) || p.saved : true
+  );
 
   const visible = visibleBase
     .filter((p) => (myOnly ? p.author?.id === user?.id : true))
@@ -2952,13 +3051,31 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
             <div className="p-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
               <div className="text-sm">Showing:</div>
               <div className="flex items-center gap-1">
-                {["Top", "Newest", "Answered"].map((s) => (
+                {/*{["Top", "Newest", "Answered"].map((s) => (*/}
+                {["Top", "Newest", "Answered", "Saved Posts"].map((s) => (
                   <button
                     key={s}
-                    onClick={() => setSort(s)}
-                    className={`text-xs rounded-full px-3 py-1 border ${
+                    /*onClick={() => setSort(s)}*/
+                    onClick={() => {
+  if (s === "Saved Posts") {
+    setShowSavedOnly((v) => !v);
+    setMyOnly(false);
+  } else {
+    setShowSavedOnly(false);
+    setSort(s);
+  }
+}}
+                    /*className={`text-xs rounded-full px-3 py-1 border ${
                       sort === s ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"
-                    }`}
+                    }`}*/
+                    className={`rounded-full px-3 py-1.5 text-xs border ${
+  (s === "Saved Posts" && showSavedOnly) ||
+  (s !== "Saved Posts" && sort === s)
+    ? s === "Saved Posts"
+      ? "bg-amber-500 text-white border-amber-500"
+      : "bg-blue-600 text-white border-blue-600"
+    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+}`}
                   >
                     {s}
                   </button>
@@ -3232,8 +3349,13 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     🚩 Report
   </button>
 
-                  <button onClick={() => toggleSave(post.id)} className="sm:ml-auto rounded px-2 py-1 hover:bg-slate-50">
-                    {post.saved ? "★ Saved" : "☆ Save"}
+                  <button 
+                  /*onClick={() => toggleSave(post.id)}*/ 
+                  onClick={() => toggleSavePost(post.id)}
+                  className="sm:ml-auto rounded px-2 py-1 hover:bg-slate-50">
+                    {/*{post.saved ? "★ Saved" : "☆ Save"}*/}
+                    <div>{savedPostIds.has(String(post.id)) ? "★" : "☆"}</div>
+<div>{savedPostIds.has(String(post.id)) ? "Saved" : "Save"}</div>
                   </button>
                 </div>
 
