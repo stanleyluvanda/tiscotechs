@@ -1644,10 +1644,22 @@ const files = mergedFiles.filter((a) => {
         </button>
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
 
-        <button
+        {/*<button
   type="button"
   onClick={onToggleSavePost}
   className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${
+    isSavedPost
+      ? "text-blue-600 font-semibold"
+      : "text-slate-600"
+  }`}
+  title={isSavedPost ? "Remove from saved posts" : "Save this post"}
+>
+  {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
+</button>*/}
+<button
+  type="button"
+  onClick={onToggleSavePost}
+  className={`hidden sm:flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${
     isSavedPost
       ? "text-blue-600 font-semibold"
       : "text-slate-600"
@@ -1763,6 +1775,15 @@ const files = mergedFiles.filter((a) => {
               </div>
             )}
           </form>
+          <button
+  type="button"
+  onClick={onToggleSavePost}
+  className={`sm:hidden mt-1 ml-[44px] text-sm font-semibold ${
+    isSavedPost ? "text-blue-600" : "text-blue-700"
+  }`}
+>
+  {isSavedPost ? "🔖 Saved ✓" : "🔖 Save Post"}
+</button>
         </div>
       )}
     </div>
