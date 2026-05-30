@@ -1647,7 +1647,7 @@ const files = mergedFiles.filter((a) => {
         <button
   type="button"
   onClick={onToggleSavePost}
-  className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${
+  className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 whitespace-nowrap${
     isSavedPost
       ? "text-blue-600 font-semibold"
       : "text-slate-600"
