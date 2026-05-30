@@ -4817,9 +4817,18 @@ if (showingTab === "Top") {
       : "bg-amber-500 text-white"
     : "border border-slate-200 hover:bg-slate-50"
 }`}
-                  >
+                  /*>
                     {tab}
-                  </button>
+                  </button>*/
+                  >
+  <span className="sm:hidden">
+    {tab === "Saved Posts" ? "Saved" : tab}
+  </span>
+
+  <span className="hidden sm:inline">
+    {tab}
+  </span>
+</button>
                 ))}
               </div>
               <div className="md:ml-auto w-full md:w-[420px]">
