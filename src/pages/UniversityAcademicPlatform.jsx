@@ -1197,6 +1197,19 @@ const TOPIC_ICON_MAP = {
   "Current & Trending Topics": "🔥",
   "Medicine & Health": "🩺",
 };
+const TOPIC_IMAGE_MAP = {
+  Economics: "/images/topics/economics.png",
+  Law: "/images/topics/law.png",
+  Engineering: "/images/topics/engineering.png",
+  "Natural sciences": "/images/topics/natural-sciences.png",
+  Sports: "/images/topics/sports.png",
+  "Business Studies": "/images/topics/business.png",
+  "Social Sciences": "/images/topics/social-sciences.png",
+  Agriculture: "/images/topics/agriculture.png",
+  "Arts & Humanities": "/images/topics/arts-humanities.png",
+  "Current & Trending Topics": "/images/topics/trending.png",
+  "Medicine & Health": "/images/topics/medicine-health.png",
+};
 
 function getTopicIcon(category) {
   return TOPIC_ICON_MAP[String(category || "").trim()] || "📚";
@@ -3090,6 +3103,20 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                   </button>
                 ))}
               </div>
+              {selectedCategory !== "All" &&
+  TOPIC_IMAGE_MAP[selectedCategory] && (
+    <div
+      className="hidden lg:flex h-9 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white"
+      title={selectedCategory}
+    >
+      <img
+        src={TOPIC_IMAGE_MAP[selectedCategory]}
+        alt={selectedCategory}
+        className="h-full w-full object-contain"
+        loading="lazy"
+      />
+    </div>
+)}
 
 
 
