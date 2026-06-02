@@ -30,7 +30,7 @@ export default function Home() {
     {/* Left: text */}
     <div>
       <p className="text-[#FFAF0F] text-xl md:text-2xl font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
-        The global academic platform for students, lecturers, and knowledge sharing.
+       Empowering global academic collaboration and making educational resources accessible to students and faculty worldwide.
       </p>
       <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
         Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
@@ -102,6 +102,30 @@ export default function Home() {
   </a>
 </div>
 </div>
+
+{/* Trusted by Universities Worldwide */}
+<section className="max-w-7xl mx-auto px-4 lg:px-8 pb-12">
+  <div className="text-center">
+    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
+      Trusted by Universities Worldwide
+    </h2>
+  </div>
+
+  <div className="mt-6 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+  <img
+    src="/images/world-map-network.png"
+    alt="Global university network"
+    className="w-full h-auto object-cover"
+    loading="lazy"
+  />
+</div>
+
+  <p className="mt-6 text-center text-lg text-slate-600 max-w-4xl mx-auto">
+    Thousands of lecturers and students across 150+ countries use our platform
+    to share knowledge and collaborate on research that shapes the future of
+    education.
+  </p>
+</section>
 
 {/* ✅ Fixed social icons on right margin */}
       <div className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2">
