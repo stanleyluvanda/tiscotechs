@@ -1131,6 +1131,7 @@ const TOPIC_MAP = {
     "Financial Economics",
     "Health Economics",
     "International Trade",
+    "International Trade Agreement",
     "International Economics",
     "Labor Economics",
     "Macroeconomics",
