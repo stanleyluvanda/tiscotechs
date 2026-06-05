@@ -57,7 +57,7 @@ async function logoutEverywhereClientOnly() {
   try { window.dispatchEvent(new Event("auth:changed")); } catch {}
 }
 
-async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
+/*async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
   const reason = prompt(
     "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
     "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
@@ -68,6 +68,17 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   const details = prompt("Optional details (what happened?)", "") || "";
 
   const me = user || currentUser || {}; // use whatever variable your page uses
+  const reportedByEmail = String(me.email || "").trim().toLowerCase();*/
+  async function onReport({ itemType, itemId, postId, commentId = "", replyId = "", me = {} }) {
+  const reason = prompt(
+    "ScholarsKnowledge is committed to keeping our community safe and supportive by protecting users from misuse of the platform.\n\n" +
+    "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
+    "spam"
+  );
+  if (!reason) return;
+
+  const details = prompt("Optional details (what happened?)", "") || "";
+
   const reportedByEmail = String(me.email || "").trim().toLowerCase();
 
   try {
@@ -1079,7 +1090,7 @@ export default function LecturerDashboard() {
   
 useEffect(() => {
   if (notifications && notifications.length > 0) {
-    console.log("NOTIF SAMPLE", notifications[0]);
+    /*console.log("NOTIF SAMPLE", notifications[0]);*/
   }
 }, [notifications]);
 
@@ -1445,12 +1456,22 @@ if (remotePosts.length) {
     loadFromServer();
 
     // Poll every 30 seconds so posts from other devices show up
-    const id = setInterval(loadFromServer, 30000);
+    /*const id = setInterval(loadFromServer, 30000);
 
     return () => {
       cancelled = true;
       clearInterval(id);
-    };
+    };*/
+    // Poll every 30 seconds so posts from other devices show up
+const id = setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  loadFromServer();
+}, 30000);
+
+return () => {
+  cancelled = true;
+  clearInterval(id);
+};
   }, []);
 
 
@@ -1484,12 +1505,21 @@ useEffect(() => {
   }
 
   load();
-  const id = setInterval(load, 30000); // ✅ keep it fresh cross-device
+  /*const id = setInterval(load, 30000); // ✅ keep it fresh cross-device
 
   return () => {
     cancelled = true;
     clearInterval(id);
-  };
+  };*/
+  const id = setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  load();
+}, 30000);
+
+return () => {
+  cancelled = true;
+  clearInterval(id);
+};
 }, []);
 
 const latestAdminLecturerVideo = adminLecturerVideos[0] || null;   // ← INSERT HERE
@@ -4050,7 +4080,8 @@ async function clearNotificationsServerBacked() {
         onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
         onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
         onDelete={() => deletePost(p)}
-        onReport={onReport}
+        /*onReport={onReport}*/
+        onReport={(payload) => onReport({ ...payload, me: user })}
         currentUser={user}
         onOpenComments={() => ensureThreadLoadedForPost(p)}
         commentsLoading={

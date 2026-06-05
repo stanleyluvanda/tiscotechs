@@ -338,10 +338,6 @@ async function fileToDownscaledDataURL(file, maxW, maxH, quality = 0.84, targetK
   } finally { URL.revokeObjectURL(blobUrl); }
 }
 
-
-
-
-
 //I added the below to optimize the image 04022026 in case it compromise the logic,it will be removed
 
 async function convertImageFileToWebP(
@@ -398,16 +394,6 @@ async function convertImageFileToWebP(
     URL.revokeObjectURL(blobUrl);
   }
 }
-
-
-
-
-
-
-
-
-
-
 
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
@@ -559,14 +545,7 @@ function HeaderBar({ title }) {
     </div>
   );
 }
-/*function SidebarCard({ title, children }) {
-  return (
-    <div className="rounded-none overflow-hidden border border-slate-200 bg-white shadow-sm">
-      <HeaderBar title={title} />
-      <div className="p-3">{children}</div>
-    </div>
-  );
-}*/
+
 function SidebarCard({ title, children, headerOnly = false }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -1039,25 +1018,14 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   if (!replies.length) return null;
 
   return (
-    /*<div className="mt-2 pl-6 space-y-2">*/
-    /*<div className="mt-2 pl-2 sm:pl-6 space-y-2">*/
-    /*<div className="mt-2 pl-0 sm:pl-6 space-y-2">*/
     <div className="mt-2 -ml-2 sm:ml-0 pl-0 sm:pl-6 space-y-2">
       {replies.map((r, index) => (
-        /*<div
-          key={r?.id || `${comment.id || "comment"}-reply-${index}`}
-          className="flex items-start gap-2"
-        >*/
           <div
   key={r?.id || `${comment.id || "comment"}-reply-${index}`}
   className="flex items-start gap-2"
 >
           <Avatar size="sm" url={r?.authorPhoto} name={r?.author} />
           <div>
-            {/*<div className="font-medium text-slate-800">{r?.author}</div>
-            <div className="text-xs text-slate-500 mb-1">
-              {r?.authorProgram || ""}
-            </div>*/}
             <div className="font-bold text-slate-900">{r?.author}</div>
 
 {(r?.authorProgram || r?.createdAt) ? (
@@ -1142,17 +1110,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
-              {/*<label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickReplyImages}/>
-              </label>
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
-                <input type="file" multiple className="hidden" onChange={onPickReplyDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
-              </label>
-              {/* NEW: make reply button prominent */}
-              {/*<button type="submit" className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
-                Reply
-              </button>
-            </div>*/}
 
             <div className="max-sm:w-full max-sm:flex max-sm:items-center max-sm:justify-end max-sm:gap-2 sm:contents">
   <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
@@ -1231,17 +1188,6 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
 }
 
 /* ====== Post card (with lightbox + prev/next) ====== */
-/*function PostCard({
-  post,
-  onToggleLike,
-  onAddComment,
-  onAddReply,
-  onDeletePost,     // NEW
-  onReport,
-  currentUser,
-  isHighlighted,
-}) {*/
-
   function PostCard({
   post,
   onToggleLike,
@@ -1376,20 +1322,6 @@ const files = mergedFiles.filter((a) => {
         <span className="hidden sm:inline-flex ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">
   {post.type}
 </span>
-
-        {/*<span className="ml-auto text-xs rounded-full border border-slate-100 px-2 py-0.5">{post.type}</span>*/}
-        {/*<div className="flex flex-col items-end shrink-0">
-  <span
-    className="
-      text-[11px] rounded-full border border-slate-100 px-2 py-0.5
-      bg-slate-50 text-slate-600
-      mt-1 sm:mt-0
-    "
-  >
-    {post.type}
-  </span>
-</div>*/}
-
         {/* NEW: delete control (student can delete own posts) */}
         {canDelete && (
           <button
@@ -1413,14 +1345,7 @@ const files = mergedFiles.filter((a) => {
       {/* Body (notes/announcement/etc.) */}
       {post.html && <ExpandableHtml html={post.html}/>}
 
-      {/* NEW: Video post from lecturer (render like LinkedIn embed) */}
-      {/*{post.type === "Video" && post.videoUrlOrId && (
-        <div className="mt-3">
-          <div className="aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
-            <YouTubeEmbed idOrUrl={post.videoUrlOrId} title={post.title || "Video"} />
-          </div>
-        </div>
-      )}*/}
+      
       {post.type === "Video" && post.videoUrlOrId && (
   <div className="mt-3">
     {/* Mobile edge-to-edge */}
@@ -1459,39 +1384,11 @@ const files = mergedFiles.filter((a) => {
       )}
 
       {/* post images (general) */}
-      {/*{post.type !== "Academic Books" && images.length>0 && (
-        <div className="mt-3">
-          <ImageGrid
-            images={images}
-            onOpen={(idx)=>openLightbox(images, idx)}
-            max={3}
-            tileClass="h-40"
-            withArrows
-          />
-        </div>
-      )}*/}
-
+    
       {post.type !== "Academic Books" && images.length > 0 && (
   <div className="mt-3">
     {images.length === 1 ? (
       <>
-      {/*<div className="sm:hidden">
-        <AttachmentImage
-  key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
-  att={images[0]}
-  className="w-full max-h-[420px] object-cover rounded-lg cursor-zoom-in"
-  onClick={() => openLightbox(images, 0)}
-/>
-      </div>
-
-      <div className="-mx-3 sm:hidden">
-  <AttachmentImage
-    key={images[0]?.id || images[0]?.url || images[0]?.s3Url || images[0]?.name || post.id}
-    att={images[0]}
-    className="w-full max-h-[420px] object-cover rounded-none cursor-zoom-in"
-    onClick={() => openLightbox(images, 0)}
-  />
-</div>*/}
 
  {/* Mobile single image */}
     <div className="-mx-3 sm:hidden">
@@ -1515,16 +1412,6 @@ const files = mergedFiles.filter((a) => {
   </>
 
     ) : null}
-
-    {/*<div className={images.length === 1 ? "hidden sm:block" : ""}>
-      <ImageGrid
-        images={images}
-        onOpen={(idx)=>openLightbox(images, idx)}
-        max={3}
-        tileClass="h-40"
-        withArrows
-      />
-    </div>*/}
 
     {images.length > 1 && (
   <>
@@ -1554,17 +1441,6 @@ const files = mergedFiles.filter((a) => {
 )}
   </div>
 )}
-
-
-
-
-
-
-
-
-
-
-
 
       {/* Lightbox */}
       {lightbox.open && (
@@ -1724,16 +1600,6 @@ const files = mergedFiles.filter((a) => {
   style={{ minHeight: 40, maxHeight: 150 }}
 />
 
-
-              {/*<label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
-              </label>
-              <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📎
-                <input type="file" multiple className="hidden" onChange={onPickCmtDocs} accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"/>
-              </label>
-              <button type="submit" className="rounded-full bg-purple-600 text-white px-4 py-1 text-sm font-semibold hover:bg-purple-700">Post</button>
-            </div>*/}
-
             <div className="max-sm:ml-[40px] max-sm:w-[calc(100%-40px)] max-sm:flex max-sm:items-center max-sm:justify-end max-sm:gap-2 sm:contents">
   <label className="text-xs px-2 py-1 border border-slate-100 rounded cursor-pointer">📷
     <input type="file" accept="image/*" multiple className="hidden" onChange={onPickCmtImages}/>
@@ -1835,11 +1701,6 @@ function guessMime(name = "", fallback = "application/octet-stream") {
   return fallback;
 }
 
-/*function dataUrlToFile(dataUrl, fileName, mimeFallback) {
-  const blob = dataURLtoBlob(dataUrl);
-  const mime = blob.type || mimeFallback || "application/octet-stream";
-  return new File([blob], fileName || "file", { type: mime });
-}*/
 async function dataUrlToFile(dataUrl, fileName, mimeFallback) {
   const blob = dataURLtoBlob(dataUrl);
   const mime = blob.type || mimeFallback || "application/octet-stream";
@@ -1936,18 +1797,6 @@ async function uploadDescsToCloudFront(imgDescs = [], fileDescs = []) {
 
   return { upImgs, upFiles };
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ✅ put helper here (top-level)
 function formatTimeAgo(input) {
@@ -2082,29 +1931,14 @@ export default function StudentDashboard() {
     "";
 
   const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
-  // DEBUG (safe): confirm env base + final base
-console.log("[StudentDashboard] RAW_API_BASE =", RAW_API_BASE);
-console.log("[StudentDashboard] API_BASE =", API_BASE);
-
   // Update ONLY bannerUrl/photoUrl for the logged-in user on the server
   async function patchMyProfileOnServer(patch) {
   const email = (current?.email || user?.email || "").trim();
 
   // Step A: prove we have what we need
-  console.log("[StudentDashboard] patchMyProfileOnServer() called", {
-    hasAPIBase: !!API_BASE,
-    API_BASE,
-    email,
-    patchKeys: patch ? Object.keys(patch) : [],
-  });
-
   if (!API_BASE || !email) {
-    console.warn("[StudentDashboard] patchMyProfileOnServer() aborted (missing API_BASE or email)", {
-      API_BASE,
-      email,
-    });
-    return null;
-  }
+  return null;
+}
 
   const url = `${API_BASE}/api/auth/student/update-profile`;
   console.log("[StudentDashboard] update-profile URL:", url);
@@ -2688,22 +2522,6 @@ const latestSeenCommonTs = Number(
           setHasNewCommonPosts(true);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // Merge backend posts + any local `seeded`/existing posts (dedupe by id)
         setPosts((prev) => {
   const prevArr = Array.isArray(prev) ? prev : [];
@@ -3018,9 +2836,6 @@ useEffect(() => {
 }, [lecturerPosts]);
 
 
-
-
-
   const [showLecturerOnly,setShowLecturerOnly]=useState(false);
   const [showFacultyOnly,setShowFacultyOnly]=useState(false);
   const [showMineOnly,setShowMineOnly]=useState(false);
@@ -3330,17 +3145,8 @@ const handlePaste = async (e) => {
         }
 
         // ✅ Upload using your existing flow (same as AttachmentUploader)
-        /*const uploaded = await uploadFileToS3(file);
-
-        const att = {
-          url: uploaded.url,
-          key: uploaded.key,
-          fileName: file.name || "screenshot.png",
-          size: file.size,
-          mime: file.type,
-          type: "image",
-        };*/
-        const webpFile = await convertImageFileToWebP(file, {
+       
+  const webpFile = await convertImageFileToWebP(file, {
   maxW: 1600,
   maxH: 1600,
   quality: 0.8,
@@ -3814,21 +3620,7 @@ try {
        images: upImgs,   // ✅ USE UPLOADED URL DESCS
       files: upFiles,   // ✅ USE UPLOADED URL DESCS
     });
-    console.log("[postsApi] createComment response:", res);
     serverComment = res && (res.comment || res.data?.comment) || null;
-    
-    // ✅ NEW: notify post owner (lecturer) about this comment
-    try {
-      await notifyPostOwner({
-        type: "comment",
-        postId,
-        commentId: serverComment?.id,
-        actorId: authorId,
-        actorName: authorName,
-      });
-    } catch (e) {
-      console.warn("notifyPostOwner failed", e);
-    }
 
 
   } catch (err) {
@@ -3847,24 +3639,14 @@ if (!serverComment?.id) {
           authorPhoto: serverComment.authorPhoto || authorPhoto,
           authorProgram:
             serverComment.authorProgram || authorProgram,
-          images: Array.isArray(serverComment.images)
-            ? serverComment.images
-            : imgDescs,
-          //files: Array.isArray(serverComment.files)
-            //? serverComment.files
-            //: fileDescs,
-            images:
-          Array.isArray(serverComment.images) &&
-          serverComment.images.length > 0
-            ? serverComment.images
-            //: imgDescs,
-            : upImgs,   // ✅ ALWAYS URLs
-        files:
-          Array.isArray(serverComment.files) &&
-          serverComment.files.length > 0
-            ? serverComment.files
-            : upFiles,  // ✅ ALWAYS URLs
-
+          images:
+  Array.isArray(serverComment.images) && serverComment.images.length > 0
+    ? serverComment.images
+    : upImgs,
+files:
+  Array.isArray(serverComment.files) && serverComment.files.length > 0
+    ? serverComment.files
+    : upFiles,
 
         }
       : {
@@ -3940,26 +3722,7 @@ try {
       images: upImgs,   // ✅ NOT imgDescs
       files: upFiles,   // ✅ NOT fileDescs
     });
-    console.log("[postsApi] createReply response:", res);
     serverReply = res && (res.reply || res.data?.reply) || null;
-
-    // ✅ NEW: notify post owner (lecturer) about this comment
-    try {
-      await notifyPostOwner({
-        type: "reply",
-        postId,
-        commentId: serverComment?.id,
-        actorId: authorId,
-        actorName: authorName,
-      });
-    } catch (e) {
-      console.warn("notifyPostOwner failed", e);
-    }
-
-
-
-
-
 
   } catch (err) {
     console.error("[StudentDashboard] createReply failed:", err);
@@ -4032,10 +3795,6 @@ updatePostById(postId, (x) => {
   return updated;
 });
 };
-
-
-  
-
   
     // 2️⃣ Persist to backend
 
@@ -4533,11 +4292,6 @@ if (showingTab === "Top") {
     </div>
   </div>
 
-                {/*<div className="mt-3 flex items-center gap-2">
-                  <ToolbarButton onClick={()=>exec("bold")} label="B" title="Bold"/>
-                  <ToolbarButton onClick={()=>exec("italic")} label={<em>I</em>} title="Italic"/>
-                  <ToolbarButton onClick={addLink} label="🔗" title="Add link"/>
-                </div>*/}
    <div className="mt-3 flex items-center gap-2 flex-wrap">
   <ToolbarButton onClick={()=>exec("bold")} label="B" title="Bold"/>
   <ToolbarButton onClick={()=>exec("italic")} label={<em>I</em>} title="Italic"/>
@@ -4843,13 +4597,6 @@ if (showingTab === "Top") {
             </div>
           </Card>
 
-
-
-
-
-
-
-
           {/* MOBILE QUICK LINKS / FILTERS ONLY */}
 {/*<div className="lg:hidden px-1">*/}
 <div className="lg:hidden px-0">
@@ -4945,35 +4692,6 @@ if (showingTab === "Top") {
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           {/* Small loading hint above the feed */}
           {feedLoading && (filtered?.length || 0) === 0 && (
   <div className="text-sm text-slate-500 px-1 mb-1">
@@ -4981,29 +4699,6 @@ if (showingTab === "Top") {
   </div>
 )}
 
-  {/*{filtered.map((p, idx) => (
-  <div
-    key={`${p?.id || "noid"}__${p?.createdAt || 0}__${idx}`}
-    ref={(el) => {
-      //if (el) postRefs.current[p.id] = el;
-      if (el && p?.id) postRefs.current[p.id] = el;
-    }}
-    data-post-id={p.id}
-  >
-    <PostCard
-      post={p}
-      onToggleLike={() => toggleLike(p.id)}
-      onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
-      onAddReply={(commentId, text, images, files) =>
-        addReply(p.id, commentId, text, images, files)
-      }
-      onDeletePost={deletePost}
-      onReport={() => onReport({ itemType: "post", itemId: p.id, postId: p.id })}   // ✅ ADD THIS LINE
-      currentUser={user}
-      isHighlighted={highlightPostId === p.id}
-    />
-  </div>
-))}*/}
 
 {filtered.map((p, idx) => (
   <>
@@ -5099,34 +4794,6 @@ if (showingTab === "Top") {
 
           <StudentAlertsCTA />
         
-          {/* Contact Lecturer card */}
-          {/*<div className="mt-3">
-            <div className="w-full border border-slate-200 bg-white rounded-2xl p-4">
-              <div className="font-semibold text-slate-900">Contact a Lecturer</div>
-              <p className="text-sm text-slate-600 mt-1">
-                Send a message (with file or image) to any lecturer in your {user.faculty || "Faculty/School/College"}.
-              </p>
-              <div className="mt-2 flex items-center justify-between">
-                <Link
-                  to="/contact-lecturer"
-                  className="inline-block rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                >
-                  Open Contact Page
-                </Link>
-                {unreadLecturerResponses > 0 ? (
-                  <span
-                    className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-emerald-600 text-white text-xs font-bold"
-                    title="Unread replies from lecturers"
-                    aria-label={`Unread replies (${unreadLecturerResponses})`}
-                  >
-                    ({unreadLecturerResponses})
-                  </span>
-                ) : (
-                  <span className="inline-block min-w-[28px] h-7" />
-                )}
-              </div>
-            </div>
-          </div>*/}
 
           {/* Students' links: quick links under Contact a Lecturer */}
 <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">

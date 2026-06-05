@@ -1,408 +1,302 @@
-//src/pages/Home.jsx
-import { useState } from "react"; 
+// src/pages/Home.jsx
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       {/* 1) HERO */}
-<section className="relative overflow-hidden">
-  {/* ✅ Background video (behind everything) */}
-  <video
-    className="absolute inset-0 h-full w-full object-cover"
-    autoPlay
-    muted
-    loop
-    playsInline
-    preload="metadata"
-  >
-    {/* ✅ Use your local file first */}
-    <source src="/videos/hero-campus.mp4" type="video/mp4" />
-  </video>
-
-  {/* ✅ Soft overlay so text stays readable (keeps your same design vibe) */}
-  {/*<div className="absolute inset-0 bg-gradient-to-br from-[#f0f6ff]/85 via-white/70 to-[#eef2ff]/85" />
-  <div className="absolute inset-0 bg-slate-900/10" />*/}
-  <div className="absolute inset-0 bg-black/10" />
-
-  {/* ✅ Your existing content stays EXACTLY the same */}
-  <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
-    {/* Left: text */}
-    <div>
-      <p className="text-[#FFAF0F] text-xl md:text-2xl font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
-       Empowering global academic collaboration and making educational resources accessible to students and faculty worldwide.
-      </p>
-      <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
-        Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
-      </h1>
-      {/*<p className="mt-4 text-slate-700 text-lg md:text-xl max-w-xl">*/}
-      <p className="mt-4 text-white/95 text-lg md:text-xl max-w-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-        One platform to organize,manage and share academic materials, and boost your learning experience—so students, lecturers, and partners move forward together.
-      </p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link
-          to="/edufinancing"
-          className="rounded-full bg-[#1a73e8] text-white px-5 py-3 font-semibold hover:opacity-90"
+      <section className="relative overflow-hidden">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
         >
-          Explore Education-Funding opportunities
-        </Link>
-        <Link
-  to="/about"
-  /*className="rounded-full bg-white/90 backdrop-blur px-5 py-3 font-semibold text-slate-900 hover:bg-white shadow-sm"*/
-  className="rounded-full bg-white/20 backdrop-blur border border-white/40 px-5 py-3 font-semibold text-white hover:bg-white/30"
->
-  Why ScholarsKnowledge
-</Link>
+          <source src="/videos/hero-campus.mp4" type="video/mp4" />
+        </video>
 
-      </div>
-    </div>
+        <div className="absolute inset-0 bg-black/10" />
 
-    {/* Right: hero visual */}
-    <div className="relative">
-      <img
-        src="/images/welcome.webp"
-        alt="AI campus illustration"
-        className="w-full rounded-2xl shadow-md"
-      />
-      <div className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-[#fbbc04]/90 shadow" />
-    </div>
-  </div>
-</section>
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <p className="text-[#FFAF0F] text-xl md:text-2xl font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+              Empowering global academic collaboration and making educational resources accessible to students and faculty worldwide.
+            </p>
 
-{/* ✅ Social links just below hero content */}
- <div className="relative max-w-7xl mx-auto px-4 lg:px-8 pb-8 pt-1">
-    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-  <a
-    href="https://www.facebook.com/profile.php?id=61579563119393"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Facebook"
-    title="Facebook"
-    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
-  >
-    f
-  </a>
+            <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
+              Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
+            </h1>
 
-  <a
-    href="https://www.youtube.com/@scholarsknowledge5765"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="YouTube"
-    title="YouTube"
-    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-4 w-4"
-    >
-      <path d="M21.8 8.001a2.75 2.75 0 0 0-1.936-1.946C18.137 5.5 12 5.5 12 5.5s-6.137 0-7.864.555A2.75 2.75 0 0 0 2.2 8.001 28.44 28.44 0 0 0 1.75 12c0 1.352.15 2.688.45 3.999a2.75 2.75 0 0 0 1.936 1.946C5.863 18.5 12 18.5 12 18.5s6.137 0 7.864-.555a2.75 2.75 0 0 0 1.936-1.946c.3-1.311.45-2.647.45-3.999 0-1.352-.15-2.688-.45-3.999ZM10 15.5v-7l6 3.5-6 3.5Z" />
-    </svg>
-  </a>
-</div>
-</div>
+            <p className="mt-4 text-white/95 text-lg md:text-xl max-w-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+              One platform to organize, manage and share academic materials, and boost your learning experience—so students, lecturers, and partners move forward together.
+            </p>
 
-{/* Trusted by Universities Worldwide */}
-<section className="max-w-7xl mx-auto px-4 lg:px-8 pb-12">
-  <div className="text-center">
-    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
-      Trusted by Universities Worldwide
-    </h2>
-  </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/edufinancing"
+                className="rounded-full bg-[#1a73e8] text-white px-5 py-3 font-semibold hover:opacity-90"
+              >
+                Explore Education-Funding opportunities
+              </Link>
 
-  <div className="mt-6 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
-  <img
-    src="/images/world-map-network.png"
-    alt="Global university network"
-    className="w-full h-auto object-cover"
-    loading="lazy"
-  />
-</div>
+              <Link
+                to="/about"
+                className="rounded-full bg-white/20 backdrop-blur border border-white/40 px-5 py-3 font-semibold text-white hover:bg-white/30"
+              >
+                Why ScholarsKnowledge
+              </Link>
+            </div>
+          </div>
 
-  <p className="mt-6 text-center text-lg text-slate-600 max-w-4xl mx-auto">
-    Thousands of lecturers and students across 150+ countries use our platform
-    to share knowledge and collaborate on research that shapes the future of
-    education.
-  </p>
-</section>
+          <div className="relative">
+            <img
+              src="/images/welcome.webp"
+              alt="Students and lecturers using a digital academic platform"
+              className="w-full rounded-2xl shadow-md"
+            />
+            <div className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-[#fbbc04]/90 shadow" />
+          </div>
+        </div>
+      </section>
 
-{/* ✅ Fixed social icons on right margin */}
-      <div className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2">
-        <a
-          href="https://www.facebook.com/profile.php?id=61579563119393"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Facebook"
-          title="Facebook"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
-        >
-          f
-        </a>
-
-        <a
-          href="https://www.youtube.com/@scholarsknowledge5765"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="YouTube"
-          title="YouTube"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="h-4 w-4"
-          >
-            <path d="M21.8 8.001a2.75 2.75 0 0 0-1.936-1.946C18.137 5.5 12 5.5 12 5.5s-6.137 0-7.864.555A2.75 2.75 0 0 0 2.2 8.001 28.44 28.44 0 0 0 1.75 12c0 1.352.15 2.688.45 3.999a2.75 2.75 0 0 0 1.936 1.946C5.863 18.5 12 18.5 12 18.5s6.137 0 7.864-.555a2.75 2.75 0 0 0 1.936-1.946c.3-1.311.45-2.647.45-3.999 0-1.352-.15-2.688-.45-3.999ZM10 15.5v-7l6 3.5-6 3.5Z" />
-          </svg>
-        </a>
+      {/* Social links just below hero content */}
+      <div className="relative max-w-7xl mx-auto px-4 lg:px-8 pb-8 pt-1">
+        <SocialIcons className="flex flex-wrap items-center justify-center gap-3 sm:gap-4" />
       </div>
 
+      {/* Trusted by Universities Worldwide */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 pb-12">
+        <div className="text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
+            Trusted by Universities Worldwide
+          </h2>
+        </div>
 
+        <div className="mt-6 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+          <img
+            src="/images/world-map-network.png"
+            alt="Global university network connecting universities worldwide"
+            width="1600"
+            height="600"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+          />
+        </div>
 
+        <p className="mt-6 text-center text-lg text-slate-600 max-w-4xl mx-auto">
+          Thousands of lecturers and students across 150+ countries use our platform
+          to share knowledge and collaborate on research that shapes the future of
+          education.
+        </p>
+      </section>
 
+      {/* Fixed social icons on right margin */}
+      <SocialIcons className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2" />
 
-{/* 2) TABS + CARDS */}
+      {/* 2) TABS + CARDS */}
       <SectionTabs />
 
+      {/* 3) MPOWER section */}
+      <section className="w-full" style={{ backgroundColor: "#FFFAEE" }}>
+        <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#2f4ea2]">
+              Funding for international students
+            </h2>
+          </div>
 
-      {/* 3) MPOWER section (corporate background + card links to EduInfo) */}
-<section
-  className="w-full"
-  style={{ backgroundColor: "#FFFAEE" }} // ✅ MPOWER corporate color
->
-  <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
-    <div className="text-center">
-  <h2 className="text-3xl md:text-4xl font-extrabold text-[#2f4ea2]">
-    Funding for international students
-  </h2>
-</div>
+          <Link
+            to="/eduinfo"
+            className="mt-6 block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0 bg-white/80"
+            title="Learn more in EduInfo"
+          >
+            <div className="p-6 md:p-10 grid md:grid-cols-[120px_1fr] gap-6 items-center">
+              <img
+                src="/images/mpower.png"
+                alt="Mpower Financing logo"
+                className="w-24 h-24 object-contain opacity-90"
+                loading="lazy"
+              />
+              <blockquote className="text-lg text-slate-800">
+                “ScholarsKnowledge partners with MPOWER Financing to help international students access trusted financial solutions.”
+                <div className="mt-2 text-sm text-slate-500">— Learn More</div>
+              </blockquote>
+            </div>
+          </Link>
+        </div>
+      </section>
 
+      {/* 4) Three pillars */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
+        <h2 className="text-3xl font-bold text-slate-900 text-center">
+          How we move learning forward.
+        </h2>
 
-    <Link
-      to="/eduinfo"
-      className="mt-6 block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0 bg-white/80"
-      title="Learn more in EduInfo"
-    >
-      <div className="p-6 md:p-10 grid md:grid-cols-[120px_1fr] gap-6 items-center">
-        <img
-          src="/images/mpower.png"
-          alt="Mpower Financing logo"
-          className="w-24 h-24 object-contain opacity-90"
-          loading="lazy"
-        />
-        <blockquote className="text-lg text-slate-800">
-          “ScholarsKnowledge partners with MPOWER Financing to help international students access trusted financial solutions.”
-          <div className="mt-2 text-sm text-slate-500">— Learn More</div>
-        </blockquote>
-      </div>
-    </Link>
-  </div>
-</section>
-
-      {/* 4) Three pillars (centered titles) */}
-      {/*<section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
-        <h2 className="text-3xl font-bold text-slate-900 text-center">How we move learning forward.</h2>
         <div className="mt-8 grid md:grid-cols-3 gap-6">
           <Pillar
+            image="/images/Empoering learners.webp"
+            imageAlt="Students learning together"
             title="Empower Learners."
             text="Enable students and lecturers to focus on meaningful learning while technology simplifies routine academic tasks."
             centered
           />
           <Pillar
+            image="/images/Streamline  academics.webp"
+            imageAlt="Organized academic workflow"
             title="Streamline Academics."
             text="From notes to workflows, ScholarsKnowledge organizes academic materials and reduces friction in teaching and learning."
             centered
           />
           <Pillar
+            image="/images/How we forward learning.webp"
+            imageAlt="Learning insights and analytics"
             title="Insight-Driven Learning."
             text="Transform academic activity into actionable insights that guide smarter decisions and better outcomes."
             centered
           />
         </div>
-      </section>*/}
-      {/* 4) Three pillars (centered titles) */}
-<section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
-  <h2 className="text-3xl font-bold text-slate-900 text-center">
-    How we move learning forward.
-  </h2>
+      </section>
 
-  <div className="mt-8 grid md:grid-cols-3 gap-6">
-    <Pillar
-      image="/images/Empoering learners.webp"
-      imageAlt="Students learning together"
-      title="Empower Learners."
-      text="Enable students and lecturers to focus on meaningful learning while technology simplifies routine academic tasks."
-      centered
-    />
-    <Pillar
-      image="/images/Streamline  academics.webp"
-      imageAlt="Organized academic workflow"
-      title="Streamline Academics."
-      text="From notes to workflows, ScholarsKnowledge organizes academic materials and reduces friction in teaching and learning."
-      centered
-    />
-    <Pillar
-      image="/images/How we forward learning.webp"
-      imageAlt="Learning insights and analytics"
-      title="Insight-Driven Learning."
-      text="Transform academic activity into actionable insights that guide smarter decisions and better outcomes."
-      centered
-    />
-  </div>
-</section>
+      {/* Funded graduate programs */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          backgroundImage: "url('/images/scholarship.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/55" />
 
-      {/* ✅ NEW:  Funded graduate programs opportunities for international students (with background image + 4 StoryCards) */}
-<section
-  className="relative overflow-hidden"
-  style={{
-    backgroundImage: "url('/images/scholarship.webp')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  }}
->
-  {/* Overlay for readability */}
-  <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+            Funded graduate programs opportunities for international students
+          </h2>
+          <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
+            Access a curated selection of verified, university-funded graduate admission opportunities
+            sourced directly from accredited institutions worldwide.
+          </p>
 
-  <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
-    <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
-      Funded graduate programs opportunities for international students
-    </h2>
-    <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
-      Access a curated selection of verified, university-funded graduate admission opportunities 
-      sourced directly from accredited institutions worldwide.
-    </p>
-
-    <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-  <StoryCard
-    image="/images/USfundedprogram.jpg"
-    title="University-Funded graduate programs in the U.S."
-    linkTo="/funded-graduate-admission?country=United%20States"
-    linkText="Explore U.S. funded graduate programs"
-  />
-
-  <StoryCard
-    image="/images/FundedprogranCanada.jpg"
-    title="University-Funded graduate programs in Canada"
-    linkTo="/funded-graduate-admission?country=Canada"
-    linkText="Explore Canada funded graduate programs"
-  />
-
-  <StoryCard
-    image="/images/FundedprogramUK.png"
-    title="University-Funded graduate programs in the UK"
-    linkTo="/funded-graduate-admission?country=United%20Kingdom"
-    linkText="Explore UK funded graduate programs"
-  />
-
-  <StoryCard
-    image="/images/FundedprogramEurope.jpg"
-    title="University-Funded graduate programs in Europe"
-    linkTo="/funded-graduate-admission?continent=Europe"
-    linkText="Explore Europe funded graduate programs"
-  />
-</div>
-  </div>
-</section>
-
-
-      {/* 5) Customer stories teaser (centered headings; custom CTAs; faint borders; no 'All Customer Stories') */}
-      <section className="bg-[#f6f9ff]">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
-          <h2 className="text-2xl font-bold text-slate-900 text-center">Transforming Education.Academic innovation. Real-world impact. Inspiring Success.</h2>
-          <p className="mt-2 text-slate-600 text-center">Explore how universities and learning communities leverage ScholarsKnowledge to achieve their goals.</p>
-          <div className="mt-6 grid md:grid-cols-3 gap-6">
+          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StoryCard
-  image="/images/Submit scholarships.webp"
-  title="Scholarships Providers"
-  linkTo="/partner/signup"
-  linkText="Submit a Scholarship"
-/>
-
-<StoryCard
-  image="/images/istockphoto-2105100634-612x612.webp"
-  title="Join students community around the world"
-  linkTo="/student-sign-up"
-  linkText="Student Sign Up"
-/>
-
-<StoryCard
-  image="/images/streamline-academic-sharing.jpg"
-  title="Streamline Academics sharing"
-  linkTo="/lecturer-sign-up"
-  linkText="Lecturer Sign Up"
-  />
-
-
+              image="/images/USfundedprogram.jpg"
+              title="University-Funded graduate programs in the U.S."
+              linkTo="/funded-graduate-admission?country=United%20States"
+              linkText="Explore U.S. funded graduate programs"
+            />
+            <StoryCard
+              image="/images/FundedprogranCanada.jpg"
+              title="University-Funded graduate programs in Canada"
+              linkTo="/funded-graduate-admission?country=Canada"
+              linkText="Explore Canada funded graduate programs"
+            />
+            <StoryCard
+              image="/images/FundedprogramUK.png"
+              title="University-Funded graduate programs in the UK"
+              linkTo="/funded-graduate-admission?country=United%20Kingdom"
+              linkText="Explore UK funded graduate programs"
+            />
+            <StoryCard
+              image="/images/FundedprogramEurope.jpg"
+              title="University-Funded graduate programs in Europe"
+              linkTo="/funded-graduate-admission?continent=Europe"
+              linkText="Explore Europe funded graduate programs"
+            />
           </div>
         </div>
       </section>
 
+      {/* 5) Customer stories teaser */}
+      <section className="bg-[#f6f9ff]">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
+          <h2 className="text-2xl font-bold text-slate-900 text-center">
+            Transforming Education. Academic innovation. Real-world impact. Inspiring Success.
+          </h2>
+          <p className="mt-2 text-slate-600 text-center">
+            Explore how universities and learning communities leverage ScholarsKnowledge to achieve their goals.
+          </p>
 
-      {/* ✅ NEW: Scholarships by Destination (with background image + 4 StoryCards) */}
-<section
-  className="relative overflow-hidden"
-  style={{
-    backgroundImage: "url('/images/scholarships-destinations-bg.webp')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-  }}
->
-  {/* Overlay for readability */}
-  <div className="absolute inset-0 bg-slate-950/55" />
+          <div className="mt-6 grid md:grid-cols-3 gap-6">
+            <StoryCard
+              image="/images/Submit scholarships.webp"
+              title="Scholarships Providers"
+              linkTo="/partner/signup"
+              linkText="Submit a Scholarship"
+            />
+            <StoryCard
+              image="/images/istockphoto-2105100634-612x612.webp"
+              title="Join students community around the world"
+              linkTo="/student-sign-up"
+              linkText="Student Sign Up"
+            />
+            <StoryCard
+              image="/images/streamline-academic-sharing.jpg"
+              title="Streamline Academics sharing"
+              linkTo="/lecturer-sign-up"
+              linkText="Lecturer Sign Up"
+            />
+          </div>
+        </div>
+      </section>
 
-  <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
-    <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
-      Scholarships by Study Destination
-    </h2>
-    <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
-      {/*Explore scholarships and funding opportunities tailored to popular destinations —
-      United States, Canada, United Kingdom, and Europe.*/}
-      Browse curated and verified scholarship opportunities carefully organized by major study destinations 
-      — the United States, Canada, the United Kingdom, and Europe.
-    </p>
+      {/* Scholarships by Destination */}
+      <section
+        className="relative overflow-hidden"
+        style={{
+          backgroundImage: "url('/images/scholarships-destinations-bg.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/55" />
 
-    <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StoryCard
-        image="/images/scholarships-us.png"
-        title="Scholarships in the U.S."
-        /*linkTo="/scholarships/us"*/
-        linkTo="/scholarship?country=United%20States"
-        linkText="Explore U.S. Scholarships"
-      />
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+            Scholarships by Study Destination
+          </h2>
+          <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
+            Browse curated and verified scholarship opportunities carefully organized by major study destinations
+            — the United States, Canada, the United Kingdom, and Europe.
+          </p>
 
-      <StoryCard
-        image="/images/scholarships-canada.png"
-        title="Scholarships in Canada"
-        /*linkTo="/scholarships/canada"*/
-        linkTo="/scholarship?country=Canada"
-        linkText="Explore Canada Scholarships"
-      />
+          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StoryCard
+              image="/images/scholarships-us.png"
+              title="Scholarships in the U.S."
+              linkTo="/scholarship?country=United%20States"
+              linkText="Explore U.S. Scholarships"
+            />
+            <StoryCard
+              image="/images/scholarships-canada.png"
+              title="Scholarships in Canada"
+              linkTo="/scholarship?country=Canada"
+              linkText="Explore Canada Scholarships"
+            />
+            <StoryCard
+              image="/images/scholarships-uk.png"
+              title="Scholarships in the UK"
+              linkTo="/scholarship?country=United%20Kingdom"
+              linkText="Explore UK Scholarships"
+            />
+            <StoryCard
+              image="/images/scholarships-europe.png"
+              title="Scholarships in Europe"
+              linkTo="/scholarship?continent=Europe"
+              linkText="Explore Europe Scholarships"
+            />
+          </div>
+        </div>
+      </section>
 
-      <StoryCard
-        image="/images/scholarships-uk.png"
-        title="Scholarships in the UK"
-        /*linkTo="/scholarships/uk"*/
-        linkTo="/scholarship?country=United%20Kingdom"
-        linkText="Explore UK Scholarships"
-      />
-
-      <StoryCard
-        image="/images/scholarships-europe.png"
-        title="Scholarships in Europe"
-        /*linkTo="/scholarships/europe"*/
-        linkTo="/scholarship?continent=Europe"
-        linkText="Explore Europe Scholarships"
-      />
-    </div>
-  </div>
-</section>
-
-      {/* 6) Ready to talk? (now routes to /contact) */}
+      {/* 6) Ready to talk? */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16 text-center">
         <h3 className="text-3xl font-bold text-slate-900">Ready to talk?</h3>
-        <p className="mt-2 text-slate-600">Send us a message using the contact form — share your question, partnership idea, or support request, and we’ll respond as soon as possible.</p>
+        <p className="mt-2 text-slate-600">
+          Send us a message using the contact form — share your question, partnership idea, or support request, and we’ll respond as soon as possible.
+        </p>
         <div className="mt-6 flex gap-3 justify-center">
           <Link
             to="/contact"
@@ -413,63 +307,49 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ✅ CTA: Join the Global Learning Community (full width) */}
-<section className="w-full mt-0">
-  <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
-    <h2 className="text-3xl font-extrabold">Join the Global Learning Community</h2>
-    <p className="mt-3 text-white/90 max-w-2xl mx-auto">
-      Whether you are a student striving for academic success, a lecturer shaping future leaders,
-      or a partner empowering opportunities, ScholarsKnowledge is your platform to grow, share,
-      and achieve together.
-    </p>
+      {/* CTA */}
+      <section className="w-full mt-0">
+        <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
+          <h2 className="text-3xl font-extrabold">Join the Global Learning Community</h2>
+          <p className="mt-3 text-white/90 max-w-2xl mx-auto">
+            Whether you are a student striving for academic success, a lecturer shaping future leaders,
+            or a partner empowering opportunities, ScholarsKnowledge is your platform to grow, share,
+            and achieve together.
+          </p>
 
-   
+          <div className="mt-6 flex flex-wrap gap-3 justify-center">
+            <Link
+              to="/student-sign-up"
+              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+            >
+              Student Sign Up
+            </Link>
 
-    <div className="mt-6 flex flex-wrap gap-3 justify-center">
-  <Link
-    to="/student-sign-up"
-    className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
-  >
-    Student Sign Up
-  </Link>
+            <Link
+              to="/lecturer-sign-up"
+              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+            >
+              Lecturer Sign Up
+            </Link>
 
-  <Link
-    to="/lecturer-sign-up"
-    className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
-  >
-    Lecturer Sign Up
-  </Link>
+            <Link
+              to="/partner"
+              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+            >
+              Partner with Us
+            </Link>
+          </div>
 
-  <Link
-    to="/partner"
-    className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
-  >
-    Partner with Us
-  </Link>
-</div>
-
-{/* ✅ One row under the whole button alignment */}
-<div className="mt-3 flex justify-center gap-6 text-xs text-white/95">
-  <Link to="/privacy-policy" className="hover:underline">
-    Privacy Policy
-  </Link>
-  <Link to="/terms-of-use" className="hover:underline">
-    Terms of Use
-  </Link>
-</div>
-
-
-
-  </div>
-</section>
-
-
-
-
-
-
-
-
+          <div className="mt-3 flex justify-center gap-6 text-xs text-white/95">
+            <Link to="/privacy-policy" className="hover:underline">
+              Privacy Policy
+            </Link>
+            <Link to="/terms-of-use" className="hover:underline">
+              Terms of Use
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* 7) Footer */}
       <footer className="bg-blue-900 text-white py-6 text-center text-sm">
@@ -481,101 +361,128 @@ export default function Home() {
 
 /* ---------- Subcomponents ---------- */
 
+function SocialIcons({ className = "" }) {
+  return (
+    <div className={className}>
+      <a
+        href="https://www.facebook.com/profile.php?id=61579563119393"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Facebook"
+        title="Facebook"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
+      >
+        f
+      </a>
+
+      <a
+        href="https://www.youtube.com/@scholarsknowledge5765"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="YouTube"
+        title="YouTube"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="h-4 w-4"
+        >
+          <path d="M21.8 8.001a2.75 2.75 0 0 0-1.936-1.946C18.137 5.5 12 5.5 12 5.5s-6.137 0-7.864.555A2.75 2.75 0 0 0 2.2 8.001 28.44 28.44 0 0 0 1.75 12c0 1.352.15 2.688.45 3.999a2.75 2.75 0 0 0 1.936 1.946C5.863 18.5 12 18.5 12 18.5s6.137 0 7.864-.555a2.75 2.75 0 0 0 1.936-1.946c.3-1.311.45-2.647.45-3.999 0-1.352-.15-2.688-.45-3.999ZM10 15.5v-7l6 3.5-6 3.5Z" />
+        </svg>
+      </a>
+    </div>
+  );
+}
+
 function SectionTabs() {
   const TABS = ["All", "For Students", "For Lecturers", "EduFinancing", "Our Partners"];
   const [active, setActive] = useState("All");
 
-  // 3 cards for each tab (titles centered, faint borders)
   const cardsAll = [
-  {
-    tag: "Lectures",
-    title: "Notes,Assignments & Questions",
-    text: "Share academics,Engage your students, and Boost academic productivity",
-    image: "/images/Lectures.webp",
-  },
-  {
-    tag: "Global & University Academic Platforms",
-    title: "Student-Lecturer Academic Interaction",
-    text: "Interact locally and globally,initiate Topics,Comment and Reply academic Interactive threads.",
-    image: "/images/studentimage.webp",
-  },
-  {
-    tag: "Lecturers Management",
-    title: "Manage your Academic Materials Inventory",
-    text: "Save your lectural notes,Academic books,Assigments for now and future use.",
-    image: "/images/academic-material-management.webp",
-  },
-];
-
-const cardsStudents = [
-  {
-    tag: "Students",
-    title: "We are Your Study Hub",
-    text: "Notes, Assigments,past papers,Announcements and help—organized by Academic program.",
-    image: "/images/for-student1.webp",
-  },
-  {
-    tag: "University & Global Academic Platforms",
-    title: "Local & Global students Interaction",
-    text: "Post, share, and comment across academic fields.",
-    image: "/images/for-students.webp",
-  },
-  {
-    tag: "Student Market Platform",
-    title: "Students' Entrepeneurial Opportunities",
-    text: "Discover and Supercharge your business potential while studying",
-    image: "/images/business-ad.webp",
-  },
-];
-  const cardsFinance = [
     {
       tag: "Lectures",
-      title: "Notes,Assigment,Announcement & Questions",
-      text: "Share with your students and Track Feedback",
-      image: "/card-finance.png",
+      title: "Notes, Assignments & Questions",
+      text: "Share academics, engage your students, and boost academic productivity.",
+      image: "/images/Lectures.webp",
     },
     {
-      tag: "Budgeting",
-      title: "Resource Planning",
-      text: "Forecast needs and align spend with outcomes.",
-      image: "/story-2.png",
+      tag: "Global & University Academic Platforms",
+      title: "Student-Lecturer Academic Interaction",
+      text: "Interact locally and globally, initiate topics, comment, and reply to academic threads.",
+      image: "/images/studentimage.webp",
     },
     {
-      tag: "Compliance",
-      title: "Transparent Reporting",
-      text: "Automate reports and reduce manual work.",
-      image: "/story-3.png",
+      tag: "Lecturers Management",
+      title: "Manage your Academic Materials Inventory",
+      text: "Save your lecture notes, academic books, and assignments for now and future use.",
+      image: "/images/academic-material-management.webp",
     },
   ];
 
-  const cardsIT = [
-    /*{
-      tag: "Educational Loans",
-      title: "Mpower Financing Loans",
-      text: "ScholarsKnowledge partners with Mpower Financing to make global student achieve their career and education dreams",
-      image: "/images/mpower-financing.png",
-    },*/
+  const cardsStudents = [
+    {
+      tag: "Students",
+      title: "We are Your Study Hub",
+      text: "Notes, assignments, past papers, announcements, and help—organized by academic program.",
+      image: "/images/for-student1.webp",
+    },
+    {
+      tag: "University & Global Academic Platforms",
+      title: "Local & Global Students Interaction",
+      text: "Post, share, and comment across academic fields.",
+      image: "/images/for-students.webp",
+    },
+    {
+      tag: "Student Market Platform",
+      title: "Students' Entrepreneurial Opportunities",
+      text: "Discover and supercharge your business potential while studying.",
+      image: "/images/business-ad.webp",
+    },
+  ];
 
-    
+  const cardsLecturers = [
+    {
+      tag: "Lecturers",
+      title: "Share Notes, Assignments & Announcements",
+      text: "Post academic materials, communicate with students, and support classroom engagement.",
+      image: "/images/Lectures.webp",
+    },
+    {
+      tag: "Academic Interaction",
+      title: "Engage Students Across Platforms",
+      text: "Create academic conversations through posts, comments, replies, and topic discussions.",
+      image: "/images/studentimage.webp",
+    },
+    {
+      tag: "Materials Management",
+      title: "Organize Academic Resources",
+      text: "Manage lecture notes, academic books, assignments, and other teaching resources in one place.",
+      image: "/images/academic-material-management.webp",
+    },
+  ];
+
+  const cardsEduFinancing = [
     {
       tag: "Scholarships",
       title: "Explore Scholarships directly from Provider Institutions and Organizations",
-      text: "ScholarKnowledge partners with Scholarship providers Educational institutions,Universities and Organization .",
+      text: "ScholarsKnowledge partners with scholarship providers, educational institutions, universities, and organizations.",
       image: "/images/scholarship-edufinancing.webp",
     },
     {
       tag: "College Budgeting",
-      title: "Optimize your College Financing strategies",
-      text: "Educational Loans+Scholarships+Private Saving=Optimal Financing Strategy",
+      title: "Optimize your College Financing Strategies",
+      text: "Educational loans + scholarships + private savings = optimal financing strategy.",
       image: "/images/scholarship.webp",
     },
   ];
 
-  const cardsPolicy = [
+  const cardsPartners = [
     {
       tag: "Scholarship Institutions",
       title: "Submit and Manage Scholarships",
-      text: "Universities,Colleges,Institutions and organizations can publish verified scholarships directly to students.",
+      text: "Universities, colleges, institutions, and organizations can publish verified scholarships directly to students.",
       image: "/images/Submit scholarships.webp",
     },
     {
@@ -587,7 +494,7 @@ const cardsStudents = [
     {
       tag: "University & Colleges Collaborations",
       title: "Expand Student Opportunities",
-      text: "Universities and Colleges collaborate with ScholarsKnowledge to give students access to shared Academic resources locally and  worldwide.",
+      text: "Universities and colleges collaborate with ScholarsKnowledge to give students access to shared academic resources locally and worldwide.",
       image: "/images/collaboration image.webp",
     },
   ];
@@ -595,16 +502,15 @@ const cardsStudents = [
   const byTab = {
     All: cardsAll,
     "For Students": cardsStudents,
-    "For Finance": cardsFinance,
-    "EduFinancing": cardsIT,
-    "Our Partners": cardsPolicy,
+    "For Lecturers": cardsLecturers,
+    EduFinancing: cardsEduFinancing,
+    "Our Partners": cardsPartners,
   };
 
   const cards = byTab[active] ?? cardsAll;
 
   return (
     <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
-      {/* Tabs */}
       <div className="flex flex-wrap items-center gap-2">
         {TABS.map((t) => (
           <button
@@ -621,7 +527,6 @@ const cardsStudents = [
         ))}
       </div>
 
-      {/* Cards (centered titles, faint border, no 'Read story') */}
       <div className="mt-6 grid md:grid-cols-3 gap-6">
         {cards.map((c) => (
           <article
@@ -629,16 +534,17 @@ const cardsStudents = [
             className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition"
           >
             <img
-             src={c.image}
-                alt=""
-                className="w-full h-40 object-cover"
-                loading="lazy"
+              src={c.image}
+              alt=""
+              className="w-full h-40 object-cover"
+              loading="lazy"
             />
             <div className="p-5 text-center">
-              <div className="text-xs uppercase tracking-wide text-slate-500">{c.tag}</div>
+              <div className="text-xs uppercase tracking-wide text-slate-500">
+                {c.tag}
+              </div>
               <h3 className="mt-1 text-lg font-semibold">{c.title}</h3>
               <p className="mt-2 text-slate-600">{c.text}</p>
-              {/* Intentionally no CTA here per your request */}
             </div>
           </article>
         ))}
@@ -646,7 +552,6 @@ const cardsStudents = [
     </section>
   );
 }
-
 
 function Pillar({ image, imageAlt, title, text, centered = false }) {
   return (
@@ -673,26 +578,23 @@ function Pillar({ image, imageAlt, title, text, centered = false }) {
   );
 }
 
-
-
-
 function StoryCard({ image, title, linkTo, linkText }) {
   return (
-    /*<div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">*/
     <div className="rounded-2xl bg-white overflow-hidden">
-      {/*<img src={image} alt="" className="w-full h-40 object-cover" />*/}
       <img
-  src={image}
-  alt=""
-  className="w-full h-40 object-cover"
-  loading="lazy"
-/>
+        src={image}
+        alt=""
+        className="w-full h-40 object-cover"
+        loading="lazy"
+      />
 
       <div className="p-4 text-center">
         <div className="font-semibold">{title}</div>
-        {/* Centered CTAs for these three cards */}
         {linkTo && linkText && (
-          <Link to={linkTo} className="mt-2 inline-block font-semibold text-[#1a73e8] hover:underline">
+          <Link
+            to={linkTo}
+            className="mt-2 inline-block font-semibold text-[#1a73e8] hover:underline"
+          >
             {linkText}
           </Link>
         )}
