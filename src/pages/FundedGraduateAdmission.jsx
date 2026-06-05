@@ -387,36 +387,33 @@ export default function FundedGraduateAdmission() {
   };
 
   return (
-    <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8">
+    <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8 overflow-x-hidden sm:overflow-x-visible">
       <div className="mx-auto w-full max-w-[1056px]">
         <main className="w-full min-w-0">
           {/* FULL-WIDTH header banner */}
           <div
-            /*className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"*/
-             className="relative -mx-3 sm:left-1/2 sm:right-1/2 sm:-ml-[50vw] sm:-mr-[50vw] sm:w-screen border-y border-slate-200 overflow-hidden"
-            style={{
-              backgroundImage: "url(/images/Scholarship1.webp)",
-              backgroundSize: "cover",
-              backgroundPosition: "left center",
-              backgroundRepeat: "no-repeat",
-            }}
-          >
+  className="relative -mx-3 w-auto sm:left-1/2 sm:right-1/2 sm:-ml-[50vw] sm:-mr-[50vw] sm:w-screen border-y border-slate-200 overflow-hidden"
+  style={{
+    backgroundImage: "url(/images/Scholarship1.webp)",
+    backgroundSize: "cover",
+    backgroundPosition: "left center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
 
             <div className="relative z-10 mx-auto max-w-[1400px] px-3 sm:px-4 py-3 md:py-4">
               <div className="mx-auto max-w-[1056px]">
                 <h2
-                  /*className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-nowrap"*/
                   className="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-normal sm:whitespace-nowrap break-words"
-                  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+                   style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
                 >
                   University-Funded programs opportunities for international students
                 </h2>
 
                 <p
-                  /*className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"*/
-                  className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl break-words"
-                  style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
+                   className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl break-words"
+                   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
                 >
                   Explore funded academic programs offered directly by universities worldwide, including programs that provide full or partial financial support for Bachelor, master&apos;s, and doctoral studies across a wide range of academic disciplines and research fields, and reduce overall graduate cost
                 </p>
@@ -506,7 +503,8 @@ export default function FundedGraduateAdmission() {
 
               {levelOpen && (
                 <div
-                  className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"
+                  /*className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"*/
+                  className="absolute z-30 mt-1 w-full sm:w-64 rounded border border-slate-200 bg-white shadow"
                   role="menu"
                   data-level-popover
                 >
