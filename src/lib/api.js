@@ -55,7 +55,7 @@ const API_BASE = RAW_API_BASE;
 // Expose endpoints for quick inspection in DevTools
 if (typeof window !== "undefined") {
   window.__SK_ENDPOINTS__ = { API_BASE, EMAIL_API_BASE, SERVERLESS };
-  console.log("[endpoints]", window.__SK_ENDPOINTS__);
+  /*console.log("[endpoints]", window.__SK_ENDPOINTS__);*/
 }
 
 /** Build absolute URL from a base + path */

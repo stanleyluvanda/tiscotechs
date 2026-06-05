@@ -1980,8 +1980,8 @@ export default function StudentDashboard() {
  async function fetchMyProfileFromServer() {
   const email = (current?.email || user?.email || "").trim();
 
-  console.log("[StudentDashboard] get-profile email =", email);
-  console.log("[StudentDashboard] get-profile url =", `${API_BASE}/api/auth/student/get-profile`);
+  /*console.log("[StudentDashboard] get-profile email =", email);
+  console.log("[StudentDashboard] get-profile url =", `${API_BASE}/api/auth/student/get-profile`);*/
 
   if (!API_BASE || !email) return null;
 
@@ -1991,10 +1991,10 @@ export default function StudentDashboard() {
     body: JSON.stringify({ email }),
   });
 
-  console.log("[StudentDashboard] get-profile status =", res.status);
+  /*console.log("[StudentDashboard] get-profile status =", res.status);*/
 
   const data = await res.json().catch(() => ({}));
-  console.log("[StudentDashboard] get-profile response =", data);
+  /*console.log("[StudentDashboard] get-profile response =", data);*/
 
   // keep your existing return line exactly as you have it
   return data?.user || data?.data?.user || null;
@@ -4700,8 +4700,10 @@ if (showingTab === "Top") {
 )}
 
 
+
+
 {filtered.map((p, idx) => (
-  <>
+ <div key={p.id}>
     <div
       ref={(el) => {
         if (el && p?.id) postRefs.current[p.id] = el;
@@ -4723,36 +4725,11 @@ if (showingTab === "Top") {
         isHighlighted={highlightPostId === p.id}
       />
     </div>
-
-    {idx === 0 && latestVideo && (
-      <Card className="lg:hidden">
-        {latestVideo.title ? (
-          <div className="font-semibold text-slate-900 text-center">
-            {latestVideo.title}
-          </div>
-        ) : (
-          <div className="font-semibold text-slate-900 text-center">
-            Updates from ScholarsKnowledge
-          </div>
-        )}
-
-        {/*<div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">*/}
-        <div className="mt-3 -mx-3 aspect-video w-auto overflow-hidden rounded-none border-y border-slate-100">
-          <YouTubeEmbed
-            idOrUrl={latestVideo.videoUrlOrId}
-            title={latestVideo.title || "ScholarsKnowledge Updates"}
-          />
-        </div>
-
-        <div className="mt-2 text-xs text-slate-500 text-center">
-          {latestVideo?.createdAt
-            ? `Posted ${new Date(latestVideo.createdAt).toLocaleString()}`
-            : null}
-        </div>
-      </Card>
-    )}
-  </>
+  </div>
 ))}
+
+
+
   </section>
 
         {/* RIGHT */}

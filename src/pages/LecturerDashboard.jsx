@@ -3038,10 +3038,10 @@ function isNotifRead(n) {
 
 // ✅ PART 3 — Fetch notifications from server (INSERT ABOVE return)
 async function loadNotifications() {
-  console.log("[notif] loadNotifications ran");
+  /*console.log("[notif] loadNotifications ran");*/
   try {
-    console.log("[notif] lecturer object:", notifLecturer);
-    console.log("[notif] resolved userId:", notifUserId);
+    /*console.log("[notif] lecturer object:", notifLecturer);*/
+    /*console.log("[notif] resolved userId:", notifUserId);*/
 
     if (!notifUserId) return;
 
