@@ -4343,7 +4343,6 @@ async function clearNotificationsServerBacked() {
     scopeKey,
   }}
 />
-
     </div>
   );
 }

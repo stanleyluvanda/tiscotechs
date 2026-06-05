@@ -25,6 +25,20 @@ function safeStr(x) {
   return String(x || "").trim();
 }
 
+function avatarFromPerson(p = {}) {
+  return (
+    safeStr(p.otherAvatarUrl) ||
+    safeStr(p.avatarUrl) ||
+    safeStr(p.photoUrl) ||
+    safeStr(p.photoURL) ||
+    safeStr(p.profilePhotoUrl) ||
+    safeStr(p.profilePhoto) ||
+    safeStr(p.user?.photoUrl) ||
+    safeStr(p.profile?.photoUrl) ||
+    ""
+  );
+}
+
 function isEmail(x) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(x || "").trim());
 }
@@ -409,7 +423,8 @@ async function refreshPresence(extraUserIds = []) {
     // (2) ✅ normalize otherUserId consistently
     const otherUserId = normalizeUserId(person.userId || person.email);
     const otherName = safeStr(person.fullName); // keep titles like "Dr." / "Prof." as-is
-    const otherAvatarUrl = safeStr(person.avatarUrl);
+    /*const otherAvatarUrl = safeStr(person.avatarUrl);*/
+    const otherAvatarUrl = avatarFromPerson(person);
     const otherProgram = safeStr(person.program); // student subtitle
 
     // open UI immediately even if no thread yet
@@ -873,9 +888,12 @@ function myOnlineNow() {
                       ) : null}
                     </div>*/}
                     <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
-  {p.avatarUrl ? (
+  {/*{p.avatarUrl ? (
     <img
-      src={p.avatarUrl}
+      src={p.avatarUrl}*/}
+      {avatarFromPerson(p) ? (
+  <img
+    src={avatarFromPerson(p)}
       alt=""
       className="w-full h-full object-cover"
     />
@@ -954,7 +972,7 @@ function myOnlineNow() {
                 )}
               </div>*/}
               <div className="relative w-9 h-9 rounded-full bg-slate-200 overflow-hidden shrink-0">
-  {active.otherAvatarUrl || active.avatarUrl ? (
+  {/*{active.otherAvatarUrl || active.avatarUrl ? (
     <img
       src={active.otherAvatarUrl || active.avatarUrl}
       alt=""
@@ -962,7 +980,16 @@ function myOnlineNow() {
     />
   ) : (
     <div className="w-full h-full" />
-  )}
+  )}*/}
+  {active.otherAvatarUrl || active.avatarUrl ? (
+  <img
+    src={avatarFromPerson(active)}
+    alt=""
+    className="w-full h-full object-cover"
+  />
+) : (
+  <div className="w-full h-full" />
+)}
 
   <span
     className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white ${
@@ -1043,13 +1070,20 @@ function myOnlineNow() {
     me?.avatarUrl ? (
       <img src={me.avatarUrl} alt="" className="w-full h-full object-cover" />
     ) : null
-  ) : active?.otherAvatarUrl ? (
+  /*) : active?.otherAvatarUrl ? (
     <img
       src={active.otherAvatarUrl}
       alt=""
       className="w-full h-full object-cover"
     />
-  ) : null}
+  ) : null}*/
+  ) : avatarFromPerson(active) ? (
+  <img
+    src={avatarFromPerson(active)}
+    alt=""
+    className="w-full h-full object-cover"
+  />
+) : null}
 
   <span
     className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-2 ring-white ${
