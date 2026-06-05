@@ -392,7 +392,8 @@ export default function FundedGraduateAdmission() {
         <main className="w-full min-w-0">
           {/* FULL-WIDTH header banner */}
           <div
-            className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
+            /*className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"*/
+             className="relative -mx-3 sm:left-1/2 sm:right-1/2 sm:-ml-[50vw] sm:-mr-[50vw] sm:w-screen border-y border-slate-200 overflow-hidden"
             style={{
               backgroundImage: "url(/images/Scholarship1.webp)",
               backgroundSize: "cover",
@@ -405,14 +406,16 @@ export default function FundedGraduateAdmission() {
             <div className="relative z-10 mx-auto max-w-[1400px] px-3 sm:px-4 py-3 md:py-4">
               <div className="mx-auto max-w-[1056px]">
                 <h2
-                  className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-nowrap"
+                  /*className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-nowrap"*/
+                  className="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-normal sm:whitespace-nowrap break-words"
                   style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
                 >
                   University-Funded programs opportunities for international students
                 </h2>
 
                 <p
-                  className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"
+                  /*className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"*/
+                  className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl break-words"
                   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
                 >
                   Explore funded academic programs offered directly by universities worldwide, including programs that provide full or partial financial support for Bachelor, master&apos;s, and doctoral studies across a wide range of academic disciplines and research fields, and reduce overall graduate cost
