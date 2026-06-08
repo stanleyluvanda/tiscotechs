@@ -1592,6 +1592,7 @@ export default function GlobalAcademicPlatform() {
   const [loading, setLoading] = useState(true);
   const [preview, setPreview] = useState(null);
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
+  const savedPostIdsRef = useRef(new Set());
   const [showSavedOnly, setShowSavedOnly] = useState(false);
 
 
@@ -1631,6 +1632,7 @@ export default function GlobalAcademicPlatform() {
       if (!alive) return;
 
       setSavedPostIds(ids);
+      savedPostIdsRef.current = ids;
 
       setPosts((prev) =>
         prev.map((p) => ({
@@ -1677,7 +1679,8 @@ const seeded = useMemo(() => {
   const normalized = normalizePostShape(p);
   return {
     ...normalized,
-    saved: savedPostIds.has(String(normalized.id)),
+    /*saved: savedPostIds.has(String(normalized.id)),*/
+    saved: savedPostIdsRef.current.has(String(normalized.id)),
   };
 });
           
@@ -1721,7 +1724,8 @@ const seeded = useMemo(() => {
       clearInterval(t);
     };
   /*}, [SCOPE, seeded]);*/
-  }, [SCOPE, seeded, savedPostIds]);
+  /*}, [SCOPE, seeded, savedPostIds]);*/
+  }, [SCOPE, seeded]);
 
   const postRefs = useRef({});
 
