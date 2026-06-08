@@ -619,12 +619,14 @@ export default function FundedGraduateAdmission() {
                   className="border border-slate-200 rounded-lg p-4 bg-white"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <div className="min-w-0 flex-1 flex items-start gap-3">
+                    {/*</div><div className="min-w-0 flex-1 flex items-start gap-3">*/}
+                    <div className="min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-3">
                       {logo ? (
                         <img
                           src={logo}
                           alt={`${s.provider || "University"} logo`}
-                          className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
+                          /*className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"*/
+                          className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mx-auto sm:mx-0"
                           loading="lazy"
                           decoding="async"
                           onError={(e) => {
@@ -633,7 +635,8 @@ export default function FundedGraduateAdmission() {
                         />
                       ) : null}
 
-                      <div className="min-w-0">
+                      {/*<div className="min-w-0">*/}
+                      <div className="min-w-0 w-full">
                         <div className="text-base sm:text-lg font-semibold leading-snug break-words">
                           {s.title}
                         </div>
