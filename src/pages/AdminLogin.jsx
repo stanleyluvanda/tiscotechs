@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import useNoIndex from "../lib/useNoIndex";
+import { markActiveUser } from "../lib/authState.js";
 
 /* ----------------- Demo / fallback creds ----------------- */
 const DEMO_EMAIL =
@@ -72,7 +73,7 @@ export default function AdminLogin() {
   const redirectTo = location.state?.from?.pathname || "/admin/dashboard";
 
   // If already logged in, bounce to dashboard
-  useEffect(() => {
+  /*useEffect(() => {
     try {
       const existing = safeParse(localStorage.getItem("adminAuth"));
       if (existing) navigate(redirectTo, { replace: true });
@@ -80,7 +81,28 @@ export default function AdminLogin() {
       // ignore
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []);*/
+  useEffect(() => {
+  try {
+    const existing = safeParse(localStorage.getItem("adminAuth"));
+
+    if (existing?.role && String(existing.role).toLowerCase() === "admin") {
+      const current =
+        safeParse(sessionStorage.getItem("currentUser")) ||
+        safeParse(localStorage.getItem("currentUser"));
+
+      if (current?.role && String(current.role).toLowerCase() === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+        return;
+      }
+
+      localStorage.removeItem("adminAuth");
+    }
+  } catch {
+    localStorage.removeItem("adminAuth");
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -126,7 +148,17 @@ export default function AdminLogin() {
           };
 
           // ✅ existing admin login storage (unchanged)
-          localStorage.setItem("adminAuth", JSON.stringify(payload));
+          /*localStorage.setItem("adminAuth", JSON.stringify(payload));*/
+          // ✅ existing admin login storage (unchanged)
+localStorage.setItem("adminAuth", JSON.stringify(payload));
+
+// ✅ mirror admin into normal auth state so RequireRole can see role: "admin"
+markActiveUser({
+  ...payload,
+  id: payload.email,
+  uid: payload.email,
+  role: "admin",
+});
 
           // ✅ NEW: set support token for Support Inbox auth (sidecar key)
           setSupportTokenSidecar();
@@ -189,7 +221,16 @@ export default function AdminLogin() {
     };
 
     // ✅ existing admin login storage (unchanged)
-    localStorage.setItem("adminAuth", JSON.stringify(payload));
+    /*localStorage.setItem("adminAuth", JSON.stringify(payload));*/
+localStorage.setItem("adminAuth", JSON.stringify(payload));
+
+// ✅ mirror admin into normal auth state so RequireRole can see role: "admin"
+markActiveUser({
+  ...payload,
+  id: payload.email,
+  uid: payload.email,
+  role: "admin",
+});
 
     // ✅ NEW: set support token for Support Inbox auth (sidecar key)
     setSupportTokenSidecar();

@@ -136,9 +136,11 @@ function RequireRole({ role, redirectTo = "/login" }) {
     if (actual === "admin") return <Navigate to="/admin/dashboard" replace />;
     return <Navigate to="/home" replace />;
   }
-
+  
   return <Outlet />;
 }
+
+
 
 function NotFound() {
   const u = getLoggedInUser();
