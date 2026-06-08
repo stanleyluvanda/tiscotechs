@@ -4702,7 +4702,7 @@ if (showingTab === "Top") {
 
 
 
-{filtered.map((p, idx) => (
+{/*{filtered.map((p, idx) => (
  <div key={p.id}>
     <div
       ref={(el) => {
@@ -4725,6 +4725,61 @@ if (showingTab === "Top") {
         isHighlighted={highlightPostId === p.id}
       />
     </div>
+  </div>
+))}*/}
+
+{filtered.map((p, idx) => (
+  <div key={p.id}>
+    <div
+      ref={(el) => {
+        if (el && p?.id) postRefs.current[p.id] = el;
+      }}
+      data-post-id={p.id}
+    >
+      <PostCard
+        post={p}
+        onToggleLike={() => toggleLike(p.id)}
+        onToggleSavePost={() => toggleSavePost(p.id || p.postId)}
+        isSavedPost={savedPostIds.has(String(p.id || p.postId || ""))}
+        onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
+        onAddReply={(commentId, text, images, files) =>
+          addReply(p.id, commentId, text, images, files)
+        }
+        onDeletePost={deletePost}
+        onReport={() => onReport({ itemType: "post", itemId: p.id, postId: p.id })}
+        currentUser={user}
+        isHighlighted={highlightPostId === p.id}
+      />
+    </div>
+
+    {idx === 0 && latestVideo && (
+      <div className="block lg:hidden">
+        <Card>
+          {latestVideo.title ? (
+            <div className="font-semibold text-slate-900 text-center">
+              {latestVideo.title}
+            </div>
+          ) : (
+            <div className="font-semibold text-slate-900 text-center">
+              Updates from ScholarsKnowledge
+            </div>
+          )}
+
+          <div className="mt-3 -mx-3 aspect-video w-auto overflow-hidden rounded-none border-y border-slate-100">
+            <YouTubeEmbed
+              idOrUrl={latestVideo.videoUrlOrId}
+              title={latestVideo.title || "ScholarsKnowledge Updates"}
+            />
+          </div>
+
+          <div className="mt-2 text-xs text-slate-500 text-center">
+            {latestVideo?.createdAt
+              ? `Posted ${new Date(latestVideo.createdAt).toLocaleString()}`
+              : null}
+          </div>
+        </Card>
+      </div>
+    )}
   </div>
 ))}
 
