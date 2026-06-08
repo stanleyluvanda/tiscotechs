@@ -342,13 +342,36 @@ export default function PartnerLogin() {
 
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok && data?.ok) {
+      /*if (res.ok && data?.ok) {
         const user = data.user || data.partner || { email: em, role: "partner" };
         localStorage.setItem("partnerAuth", JSON.stringify(user));
         if (data.token) localStorage.setItem("partnerToken", String(data.token));
         nav("/partner/welcome", { replace: true });
         return;
-      }
+      }*/
+      if (res.ok && data?.ok) {
+  const user = data.user || data.partner || { email: em, role: "partner" };
+
+  const partnerUser = {
+    ...user,
+    id: user.id || user.userId || user.email || em,
+    uid: user.uid || user.id || user.userId || user.email || em,
+    email: user.email || em,
+    role: "partner",
+  };
+
+  localStorage.setItem("partnerAuth", JSON.stringify(partnerUser));
+
+  // ✅ Mirror partner into normal auth state for App.jsx RequireRole
+  localStorage.setItem("currentUser", JSON.stringify(partnerUser));
+  sessionStorage.setItem("currentUser", JSON.stringify(partnerUser));
+  localStorage.setItem("currentUserId", partnerUser.id);
+  sessionStorage.setItem("currentUserId", partnerUser.id);
+
+  if (data.token) localStorage.setItem("partnerToken", String(data.token));
+  nav("/partner/welcome", { replace: true });
+  return;
+}
 
       // Clean error for invalid creds
       if (res.status === 401 || String(data?.error || "").toLowerCase().includes("invalid")) {
