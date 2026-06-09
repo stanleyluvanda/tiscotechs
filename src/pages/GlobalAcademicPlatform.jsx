@@ -1586,11 +1586,19 @@ export default function GlobalAcademicPlatform() {
 
   // ✅ Global scope
   const SCOPE = "global-academic-platform";
+  const POSTS_CACHE_KEY = `posts_cache__${SCOPE}`;
 
-  const [posts, setPosts] = useState([]);
+  /*const [posts, setPosts] = useState([]);*/
+  const [posts, setPosts] = useState(() => {
+  try {
+    return JSON.parse(sessionStorage.getItem(POSTS_CACHE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+});
   const [toast, setToast] = useState("");
-  /*const [loading, setLoading] = useState(true);*/
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  /*const [loading, setLoading] = useState(false);*/
   const [preview, setPreview] = useState(null);
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
   const savedPostIdsRef = useRef(new Set());
@@ -1712,6 +1720,7 @@ const seeded = useMemo(() => {
                 .join("|");
 
             if (sig(out) === sig(prev)) return prev;
+            sessionStorage.setItem(POSTS_CACHE_KEY, JSON.stringify(out.slice(0, 20)));
 
             return out;
           });
@@ -1732,15 +1741,21 @@ const seeded = useMemo(() => {
     "ms"
   );
 
-  /*if (alive) setLoading(false);*/
-  if (alive) setTimeout(() => setLoading(false), 0);
+  if (alive) setLoading(false);
+  /*if (alive) setTimeout(() => setLoading(false), 0);*/
 }
 }
 
 load();
 
+/*return () => {
+  alive = false;
+};*/
+const t = setInterval(load, 30000);
+
 return () => {
   alive = false;
+  clearInterval(t);
 };
   /*}, [SCOPE, seeded]);*/
   /*}, [SCOPE, seeded, savedPostIds]);*/
@@ -3286,11 +3301,35 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </div>
 </Card>
 
-            {loading && (
+            {/*{loading && (
               <Card>
                 <div className="p-4 text-sm text-slate-600">Loading posts…</div>
               </Card>
-            )}
+            )}*/}
+
+            {loading && posts.length === 0 && (
+  <div className="space-y-3">
+    {[1, 2, 3].map((n) => (
+      <Card key={n}>
+        <div className="p-4 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-slate-200" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-1/3 rounded bg-slate-200" />
+              <div className="h-3 w-1/4 rounded bg-slate-100" />
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <div className="h-3 w-5/6 rounded bg-slate-200" />
+            <div className="h-3 w-4/6 rounded bg-slate-100" />
+            <div className="h-28 w-full rounded-xl bg-slate-100" />
+          </div>
+        </div>
+      </Card>
+    ))}
+  </div>
+)}
 
             {sorted.map((post) => (
               <Card key={post.id} className="p-0" ref={(el) => el && (postRefs.current[post.id] = el)}>
