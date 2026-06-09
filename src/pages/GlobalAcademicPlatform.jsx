@@ -1589,7 +1589,8 @@ export default function GlobalAcademicPlatform() {
 
   const [posts, setPosts] = useState([]);
   const [toast, setToast] = useState("");
-  const [loading, setLoading] = useState(true);
+  /*const [loading, setLoading] = useState(true);*/
+  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
   const savedPostIdsRef = useRef(new Set());
@@ -1647,6 +1648,7 @@ export default function GlobalAcademicPlatform() {
 
   loadSavedPosts();
 
+
   return () => {
     alive = false;
   };
@@ -1665,8 +1667,13 @@ const seeded = useMemo(() => {
     let alive = true;
 
     async function load() {
+      const started = performance.now();
       try {
         const remote = await fetchPosts({ scope: SCOPE });
+        /*const remote = await fetchPosts({
+  scope: SCOPE,
+  limit: 5,
+});*/
         if (!alive) return;
 
         const list = Array.isArray(remote) ? remote : remote?.posts || [];
@@ -1709,20 +1716,32 @@ const seeded = useMemo(() => {
             return out;
           });
         }
-      } catch (e) {
+      /*} catch (e) {
         // keep existing UI stable
         setPosts((prev) => (prev.length ? prev : seeded));
       } finally {
         if (alive) setLoading(false);
       }
-    }
+    }*/
+    } catch (e) {
+  setPosts((prev) => (prev.length ? prev : seeded));
+} finally {
+  console.log(
+    "GLOBAL_POSTS_LOAD",
+    Math.round(performance.now() - started),
+    "ms"
+  );
 
-    load();
-    const t = setInterval(load, 6000);
-    return () => {
-      alive = false;
-      clearInterval(t);
-    };
+  /*if (alive) setLoading(false);*/
+  if (alive) setTimeout(() => setLoading(false), 0);
+}
+}
+
+load();
+
+return () => {
+  alive = false;
+};
   /*}, [SCOPE, seeded]);*/
   /*}, [SCOPE, seeded, savedPostIds]);*/
   }, [SCOPE, seeded]);
@@ -2545,6 +2564,7 @@ try {
 }*/
 
 const remote = await fetchPosts({ scope: SCOPE });
+
 const list = Array.isArray(remote) ? remote : remote?.posts || [];
 const remoteNorm = (list || []).map(normalizePostShape);
 
