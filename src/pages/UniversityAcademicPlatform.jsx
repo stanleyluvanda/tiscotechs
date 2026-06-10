@@ -3534,7 +3534,7 @@ const byParent = allComments.reduce((acc, c) => {
     onClick={() => toggleLike(post.id)}
     className="rounded px-2 py-1 hover:bg-slate-50"
   >
-    👍 Upvote{" "}
+    👍Like{" "}
     {post.likes > 0 && (
       <span className="text-slate-500">({post.likes})</span>
     )}
