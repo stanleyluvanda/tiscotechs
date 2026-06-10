@@ -3506,7 +3506,8 @@ const byParent = visibleComments.reduce((acc, c) => {
                   </div>*/}
 
 
-                  <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">
+    
+  <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">
   <button
     onClick={() => toggleLike(post.id)}
     className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"

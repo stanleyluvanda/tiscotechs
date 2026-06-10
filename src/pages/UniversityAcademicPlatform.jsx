@@ -7,6 +7,8 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda"; // adjust path if different
 import {
   fetchPosts,
+  fetchPostsPage,
+  fetchThread,
   createPost as createPostOnServer,
   deletePost as deletePostOnServer,
   postCommentToServer,
@@ -1538,6 +1540,8 @@ const seeded = useMemo(() => [], [uni]);
 
 // ✅ Start empty (not seeded)
 const [posts, setPosts] = useState(() => []);
+const [nextCursor, setNextCursor] = useState(null);
+const [loadingMore, setLoadingMore] = useState(false);
 
   const postsRef = useRef([]);
   useEffect(() => {
@@ -1764,7 +1768,23 @@ attachments: dedupeAttachments([
 }))).filter((a) => a && a.dataUrl),
 
 
+      
       comments: normalizedComments,
+
+commentCount: Number(
+  p?.commentCount ??
+  p?.commentsCount ??
+  normalizedComments.filter((c) => c.parentId == null).length ??
+  0
+),
+
+replyCount: Number(p?.replyCount ?? 0),
+
+threadItemCount: Number(
+  p?.threadItemCount ??
+  normalizedComments.length ??
+  0
+),
     };
   }
   /* ========================================================= */
@@ -1794,7 +1814,7 @@ attachments: dedupeAttachments([
 
 
 
-  useEffect(() => {
+  /*useEffect(() => {
     let cancelled = false;
 
     async function loadFromServer() {
@@ -1808,11 +1828,6 @@ attachments: dedupeAttachments([
         if (cancelled) return;
 
         const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
-
-        /*setPosts((prev) => {
-          const base = prev?.length ? prev : seeded;
-          return mergePostsKeepThreads(base, normalized);
-        });*/
 
         setPostsIfChanged((prev) => {
   const base = prev?.length ? prev : seeded;
@@ -1832,7 +1847,78 @@ attachments: dedupeAttachments([
       cancelled = true;
       clearInterval(id);
     };
-  }, [uni, seeded]);
+  }, [uni, seeded]);*/
+  useEffect(() => {
+  let cancelled = false;
+
+  async function loadFromServer() {
+    try {
+      const { posts: remote, cursor } = await fetchPostsPage({
+        scope: PLATFORM_SCOPE,
+        limit: 10,
+        withThread: false,
+      });
+
+      const remoteUni = Array.isArray(remote)
+        ? remote.filter((p) => (p?.university || "") === uni)
+        : [];
+
+      if (cancelled) return;
+
+      setNextCursor(cursor || null);
+
+      const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
+
+      setPostsIfChanged((prev) => {
+        const base = prev?.length ? prev : seeded;
+        return mergePostsKeepThreads(base, normalized);
+      });
+    } catch (e) {
+      console.warn("[UniversityAcademicPlatform] fetchPostsPage failed:", e);
+    }
+  }
+
+  loadFromServer();
+
+  return () => {
+    cancelled = true;
+  };
+}, [PLATFORM_SCOPE, uni, seeded]);
+
+async function loadMorePosts() {
+  if (!nextCursor || loadingMore) return;
+
+  setLoadingMore(true);
+
+  try {
+    const { posts: morePosts, cursor } = await fetchPostsPage({
+      scope: PLATFORM_SCOPE,
+      limit: 10,
+      cursor: nextCursor,
+      withThread: false,
+    });
+
+    const remoteUni = Array.isArray(morePosts)
+      ? morePosts.filter((p) => (p?.university || "") === uni)
+      : [];
+
+    const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
+
+    setPostsIfChanged((prev) => {
+      return mergePostsKeepThreads(prev, normalized);
+    });
+
+    setNextCursor(cursor || null);
+  } catch (err) {
+    console.error("[UniversityAcademicPlatform] loadMorePosts failed:", err);
+    setToast("Failed to load more posts. Please try again.");
+    setTimeout(() => setToast(""), 4000);
+  } finally {
+    setLoadingMore(false);
+  }
+}
+
+
 
   useEffect(() => {
     localStorage.setItem(FOL_KEY, JSON.stringify(follows));
@@ -2226,11 +2312,18 @@ files: [],
           });
         }
 
-        return {
+        /*return {
           ...p,
           comments: normalizeThreadComments([...(p.comments || []), ans]),
           updatedAt: Date.now(),
-        };
+        };*/
+        return {
+  ...p,
+  comments: normalizeThreadComments([...(p.comments || []), ans]),
+  commentCount: Number(p.commentCount || 0) + 1,
+  threadItemCount: Number(p.threadItemCount || 0) + 1,
+  updatedAt: Date.now(),
+};
       })
     );
 
@@ -2340,11 +2433,18 @@ setPostsIfChanged((prev) => {
           });
         }
 
-        return {
+        /*return {
           ...p,
           comments: normalizeThreadComments([...(p.comments || []), r]),
           updatedAt: Date.now(),
-        };
+        };*/
+        return {
+  ...p,
+  comments: normalizeThreadComments([...(p.comments || []), r]),
+  replyCount: Number(p.replyCount || 0) + 1,
+  threadItemCount: Number(p.threadItemCount || 0) + 1,
+  updatedAt: Date.now(),
+};
       })
     );
 
@@ -2612,7 +2712,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   );
 }
   function AnswerThread({ post }) {
-    const [open, setOpen] = useState(true);
+    /*const [open, setOpen] = useState(true);
     const [commentOpen, setCommentOpen] = useState(false);
     const [replyOpenById, setReplyOpenById] = useState({});
 
@@ -2623,7 +2723,24 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       .filter((c) => c.parentId == null)
       .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
-    const byParent = allComments.reduce((acc, c) => {
+    const byParent = allComments.reduce((acc, c) => {*/
+const [open, setOpen] = useState(false);
+const [threadLoaded, setThreadLoaded] = useState(false);
+const [threadLoading, setThreadLoading] = useState(false);
+const [threadComments, setThreadComments] = useState(null);
+const [commentOpen, setCommentOpen] = useState(false);
+const [replyOpenById, setReplyOpenById] = useState({});
+
+// ✅ Load comments only when user clicks Comments
+const allComments = normalizeThreadComments(
+  Array.isArray(threadComments) ? threadComments : post.comments
+);
+
+const answers = allComments
+  .filter((c) => c.parentId == null)
+  .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+const byParent = allComments.reduce((acc, c) => {
       if (c.parentId != null) (acc[c.parentId] ||= []).push(c);
       return acc;
     }, {});
@@ -2635,12 +2752,53 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
 
     return (
-      <div className="mt-3">
-        <button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
+      /*<div className="mt-3">*/
+        <div className="contents">
+        {/*<button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
           Comments ({answers.length}) {open ? "▾" : "▸"}
-        </button>
+        </button>*/}
+        <button
+  type="button"
+  onClick={async () => {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    setOpen(true);
+
+    if (!threadLoaded && !threadLoading) {
+      try {
+        setThreadLoading(true);
+
+        const res = await fetchThread({ postId: post.id });
+
+        const comments = normalizeThreadComments(
+          Array.isArray(res?.comments) ? res.comments : []
+        );
+
+        setThreadComments(comments);
+        setThreadLoaded(true);
+        setOpen(true);
+      } catch (err) {
+        console.error("Failed to load comments", err);
+      } finally {
+        setThreadLoading(false);
+      }
+    }
+  }}
+  className="text-sm text-blue-700 underline"
+>
+  Comments (
+    {threadLoaded
+      ? answers.length
+      : Number(post.commentCount || answers.length || 0)}
+  ){" "}
+  {threadLoading ? "Loading..." : open ? "▾" : "▸"}
+</button>
         {open && (
-          <div className="mt-2">
+          /*<div className="mt-2">*/
+            <div className="basis-full w-full mt-2">
             {answers.map((a) => (
               <div key={a.id} className="mt-3">
   <div className="flex items-start gap-2">
@@ -3364,44 +3522,87 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </div>
 </div>
 
+                
+
                 <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-slate-600">
-                  <button onClick={() => toggleLike(post.id)} className="rounded px-2 py-1 hover:bg-slate-50">
-                    👍 Upvote{" "}
-                    {post.likes > 0 && <span className="text-slate-500">({post.likes})</span>}
-                  </button>
-                  <span className="hidden sm:inline text-slate-400">•</span>
-                  <span className="text-slate-700">
-                    {/*{(post.comments || []).filter((c) => c.parentId == null).length} Comments*/}
-                    {normalizeThreadComments(post.comments).filter((c) => c.parentId == null).length} Comments
-                    </span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-slate-700">{post.views || 0} Views</span>
-                  
+
+  <AnswerThread key={`answers-${post.id}`} post={post} />
+
+  <span className="hidden sm:inline text-slate-400">•</span>
+
+  <button
+    onClick={() => toggleLike(post.id)}
+    className="rounded px-2 py-1 hover:bg-slate-50"
+  >
+    👍 Upvote{" "}
+    {post.likes > 0 && (
+      <span className="text-slate-500">({post.likes})</span>
+    )}
+  </button>
+
+  <span className="text-slate-400">•</span>
+
+  <span className="text-slate-700">
+    {post.views || 0} Views
+  </span>
+
   <button
     type="button"
-    onClick={() => onReport({ itemType: "post", itemId: post.id, postId: post.id })}
+    onClick={() =>
+      onReport({
+        itemType: "post",
+        itemId: post.id,
+        postId: post.id,
+      })
+    }
     className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
     title="Report"
   >
     🚩 Report
   </button>
 
-                  <button 
-                  /*onClick={() => toggleSave(post.id)}*/ 
-                  onClick={() => toggleSavePost(post.id)}
-                  className="sm:ml-auto rounded px-2 py-1 hover:bg-slate-50">
-                    {/*{post.saved ? "★ Saved" : "☆ Save"}*/}
-                    <div>{savedPostIds.has(String(post.id)) ? "★" : "☆"}</div>
-<div>{savedPostIds.has(String(post.id)) ? "Saved" : "Save"}</div>
-                  </button>
-                </div>
+  <button
+    onClick={() => toggleSavePost(post.id)}
+    className="sm:ml-auto rounded px-2 py-1 hover:bg-slate-50"
+  >
+    <div>{savedPostIds.has(String(post.id)) ? "★" : "☆"}</div>
+    <div>{savedPostIds.has(String(post.id)) ? "Saved" : "Save"}</div>
+  </button>
 
-                <div className="mt-2">
+</div>
+
+
+
+
+
+
+
+
+                {/*<div className="mt-2">
                   <AnswerThread key={`answers-${post.id}`} post={post} />
-                </div>
+                </div>*/}
               </div>
             </Card>
           ))}
+
+
+          {nextCursor && (
+  <div className="flex justify-center py-4">
+    <button
+      type="button"
+      onClick={loadMorePosts}
+      disabled={loadingMore}
+      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+    >
+      {loadingMore ? "Loading..." : "Load more posts"}
+    </button>
+  </div>
+)}
+
+
+
+
+
         </section>
 
         {/* RIGHT rail */}
