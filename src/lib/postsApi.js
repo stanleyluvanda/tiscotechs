@@ -612,6 +612,9 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
     images,
     files,
     comments,
+    commentCount: toNumber(raw.commentCount, comments.length),
+replyCount: toNumber(raw.replyCount, 0),
+threadItemCount: toNumber(raw.threadItemCount, comments.length),
 
     audience: raw.audience || "GLOBAL",
     time,
@@ -660,12 +663,27 @@ export async function fetchPostsPage({
  * ✅ Backward compatible
  * Existing pages call: fetchPosts({ scope })
  */
-export async function fetchPosts({ scope = "student-dashboard" } = {}) {
+/*export async function fetchPosts({ scope = "student-dashboard" } = {}) {
   const { posts } = await fetchPostsPage({
     scope,
     limit: 30,
     withThread: true,
   });
+  return posts;
+}*/
+export async function fetchPosts({
+  scope = "student-dashboard",
+  limit = 10,
+  cursor = null,
+  withThread = true,
+} = {}) {
+  const { posts } = await fetchPostsPage({
+    scope,
+    limit,
+    cursor,
+    withThread,
+  });
+
   return posts;
 }
 

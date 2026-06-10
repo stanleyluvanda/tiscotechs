@@ -7,6 +7,8 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import {
   fetchPosts,
+  fetchPostsPage,
+  fetchThread,
   createPost as createPostOnServer,
   deletePost as deletePostOnServer,
   postCommentToServer,
@@ -274,8 +276,16 @@ function normalizePostShape(p) {
     author,
     attachments,
     comments,
+    commentCount: Number(
+    p?.commentCount ??
+    p?.commentsCount ??
+    p?.replyCount ??
+    comments.length ??
+    0
+  ),
+};
   };
-}
+
 
 function mergePreferRich(localP, remoteP) {
   const la = localP?.author || {};
@@ -1586,23 +1596,16 @@ export default function GlobalAcademicPlatform() {
 
   // ✅ Global scope
   const SCOPE = "global-academic-platform";
-  const POSTS_CACHE_KEY = `posts_cache__${SCOPE}`;
 
-  /*const [posts, setPosts] = useState([]);*/
-  const [posts, setPosts] = useState(() => {
-  try {
-    return JSON.parse(sessionStorage.getItem(POSTS_CACHE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-});
+  const [posts, setPosts] = useState([]);
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(true);
-  /*const [loading, setLoading] = useState(false);*/
   const [preview, setPreview] = useState(null);
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
   const savedPostIdsRef = useRef(new Set());
   const [showSavedOnly, setShowSavedOnly] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
 
 
@@ -1677,11 +1680,16 @@ const seeded = useMemo(() => {
     async function load() {
       const started = performance.now();
       try {
-        const remote = await fetchPosts({ scope: SCOPE });
-        /*const remote = await fetchPosts({
+        /*const remote = await fetchPosts({ scope: SCOPE });*/
+        /*const remote = await fetchPosts({*/
+  const { posts: remote, cursor } = await fetchPostsPage({
   scope: SCOPE,
-  limit: 5,
-});*/
+  limit: 25,
+  withThread: false,
+});
+setNextCursor(cursor || null);
+console.log("GLOBAL_CURSOR:", cursor);
+console.log("GLOBAL_POST_COUNT:", Array.isArray(remote) ? remote.length : 0);
         if (!alive) return;
 
         const list = Array.isArray(remote) ? remote : remote?.posts || [];
@@ -1720,7 +1728,6 @@ const seeded = useMemo(() => {
                 .join("|");
 
             if (sig(out) === sig(prev)) return prev;
-            sessionStorage.setItem(POSTS_CACHE_KEY, JSON.stringify(out.slice(0, 20)));
 
             return out;
           });
@@ -1742,24 +1749,61 @@ const seeded = useMemo(() => {
   );
 
   if (alive) setLoading(false);
-  /*if (alive) setTimeout(() => setLoading(false), 0);*/
 }
 }
 
 load();
 
-/*return () => {
-  alive = false;
-};*/
-const t = setInterval(load, 30000);
-
 return () => {
   alive = false;
-  clearInterval(t);
 };
   /*}, [SCOPE, seeded]);*/
   /*}, [SCOPE, seeded, savedPostIds]);*/
   }, [SCOPE, seeded]);
+
+  async function loadMorePosts() {
+  if (!nextCursor || loadingMore) return;
+
+  setLoadingMore(true);
+
+  try {
+    const { posts: morePosts, cursor } = await fetchPostsPage({
+      scope: SCOPE,
+      limit: 25,
+      cursor: nextCursor,
+      withThread: false,
+    });
+
+    const moreNorm = (morePosts || []).map((p) => {
+      const normalized = normalizePostShape(p);
+      return {
+        ...normalized,
+        saved: savedPostIdsRef.current.has(String(normalized.id)),
+      };
+    });
+
+    setPosts((prev) => {
+      const byId = new Map((prev || []).map((p) => [String(p.id), p]));
+
+      for (const rp of moreNorm) {
+        const old = byId.get(String(rp.id));
+        byId.set(String(rp.id), old ? mergePreferRich(old, rp) : rp);
+      }
+
+      const out = Array.from(byId.values());
+      out.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      return out;
+    });
+
+    setNextCursor(cursor || null);
+  } catch (err) {
+    console.error("Failed to load more Global posts", err);
+    setToast("Failed to load more posts. Please try again.");
+    setTimeout(() => setToast(""), 4000);
+  } finally {
+    setLoadingMore(false);
+  }
+}
 
   const postRefs = useRef({});
 
@@ -2734,14 +2778,23 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
     </form>
   );
 }
-
   function AnswerThread({ post }) {
-  const [open, setOpen] = useState(true);
+  /*const [open, setOpen] = useState(true);*/
+  const [open, setOpen] = useState(false);
+  const [threadLoaded, setThreadLoaded] = useState(false);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadComments, setThreadComments] = useState(null);
   const [commentOpen, setCommentOpen] = useState(false);
   const [replyOpenById, setReplyOpenById] = useState({});
 
-  const answers = (post.comments || []).filter((c) => !c.parentId);
-  const byParent = (post.comments || []).reduce((acc, c) => {
+  /*const answers = (post.comments || []).filter((c) => !c.parentId);
+  const byParent = (post.comments || []).reduce((acc, c) => {*/
+    const visibleComments = Array.isArray(threadComments)
+  ? threadComments
+  : post.comments || [];
+
+const answers = visibleComments.filter((c) => !c.parentId);
+const byParent = visibleComments.reduce((acc, c) => {
     if (c.parentId) (acc[c.parentId] ||= []).push(c);
     return acc;
   }, {});
@@ -2750,9 +2803,51 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
   return (
     <div className="mt-3">
-      <button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
+      {/*<button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
         Comments ({answers.length}) {open ? "▾" : "▸"}
-      </button>
+      </button>*/}
+      <button
+  type="button"
+  onClick={async () => {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    setOpen(true);
+
+    if (!threadLoaded && !threadLoading) {
+      try {
+        setThreadLoading(true);
+
+        const res = await fetchThread({ postId: post.id });
+        const comments = Array.isArray(res?.comments) ? res.comments : [];
+
+        /*setPosts((prev) =>
+          prev.map((p) =>
+            String(p.id) === String(post.id)
+              ? { ...p, comments }
+              : p
+          )
+        );*/
+        setThreadComments(comments);
+
+        setThreadLoaded(true);
+        setOpen(true);
+      } catch (err) {
+        console.error("Failed to load comments", err);
+        setToast("Failed to load comments. Please try again.");
+        setTimeout(() => setToast(""), 4000);
+      } finally {
+        setThreadLoading(false);
+      }
+    }
+  }}
+  className="text-sm text-blue-700 underline"
+>
+  {/*Comments ({answers.length}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}*/}
+  Comments ({threadLoaded ? answers.length : Number(post.commentCount || answers.length || 0)}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}
+</button>
 
       {open && (
         <div className="mt-2">
@@ -3301,35 +3396,11 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   </div>
 </Card>
 
-            {/*{loading && (
+            {loading && (
               <Card>
                 <div className="p-4 text-sm text-slate-600">Loading posts…</div>
               </Card>
-            )}*/}
-
-            {loading && posts.length === 0 && (
-  <div className="space-y-3">
-    {[1, 2, 3].map((n) => (
-      <Card key={n}>
-        <div className="p-4 animate-pulse">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-slate-200" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 w-1/3 rounded bg-slate-200" />
-              <div className="h-3 w-1/4 rounded bg-slate-100" />
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <div className="h-3 w-5/6 rounded bg-slate-200" />
-            <div className="h-3 w-4/6 rounded bg-slate-100" />
-            <div className="h-28 w-full rounded-xl bg-slate-100" />
-          </div>
-        </div>
-      </Card>
-    ))}
-  </div>
-)}
+            )}
 
             {sorted.map((post) => (
               <Card key={post.id} className="p-0" ref={(el) => el && (postRefs.current[post.id] = el)}>
@@ -3490,6 +3561,31 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
                 </div>
               </Card>
             ))}
+
+
+            {nextCursor && (
+  <div className="flex justify-center py-4">
+    <button
+      type="button"
+      onClick={loadMorePosts}
+      disabled={loadingMore}
+      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+    >
+      {loadingMore ? "Loading..." : "Load more posts"}
+    </button>
+  </div>
+)}
+
+
+
+
+
+
+
+
+
+
+
           </section>
 
           {/* RIGHT rail */}

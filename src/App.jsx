@@ -15,6 +15,8 @@ import Navbar from "./components/Navbar.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
 import Home from "./pages/Home.jsx";
 import { getLoggedInUser } from "./lib/authState.js";
+/*import GlobalAcademicPlatform from "./pages/GlobalAcademicPlatform.jsx";*/
+/*import UniversityAcademicPlatform from "./pages/UniversityAcademicPlatform.jsx";*/
 
 const About = lazy(() => import("./pages/About.jsx"));
 const Partner = lazy(() => import("./pages/Partner.jsx"));
