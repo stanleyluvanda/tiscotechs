@@ -421,9 +421,14 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
 
       if (API_BASE) {
         try {
-          const res = await fetch(
+          /*const res = await fetch(
             `${API_BASE}/api/scholarships?page=1&pageSize=200`
-          );
+          );*/
+          const currentType = String(item?.contentType || "SCHOLARSHIP").toUpperCase();
+
+const res = await fetch(
+  `${API_BASE}/api/scholarships?page=1&pageSize=200&contentType=${encodeURIComponent(currentType)}`
+);
           if (res.ok) {
             const data = await res.json();
             list = Array.isArray(data?.items) ? data.items : [];
@@ -1134,7 +1139,7 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
     <section className="mt-10 rounded-2xl bg-white border border-slate-200 overflow-hidden">
       <div className="bg-slate-100 px-5 py-4">
         <h4 className="text-lg font-bold text-slate-900">
-          You may also like
+          You may also like the following programs
         </h4>
       </div>
 
@@ -1157,7 +1162,7 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
             <Link
   key={sid}
   to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-  className="w-[280px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-md transition"
+  className="w-[340px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-md transition"
 >
   {(s.imageUrl || s.imageData) && (
     <img

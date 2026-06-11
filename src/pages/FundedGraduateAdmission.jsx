@@ -386,75 +386,75 @@ export default function FundedGraduateAdmission() {
     }
   };
 
-  return (
-    <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8 overflow-x-hidden sm:overflow-x-visible">
-      <div className="mx-auto w-full max-w-[1056px]">
-        <main className="w-full min-w-0">
-          {/* FULL-WIDTH header banner */}
-          <div
-  className="relative -mx-3 w-auto sm:left-1/2 sm:right-1/2 sm:-ml-[50vw] sm:-mr-[50vw] sm:w-screen border-y border-slate-200 overflow-hidden"
-  style={{
-    backgroundImage: "url(/images/Scholarship1.webp)",
-    backgroundSize: "cover",
-    backgroundPosition: "left center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
+  const featuredItems = useMemo(() => {
+  const list = Array.isArray(baseItems) ? baseItems : [];
 
-            <div className="relative z-10 mx-auto max-w-[1400px] px-3 sm:px-4 py-3 md:py-4">
-              <div className="mx-auto max-w-[1056px]">
-                <h2
-                  className="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight text-center whitespace-normal sm:whitespace-nowrap break-words"
-                   style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
-                >
-                  University-Funded programs opportunities for international students
-                </h2>
+  return list
+    .filter(
+      (s) =>
+        s.featured === true ||
+        s.featuredLevel === "FEATURED" ||
+        s.featuredLevel === "PREMIUM_FEATURED"
+    )
+    .slice(0, 8);
+}, [baseItems]);
 
-                <p
-                   className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl break-words"
-                   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
-                >
-                  Explore funded academic programs offered directly by universities worldwide, including programs that provide full or partial financial support for Bachelor, master&apos;s, and doctoral studies across a wide range of academic disciplines and research fields, and reduce overall graduate cost
-                </p>
-              </div>
-            </div>
+const popularDestinations = [
+  { name: "United States", flag: "/images/flags/us.webp" },
+  { name: "Canada", flag: "/images/flags/ca.webp" },
+  { name: "United Kingdom", flag: "/images/flags/gb.webp" },
+  { name: "Australia", flag: "/images/flags/au.webp" },
+  { name: "Germany", flag: "/images/flags/de.webp" },
+];
+
+  
+
+          return (
+  <div className="min-h-screen bg-slate-50 pb-10 overflow-x-hidden">
+    {false && canShowAds && (
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
+          <div className="mx-auto max-w-[970px]">
+            {/* Real Google AdSense top banner goes here */}
           </div>
+        </div>
+      </section>
+    )}
 
-          {usedFallback && (
-            <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
-              Showing cached opportunities for faster loading.
-            </div>
-          )}
+    <section
+      className="relative border-b border-slate-200 bg-slate-900 bg-cover bg-center"
+      style={{ backgroundImage: "url(/images/Scholarship1.webp)" }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/20" />
 
-          {/* Controls */}
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
+      <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
+        <div className="max-w-6xl">
+          <h1
+            className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white lg:whitespace-nowrap"
+            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+          >
+            University-Funded Admission Opportunities for International Students
+          </h1>
+
+          <p
+            className="mt-3 max-w-6xl text-sm sm:text-base font-medium text-white/90 lg:whitespace-nowrap"
+            style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
+          >
+            Find universities and academic programs where admitted students may be considered for grants, assistantships, tuition waivers, and financial aid.
+          </p>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(260px,1.7fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(150px,1fr)_120px]">
             <input
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by title, university, country…"
-              className="w-full min-w-0 border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"
+              placeholder="Search university, program, country..."
+              className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
-
-            <select
-              value={continent}
-              onChange={(e) => {
-                setContinent(e.target.value);
-                setCountry("All");
-                setPage(1);
-              }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by continent"
-            >
-              {["All", ...CONTINENT_NAMES].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
 
             <select
               value={country}
@@ -462,49 +462,28 @@ export default function FundedGraduateAdmission() {
                 setCountry(e.target.value);
                 setPage(1);
               }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by country"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
               {countryOptions.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {c === "All" ? "All Countries" : c}
                 </option>
               ))}
             </select>
 
-            <select
-              value={field}
-              onChange={(e) => {
-                setField(e.target.value);
-                setPage(1);
-              }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by field of study"
-            >
-              {["All", ...FIELDS_OF_STUDY].map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-
-            {/* Level multi-select */}
             <div className="relative" data-level-popover>
               <button
                 type="button"
                 onClick={() => setLevelOpen((o) => !o)}
-                className="w-full text-left text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 flex items-center justify-between gap-2"
-                aria-haspopup="menu"
-                aria-expanded={levelOpen ? "true" : "false"}
+                className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
               >
-                <span>Level{levels.length ? ` (${levels.length})` : ""}</span>
+                <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
                 <span className="text-slate-500">▾</span>
               </button>
 
               {levelOpen && (
                 <div
-                  /*className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"*/
-                  className="absolute z-30 mt-1 w-full sm:w-64 rounded border border-slate-200 bg-white shadow"
+                  className="absolute z-30 mt-1 w-full sm:w-64 rounded-lg border border-slate-200 bg-white shadow"
                   role="menu"
                   data-level-popover
                 >
@@ -514,7 +493,7 @@ export default function FundedGraduateAdmission() {
                       return (
                         <label
                           key={opt}
-                          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
+                          className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
                         >
                           <input
                             type="checkbox"
@@ -539,7 +518,7 @@ export default function FundedGraduateAdmission() {
                     <button
                       type="button"
                       onClick={() => setLevelOpen(false)}
-                      className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-slate-50"
+                      className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
                     >
                       Done
                     </button>
@@ -548,19 +527,198 @@ export default function FundedGraduateAdmission() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 xl:col-span-2">
+            <select
+              value={funding}
+              onChange={(e) => {
+                setFunding(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            >
+              {fundingOptions.map((f) => (
+                <option key={f} value={f}>
+                  {f === "All" ? "All Funding Types" : f}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setPage(1)}
+              className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">
+      {usedFallback && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Showing cached opportunities for faster loading.
+        </div>
+      )}
+
+      {featuredItems.length > 0 && (
+        <section className="mb-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-amber-500">★</span>
+            <h2 className="text-lg font-bold text-slate-900">
+              Featured University-Funded Opportunities
+            </h2>
+            <span className="hidden text-sm text-slate-500 sm:inline">
+              Admission-linked funding opportunities from universities
+            </span>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {featuredItems.map((s) => {
+              const logo = s.providerLogoUrl || s.providerLogoData || "";
+              const fundingStr = Array.isArray(s.fundingType)
+                ? s.fundingType.join(", ")
+                : s.fundingType || s.funding || "";
+
+              return (
+                <article
+                  key={`featured-${s.id}`}
+                  className="w-[24.25%] min-w-[310px] shrink-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                >
+                  <div className="flex items-start gap-3">
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt={`${s.provider || "University"} logo`}
+                        className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
+                        SK
+                      </div>
+                    )}
+
+                    <div className="min-w-0">
+                      <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
+                        {s.title}
+                      </h3>
+                      {s.provider && (
+                        <p className="mt-1 truncate text-xs font-semibold text-slate-700">
+                          {s.provider}
+                        </p>
+                      )}
+                      {s.country && (
+                        <p className="mt-1 text-xs text-slate-600">{s.country}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {fundingStr && (
+                    <div className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      {fundingStr}
+                    </div>
+                  )}
+
+                  <Link
+                    to={`/funded-graduate-admission/${s.id}`}
+                    onMouseEnter={() => prefetchDetail(s.id)}
+                    onMouseDown={() => prefetchDetail(s.id)}
+                    onClick={() => trackItem(s.id, "view")}
+                    className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
+                  >
+                    View details →
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
+        <aside className="hidden xl:block">
+          <div className="sticky top-24 rounded-xl border border-purple-100 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm">
+            <div className="mb-2 text-xs text-slate-400">Ad</div>
+            <h3 className="text-lg font-extrabold leading-6 text-purple-900">
+              Find global opportunities. Fund your future.
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              Explore university-funded programs linked to admission.
+            </p>
+            <button
+              type="button"
+              className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Explore Now
+            </button>
+          </div>
+        </aside>
+
+        <main className="min-w-0">
+          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
+              <select
+                value={continent}
+                onChange={(e) => {
+                  setContinent(e.target.value);
+                  setCountry("All");
+                  setPage(1);
+                }}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                {["All", ...CONTINENT_NAMES].map((c) => (
+                  <option key={c} value={c}>
+                    {c === "All" ? "All Continents" : c}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setPage(1);
+                }}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                {countryOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c === "All" ? "All Countries" : c}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={field}
+                onChange={(e) => {
+                  setField(e.target.value);
+                  setPage(1);
+                }}
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                {["All", ...FIELDS_OF_STUDY].map((f) => (
+                  <option key={f} value={f}>
+                    {f === "All" ? "All Study Fields" : f}
+                  </option>
+                ))}
+              </select>
+
               <select
                 value={funding}
                 onChange={(e) => {
                   setFunding(e.target.value);
                   setPage(1);
                 }}
-                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
-                aria-label="Funding type"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 {fundingOptions.map((f) => (
                   <option key={f} value={f}>
-                    {f}
+                    {f === "All" ? "All Funding Types" : f}
                   </option>
                 ))}
               </select>
@@ -571,10 +729,9 @@ export default function FundedGraduateAdmission() {
                   setSort(e.target.value);
                   setPage(1);
                 }}
-                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
-                aria-label="Sort by"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
-                <option value="newest">Newest</option>
+                <option value="newest">Sort by Newest</option>
                 <option value="deadlineAsc">Deadline (soonest)</option>
                 <option value="deadlineDesc">Deadline (latest)</option>
                 <option value="title">Title (A–Z)</option>
@@ -583,157 +740,184 @@ export default function FundedGraduateAdmission() {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50"
               >
                 Reset
               </button>
             </div>
+          </section>
+
+          <div className="mt-4">
+            <h2 className="text-base font-bold text-slate-900">
+              Explore all University-Funded Opportunities for Merit-based financial Aid,Assistantships,Tuition Waivers,University Grants,Merit-based scholarships,Research Assistantships,partial and full funding
+            </h2>
+            <p className="text-xs text-slate-500">{total} opportunities found</p>
           </div>
 
-          {/* States */}
           {loading && (
-            <div className="mt-6 text-slate-600">
-              Loading funded graduate admissions…
+            <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-slate-600">
+              Loading university-funded opportunities…
             </div>
           )}
 
-          {err && <div className="mt-6 text-red-600">{err}</div>}
-
-          {!loading && !err && items.length === 0 && (
-            <div className="mt-6 text-slate-600">No opportunities found.</div>
+          {err && (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">
+              {err}
+            </div>
           )}
 
-          {/* List */}
-          <ul className="mt-6 grid gap-3">
-            {items.map((s) => {
-              const snippet = truncate(stripHtml(s.description || ""), 320);
+          {!loading && !err && items.length === 0 && (
+            <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-slate-600">
+              No opportunities found.
+            </div>
+          )}
+
+          <ul className="mt-3 grid gap-3">
+            {items.map((s, index) => {
+              const snippet = truncate(stripHtml(s.description || ""), 260);
               const fundingStr = Array.isArray(s.fundingType)
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
-
               const logo = s.providerLogoUrl || s.providerLogoData || "";
 
-              return (
-                <li
-                  key={s.id}
-                  className="border border-slate-200 rounded-lg p-4 bg-white"
-                >
-                 
-
-                  <div className="flex flex-col gap-2">
-  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-    <div className="min-w-0 flex items-start gap-3 flex-1">
-      {logo ? (
-        <img
-          src={logo}
-          alt={`${s.provider || "University"} logo`}
-          className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      ) : null}
-
-      <div className="min-w-0 flex-1">
-        <div className="text-base sm:text-lg font-semibold leading-snug break-words">
-          {s.title}
+return (
+  <li
+    key={s.id}
+    className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+  >
+    <div className="flex flex-col gap-4">
+      {/* TOP ROW: logo, title, provider, funding badge */}
+      {/*</div><div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 lg:grid-cols-[72px_minmax(0,1fr)_auto]">*/}
+        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4">
+        <div>
+          {logo ? (
+            <img
+              src={logo}
+              alt={`${s.provider || "University"} logo`}
+              className="h-16 w-16 rounded-lg border border-slate-200 bg-white object-contain p-1"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-sm font-bold text-blue-700">
+              SK
+            </div>
+          )}
         </div>
 
-        <div className="mt-1 text-sm sm:text-base leading-6">
-          {s.provider ? (
-            <span className="font-semibold text-[#46166B]">{s.provider}</span>
-          ) : null}
+        <div className="min-w-0">
+          <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg break-words [overflow-wrap:anywhere]">
+            {s.title}
+          </h3>
 
-          {s.country ? (
-            <span className="font-semibold text-[#46166B]">
-              {" • "}
-              {s.country}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </div>
+          <div className="mt-1 text-sm leading-6 text-slate-700">
+  {s.provider && (
+    <span className="font-semibold text-blue-950">
+      {s.provider}
+    </span>
+  )}
 
-    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-      {s.amount ? (
-        <div className="inline-flex max-w-full whitespace-normal sm:whitespace-nowrap items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-          Funding: {s.amount}
-        </div>
-      ) : null}
-    </div>
-  </div>
-
-  {(s.level || s.field || fundingStr) ? (
-    <div className="w-full text-xs sm:text-sm text-slate-600 leading-6 break-words [overflow-wrap:anywhere]">
-      {s.level ? (
-        <span className="font-semibold text-purple-700">{s.level}</span>
-      ) : null}
-
-      {s.field ? (
-        <span className="font-semibold text-purple-700">
-          {s.level ? " • " : ""}
-          {s.field}
-        </span>
-      ) : null}
-
-      {fundingStr ? (
-        <span className="font-semibold text-blue-900">
-          {(s.level || s.field) ? " • " : ""}
-          {fundingStr}
-        </span>
-      ) : null}
-    </div>
-  ) : null}
+  {s.country && (
+    <span className="font-semibold text-blue-950">
+      {" • "}
+      {s.country}
+    </span>
+  )}
 </div>
 
-                  {s.deadline && (
-                    <div className="mt-2 text-xs text-slate-500 leading-5 sm:text-right">
-                      Deadline: {s.deadline}
-                    </div>
-                  )}
+{s.amount && (
+  <div className="mt-3 -ml-[88px] flex justify-center">
+    <span className="inline-flex max-w-[90%] rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-sm font-semibold text-emerald-700">
+      Funding Available: {s.amount}
+    </span>
+  </div>
+)}
 
-                  {snippet && (
-                    <p className="mt-3 text-sm leading-6 text-slate-700">
-                      {snippet}
-                    </p>
-                  )}
+</div>
+</div>
 
-                  <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
-                    <Link
-                      to={`/funded-graduate-admission/${s.id}`}
-                      onMouseEnter={() => prefetchDetail(s.id)}
-                      onMouseDown={() => prefetchDetail(s.id)}
-                      onClick={() => trackItem(s.id, "view")}
-                      className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 text-center"
-                    >
-                      View details
-                    </Link>
+      {/* FULL-WIDTH PILLS: starts from left margin and wraps across the card */}
+      <div className="flex max-w-full flex-wrap items-center gap-2">
+        {s.level && (
+          <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">
+            {s.level}
+          </span>
+        )}
 
-                    {s.partnerApplyUrl && (
-                      <a
-                        href={s.partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-2 hover:bg-blue-50 text-center"
-                        onMouseDown={() => trackItem(s.id, "apply")}
-                        onClick={() => trackItem(s.id, "apply")}
-                      >
-                        Apply on University site
-                      </a>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+        {String(s.field || "")
+          .split("•")
+          .map((x) => x.trim())
+          .filter(Boolean)
+          .slice(0, 30)
+          .map((program, idx) => (
+            <span
+              key={`${s.id}-program-${idx}`}
+              className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700"
+            >
+              {program}
+            </span>
+          ))}
 
-          {/* Pagination */}
+        {fundingStr && (
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            {fundingStr}
+          </span>
+        )}
+
+        {s.deadline && (
+          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+            Deadline: {s.deadline}
+          </span>
+        )}
+      </div>
+
+      {snippet && (
+        <p className="text-sm leading-6 text-slate-700">
+          {snippet}
+        </p>
+      )}
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Link
+          to={`/funded-graduate-admission/${s.id}`}
+          onMouseEnter={() => prefetchDetail(s.id)}
+          onMouseDown={() => prefetchDetail(s.id)}
+          onClick={() => trackItem(s.id, "view")}
+          className="rounded-lg border border-blue-200 px-4 py-2 text-center text-sm font-semibold text-blue-700 hover:bg-blue-50"
+        >
+          View Details
+        </Link>
+
+        {s.partnerApplyUrl && (
+          <a
+            href={s.partnerApplyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-blue-800"
+            onMouseDown={() => trackItem(s.id, "apply")}
+            onClick={() => trackItem(s.id, "apply")}
+          >
+            Apply to University ↗
+          </a>
+        )}
+      </div>
+
+      {false && canShowAds && index === 1 && (
+        <div>{/* Real Google AdSense in-feed ad goes here */}</div>
+      )}
+    </div>
+  </li>
+);
+})}
+</ul>
+
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-center gap-2">
               <button
-                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
@@ -745,7 +929,7 @@ export default function FundedGraduateAdmission() {
               </div>
 
               <button
-                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
@@ -754,7 +938,83 @@ export default function FundedGraduateAdmission() {
             </div>
           )}
         </main>
+
+        <aside className="hidden xl:block">
+          <div className="space-y-4">
+            <div className="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm">
+              <div className="mb-2 text-xs text-slate-400">Ad</div>
+              <h3 className="text-lg font-extrabold leading-6 text-purple-900">
+                Your future starts here.
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                Many universities consider admitted students for funding automatically.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900">
+                Popular Study Destinations
+              </h3>
+
+              <div className="mt-3 space-y-2">
+                {popularDestinations.map((item) => (
+                  <button
+                    key={item.name}
+                    type="button"
+                    onClick={() => {
+                      setCountry(item.name);
+                      const inferred = COUNTRY_TO_CONTINENT[item.name.toLowerCase()];
+                      if (inferred) setContinent(inferred);
+                      setPage(1);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <img
+                      src={item.flag}
+                      alt={item.name}
+                      className="h-5 w-8 rounded border border-slate-200 object-cover"
+                      loading="lazy"
+                    />
+                    <span>Study in {item.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900">Funding Types</h3>
+              <div className="mt-3 space-y-2 text-sm text-slate-700">
+                <div>Teaching Assistantships</div>
+                <div>Research Assistantships</div>
+                <div>Tuition Waivers</div>
+                <div>University Grants</div>
+                <div>Merit-based Aid</div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-slate-900">Application Tips</h3>
+              <div className="mt-3 space-y-3 text-sm">
+                <div className="font-semibold text-blue-800">
+                  Apply early and check funding deadlines.
+                </div>
+                <div className="font-semibold text-blue-800">
+                  Review whether funding is automatic or separate.
+                </div>
+                <div className="font-semibold text-blue-800">
+                  Prepare strong academic documents.
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
-  );
+  </div>
+);
+
+        /*</main>
+      </div>
+    </div>
+  );*/
 }
