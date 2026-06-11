@@ -168,6 +168,18 @@ export default function AdminScholarshipList() {
       alert("Failed to update: " + e.message);
     }
   }
+  async function setFeaturedAction(id, featuredLevel) {
+  try {
+    await updateScholarship(id, {
+      featured: featuredLevel !== "STANDARD",
+      featuredLevel,
+    });
+
+    await load();
+  } catch (e) {
+    alert("Failed to update featured status: " + e.message);
+  }
+}
 
   async function remove(id) {
     if (!confirm("Delete this item?")) return;
@@ -261,6 +273,9 @@ export default function AdminScholarshipList() {
                     <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700 whitespace-nowrap">
                       Type: {typeLabel(s)}
                     </span>
+                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 whitespace-nowrap">
+    Promotion: {s.featuredLevel || "STANDARD"}
+  </span>
 
                     {s.deadline ? (
                       <span className="text-slate-500 whitespace-nowrap">
@@ -343,6 +358,33 @@ export default function AdminScholarshipList() {
                     Mark Pending
                   </button>
                 </div>
+
+                <div className="flex gap-2">
+  <button
+    onClick={() => setFeaturedAction(s.id, "STANDARD")}
+    className="text-xs border border-slate-300 text-slate-700 rounded px-2 py-1 hover:bg-slate-50"
+  >
+    Standard
+  </button>
+
+  <button
+    onClick={() => setFeaturedAction(s.id, "FEATURED")}
+    className="text-xs border border-blue-300 text-blue-700 rounded px-2 py-1 hover:bg-blue-50"
+  >
+    Featured
+  </button>
+
+  <button
+    onClick={() => setFeaturedAction(s.id, "PREMIUM_FEATURED")}
+    className="text-xs border border-purple-300 text-purple-700 rounded px-2 py-1 hover:bg-purple-50"
+  >
+    Premium
+  </button>
+</div>
+
+
+
+
               </div>
             </div>
           </li>

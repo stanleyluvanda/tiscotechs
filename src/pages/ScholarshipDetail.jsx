@@ -697,9 +697,9 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
     `}</style>
 
       <div className="flex-1">
-        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
-          <div className="mx-auto w-full max-w-[1024px]">
-            <main className="min-w-0">
+  <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
+    <div className="mx-auto w-full max-w-[1024px]">
+      <main className="min-w-0">
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
                 {/*<Link
                   to="/scholarship"
@@ -853,331 +853,359 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
               </div>
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
-                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
-                  <div className="min-w-0 space-y-2">
-                    <section className="rounded-2xl bg-blue-50 border border-blue-100 shadow-none p-4 sm:p-5">
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          {/*Quick scholarship Summary*/}
-                          Quick {itemLabel} Summary
-                        </h2>
-                      </div>
+  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
+    <div className="min-w-0 space-y-6">
+      <section className="rounded-2xl bg-blue-50 border border-blue-100 p-4 sm:p-5">
+        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+          Quick {itemLabel} Summary
+        </h2>
 
-                      <div className="mt-3 text-sm sm:text-base leading-7">
-                        {aiSummaryLoading ? (
-                          <p className="text-slate-600">Generating summary...</p>
-                        ) : aiSummary ? (
-                          <HtmlResult html={aiSummary} />
-                        ) : (
-                          <p className="text-slate-600">
-                            {/*AI summary is not available for this scholarship yet.*/}
-                            AI summary is not available for this {itemLabel.toLowerCase()} yet.
-                          </p>
-                        )}
-                      </div>
-                    </section>
+        <div className="mt-3 text-sm sm:text-base leading-7">
+          {aiSummaryLoading ? (
+            <p className="text-slate-600">Generating summary...</p>
+          ) : aiSummary ? (
+            <HtmlResult html={aiSummary} />
+          ) : (
+            <p className="text-slate-600">
+              AI summary is not available for this {itemLabel.toLowerCase()} yet.
+            </p>
+          )}
+        </div>
+      </section>
 
-                    {description && (
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          {/*Scholarship Description*/}
-                         {itemLabel} Description
-                        </h2>
-                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-                          <RichHtml html={description} />
-                        </div>
-                      </section>
-                    )}
+      {false && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-4">
+          {/* Real Google AdSense in-article ad goes here */}
+        </section>
+      )}
 
-                    {bannerSrc && (
-                      <section className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => setShowBanner(true)}
-                          className="block w-full text-left"
-                          title="Click to enlarge"
-                        >
-                          <img
-                            src={bannerSrc}
-                            alt={`${provider || title} banner`}
-                            className="w-full h-auto object-contain bg-white"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </button>
-                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-                          Click image to enlarge
-                        </div>
-                      </section>
-                    )}
+      {description && (
+        <section>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+            {itemLabel} Description
+          </h2>
+          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+            <RichHtml html={description} />
+          </div>
+        </section>
+      )}
 
-                    {eligibility && (
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          Eligibility & Requirements
-                        </h2>
-                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-                          <RichHtml html={eligibility} />
-                        </div>
-                      </section>
-                    )}
+      {eligibility && (
+        <section>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+            Eligibility & Requirements
+          </h2>
+          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+            <RichHtml html={eligibility} />
+          </div>
+        </section>
+      )}
 
-                    {benefits && (
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          Funding and Benefits
-                        </h2>
-                        <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
-                          <RichHtml html={benefits} />
-                        </div>
-                      </section>
-                    )}
+      {benefits && (
+        <section>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+            Funding and Benefits
+          </h2>
+          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+            <RichHtml html={benefits} />
+          </div>
+        </section>
+      )}
 
-                    {howToApply && (
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          How to submit Application
-                        </h2>
-                        <div className="mt-1 sm:mt-1.5 text-sm sm:text-base leading-7">
-                          <RichHtml html={howToApply} />
-                        </div>
+      {howToApply && (
+        <section>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+            How to submit Application
+          </h2>
 
-                        <div className="mt-4 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div>
-                              <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
-                                Summarized & Simplified Application Steps
-                              </h3>
-                              <p className="mt-0.5 text-sm text-slate-600">
-                                Turn the application instructions into a shorter checklist.
-                              </p>
-                            </div>
+          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+            <RichHtml html={howToApply} />
+          </div>
 
-                            <button
-                              type="button"
-                              onClick={handleSimplifySteps}
-                              disabled={aiStepsLoading}
-                              className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
-                            >
-                              {aiStepsLoading
-                                ? "Working..."
-                                : aiSteps && showAiSteps
-                                ? "Hide Steps"
-                                : aiSteps && !showAiSteps
-                                ? "Show Steps"
-                                : "Simplify Steps"}
-                            </button>
-                          </div>
-
-                          <div className="mt-3 text-sm sm:text-base leading-6">
-                            {showAiSteps && aiSteps ? (
-                              <HtmlResult html={aiSteps} />
-                            ) : null}
-                          </div>
-                        </div>
-                      </section>
-                    )}
-
-                    {additionalInformation && (
-                      <section className="rounded-2xl bg-transparent border border-transparent shadow-none p-0">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
-                          Additional Information
-                        </h2>
-                        <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-                          <RichHtml html={additionalInformation} />
-                        </div>
-                      </section>
-                    )}
-                  </div>
-
-                  <aside className="space-y-6 lg:pl-2">
-                    {bannerSrc && (
-                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => setShowBanner(true)}
-                          className="block w-full text-left"
-                          title="Click to enlarge"
-                        >
-                          <img
-                            src={bannerSrc}
-                            alt={`${provider || title} banner`}
-                            className="w-full h-auto object-contain bg-white"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </button>
-                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-                          Click image to enlarge
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-6">
-                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-6 text-center">
-                        <h3 className="text-base font-semibold -mx-6 -mt-6 mb-4">
-                          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
-                            At a glance
-                          </span>
-                        </h3>
-
-                        <dl className="mt-3 text-sm text-slate-700 text-left mx-auto max-w-xs">
-                          <dt className="font-bold">Provider/University</dt>
-                          <dd className="mb-3">{provider || "-"}</dd>
-
-                          <dt className="font-bold">Country</dt>
-                          <dd className="mb-3">{country || "-"}</dd>
-
-                          <dt className="font-bold">Level</dt>
-                          <dd className="mb-3">{level || "-"}</dd>
-
-                          <dt className="font-bold">Field</dt>
-                          <dd className="mb-3">{field || "-"}</dd>
-
-                          <dt className="font-bold">Deadline</dt>
-                          <dd className="mb-3">{deadline || "-"}</dd>
-
-                          {amount && (
-                            <>
-                              <dt className="font-bold">Max Amount</dt>
-                              <dd className="mb-3">{amount}</dd>
-                            </>
-                          )}
-                        </dl>
-
-                        {partnerApplyUrl && (
-                          <a
-                            href={partnerApplyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => trackScholarship(id, "apply")}
-                            className="mt-2 inline-block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700"
-                          >
-                            Apply Now
-                          </a>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-                      <div className="bg-slate-100 px-5 py-4">
-                        <h4 className="text-lg font-bold text-slate-900 text-center">
-                          {/*Scholarship Tips for International Students*/}
-                          {itemLabel} Tips for International Students
-                        </h4>
-                      </div>
-
-                      <div className="p-4 space-y-3">
-                        {[
-                          {
-                            heading: "📝 Start Early and Stay Organized",
-                            text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
-                          },
-                          {
-                            heading: "🌍 Understand Eligibility Requirements",
-                            text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
-                          },
-                          {
-                            heading: "🧾 Prepare Strong Documents",
-                            text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
-                          },
-                          {
-                            heading: "✍️ Write a Compelling Personal Statement",
-                            text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
-                          },
-                          {
-                            heading: "🧑‍🏫 Secure Strong Recommendations",
-                            text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
-                          },
-                          {
-                            heading: "🎯 Tailor Every Application",
-                            text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
-                          },
-                          {
-                            heading: "💬 Show Leadership and Impact",
-                            text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
-                          },
-                          {
-                            heading: "💡 Be Clear About Your Goals",
-                            text: "Explain your academic path and how it connects to long-term impact and career objectives.",
-                          },
-                          {
-                            heading: "🔍 Proofread Carefully",
-                            text: "Review your application for clarity and errors. Ask others to check your work before submission.",
-                          },
-                          {
-                            heading: "📤 Submit Before the Deadline",
-                            text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
-                          },
-                          {
-                            heading: "📚 Apply to Multiple Scholarships",
-                            text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
-                          },
-                          {
-                            heading: "🤝 Stay Professional",
-                            text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
-                          },
-                          {
-                            heading: "🔄 Keep Trying",
-                            text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
-                          },
-                        ]
-                          .slice(0, showAllTips ? 13 : 5)
-                          .map((tip, idx) => (
-                            <div
-                              key={idx}
-                              className="rounded-xl bg-white border border-slate-200 px-4 py-3"
-                            >
-                              <p className="font-semibold text-slate-900 text-sm sm:text-base">
-                                {tip.heading}
-                              </p>
-                              <p className="text-sm text-slate-700 mt-1 leading-6">
-                                {tip.text}
-                              </p>
-                            </div>
-                          ))}
-
-                        <button
-                          type="button"
-                          onClick={() => setShowAllTips((v) => !v)}
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                        >
-                          {showAllTips ? "Show fewer tips" : "Show more tips"}
-                        </button>
-                      </div>
-                    </div>
-
-                    {recs.length > 0 && (
-                      <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none overflow-hidden">
-                        <div className="bg-slate-100 px-5 py-4">
-                          <h4 className="text-lg font-bold text-slate-900 text-center">
-                            You may also like
-                          </h4>
-                        </div>
-
-                        <div className="divide-y divide-slate-200">
-                          {recs.map((s, idx) => {
-                            const sid = getAnyId(s) || String(idx);
-                            /*const label = s?.title || "Untitled scholarship";*/
-                            const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
-                            return (
-                              <Link
-                                key={sid}
-                                /*to={`/scholarship/${encodeURIComponent(sid)}`}*/
-                                to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-                                className="block px-5 py-4 text-emerald-700 hover:bg-slate-50"
-                              >
-                                <span className="font-semibold">{label}</span>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </aside>
-                </div>
+          <div className="mt-5 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
+                  Summarized & Simplified Application Steps
+                </h3>
+                <p className="mt-0.5 text-sm text-slate-600">
+                  Turn the application instructions into a shorter checklist.
+                </p>
               </div>
+
+              <button
+                type="button"
+                onClick={handleSimplifySteps}
+                disabled={aiStepsLoading}
+                className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
+              >
+                {aiStepsLoading
+                  ? "Working..."
+                  : aiSteps && showAiSteps
+                  ? "Hide Steps"
+                  : aiSteps && !showAiSteps
+                  ? "Show Steps"
+                  : "Simplify Steps"}
+              </button>
+            </div>
+
+            <div className="mt-3 text-sm sm:text-base leading-6">
+              {showAiSteps && aiSteps ? <HtmlResult html={aiSteps} /> : null}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {additionalInformation && (
+        <section>
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+            Additional Information
+          </h2>
+          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+            <RichHtml html={additionalInformation} />
+          </div>
+        </section>
+      )}
+    </div>
+
+    <aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
+      {bannerSrc && (
+        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowBanner(true)}
+            className="block w-full text-left"
+            title="Click to enlarge"
+          >
+            <img
+              src={bannerSrc}
+              alt={`${provider || title} banner`}
+              className="w-full h-auto object-contain bg-white"
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+          <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+            Click image to enlarge
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-2xl bg-white border border-slate-200 p-5">
+        <h3 className="text-base font-semibold -mx-5 -mt-5 mb-4">
+          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl text-center">
+            At a glance
+          </span>
+        </h3>
+
+        <dl className="mt-3 text-sm text-slate-700">
+          <dt className="font-bold">Provider/University</dt>
+          <dd className="mb-3">{provider || "-"}</dd>
+
+          <dt className="font-bold">Country</dt>
+          <dd className="mb-3">{country || "-"}</dd>
+
+          <dt className="font-bold">Level</dt>
+          <dd className="mb-3">{level || "-"}</dd>
+
+          <dt className="font-bold">Field</dt>
+          <dd className="mb-3">{field || "-"}</dd>
+
+          <dt className="font-bold">Deadline</dt>
+          <dd className="mb-3">{deadline || "-"}</dd>
+
+          {amount && (
+            <>
+              <dt className="font-bold">Max Amount</dt>
+              <dd className="mb-3">{amount}</dd>
+            </>
+          )}
+        </dl>
+
+        {partnerApplyUrl && (
+          <a
+            href={partnerApplyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackScholarship(id, "apply")}
+            className="mt-2 block rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+          >
+            Apply Now
+          </a>
+        )}
+      </div>
+
+     {false && (
+  <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
+    {/* Real Google AdSense 300x250 goes here */}
+  </div>
+)}
+
+      <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+        <div className="bg-slate-100 px-5 py-4">
+          <h4 className="text-lg font-bold text-slate-900 text-center">
+            {itemLabel} Tips for International Students
+          </h4>
+        </div>
+
+        <div className="p-4 space-y-3">
+          {[
+            {
+              heading: "📝 Start Early and Stay Organized",
+              text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
+            },
+            {
+              heading: "🌍 Understand Eligibility Requirements",
+              text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
+            },
+            {
+              heading: "🧾 Prepare Strong Documents",
+              text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
+            },
+            {
+              heading: "✍️ Write a Compelling Personal Statement",
+              text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
+            },
+            {
+              heading: "🧑‍🏫 Secure Strong Recommendations",
+              text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
+            },
+            {
+              heading: "🎯 Tailor Every Application",
+              text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
+            },
+            {
+              heading: "💬 Show Leadership and Impact",
+              text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
+            },
+            {
+              heading: "💡 Be Clear About Your Goals",
+              text: "Explain your academic path and how it connects to long-term impact and career objectives.",
+            },
+            {
+              heading: "🔍 Proofread Carefully",
+              text: "Review your application for clarity and errors. Ask others to check your work before submission.",
+            },
+            {
+              heading: "📤 Submit Before the Deadline",
+              text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
+            },
+            {
+              heading: "📚 Apply to Multiple Scholarships",
+              text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
+            },
+            {
+              heading: "🤝 Stay Professional",
+              text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
+            },
+            {
+              heading: "🔄 Keep Trying",
+              text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
+            },
+          ]
+            .slice(0, showAllTips ? 13 : 5)
+            .map((tip, idx) => (
+              <div
+                key={idx}
+                className="rounded-xl bg-white border border-slate-200 px-4 py-3"
+              >
+                <p className="font-semibold text-slate-900 text-sm sm:text-base">
+                  {tip.heading}
+                </p>
+                <p className="text-sm text-slate-700 mt-1 leading-6">
+                  {tip.text}
+                </p>
+              </div>
+            ))}
+
+          <button
+            type="button"
+            onClick={() => setShowAllTips((v) => !v)}
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {showAllTips ? "Show fewer tips" : "Show more tips"}
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  {recs.length > 0 && (
+    <section className="mt-10 rounded-2xl bg-white border border-slate-200 overflow-hidden">
+      <div className="bg-slate-100 px-5 py-4">
+        <h4 className="text-lg font-bold text-slate-900">
+          You may also like
+        </h4>
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto p-4">
+        {recs.map((s, idx) => {
+          const sid = getAnyId(s) || String(idx);
+          const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
+
+          return (
+            /*<Link
+              key={sid}
+              to={`${detailBasePath}/${encodeURIComponent(sid)}`}
+              className="w-[260px] shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-3 text-emerald-700 hover:bg-slate-50"
+            >
+              <span className="font-semibold text-sm leading-6">
+                {label}
+              </span>
+            </Link>*/
+
+            <Link
+  key={sid}
+  to={`${detailBasePath}/${encodeURIComponent(sid)}`}
+  className="w-[280px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-md transition"
+>
+  {(s.imageUrl || s.imageData) && (
+    <img
+      src={s.imageUrl || s.imageData}
+      alt={label}
+      className="h-40 w-full object-cover"
+      loading="lazy"
+    />
+  )}
+
+  <div className="p-4">
+    <h5 className="font-semibold text-slate-900 line-clamp-3 leading-6">
+      {label}
+    </h5>
+
+    {s.country && (
+      <p className="mt-2 text-sm text-slate-500">
+        {s.country}
+      </p>
+    )}
+
+    {Array.isArray(s.fundingType) &&
+      s.fundingType.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {s.fundingType.slice(0, 2).map((f) => (
+            <span
+              key={f}
+              className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-xs"
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+      )}
+  </div>
+</Link>
+
+
+          );
+        })}
+      </div>
+    </section>
+  )}
+</div>
+
             </main>
+
+
           </div>
         </div>
       </div>

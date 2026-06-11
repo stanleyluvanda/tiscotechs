@@ -1,5 +1,5 @@
 // src/pages/Scholarship.jsx
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 //import { Link } from "react-router-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import { REGIONS } from "../data/regions";
@@ -408,470 +408,575 @@ const trackScholarship = (id, type) => {
   // ✅ AdSense content gate: only show ads when there is real publisher content
   const canShowAds = !loading && items.length >= 4;
 
+  // ✅ UI-only featured row. If you later add `featured: true` in the form/backend,
+  // those scholarships will show first. Until then, the first 4 approved scholarships show.
+  /*const featuredItems = useMemo(() => {
+    const list = Array.isArray(baseItems) ? baseItems : [];
+    const marked = list.filter((s) => s.featured === true || s.featuredLevel === "FEATURED" || s.featuredLevel === "PREMIUM_FEATURED");
+    const source = marked.length ? marked : list;
+    return source.slice(0, 4);
+  }, [baseItems]);*/
+  const featuredItems = useMemo(() => {
+  const list = Array.isArray(baseItems) ? baseItems : [];
+
+  return list
+    .filter(
+      (s) =>
+        s.featured === true ||
+        s.featuredLevel === "FEATURED" ||
+        s.featuredLevel === "PREMIUM_FEATURED"
+    )
+    .slice(0, 8);
+}, [baseItems]);
+
+  /*const popularDestinations = [
+    "United States",
+    "Canada",
+    "United Kingdom",
+    "Australia",
+    "Germany",
+  ];*/
+  const popularDestinations = [
+  {
+    name: "United States",
+    flag: "/images/flags/us.webp",
+  },
+  {
+    name: "Canada",
+    flag: "/images/flags/ca.webp",
+  },
+  {
+    name: "United Kingdom",
+    flag: "/images/flags/gb.webp",
+  },
+  {
+    name: "Australia",
+    flag: "/images/flags/au.webp",
+  },
+  {
+    name: "Germany",
+    flag: "/images/flags/de.webp",
+  },
+];
+
   return (
-    // ✅ Outer layout: left ad | center feed (unchanged width) | right ad
-    /*<div className="mx-auto w-full px-4 py-8">*/
-      /*<div className="mx-auto w-full px-4 pt-0 pb-8">
-      <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-6">*/
-        <div className="mx-auto w-full px-3 sm:px-4 pt-0 pb-8">
-        <div className="mx-auto w-full max-w-[1400px] flex items-start justify-center gap-4 xl:gap-6">
+    <div className="min-h-screen bg-slate-50 pb-10">
+      {/* TOP ADSENSE BANNER AREA */}
+      {/*<section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
+          <div className="mx-auto flex min-h-[90px] max-w-[970px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center">
+            
 
-        {/* LEFT ADS (hidden on small screens) */}
-        {/*<aside className="hidden xl:block w-[200px] shrink-0">
-          <div className="space-y-4">
-            {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
+           {canShowAds ? null : null}
+              
+            
           </div>
-        </aside>*/}
-        {/*<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
-          <GoogleSidebarAd
-            slot="2515946722"
-            enabled={canShowAds}
-            keepPlaceholder={true}
-            minHeight={450}
-          />
-        
-          <div
-            className="mt-8 sticky top-[280px] overflow-hidden"
-            style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
-          >
-            <GoogleSidebarAd
-              slot="2515946722"
-              enabled={canShowAds}
-              keepPlaceholder={true}
-              minHeight={450}
-            />
-          </div>
-        </aside>*/}
+        </div>
+      </section>*/}
 
-        {/* CENTER FEED (keeps EXACT same dimension as before) */}
-        
-        <main className="w-full min-w-0 max-w-[1056px] shrink">
-          
-         {/* FULL-WIDTH (viewport) header banner (NO card) */}
-<div
-  className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-y border-slate-200 overflow-hidden"
-  style={{
-    //backgroundImage: "url(/images/Scholarship.png)", // <-- your banner
-    backgroundImage: "url(/images/Scholarship1.webp)",
-    backgroundSize: "cover",
-    backgroundPosition: "left center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-  {/* Strong readability overlay */}
-  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/55 to-slate-900/20" />
-
-  {/*<div className="relative z-10 mx-auto max-w-[1400px] px-4 py-3 md:py-4">
-    <div className="mx-auto max-w-[1056px]">
-      <h2
-        className="text-2xl md:text-3xl font-extrabold text-white leading-tight"*/}
-    <div className="relative z-10 mx-auto max-w-[1400px] px-3 sm:px-4 py-3 md:py-4">
-  <div className="mx-auto max-w-[1056px]">
-    <h2
-      className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white leading-tight"    
-        style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
-      >
-        Scholarships &amp; Funding Opportunities for International students
-      </h2>
-
-      <p
-        /*className="mt-2 text-sm md:text-base font-medium text-white/90"*/
-        className="mt-2 text-xs sm:text-sm md:text-base font-medium text-white/90 max-w-6xl"
-        style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
-      >
-        Explore verified scholarships and funding opportunities offered by universities,
-        foundations, governments, and accredited global providers.
-      </p>
+      {false && canShowAds && (
+  <section className="border-b border-slate-200 bg-white">
+    <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
+      <div className="mx-auto max-w-[970px]">
+        {/* Real Google AdSense component goes here */}
+      </div>
     </div>
-  </div>
-</div>
-          
+  </section>
+)}
 
-          {/* Optional subtle banner if you want to surface cache/dev mode */}
-          {usedFallback && (
-            <div className="mt-3 text-xs rounded border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800">
-              Showing cached scholarships for faster loading.
-            </div>
-          )}
+      {/* HERO */}
+      <section
+        className="relative border-b border-slate-200 bg-slate-900 bg-cover bg-center"
+        style={{ backgroundImage: "url(/images/Scholarship1.webp)" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/20" />
+        {/*<div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-8 lg:py-10">*/}
+          <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
+          <div className="max-w-3xl">
+            <h1
+  className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"
+  style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+>
+  Scholarships &amp; Funding Opportunities for International Students
+</h1>
+            <p
+  className="mt-3 text-sm sm:text-base font-medium text-white/90 whitespace-nowrap"
+  style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
+>
+  Explore verified scholarships and funding opportunities offered by universities, foundations, governments, and accredited global providers.
+</p>
+          </div>
 
-          {/* Controls */}
-          {/*<div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-7 gap-3 items-start">*/}
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-3 items-start">
-            <input
-              value={q}
-              onChange={(e) => {
-                setQ(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search by title, provider, country…"
-              /*className="w-full border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"*/
-              className="w-full min-w-0 border border-slate-300 rounded px-3 py-2 text-sm xl:col-span-2"
-            />
+          {/* Hero search bar */}
+          <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
+          {/*<div className="mt-4 rounded-xl border border-white/20 bg-white p-2 shadow-lg">*/}
+            <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(260px,1.7fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(150px,1fr)_120px]">
+              <input
+                value={q}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search by title, provider, country..."
+                /*className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"*/
+                className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
 
-            <select
-              value={continent}
-              onChange={(e) => {
-                setContinent(e.target.value);
-                setCountry("All");
-                setPage(1);
-              }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by continent"
-            >
-              {["All", ...CONTINENT_NAMES].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={country}
-              onChange={(e) => {
-                setCountry(e.target.value);
-                setPage(1);
-              }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by country"
-            >
-              {countryOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={field}
-              onChange={(e) => {
-                setField(e.target.value);
-                setPage(1);
-              }}
-              className="border border-slate-300 rounded px-3 py-2 text-sm"
-              aria-label="Filter by field of study"
-            >
-              {["All", ...FIELDS_OF_STUDY].map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-
-            {/* ⭐ Level multi-select as a compact dropdown */}
-            <div className="relative" data-level-popover>
-              <button
-                type="button"
-                onClick={() => setLevelOpen((o) => !o)}
-                /*className="w-full text-left text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 min-w-[160px] flex items-center justify-between gap-2"*/
-                className="w-full text-left text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 flex items-center justify-between gap-2"
-                aria-haspopup="menu"
-                aria-expanded={levelOpen ? "true" : "false"}
+              <select
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setPage(1);
+                }}
+                /*className="rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"*/
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                aria-label="Filter by country"
               >
-                <span>Level{levels.length ? ` (${levels.length})` : ""}</span>
-                <span className="text-slate-500">▾</span>
-              </button>
+                {countryOptions.map((c) => (
+                  <option key={c} value={c}>{c === "All" ? "All Countries" : c}</option>
+                ))}
+              </select>
 
-              {levelOpen && (
-                <div
-                  className="absolute z-30 mt-1 w-64 rounded border border-slate-200 bg-white shadow"
-                  role="menu"
-                  data-level-popover
+              <div className="relative" data-level-popover>
+                <button
+                  type="button"
+                  onClick={() => setLevelOpen((o) => !o)}
+                  /*className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-3 text-left text-sm outline-none hover:bg-slate-50"*/
+                  className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
+                  aria-haspopup="menu"
+                  aria-expanded={levelOpen ? "true" : "false"}
                 >
-                  <div className="max-h-64 overflow-auto p-2 space-y-1">
-                    {LEVEL_OPTIONS.map((opt) => {
-                      const checked = levels.includes(opt);
-                      return (
-                        <label
-                          key={opt}
-                          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            className="accent-blue-600"
-                            checked={checked}
-                            onChange={() => toggleLevel(opt)}
-                          />
-                          <span className="text-sm text-slate-700">{opt}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
+                  <span className="text-slate-500">▾</span>
+                </button>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
-                    <button
-                      type="button"
-                      onClick={() => setLevels([])}
-                      className="text-xs text-slate-600 underline"
-                    >
-                      Clear
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLevelOpen(false)}
-                      className="text-xs border border-slate-300 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      Done
-                    </button>
+                {levelOpen && (
+                  <div className="absolute z-30 mt-1 w-64 rounded-lg border border-slate-200 bg-white shadow" role="menu" data-level-popover>
+                    <div className="max-h-64 overflow-auto p-2 space-y-1">
+                      {LEVEL_OPTIONS.map((opt) => {
+                        const checked = levels.includes(opt);
+                        return (
+                          <label key={opt} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+                            <input type="checkbox" className="accent-blue-600" checked={checked} onChange={() => toggleLevel(opt)} />
+                            <span className="text-sm text-slate-700">{opt}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
+                      <button type="button" onClick={() => setLevels([])} className="text-xs text-slate-600 underline">Clear</button>
+                      <button type="button" onClick={() => setLevelOpen(false)} className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Done</button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/*</div><div className="flex gap-2 xl:col-span-2">*/}
-            <div className="flex flex-col sm:flex-row gap-2 xl:col-span-2">
               <select
                 value={funding}
                 onChange={(e) => {
                   setFunding(e.target.value);
                   setPage(1);
                 }}
-                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 aria-label="Funding type"
               >
                 {fundingOptions.map((f) => (
-                  <option key={f} value={f}>
-                    {f}
-                  </option>
+                  <option key={f} value={f}>{f === "All" ? "All Funding Types" : f}</option>
                 ))}
               </select>
 
-              <select
-                value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value);
-                  setPage(1);
-                }}
-                className="border border-slate-300 rounded px-3 py-2 text-sm flex-1"
-                aria-label="Sort by"
-              >
-                <option value="newest">Newest</option>
-                <option value="deadlineAsc">Deadline (soonest)</option>
-                <option value="deadlineDesc">Deadline (latest)</option>
-                <option value="title">Title (A–Z)</option>
-              </select>
-
-              <button
+              {/*<button
                 type="button"
-                onClick={resetFilters}
-                className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50"
+                onClick={() => setPage(1)}
+                className="rounded-lg bg-blue-700 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-800"
               >
-                Reset
-              </button>
+                Search
+              </button>*/}
+              <button
+  type="button"
+  onClick={() => setPage(1)}
+  className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
+>
+  Search
+</button>
             </div>
           </div>
-
-          {/* States */}
-          {/*{loading && <div className="mt-6 text-slate-600">Loading scholarships…</div>}*/}
-          {loading && baseItems.length === 0 && (
-  <div className="mt-6 text-slate-600">Loading scholarships…</div>
-)}
-          {err && <div className="mt-6 text-red-600">{err}</div>}
-          {!loading && !err && items.length === 0 && (
-            <div className="mt-6 text-slate-600">No scholarships found.</div>
-          )}
-
-          {/* List */}
-          <ul className="mt-6 grid gap-3">
-            {items.map((s) => {
-              const snippet = truncate(stripHtml(s.description || ""), 320);
-              const fundingStr = Array.isArray(s.fundingType)
-                ? s.fundingType.join(", ")
-                : s.fundingType || "";
-
-          const logo = s.providerLogoUrl || s.providerLogoData || "";      
-
-              return (
-                <li key={s.id} className="border border-slate-200 rounded-lg p-4 bg-white">
-                  <div className="flex flex-col gap-2">
-  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-    <div className="min-w-0 flex items-start gap-3 flex-1">
-      {logo ? (
-        <img
-          src={logo}
-          alt={`${s.provider || "Provider"} logo`}
-          className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      ) : null}
-
-      <div className="min-w-0">
-        <div className="text-base sm:text-lg font-semibold leading-snug">
-          {s.title}
         </div>
+      </section>
 
-        <div className="mt-1 text-sm sm:text-base leading-6">
-          {s.provider ? (
-            <span className="font-semibold text-[#46166B]">{s.provider}</span>
-          ) : null}
+      <div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">
+        {/* Optional subtle banner if you want to surface cache/dev mode */}
+        {usedFallback && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Showing cached scholarships for faster loading.
+          </div>
+        )}
 
-          {s.country ? (
-            <span className="font-semibold text-[#46166B]">{" • "}{s.country}</span>
-          ) : null}
-        </div>
-      </div>
-    </div>
-
-    <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-      {s.amount ? (
-        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-          Reward: {s.amount}
-        </div>
-      ) : null}
-
-      {s.deadline && (
-        <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
-      )}
-    </div>
-  </div>
-
-  {(s.level || s.field || fundingStr) ? (
-    <div className="w-full text-xs sm:text-sm text-slate-600 leading-6">
-      {s.level ? (
-        <span className="font-semibold text-purple-700">{s.level}</span>
-      ) : null}
-
-      {s.field ? (
-        <span className="font-semibold text-purple-700">
-          {s.level ? " • " : ""}
-          {s.field}
-        </span>
-      ) : null}
-
-      {fundingStr ? (
-        <span className="font-semibold text-blue-900">
-          {(s.level || s.field) ? " • " : ""}
-          {fundingStr}
-        </span>
-      ) : null}
-    </div>
-  ) : null}
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-                   {/*</li> {/*</div><div className="flex flex-col items-end gap-2 shrink-0">*/}
-                    {/*<div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
-                      {s.amount ? (
-                        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
-                          Reward: {s.amount}
-                        </div>
-                      ) : null}
-                      {s.deadline && (
-                        <div className="text-xs text-slate-500">Deadline: {s.deadline}</div>
-                      )}
-                    </div>
-                  </div>*/}
-
-                  {/* Description snippet */}
-                  {/*{snippet && <p className="mt-3 text-sm text-slate-700">{snippet}</p>}*/}
-                  {snippet && <p className="mt-3 text-sm leading-6 text-slate-700">{snippet}</p>}
-
-                  {/*<div className="mt-3 flex flex-wrap gap-2">*/}
-                  <div className="mt-3 flex flex-col sm:flex-row flex-wrap gap-2">
-                    {/*<Link
-                      to={`/scholarship/${s.id}`}
-                      className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"
-                    >
-                      View details
-                    </Link>*/}
-
-                  <Link
-                   to={`/scholarship/${s.id}`}
-                      onClick={() => trackScholarship(s.id, "view")}
-                      /*className="text-sm border border-slate-300 rounded px-3 py-1.5 hover:bg-slate-50"*/
-                      className="text-sm border border-slate-300 rounded px-3 py-2 hover:bg-slate-50 text-center"
-                    >
-                  View details
-                    </Link>
-
-
-                    {s.partnerApplyUrl && (
-                      <a
-                        href={s.partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        /*className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-1.5 hover:bg-blue-50"*/
-                        className="text-sm border border-blue-600 text-blue-600 rounded px-3 py-2 hover:bg-blue-50 text-center"
-                      >
-                        Apply on Provider site
-                      </a>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-2">
-              <button
-                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                Prev
-              </button>
-              <div className="text-sm text-slate-600">
-                Page {page} of {totalPages}
+        {/* FEATURED SCHOLARSHIPS */}
+        {featuredItems.length > 0 && (
+          <section className="mb-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-amber-500">★</span>
+                <h2 className="text-lg font-bold text-slate-900">Featured Scholarships</h2>
+                <span className="hidden text-sm text-slate-500 sm:inline">Hand-picked opportunities from global providers</span>
               </div>
-              <button
-                className="px-3 py-1.5 text-sm rounded border border-slate-300 disabled:opacity-50"
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
-                Next
+            </div>
+
+            {/*<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">*/}
+              <div className="flex gap-3 overflow-x-auto pb-2">
+              {featuredItems.map((s) => {
+                const logo = s.providerLogoUrl || s.providerLogoData || "";
+                const fundingStr = Array.isArray(s.fundingType) ? s.fundingType.join(", ") : s.fundingType || s.funding || "";
+                return (
+                 
+                    <article
+  key={`featured-${s.id}`}
+  /*className="w-[310px] shrink-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"*/
+  className="w-[calc((100%-36px)/4)] min-w-[310px] shrink-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+>
+                    <div className="flex items-start gap-3">
+                      {logo ? (
+                        <img
+                          src={logo}
+                          alt={`${s.provider || "Provider"} logo`}
+                          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
+                        />
+                      ) : (
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
+                          SK
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">{s.title}</h3>
+                        {s.provider && <p className="mt-1 truncate text-xs font-semibold text-slate-700">{s.provider}</p>}
+                        {s.country && <p className="mt-1 text-xs text-slate-600">{s.country}</p>}
+                      </div>
+                    </div>
+                    {fundingStr && (
+                      <div className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        {fundingStr}
+                      </div>
+                    )}
+                    <Link
+                      to={`/scholarship/${s.id}`}
+                      onClick={() => trackScholarship(s.id, "view")}
+                      className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
+                    >
+                      View details →
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
+          {/* LEFT PROMO / AD */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 rounded-xl border border-purple-100 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm">
+              <div className="mb-2 text-xs text-slate-400">Ad</div>
+              <h3 className="text-lg font-extrabold leading-6 text-purple-900">Dreaming of studying abroad?</h3>
+              <p className="mt-3 text-sm leading-6 text-slate-700">Find the best scholarships and make it happen.</p>
+              <button type="button" className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white">
+                Explore Now
               </button>
             </div>
-          )}
-        </main>
+          </aside>
 
-        {/* RIGHT ADS (hidden on small screens) */}
-        {/*<aside className="hidden xl:block w-[200px] shrink-0">
-          <div className="space-y-4">
-            {canShowAds && <GoogleSidebarAd />}
-            <div className="sticky top-[140px]">{canShowAds && <GoogleSidebarAd />}</div>
-          </div>
-        </aside>*/}
-      
-{/*<aside className="hidden xl:block w-[200px] shrink-0 mt-[150px]">
-  <GoogleSidebarAd
-    slot="2515946722"
-    enabled={canShowAds}
-    keepPlaceholder={true}
-    minHeight={450}
-  />
+          {/* MAIN LIST */}
+          <main className="min-w-0">
+            {/* Filter card */}
+            <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
+                <select
+                  value={continent}
+                  onChange={(e) => {
+                    setContinent(e.target.value);
+                    setCountry("All");
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  aria-label="Filter by continent"
+                >
+                  {["All", ...CONTINENT_NAMES].map((c) => (
+                    <option key={c} value={c}>{c === "All" ? "All Continents" : c}</option>
+                  ))}
+                </select>
 
-  <div
-    className="mt-8 sticky top-[280px] overflow-hidden"
-    style={{ maxHeight: "calc(100vh - 260px - 24px)" }}
+                <select
+                  value={country}
+                  onChange={(e) => {
+                    setCountry(e.target.value);
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  aria-label="Filter by country"
+                >
+                  {countryOptions.map((c) => (
+                    <option key={c} value={c}>{c === "All" ? "All Countries" : c}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={field}
+                  onChange={(e) => {
+                    setField(e.target.value);
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  aria-label="Filter by field of study"
+                >
+                  {["All", ...FIELDS_OF_STUDY].map((f) => (
+                    <option key={f} value={f}>{f === "All" ? "All Study Fields" : f}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={funding}
+                  onChange={(e) => {
+                    setFunding(e.target.value);
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  aria-label="Funding type"
+                >
+                  {fundingOptions.map((f) => (
+                    <option key={f} value={f}>{f === "All" ? "All Funding Types" : f}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={sort}
+                  onChange={(e) => {
+                    setSort(e.target.value);
+                    setPage(1);
+                  }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  aria-label="Sort by"
+                >
+                  <option value="newest">Sort by Newest</option>
+                  <option value="deadlineAsc">Deadline (soonest)</option>
+                  <option value="deadlineDesc">Deadline (latest)</option>
+                  <option value="title">Title (A–Z)</option>
+                </select>
+
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50"
+                >
+                  Reset
+                </button>
+              </div>
+            </section>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">All Scholarships</h2>
+                <p className="text-xs text-slate-500">{total} opportunities found</p>
+              </div>
+            </div>
+
+            {/* States */}
+            {loading && baseItems.length === 0 && (
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-slate-600">Loading scholarships…</div>
+            )}
+            {err && <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{err}</div>}
+            {!loading && !err && items.length === 0 && (
+              <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-slate-600">No scholarships found.</div>
+            )}
+
+            {/* List */}
+            <ul className="mt-3 grid gap-3">
+              {items.map((s, index) => {
+                const snippet = truncate(stripHtml(s.description || ""), 260);
+                const fundingStr = Array.isArray(s.fundingType)
+                  ? s.fundingType.join(", ")
+                  : s.fundingType || "";
+                const logo = s.providerLogoUrl || s.providerLogoData || "";
+
+                return (
+                  <Fragment key={s.id}>
+                    <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex flex-1 items-start gap-3">
+                          {logo ? (
+                            <img
+                              src={logo}
+                              alt={`${s.provider || "Provider"} logo`}
+                              className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1 sm:h-16 sm:w-16"
+                              loading="lazy"
+                              decoding="async"
+                              onError={(e) => { e.currentTarget.style.display = "none"; }}
+                            />
+                          ) : (
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-sm font-bold text-blue-700 sm:h-16 sm:w-16">
+                              SK
+                            </div>
+                          )}
+
+                          <div className="min-w-0">
+                            <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg">
+                              {s.title}
+                            </h3>
+
+                            <div className="mt-1 text-sm leading-6 text-slate-700">
+                              {s.provider ? <span className="font-semibold text-blue-950">{s.provider}</span> : null}
+                              {s.country ? <span className="font-semibold text-blue-950">{" • "}{s.country}</span> : null}
+                            </div>
+
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold">
+                              {s.level ? <span className="rounded-full bg-purple-50 px-3 py-1 text-purple-700">{s.level}</span> : null}
+                              {fundingStr ? <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">{fundingStr}</span> : null}
+                              {s.deadline ? <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">Deadline: {s.deadline}</span> : null}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+                          {s.amount ? (
+                            <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                              Reward: {s.amount}
+                            </div>
+                          ) : null}
+                          {s.createdAt ? (
+                            <div className="text-xs text-slate-500">
+                              Posted: {new Date(s.createdAt).toLocaleDateString()}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      {snippet && <p className="mt-3 text-sm leading-6 text-slate-700">{snippet}</p>}
+
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <Link
+                          to={`/scholarship/${s.id}`}
+                          onClick={() => trackScholarship(s.id, "view")}
+                          className="rounded-lg border border-blue-200 px-4 py-2 text-center text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                        >
+                          View Details
+                        </Link>
+
+                        {s.partnerApplyUrl && (
+                          <a
+                            href={s.partnerApplyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-blue-800"
+                          >
+                            Apply on Provider Site ↗
+                          </a>
+                        )}
+                      </div>
+                    </li>
+
+                    {/*{canShowAds && index === 1 && (
+                      <li className="rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center text-xs text-slate-500">
+                        <div className="uppercase tracking-wide">Advertisement</div>
+                        <div className="mt-1 text-sm font-semibold text-slate-600">Google AdSense Responsive Banner</div>
+                        <div className="mt-1">728 × 90 / responsive</div>
+                      </li>
+                    )}*/}
+                    {false && canShowAds && index === 1 && (
+                               <li>
+                             {/* Real Google AdSense component goes here */}
+                                      </li>
+                            )}
+                  </Fragment>
+                );
+              })}
+            </ul>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-2">
+                <button
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  Prev
+                </button>
+                <div className="text-sm text-slate-600">Page {page} of {totalPages}</div>
+                <button
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </main>
+
+          {/* RIGHT SIDEBAR */}
+          <aside className="hidden xl:block">
+            <div className="space-y-4">
+              <div className="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm">
+                <div className="mb-2 text-xs text-slate-400">Ad</div>
+                <h3 className="text-lg font-extrabold leading-6 text-purple-900">Your future starts here.</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-700">Hundreds of fully funded scholarships are waiting for you.</p>
+                <button type="button" className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white">
+                  Find Scholarships
+                </button>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900">Popular Study Destinations</h3>
+                <div className="mt-3 space-y-2">
+                  {popularDestinations.map((item) => (
+  <button
+    key={item.name}
+    type="button"
+    onClick={() => {
+      setCountry(item.name);
+
+      const inferred =
+        COUNTRY_TO_CONTINENT[item.name.toLowerCase()];
+
+      if (inferred) setContinent(inferred);
+
+      setPage(1);
+    }}
+    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
   >
-    <GoogleSidebarAd
-      slot="2515946722"
-      enabled={canShowAds}
-      keepPlaceholder={true}
-      minHeight={450}
+    <img
+      src={item.flag}
+      alt={item.name}
+      className="h-5 w-8 rounded border border-slate-200 object-cover"
+      loading="lazy"
     />
-  </div>
-</aside>*/}
 
+    <span>Study in {item.name}</span>
+    
+  </button>
+))}
+                </div>
+              </div>
 
-
-
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <h3 className="text-sm font-bold text-slate-900">Latest Scholarship Tips</h3>
+                <div className="mt-3 space-y-3 text-sm">
+                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
+                    How to Write a Winning SOP
+                  </Link>
+                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
+                    How to Get Strong Recommendation Letters
+                  </Link>
+                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
+                    Top Tips to Apply for Fully Funded Scholarships
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );

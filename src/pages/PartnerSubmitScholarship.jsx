@@ -272,6 +272,8 @@ async function optimizeImageFile(
 export default function PartnerSubmitScholarship() {
   const [form, setForm] = useState({
   contentType: "SCHOLARSHIP",
+  featured: false,
+  featuredLevel: "STANDARD",
   title: "",
   provider: "",
   continent: "All",
@@ -851,6 +853,8 @@ if (form.deadlineMode === "single") {
   const payload = {
   //contentType: "SCHOLARSHIP",
   contentType: form.contentType || "SCHOLARSHIP",
+  featured: Boolean(form.featured),
+  featuredLevel: form.featuredLevel || "STANDARD",
   title: form.title,
   provider: form.provider,
   country: form.country,
@@ -925,6 +929,8 @@ if (form.deadlineMode === "single") {
   function resetFormAndEditors() {
     setForm({
   contentType: "SCHOLARSHIP",
+  featured: false,
+  featuredLevel: "STANDARD",
   title: "",
   provider: "",
   continent: "All",
@@ -1018,6 +1024,7 @@ link: "",
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <label className="block">
       <div className="text-sm font-medium">Listing Type *</div>
+
       <select
         name="contentType"
         value={form.contentType}
@@ -1028,6 +1035,34 @@ link: "",
         <option value="FELLOWSHIP">Fellowship</option>
       </select>
     </label>
+
+    <label className="block">
+  <div className="text-sm font-medium">Promotion Type</div>
+
+  <select
+    name="featuredLevel"
+    value={form.featuredLevel}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      setForm((f) => ({
+        ...f,
+        featuredLevel: value,
+        featured: value !== "STANDARD",
+      }));
+    }}
+    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  >
+    <option value="STANDARD">Standard Listing</option>
+    <option value="FEATURED">Featured Scholarship</option>
+    <option value="PREMIUM_FEATURED">Premium Featured</option>
+  </select>
+
+  <p className="mt-1 text-xs text-slate-500">
+    Featured listings can appear in the Featured Scholarships section.
+  </p>
+</label>
+
                 <label className="block">
                   {/*<div className="text-sm font-medium">Scholarship Title *</div>*/}
                   <div className="text-sm font-medium">
