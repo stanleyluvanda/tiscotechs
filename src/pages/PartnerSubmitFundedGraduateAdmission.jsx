@@ -297,6 +297,8 @@ export default function PartnerSubmitFundedGraduateAdmission() {
     // ✅ include these from the start
     providerLogoUrl: "",
     providerLogoData: "",
+    featured: false,
+    featuredLevel: "STANDARD",
   });
 
   const [msg, setMsg] = useState("");
@@ -819,6 +821,8 @@ let finalDeadline = "";
       providerLogoData: form.providerLogoData || "",
 
       partnerEmail: String(partnerEmail),
+      featured: Boolean(form.featured),
+      featuredLevel: form.featuredLevel || "STANDARD",
       createdAt: Date.now(),
       status: "pending",
     };
@@ -890,6 +894,8 @@ let finalDeadline = "";
       imageData: "",
       providerLogoUrl: "",
       providerLogoData: "",
+      featured: false,
+      featuredLevel: "STANDARD",
     });
 
     setImgPreview("");
@@ -972,6 +978,32 @@ let finalDeadline = "";
                     className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
                   />
                 </label>
+                <label className="block">
+  <div className="text-sm font-medium">Promotion Type</div>
+
+  <select
+    name="featuredLevel"
+    value={form.featuredLevel}
+    onChange={(e) => {
+      const value = e.target.value;
+
+      setForm((f) => ({
+        ...f,
+        featuredLevel: value,
+        featured: value !== "STANDARD",
+      }));
+    }}
+    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
+  >
+    <option value="STANDARD">Standard Listing</option>
+    <option value="FEATURED">Featured Opportunity</option>
+    <option value="PREMIUM_FEATURED">Premium Featured</option>
+  </select>
+
+  <p className="mt-1 text-xs text-slate-500">
+    Featured opportunities can appear in the Featured University-Funded Opportunities section after admin approval.
+  </p>
+</label>
 
                 <label className="block">
                   <div className="text-sm font-medium">Continent</div>

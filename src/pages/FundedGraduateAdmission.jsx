@@ -440,117 +440,147 @@ const popularDestinations = [
             className="mt-3 max-w-6xl text-sm sm:text-base font-medium text-white/90 lg:whitespace-nowrap"
             style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
           >
-            Find universities and academic programs where admitted students may be considered for grants, assistantships, tuition waivers, and financial aid.
+            Find universities and academic programs where admitted students may be automatically considered for University grants, assistantships, tuition waivers, scholarships,and financial aid.
           </p>
         </div>
 
         <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
-          <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(260px,1.7fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(150px,1fr)_120px]">
-            <input
-              value={q}
-              onChange={(e) => {
-                setQ(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search university, program, country..."
-              className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
+  <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">
+    <input
+      value={q}
+      onChange={(e) => {
+        setQ(e.target.value);
+        setPage(1);
+      }}
+      placeholder="Search university, program, country..."
+      className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    />
 
-            <select
-              value={country}
-              onChange={(e) => {
-                setCountry(e.target.value);
-                setPage(1);
-              }}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              {countryOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c === "All" ? "All Countries" : c}
-                </option>
-              ))}
-            </select>
+    <select
+      value={continent}
+      onChange={(e) => {
+        setContinent(e.target.value);
+        setCountry("All");
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {["All", ...CONTINENT_NAMES].map((c) => (
+        <option key={c} value={c}>
+          {c === "All" ? "All Continents" : c}
+        </option>
+      ))}
+    </select>
 
-            <div className="relative" data-level-popover>
-              <button
-                type="button"
-                onClick={() => setLevelOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
-              >
-                <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
-                <span className="text-slate-500">▾</span>
-              </button>
+    <select
+      value={country}
+      onChange={(e) => {
+        setCountry(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {countryOptions.map((c) => (
+        <option key={c} value={c}>
+          {c === "All" ? "All Countries" : c}
+        </option>
+      ))}
+    </select>
 
-              {levelOpen && (
-                <div
-                  className="absolute z-30 mt-1 w-full sm:w-64 rounded-lg border border-slate-200 bg-white shadow"
-                  role="menu"
-                  data-level-popover
+    <div className="relative" data-level-popover>
+      <button
+        type="button"
+        onClick={() => setLevelOpen((o) => !o)}
+        className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
+      >
+        <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
+        <span className="text-slate-500">▾</span>
+      </button>
+
+      {levelOpen && (
+        <div
+          className="absolute z-30 mt-1 w-full sm:w-64 rounded-lg border border-slate-200 bg-white shadow"
+          role="menu"
+          data-level-popover
+        >
+          <div className="max-h-64 overflow-auto p-2 space-y-1">
+            {LEVEL_OPTIONS.map((opt) => {
+              const checked = levels.includes(opt);
+              return (
+                <label
+                  key={opt}
+                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
                 >
-                  <div className="max-h-64 overflow-auto p-2 space-y-1">
-                    {LEVEL_OPTIONS.map((opt) => {
-                      const checked = levels.includes(opt);
-                      return (
-                        <label
-                          key={opt}
-                          className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                        >
-                          <input
-                            type="checkbox"
-                            className="accent-blue-600"
-                            checked={checked}
-                            onChange={() => toggleLevel(opt)}
-                          />
-                          <span className="text-sm text-slate-700">{opt}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
+                  <input
+                    type="checkbox"
+                    className="accent-blue-600"
+                    checked={checked}
+                    onChange={() => toggleLevel(opt)}
+                  />
+                  <span className="text-sm text-slate-700">{opt}</span>
+                </label>
+              );
+            })}
+          </div>
 
-                  <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
-                    <button
-                      type="button"
-                      onClick={() => setLevels([])}
-                      className="text-xs text-slate-600 underline"
-                    >
-                      Clear
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLevelOpen(false)}
-                      className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
-                    >
-                      Done
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <select
-              value={funding}
-              onChange={(e) => {
-                setFunding(e.target.value);
-                setPage(1);
-              }}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              {fundingOptions.map((f) => (
-                <option key={f} value={f}>
-                  {f === "All" ? "All Funding Types" : f}
-                </option>
-              ))}
-            </select>
-
+          <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
             <button
               type="button"
-              onClick={() => setPage(1)}
-              className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
+              onClick={() => setLevels([])}
+              className="text-xs text-slate-600 underline"
             >
-              Search
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setLevelOpen(false)}
+              className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+            >
+              Done
             </button>
           </div>
         </div>
+      )}
+    </div>
+
+    <select
+      value={funding}
+      onChange={(e) => {
+        setFunding(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {fundingOptions.map((f) => (
+        <option key={f} value={f}>
+          {f === "All" ? "All Funding Types" : f}
+        </option>
+      ))}
+    </select>
+
+    <select
+      value={sort}
+      onChange={(e) => {
+        setSort(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      <option value="newest">Sort by Newest</option>
+      <option value="deadlineAsc">Deadline (soonest)</option>
+      <option value="deadlineDesc">Deadline (latest)</option>
+      <option value="title">Title (A–Z)</option>
+    </select>
+
+    <button
+      type="button"
+      onClick={resetFilters}
+      className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
+    >
+      Reset
+    </button>
+  </div>
+</div>
       </div>
     </section>
 
@@ -660,7 +690,7 @@ const popularDestinations = [
         </aside>
 
         <main className="min-w-0">
-          <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          {/*<section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
               <select
                 value={continent}
@@ -745,7 +775,12 @@ const popularDestinations = [
                 Reset
               </button>
             </div>
-          </section>
+          </section>*/}
+          {false && canShowAds && (
+  <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    {/* Real Google AdSense responsive banner goes here */}
+  </section>
+)}
 
           <div className="mt-4">
             <h2 className="text-base font-bold text-slate-900">

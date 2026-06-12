@@ -289,6 +289,7 @@ export default function FundedGraduateAdmissionDetail() {
   const [showBanner, setShowBanner] = useState(false);
   const [recs, setRecs] = useState([]);
   const [showAllProgramTips, setShowAllProgramTips] = useState(false);
+  const canShowAds = false;
 
   // Track interactions (same endpoint, separate gate key namespace)
   const trackItem = (sid, type) => {
@@ -487,9 +488,21 @@ export default function FundedGraduateAdmissionDetail() {
       `}</style>
 
       <div className="flex-1">
-        <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 lg:px-5">
+        {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 lg:px-5">
           <div className="mx-auto w-full max-w-[1120px]">
-            <main className="min-w-0 w-full">
+            <main className="min-w-0 w-full">*/}
+              <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
+  <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
+    <aside className="hidden xl:block">
+      {canShowAds && (
+        <div className="sticky top-24 min-h-[600px] rounded-2xl border border-slate-200 bg-white p-3">
+          {/* Left responsive Google AdSense */}
+        </div>
+      )}
+    </aside>
+
+    <main className="min-w-0 w-full">
+              
               <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-8 sm:pt-10 lg:pt-12 pb-2">
                 <Link
                   to="/funded-graduate-admission"
@@ -525,7 +538,7 @@ export default function FundedGraduateAdmissionDetail() {
                     </div>
 
                     {/* Desktop / tablet existing layout */}
-                    {logo ? (
+                    {/*{logo ? (
                       <img
                         src={logo}
                         alt={`${provider || "University"} logo`}
@@ -536,7 +549,7 @@ export default function FundedGraduateAdmissionDetail() {
                           e.currentTarget.style.display = "none";
                         }}
                       />
-                    ) : null}
+                    ) : null}*/}
 
                     <div className="min-w-0">
                       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
@@ -790,15 +803,17 @@ export default function FundedGraduateAdmissionDetail() {
                           title="Click to enlarge"
                         >
                           <img
-                            src={bannerSrc}
-                            alt={`${provider || title} banner`}
+                            /*src={bannerSrc}
+                            alt={`${provider || title} banner`}*/
+                            src={logo || bannerSrc}
+                            alt={`${provider || "University"} logo`}
                             className="w-full h-auto object-contain bg-white"
                             loading="lazy"
                             decoding="async"
                           />
                         </button>
                         <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-                          Click image to enlarge
+                          {/*Click image to enlarge*/}
                         </div>
                       </div>
                     )}
@@ -849,7 +864,14 @@ export default function FundedGraduateAdmissionDetail() {
                       </div>
                     </div>
 
-                    {recs.length > 0 && (
+                    {/* Sidebar Google Ad */}
+{canShowAds && (
+  <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
+    {/* Google AdSense 300x250 sidebar ad */}
+  </div>
+)}
+
+                    {/*{recs.length > 0 && (
                       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
                         <div className="bg-slate-100 px-5 py-4">
                           <h4 className="text-lg font-bold text-slate-900 text-center">
@@ -875,11 +897,91 @@ export default function FundedGraduateAdmissionDetail() {
                           })}
                         </div>
                       </div>
-                    )}
+                    )}*/}
+
+                    {recs.filter(
+  (s) =>
+    s.featured === true ||
+    s.featuredLevel === "FEATURED" ||
+    s.featuredLevel === "PREMIUM_FEATURED"
+).length > 0 && (
+  <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-slate-100 px-5 py-4">
+      <h4 className="text-base font-bold text-slate-900 text-center">
+        Featured University-Funded Opportunities
+      </h4>
+    </div>
+
+    <div className="divide-y divide-slate-200">
+      {recs
+        .filter(
+          (s) =>
+            s.featured === true ||
+            s.featuredLevel === "FEATURED" ||
+            s.featuredLevel === "PREMIUM_FEATURED"
+        )
+        .slice(0, 5)
+        .map((s, idx) => {
+          const sid = getAnyId(s) || String(idx);
+          const label = s?.title || "Untitled opportunity";
+          const logoSrc =
+            s.providerLogoUrl ||
+            s.providerLogoData ||
+            s.imageUrl ||
+            s.imageData ||
+            "";
+
+          return (
+            <Link
+              key={sid}
+              to={`/funded-graduate-admission/${encodeURIComponent(sid)}`}
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }, 0);
+              }}
+              className="flex items-center gap-3 px-4 sm:px-5 py-4 text-emerald-700 hover:bg-slate-50"
+            >
+              {logoSrc ? (
+                <img
+                  src={logoSrc}
+                  alt={s.provider || label}
+                  className="h-10 w-10 shrink-0 rounded border border-slate-200 bg-white object-contain p-1"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-200 bg-emerald-50 text-xs font-bold text-emerald-700">
+                  SK
+                </div>
+              )}
+
+              <span className="text-sm font-semibold leading-snug break-words">
+              {label}
+                </span>
+            </Link>
+          );
+        })}
+    </div>
+  </div>
+)}
+
+
+
+
                   </aside>
                 </div>
               </div>
             </main>
+            <aside className="hidden xl:block">
+      {canShowAds && (
+        <div className="sticky top-24 min-h-[600px] rounded-2xl border border-slate-200 bg-white p-3">
+          {/* Right responsive Google AdSense */}
+        </div>
+      )}
+    </aside>
+  
+      
           </div>
         </div>
       </div>
@@ -924,6 +1026,79 @@ export default function FundedGraduateAdmissionDetail() {
           </div>
         </div>
       )}
+
+      {/* You may also like */}
+{recs.length > 0 && (
+  /*<section className="mt-10">*/
+  <section className="mt-12 border-t border-slate-200 pt-8">
+    {/*<div className="mb-4">*/}
+      <div className="mb-6 text-center">
+      {/*<h2 className="text-2xl font-bold text-slate-900">*/}
+      <h2 className="text-3xl font-bold text-slate-900">
+        You may also like
+      </h2>
+      <p className="text-sm text-slate-500">
+        Similar funded admission opportunities
+      </p>
+    </div>
+
+    {/*<div className="flex gap-4 overflow-x-auto pb-3">*/}
+    <div className="flex gap-3 overflow-x-auto pb-4 px-1">
+      {recs.slice(0, 6).map((r) => {
+        const sid = getAnyId(r);
+        const recBanner =
+          r.imageUrl ||
+          r.imageData ||
+          r.providerLogoUrl ||
+          r.providerLogoData ||
+          "";
+
+        return (
+          
+            <Link
+  key={sid}
+  to={`/funded-graduate-admission/${sid}`}
+  onClick={() => {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 0);
+  }}
+  className="w-[260px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+>
+            {recBanner && (
+              <img
+                src={recBanner}
+                alt={r.title}
+                /*className="h-44 w-full object-cover"*/
+                className="h-32 w-full object-cover"
+              />
+            )}
+
+            {/*<div className="p-4">*/}
+              <div className="p-3">
+              {/*<h3 className="line-clamp-2 font-bold text-slate-900">*/}
+                <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
+                {r.title}
+              </h3>
+
+              {/*<p className="mt-2 text-sm text-slate-600">*/}
+              <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600">
+                {r.provider}
+                {r.country ? ` • ${r.country}` : ""}
+              </p>
+
+              {r.amount && (
+                <div className="mt-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  {r.amount}
+                </div>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  </section>
+)}
 
       <Footer />
     </div>

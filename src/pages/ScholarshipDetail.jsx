@@ -762,7 +762,7 @@ const res = await fetch(
 
   {/* DESKTOP EXACTLY AS BEFORE */}
   <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 min-w-0 flex-1">
-    {logo ? (
+    {/*{logo ? (
       <img
         src={logo}
         alt={`${provider || "Provider"} logo`}
@@ -773,7 +773,7 @@ const res = await fetch(
           e.currentTarget.style.display = "none";
         }}
       />
-    ) : null}
+    ) : null}*/}
 
     <div className="min-w-0 flex-1">
       <h1 className="text-2xl font-bold leading-snug break-words">
@@ -884,6 +884,30 @@ const res = await fetch(
         </section>
       )}
 
+      {bannerSrc && (
+  <section className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+    <button
+      type="button"
+      onClick={() => setShowBanner(true)}
+      className="block w-full text-left"
+    >
+      <img
+        src={bannerSrc}
+        alt={`${provider || title} banner`}
+        className="w-full h-auto object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+    </button>
+  </section>
+)}
+
+
+
+
+
+
+
       {description && (
         <section>
           <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
@@ -973,7 +997,7 @@ const res = await fetch(
       )}
     </div>
 
-    <aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
+    {/*<aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
       {bannerSrc && (
         <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
           <button
@@ -994,7 +1018,19 @@ const res = await fetch(
             Click image to enlarge
           </div>
         </div>
-      )}
+      )}*/}
+      <aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
+  {logo && (
+    <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+      <img
+        src={logo}
+        alt={`${provider || title} logo`}
+        className="w-full h-auto object-contain bg-white p-6"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  )}
 
       <div className="rounded-2xl bg-white border border-slate-200 p-5">
         <h3 className="text-base font-semibold -mx-5 -mt-5 mb-4">
@@ -1135,7 +1171,7 @@ const res = await fetch(
     </aside>
   </div>
 
-  {recs.length > 0 && (
+  {/*{recs.length > 0 && (
     <section className="mt-10 rounded-2xl bg-white border border-slate-200 overflow-hidden">
       <div className="bg-slate-100 px-5 py-4">
         <h4 className="text-lg font-bold text-slate-900">
@@ -1149,16 +1185,6 @@ const res = await fetch(
           const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
 
           return (
-            /*<Link
-              key={sid}
-              to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-              className="w-[260px] shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-3 text-emerald-700 hover:bg-slate-50"
-            >
-              <span className="font-semibold text-sm leading-6">
-                {label}
-              </span>
-            </Link>*/
-
             <Link
   key={sid}
   to={`${detailBasePath}/${encodeURIComponent(sid)}`}
@@ -1205,7 +1231,72 @@ const res = await fetch(
         })}
       </div>
     </section>
-  )}
+  )}*/}
+  {recs.length > 0 && (
+  <section className="mt-12 border-t border-slate-200 pt-8 w-full">
+    <div className="mb-6 text-center">
+      <h4 className="text-2xl font-bold text-slate-900">
+        You may also like the following programs
+      </h4>
+    </div>
+
+    <div className="flex gap-3 overflow-x-auto pb-4 px-1">
+      {recs.map((s, idx) => {
+        const sid = getAnyId(s) || String(idx);
+        const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
+        const recImage =
+          s.imageUrl ||
+          s.imageData ||
+          s.providerLogoUrl ||
+          s.providerLogoData ||
+          "";
+
+        return (
+          <Link
+            key={sid}
+            to={`${detailBasePath}/${encodeURIComponent(sid)}`}
+            className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            {recImage && (
+              <img
+                src={recImage}
+                alt={label}
+                className="h-32 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+
+            <div className="p-3">
+              <h5 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
+                {label}
+              </h5>
+
+              {s.country && (
+                <p className="mt-2 line-clamp-1 text-xs text-slate-500">
+                  {s.country}
+                </p>
+              )}
+
+              {Array.isArray(s.fundingType) && s.fundingType.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {s.fundingType.slice(0, 2).map((f) => (
+                    <span
+                      key={f}
+                      className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  </section>
+)}
 </div>
 
             </main>
@@ -1214,6 +1305,7 @@ const res = await fetch(
           </div>
         </div>
       </div>
+      
 
       {showBanner && (
         <div
