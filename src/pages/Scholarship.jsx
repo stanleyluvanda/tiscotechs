@@ -460,7 +460,8 @@ const trackScholarship = (id, type) => {
 ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-10">
+    /*<div className="min-h-screen bg-slate-50 pb-10">*/
+      <div className="min-h-screen bg-slate-50 pb-10 overflow-x-hidden">
       {/* TOP ADSENSE BANNER AREA */}
       {/*<section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
@@ -494,13 +495,15 @@ const trackScholarship = (id, type) => {
           <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
           <div className="max-w-3xl">
             <h1
-  className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"
+  /*className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"*/
+  className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white"
   style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
 >
   Scholarships &amp; Funding Opportunities for International Students
 </h1>
             <p
-  className="mt-3 text-sm sm:text-base font-medium text-white/90 whitespace-nowrap"
+  /*className="mt-3 text-sm sm:text-base font-medium text-white/90 whitespace-nowrap"*/
+  className="mt-3 text-sm sm:text-base font-medium text-white/90"
   style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
 >
   Explore verified scholarships and funding opportunities offered by universities, foundations, governments, and accredited global providers.
