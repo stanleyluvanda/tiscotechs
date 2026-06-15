@@ -2550,6 +2550,12 @@ setPostsIfChanged((prev) => {
   if (sort === "Newest") sorted.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   if (sort === "Answered")
     sorted.sort((a, b) => b._answers - a._answers || (b.createdAt || 0) - (a.createdAt || 0));
+  const activeTopicBarLabel =
+  selectedTopic !== "All"
+    ? selectedTopic
+    : selectedCategory !== "All"
+    ? selectedCategory
+    : "";
 
   /* Collapsible inline composer for comments/replies (controlled) */
 function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, setIsOpen }) {
@@ -3412,6 +3418,15 @@ const byParent = allComments.reduce((acc, c) => {
               </div>
             </div>
           </Card>
+
+          {activeTopicBarLabel && (
+  <div className="mb-3 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center shadow-sm">
+    <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
+      <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
+      <span>{activeTopicBarLabel}</span>
+    </div>
+  </div>
+)}
 
           {sorted.map((post) => (
             <Card
