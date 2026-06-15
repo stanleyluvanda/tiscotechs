@@ -604,7 +604,8 @@ const popularDestinations = [
       </div>
     </section>
 
-    <div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">
+    {/*</div><div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">*/}
+    <div className="mx-auto max-w-[1400px] px-0 sm:px-4 pt-6">
       {usedFallback && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
           Showing cached opportunities for faster loading.
@@ -612,7 +613,7 @@ const popularDestinations = [
       )}
 
       {featuredItems.length > 0 && (
-        <section className="mb-5">
+      <section className="mb-5 px-3 sm:px-0">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-amber-500">★</span>
             <h2 className="text-lg font-bold text-slate-900">
@@ -896,7 +897,8 @@ const popularDestinations = [
   </section>
 )}
 
-          <div className="mt-4">
+          {/*<div className="mt-4">*/}
+            <div className="mt-4 px-3 sm:px-0">
             <h2 className="text-base font-bold text-slate-900">
               Explore university-funded opportunities offering scholarships, tuition waivers, assistantships, research funding, university grants, and partial or full financial support for international students
             </h2>
@@ -932,7 +934,8 @@ const popularDestinations = [
 return (
   <li
     key={s.id}
-    className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+    /*className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"*/
+    className="rounded-none border-y border-x-0 border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-4"
   >
     <div className="flex flex-col gap-4">
       {/* TOP ROW: logo, title, provider, funding badge */}
