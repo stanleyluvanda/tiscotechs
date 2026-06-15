@@ -2673,6 +2673,12 @@ setPosts(remoteNorm);
   if (sort === "Top") sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
   if (sort === "Newest") sorted.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   if (sort === "Answered") sorted.sort((a, b) => b._answers - a._answers || (b.createdAt || 0) - (a.createdAt || 0));
+  const activeTopicBarLabel =
+  selectedTopic !== "All"
+    ? selectedTopic
+    : selectedCategory !== "All"
+    ? selectedCategory
+    : "";
 
   /* Collapsible inline composer for comments/replies */
 function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, setIsOpen }) {
@@ -3411,6 +3417,15 @@ const byParent = visibleComments.reduce((acc, c) => {
                 <div className="p-4 text-sm text-slate-600">Loading posts…</div>
               </Card>
             )}
+
+            {activeTopicBarLabel && (
+  <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">
+    <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
+      <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
+      <span>{activeTopicBarLabel}</span>
+    </div>
+  </div>
+)}
 
             {sorted.map((post) => (
               <Card key={post.id} className="p-0" ref={(el) => el && (postRefs.current[post.id] = el)}>
