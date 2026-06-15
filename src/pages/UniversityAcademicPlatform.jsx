@@ -3420,7 +3420,9 @@ const byParent = allComments.reduce((acc, c) => {
           </Card>
 
           {activeTopicBarLabel && (
-  <div className="mb-3 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center shadow-sm">
+  /*<div className="mb-3 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center shadow-sm">*/
+  /*<div className="-mt-2 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">*/
+    <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">
     <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
       <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
       <span>{activeTopicBarLabel}</span>
