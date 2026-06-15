@@ -800,7 +800,8 @@ export default function FundedGraduateAdmissionDetail() {
 
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
-                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+                      /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/
+                         <div className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -812,7 +813,8 @@ export default function FundedGraduateAdmissionDetail() {
                             alt={`${provider || title} banner`}*/
                             src={logo || bannerSrc}
                             alt={`${provider || "University"} logo`}
-                            className="w-full h-auto object-contain bg-white"
+                            /*className="w-full h-auto object-contain bg-white"*/
+                            className="block w-full h-auto object-contain bg-white"
                             loading="lazy"
                             decoding="async"
                           />
