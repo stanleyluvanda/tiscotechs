@@ -512,8 +512,10 @@ export default function FundedGraduateAdmissionDetail() {
                 </Link>
               </div>
 
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">
+              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">*/}
+              <div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
+                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">*/}
+                <div className="rounded-none sm:rounded-2xl bg-slate-50 border-x-0 sm:border border-slate-200/60 shadow-none p-3 sm:p-5 lg:p-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Mobile only: logo + university name */}
                     <div className="flex items-center gap-3 sm:hidden">
@@ -632,11 +634,13 @@ export default function FundedGraduateAdmissionDetail() {
                 </div>
               </div>
 
+              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">*/}
               <div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
                 <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-5 lg:gap-6">
                   <div className="min-w-0 space-y-3 lg:space-y-2">
                     {description && (
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+                      /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">*/
+                        <section className="rounded-none sm:rounded-2xl bg-slate-50 border border-transparent shadow-none px-3 sm:px-5 lg:px-6 py-3">
                         <h2
                           className="text-2xl font-semibold text-[#4B1F6F]"
                           style={{ fontFamily: '"Times New Roman", Times, serif' }}
@@ -650,7 +654,8 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
 
                     {bannerSrc && (
-                      <section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">
+                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">*/
+                        <section className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden mx-0 sm:mx-5 lg:mx-6">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
