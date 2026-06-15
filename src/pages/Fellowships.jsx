@@ -386,7 +386,8 @@ const popularDestinations = [
 ];
 
   return (
-     <div className="min-h-screen bg-slate-50 pb-10">
+     /*<div className="min-h-screen bg-slate-50 pb-10">*/
+    <div className="min-h-screen bg-slate-50 pb-10 overflow-x-hidden">
     {false && canShowAds && (
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
@@ -407,14 +408,16 @@ const popularDestinations = [
       <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
         <div className="max-w-5xl">
           <h1
-            className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"
+            /*className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"*/
+            className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
           >
             Fellowships &amp; Funding Opportunities for International Students
           </h1>
 
           <p
-            className="mt-3 text-sm sm:text-base font-medium text-white/90 whitespace-nowrap"
+            /*className="mt-3 text-sm sm:text-base font-medium text-white/90 whitespace-nowrap"*/
+            className="mt-3 text-sm sm:text-base font-medium text-white/90"
             style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
           >
             Explore verified fellowships and funding opportunities offered by universities, foundations, governments, and accredited global providers.
@@ -562,7 +565,8 @@ const popularDestinations = [
       </div>
     </section>
 
-    <div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">
+    {/*</div><div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">*/}
+      <div className="mx-auto max-w-[1400px] px-0 sm:px-4 pt-6">
       {usedFallback && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
           Showing cached fellowships for faster loading.
@@ -571,7 +575,8 @@ const popularDestinations = [
 
       {/* FEATURED FELLOWSHIPS */}
       {featuredItems.length > 0 && (
-        <section className="mb-5">
+        /*<section className="mb-5">*/
+          <section className="mb-5 px-3 sm:px-0">
           <div className="mb-3 flex items-center gap-2">
             <span className="text-amber-500">★</span>
             <h2 className="text-lg font-bold text-slate-900">Featured & Sponsored Fellowships</h2>
@@ -806,7 +811,8 @@ const popularDestinations = [
             <h2 className="text-base font-bold text-slate-900">All Fellowships</h2>
             <p className="text-xs text-slate-500">{total} opportunities found</p>
           </div>*/}
-          <div className="mt-4">
+          {/*<div className="mt-4">*/}
+        <div className="mt-4 px-3 sm:px-0">
   <h2 className="text-base font-bold text-slate-900">
     Explore all fellowship programs for your academic and career development:
     <span className="ml-2 text-sm font-normal text-slate-500">
@@ -842,7 +848,8 @@ const popularDestinations = [
               const logo = s.providerLogoUrl || s.providerLogoData || "";
 
               return (
-                <li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+                /*<li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">*/
+                  <li key={s.id} className="rounded-none border-y border-x-0 border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0 flex flex-1 items-start gap-3">
                       {logo ? (
