@@ -702,7 +702,8 @@ const res = await fetch(
     `}</style>
 
       <div className="flex-1">
-  <div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">
+  {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">*/}
+  <div className="mx-auto w-full max-w-[1400px] px-0 sm:px-4">
     <div className="mx-auto w-full max-w-[1024px]">
       <main className="min-w-0">
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
@@ -720,8 +721,10 @@ const res = await fetch(
 </Link>
               </div>
 
-              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">
+              {/*<div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">*/}
+              <div className="max-w-5xl mx-auto px-0 sm:px-4 pt-6 sm:pt-10 pb-4 sm:pb-6">
+                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">*/}
+                <div className="rounded-none sm:rounded-2xl bg-slate-50 border-y border-x-0 sm:border border-slate-200/40 shadow-none p-3 sm:p-6">
                  
                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
   {/* MOBILE ONLY */}
@@ -885,7 +888,8 @@ const res = await fetch(
       )}
 
       {bannerSrc && (
-  <section className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+  /*<section className="rounded-2xl bg-white border border-slate-200 overflow-hidden">*/
+  <section className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
     <button
       type="button"
       onClick={() => setShowBanner(true)}
@@ -1021,11 +1025,13 @@ const res = await fetch(
       )}*/}
       <aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
   {logo && (
-    <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+    /*<div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">*/
+    <div className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
       <img
         src={logo}
         alt={`${provider || title} logo`}
-        className="w-full h-auto object-contain bg-white p-6"
+        /*className="w-full h-auto object-contain bg-white p-6"*/
+        className="block w-full h-auto object-contain bg-white p-4 sm:p-6"
         loading="lazy"
         decoding="async"
       />
