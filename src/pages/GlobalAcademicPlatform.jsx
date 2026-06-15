@@ -2789,11 +2789,18 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
   /*const answers = (post.comments || []).filter((c) => !c.parentId);
   const byParent = (post.comments || []).reduce((acc, c) => {*/
-    const visibleComments = Array.isArray(threadComments)
+  /*const visibleComments = Array.isArray(threadComments)
   ? threadComments
   : post.comments || [];
 
 const answers = visibleComments.filter((c) => !c.parentId);
+const byParent = visibleComments.reduce((acc, c) => {*/
+ const visibleComments = flattenDdbThreadShape(
+  Array.isArray(threadComments) ? threadComments : post.comments
+);
+
+const answers = visibleComments.filter((c) => !c.parentId);
+
 const byParent = visibleComments.reduce((acc, c) => {
     if (c.parentId) (acc[c.parentId] ||= []).push(c);
     return acc;
@@ -2830,7 +2837,8 @@ const byParent = visibleComments.reduce((acc, c) => {
               : p
           )
         );*/
-        setThreadComments(comments);
+        /*setThreadComments(comments);*/
+        setThreadComments(flattenDdbThreadShape(comments));
 
         setThreadLoaded(true);
         setOpen(true);
@@ -2950,6 +2958,8 @@ const byParent = visibleComments.reduce((acc, c) => {
                         isOpen={!!replyOpenById[a.id]}
                         setIsOpen={(v) => setReplyOpen(a.id, v)}
                       />
+                     
+
                     </div>
                   </div>
                 </div>
