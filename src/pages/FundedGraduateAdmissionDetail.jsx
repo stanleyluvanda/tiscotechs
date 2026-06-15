@@ -908,7 +908,7 @@ export default function FundedGraduateAdmissionDetail() {
   <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
     <div className="bg-slate-100 px-5 py-4">
       <h4 className="text-base font-bold text-slate-900 text-center">
-        Featured University-Funded Opportunities
+        Featured Funded Opportunities
       </h4>
     </div>
 
@@ -1030,7 +1030,8 @@ export default function FundedGraduateAdmissionDetail() {
       {/* You may also like */}
 {recs.length > 0 && (
   /*<section className="mt-10">*/
-  <section className="mt-12 border-t border-slate-200 pt-8">
+  
+    <section className="mt-8 mb-16 border-t border-slate-200 pt-6">
     {/*<div className="mb-4">*/}
       <div className="mb-6 text-center">
       {/*<h2 className="text-2xl font-bold text-slate-900">*/}
@@ -1043,7 +1044,8 @@ export default function FundedGraduateAdmissionDetail() {
     </div>
 
     {/*<div className="flex gap-4 overflow-x-auto pb-3">*/}
-    <div className="flex gap-3 overflow-x-auto pb-4 px-1">
+    {/*<div className="flex gap-3 overflow-x-auto pb-4 px-1">*/}
+    <div className="mx-auto flex max-w-[1600px] gap-3 overflow-x-auto pb-4 px-1 justify-center">
       {recs.slice(0, 6).map((r) => {
         const sid = getAnyId(r);
         const recBanner =

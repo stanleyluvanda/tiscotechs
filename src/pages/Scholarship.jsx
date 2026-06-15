@@ -662,62 +662,125 @@ const trackScholarship = (id, type) => {
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-amber-500">★</span>
-                <h2 className="text-lg font-bold text-slate-900">Featured Scholarships</h2>
+                <h2 className="text-lg font-bold text-slate-900">Featured & Sponsored Scholarships</h2>
                 <span className="hidden text-sm text-slate-500 sm:inline">Hand-picked opportunities from global providers</span>
               </div>
             </div>
 
             {/*<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">*/}
               <div className="flex gap-3 overflow-x-auto pb-2">
-              {featuredItems.map((s) => {
+              {/*{featuredItems.map((s) => {
                 const logo = s.providerLogoUrl || s.providerLogoData || "";
+               
                 const fundingStr = Array.isArray(s.fundingType) ? s.fundingType.join(", ") : s.fundingType || s.funding || "";
-                return (
+                return (*/}
+                  {featuredItems.map((s) => {
+  const logo = s.providerLogoUrl || s.providerLogoData || "";
+  const bannerImage = s.imageUrl || s.imageData || "";
+  const fundingStr = Array.isArray(s.fundingType)
+    ? s.fundingType.join(", ")
+    : s.fundingType || s.funding || "";
+
+  const isPremium = s.featuredLevel === "PREMIUM_FEATURED";
+
+  return (
+                  
                  
-                    <article
+                    
+
+                  <article
   key={`featured-${s.id}`}
-  /*className="w-[310px] shrink-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"*/
-  className="w-[calc((100%-36px)/4)] min-w-[310px] shrink-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+  className="w-[calc((100%-36px)/4)] min-w-[310px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
 >
-                    <div className="flex items-start gap-3">
-                      {logo ? (
-                        <img
-                          src={logo}
-                          alt={`${s.provider || "Provider"} logo`}
-                          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => { e.currentTarget.style.display = "none"; }}
-                        />
-                      ) : (
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
-                          SK
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">{s.title}</h3>
-                        {s.provider && <p className="mt-1 truncate text-xs font-semibold text-slate-700">{s.provider}</p>}
-                        {s.country && <p className="mt-1 text-xs text-slate-600">{s.country}</p>}
-                      </div>
-                    </div>
-                    {fundingStr && (
-                      <div className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                        {fundingStr}
-                      </div>
-                    )}
-                    <Link
-                      to={`/scholarship/${s.id}`}
-                      onClick={() => trackScholarship(s.id, "view")}
-                      className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
-                    >
-                      View details →
-                    </Link>
-                  </article>
+  <div className="px-4 pt-3">
+    <span
+      className={[
+        "rounded-full px-2 py-1 text-[11px] font-semibold",
+        isPremium
+          ? "bg-amber-50 text-amber-700"
+          : "bg-blue-50 text-blue-700",
+      ].join(" ")}
+    >
+      {isPremium ? "Sponsored" : "Featured"}
+    </span>
+  </div>
+
+  <div className="p-4">
+    <div className="flex items-start gap-3">
+      {logo ? (
+        <img
+          src={logo}
+          alt={`${s.provider || "Provider"} logo`}
+          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
+          SK
+        </div>
+      )}
+
+      <div className="min-w-0">
+        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
+          {s.title}
+        </h3>
+
+        {s.provider && (
+          <p className="mt-1 truncate text-xs font-semibold text-slate-700">
+            {s.provider}
+          </p>
+        )}
+
+        {s.country && (
+          <p className="mt-1 text-xs text-slate-600">{s.country}</p>
+        )}
+      </div>
+    </div>
+  </div>
+
+  {bannerImage && (
+    <div className="h-48 w-full border-y border-slate-200 bg-slate-100">
+      <img
+        src={bannerImage}
+        alt={`${s.provider || "Provider"} banner`}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    </div>
+  )}
+
+  <div className="p-4">
+    {fundingStr && (
+      <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+        {fundingStr}
+      </div>
+    )}
+
+    <Link
+      to={`/scholarship/${s.id}`}
+      onClick={() => trackScholarship(s.id, "view")}
+      className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
+    >
+      View details →
+    </Link>
+  </div>
+</article>
+
+
                 );
               })}
             </div>
           </section>
         )}
+
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
           {/* LEFT PROMO / AD */}
