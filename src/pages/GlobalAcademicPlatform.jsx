@@ -3527,12 +3527,24 @@ const byParent = visibleComments.reduce((acc, c) => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }}
   />
+
+  {post.topic && (
+  <button
+    type="button"
+    onClick={() => {
+      setMyOnly(false);
+      setSelectedCategory(post.category || "All");
+      setSelectedTopic(post.topic || "All");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
+    className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:underline"
+    title={`Filter by ${post.topic}`}
+  >
+    {post.topic}
+  </button>
+)}
 </div>
-
-
-
-
-                    </div>
+                </div>
                     {/*{post.author?.id === user?.id && (*/}
                       {(
   String(post.author?.id || post.authorId || "") &&
