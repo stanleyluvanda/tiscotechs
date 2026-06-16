@@ -2690,6 +2690,34 @@ setPosts(remoteNorm);
     ? selectedCategory
     : "";
 
+    const activeTopicPostCount = activeTopicBarLabel
+  ? posts.filter((p) =>
+      selectedTopic !== "All"
+        ? p.topic === selectedTopic
+        : p.category === selectedCategory
+    ).length
+  : 0;
+
+const activeTopicCommentCount = activeTopicBarLabel
+  ? posts
+      .filter((p) =>
+        selectedTopic !== "All"
+          ? p.topic === selectedTopic
+          : p.category === selectedCategory
+      )
+      .reduce(
+        (sum, p) =>
+          sum +
+          Number(
+            p.commentCount ??
+              p.commentsCount ??
+              (Array.isArray(p.comments) ? p.comments.length : 0) ??
+              0
+          ),
+        0
+      )
+  : 0;
+
   /* Collapsible inline composer for comments/replies */
 function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, setIsOpen }) {
   const [openInternal, setOpenInternal] = useState(false);
@@ -3431,11 +3459,32 @@ const byParent = visibleComments.reduce((acc, c) => {
               </Card>
             )}
 
-            {activeTopicBarLabel && (
+            {/*{activeTopicBarLabel && (
   <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">
     <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
       <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
       <span>{activeTopicBarLabel}</span>
+    </div>
+  </div>
+)}*/}
+{activeTopicBarLabel && (
+  <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
+    {/*</div><div className="grid grid-cols-3 items-center">*/}
+    <div className="grid grid-cols-[110px_1fr_130px] items-center">
+      <div className="text-left text-xs sm:text-sm font-semibold text-slate-600">
+        Posts ({activeTopicPostCount})
+      </div>
+
+      {/*</div><div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">*/}
+        <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700 whitespace-nowrap overflow-hidden">
+        <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
+        {/*<span>{activeTopicBarLabel}</span>*/}
+        <span className="truncate">{activeTopicBarLabel}</span>
+      </div>
+
+      <div className="text-right text-xs sm:text-sm font-semibold text-slate-600">
+        Comments ({activeTopicCommentCount})
+      </div>
     </div>
   </div>
 )}
