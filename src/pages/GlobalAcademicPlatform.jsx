@@ -3511,38 +3511,36 @@ const byParent = visibleComments.reduce((acc, c) => {
                         {post.category} • {post.topic}
                       </div>*/}
 
-                      <div className="text-xs text-slate-500 flex flex-wrap items-center gap-1">
-  <span>{post.category}</span>
-  <span className="text-slate-300">•</span>
-  <span>{post.topic}</span>
+  
 
-  <span className="text-slate-300">•</span>
+<div className="w-full flex justify-center mt-1">
+  <div className="text-xs text-slate-500 flex flex-wrap items-center justify-center gap-2">
+    <TopicChip
+      category={post.category}
+      onClick={() => {
+        setMyOnly(false);
+        setSelectedCategory(post.category || "All");
+        setSelectedTopic("All");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+    />
 
-  <TopicChip
-    category={post.category}
-    onClick={() => {
-      setMyOnly(false);
-      setSelectedCategory(post.category || "All");
-      setSelectedTopic("All");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }}
-  />
-
-  {post.topic && (
-  <button
-    type="button"
-    onClick={() => {
-      setMyOnly(false);
-      setSelectedCategory(post.category || "All");
-      setSelectedTopic(post.topic || "All");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }}
-    className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:underline"
-    title={`Filter by ${post.topic}`}
-  >
-    {post.topic}
-  </button>
-)}
+    {post.topic && (
+      <button
+        type="button"
+        onClick={() => {
+          setMyOnly(false);
+          setSelectedCategory(post.category || "All");
+          setSelectedTopic(post.topic || "All");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:underline"
+        title={`Filter by ${post.topic}`}
+      >
+        {post.topic}
+      </button>
+    )}
+  </div>
 </div>
                 </div>
                     {/*{post.author?.id === user?.id && (*/}
