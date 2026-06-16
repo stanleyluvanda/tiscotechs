@@ -698,7 +698,13 @@ function AttachmentStrip({ atts = [], onPreview }) {
     <div className="mt-2 space-y-2">
       {images.length > 0 && (
         /*<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">*/
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 -mx-4 sm:mx-0">
+        /*<div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 -mx-4 sm:mx-0">*/
+          <div
+  className={[
+    "grid grid-cols-1 gap-0 sm:gap-2 -mx-4 sm:mx-0",
+    images.length === 1 ? "sm:grid-cols-1" : "sm:grid-cols-3",
+  ].join(" ")}
+>
           {images.map((img) => (
             <button
               key={img.id || attHref(img) || uid()}
@@ -712,7 +718,11 @@ function AttachmentStrip({ atts = [], onPreview }) {
                 src={attHref(img)}
                 alt={img.name}
                 /*className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"*/
-                className="block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"
+                /*className="block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"*/
+                className={[
+  "block w-full min-w-full max-w-none h-auto object-cover sm:rounded transition-transform group-active:scale-95",
+  images.length === 1 ? "sm:max-h-[420px]" : "sm:h-40",
+].join(" ")}
               />
               <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
                 Zoom
@@ -2815,7 +2825,8 @@ const byParent = visibleComments.reduce((acc, c) => {
   const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
 
   return (
-    <div className="mt-3">
+    /*<div className="mt-3">*/
+      <div className="contents">
       {/*<button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
         Comments ({answers.length}) {open ? "▾" : "▸"}
       </button>*/}
@@ -2857,14 +2868,16 @@ const byParent = visibleComments.reduce((acc, c) => {
       }
     }
   }}
-  className="text-sm text-blue-700 underline"
+  /*className="text-sm text-blue-700 underline"*/
+  className="min-w-0 rounded px-1 py-1 text-xs text-blue-700 hover:bg-slate-50"
 >
   {/*Comments ({answers.length}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}*/}
   Comments ({threadLoaded ? answers.length : Number(post.commentCount || answers.length || 0)}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}
 </button>
 
       {open && (
-        <div className="mt-2">
+        /*<div className="mt-2">*/
+           <div className="col-span-5 mt-2 text-left">
           {answers.map((a) => (
             <div key={a.id} className="mt-3">
               <div className="flex items-start gap-2">
@@ -3532,22 +3545,23 @@ const byParent = visibleComments.reduce((acc, c) => {
 
 
     
+  {/*</div><div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">*/}
   <div className="mt-3 grid grid-cols-5 gap-1 text-center text-xs text-slate-600">
+    <AnswerThread post={post} />
   <button
-    onClick={() => toggleLike(post.id)}
-    className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
-  >
-    <div>👍</div>
-    <div>Upvote</div>
-    {post.likes > 0 && (
-      <div className="text-[10px] text-slate-500">{post.likes}</div>
-    )}
-  </button>
+  onClick={() => toggleLike(post.id)}
+  className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
+>
+  <div className="flex items-center justify-center gap-1">
+    <span>👍</span>
+    <span>{post.likes || 0}</span>
+  </div>
+</button>
 
-  <div className="min-w-0 flex flex-col items-center justify-center">
+  {/*<div className="min-w-0 flex flex-col items-center justify-center">
     <div>{(post.comments || []).filter((c) => !c.parentId).length}</div>
     <div>Comments</div>
-  </div>
+  </div>*/}
 
   <div className="min-w-0 flex flex-col items-center justify-center">
     <div>{post.views || 0}</div>
@@ -3581,9 +3595,10 @@ const byParent = visibleComments.reduce((acc, c) => {
   </button>
 </div>
 
-                  <div className="mt-2">
-                    <AnswerThread post={post} />
-                  </div>
+                  {/*<div className="mt-2">
+                    <AnswerThread post={post}/>
+                  </div>*/}
+                 
                 </div>
               </Card>
             ))}
@@ -3601,18 +3616,7 @@ const byParent = visibleComments.reduce((acc, c) => {
     </button>
   </div>
 )}
-
-
-
-
-
-
-
-
-
-
-
-          </section>
+  </section>
 
           {/* RIGHT rail */}
           {/*<aside className="space-y-4 pb-24">*/}
