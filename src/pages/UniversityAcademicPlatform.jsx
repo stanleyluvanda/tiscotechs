@@ -492,7 +492,8 @@ function HTMLReadMore({ html = "", lines = 3 }) {
       <div
         ref={shellRef}
         /*className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"*/
-        className="prose prose-sm max-w-full overflow-hidden break-words [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"
+        /*className="prose prose-sm max-w-full overflow-hidden break-words [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"*/
+        className="prose prose-sm max-w-full overflow-hidden break-words [&_p]:my-3 [&_ul]:my-3 [&_ol]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"
         style={open ? { maxHeight: "none", overflow: "visible" } : undefined}
         dangerouslySetInnerHTML={{ __html: html }}
       />
@@ -1332,6 +1333,44 @@ const SimpleHTMLEditor = memo(
           <ToolbarButton onAction={createLink} title="Insert link">
             Link
           </ToolbarButton>
+
+          <select
+  onChange={(e) => {
+    if (e.target.value) {
+      runCommand("foreColor", e.target.value);
+      e.target.selectedIndex = 0;
+    }
+  }}
+  className="border border-slate-200 rounded px-2 py-1 text-xs bg-white"
+  title="Text Color"
+>
+  <option value="">Color</option>
+  <option value="black">Black</option>
+  <option value="blue">Blue</option>
+  <option value="red">Red</option>
+  <option value="green">Green</option>
+  <option value="orange">Orange</option>
+  <option value="purple">Purple</option>
+</select>
+
+<select
+  onChange={(e) => {
+    if (e.target.value) {
+      runCommand("fontSize", e.target.value);
+      e.target.selectedIndex = 0;
+    }
+  }}
+  className="border border-slate-200 rounded px-2 py-1 text-xs bg-white"
+  title="Font Size"
+>
+  <option value="">Size</option>
+  <option value="2">12px</option>
+  <option value="3">14px</option>
+  <option value="4">16px</option>
+  <option value="5">18px</option>
+  <option value="6">24px</option>
+  <option value="7">32px</option>
+</select>
 
           <ToolbarButton onAction={clearFormatting} title="Clear formatting">
             Clear
@@ -3555,26 +3594,6 @@ const byParent = allComments.reduce((acc, c) => {
     </details>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
               <div className="w-full sm:w-auto sm:ml-auto">
