@@ -775,7 +775,14 @@ function AttachmentStrip({ atts = [], onPreview }) {
     <div className="mt-2 space-y-2">
       {images.length > 0 && (
         /*<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">*/
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 w-full">
+        /*<div className="grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 w-full">*/
+          <div
+  className={
+    images.length === 1
+      ? "grid grid-cols-1 gap-0 w-full"
+      : "grid grid-cols-1 sm:grid-cols-3 gap-0 sm:gap-2 w-full"
+  }
+>
           {images.map((img) => (
             <button
               key={img.id || `${img.name}-${img.dataUrl}`}   // ✅ fallback key
@@ -790,7 +797,12 @@ function AttachmentStrip({ atts = [], onPreview }) {
                 alt={img.name}
                 /*className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"*/
                 /*className="w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"*/
-                className="block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"
+                /*className="block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"*/
+                className={
+  images.length === 1
+    ? "block w-full max-w-none h-auto max-h-[75vh] object-contain sm:rounded transition-transform group-active:scale-95"
+    : "block w-full min-w-full max-w-none h-auto sm:h-40 object-cover sm:rounded transition-transform group-active:scale-95"
+}
               />
               <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
                 Zoom
@@ -1929,6 +1941,7 @@ async function loadMorePosts() {
   /* Filters & UI state */
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTopic, setSelectedTopic] = useState("All");
+  const [activeTrendingTopic, setActiveTrendingTopic] = useState("");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("Top");
   const [myOnly, setMyOnly] = useState(false);
@@ -2523,7 +2536,7 @@ setPostsIfChanged((prev) => {
 
   /* Derived lists */
   /*const visibleBase = posts.filter((p) => p.university === uni);*/
-  const visibleBase = posts
+  /*const visibleBase = posts
   .filter((p) => p.university === uni)
   .filter((p) =>
     showSavedOnly ? savedPostIds.has(String(p.id)) || p.saved : true
@@ -2532,7 +2545,29 @@ setPostsIfChanged((prev) => {
   const visible = visibleBase
     .filter((p) => (myOnly ? p.author?.id === user?.id : true))
     .filter((p) => (!myOnly && selectedCategory !== "All" ? p.category === selectedCategory : true))
-    .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))
+    .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))*/
+
+    const universityPosts = posts.filter((p) => p.university === uni);
+
+const visibleBase = universityPosts.filter((p) =>
+  showSavedOnly ? savedPostIds.has(String(p.id)) || p.saved : true
+);
+
+const visible = visibleBase
+  .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+  .filter((p) =>
+    activeTrendingTopic ? p.topic === activeTrendingTopic : true
+  )
+  .filter((p) =>
+    !myOnly && !activeTrendingTopic && selectedCategory !== "All"
+      ? p.category === selectedCategory
+      : true
+  )
+  .filter((p) =>
+    !myOnly && !activeTrendingTopic && selectedTopic !== "All"
+      ? p.topic === selectedTopic
+      : true
+  )
     .filter((p) =>
       q
         ? (p.title || "").toLowerCase().includes(q.toLowerCase()) ||
@@ -2556,6 +2591,40 @@ setPostsIfChanged((prev) => {
     : selectedCategory !== "All"
     ? selectedCategory
     : "";
+
+    const getPostCommentTotal = (p) =>
+  Number(
+    p?.threadItemCount ??
+      p?.commentCount ??
+      p?.commentsCount ??
+      (Array.isArray(p?.comments) ? p.comments.length : 0)
+  );
+
+const topicStats = useMemo(() => {
+  const byCategory = {};
+  const byTopic = {};
+
+  for (const p of universityPosts) {
+    const cat = p.category || "Current & Trending Topics";
+    const topic = p.topic || "General";
+    const comments = getPostCommentTotal(p);
+
+    byCategory[cat] ||= { posts: 0, comments: 0 };
+    byCategory[cat].posts += 1;
+    byCategory[cat].comments += comments;
+
+    byTopic[topic] ||= { posts: 0, comments: 0, category: cat };
+    byTopic[topic].posts += 1;
+    byTopic[topic].comments += comments;
+  }
+
+  return { byCategory, byTopic };
+}, [universityPosts]);
+
+const trendingTopics = Object.entries(topicStats.byTopic)
+  .map(([name, s]) => ({ name, ...s }))
+  .filter((t) => t.posts >= 100 || t.comments >= 100)
+  .sort((a, b) => b.posts + b.comments - (a.posts + a.comments));
 
   /* Collapsible inline composer for comments/replies (controlled) */
 function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, setIsOpen }) {
@@ -2961,7 +3030,7 @@ const byParent = allComments.reduce((acc, c) => {
             </div>
           </Card>
 
-          <Card square>
+          {/*<Card square>
             <HeaderBar title="Topics" square />
             <div className="p-3 space-y-2">
               <select
@@ -3016,7 +3085,107 @@ const byParent = allComments.reduce((acc, c) => {
                 })}
               </div>
             </div>
-          </Card>
+          </Card>*/}
+
+          <Card square>
+  <HeaderBar title="Topics / Fields" square />
+
+  <div className="p-3 space-y-3">
+    <button
+      type="button"
+      onClick={() => {
+        setSelectedCategory("All");
+        setSelectedTopic("All");
+        setActiveTrendingTopic("");
+      }}
+      className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-semibold ${
+        selectedCategory === "All" && selectedTopic === "All" && !activeTrendingTopic
+          ? "border-blue-500 bg-blue-50 text-blue-700"
+          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+      }`}
+    >
+      📚 All Topics / Fields
+      <span className="ml-1 text-xs font-normal text-slate-500">
+        ({universityPosts.length} posts)
+      </span>
+    </button>
+
+    <div className="max-h-[52vh] overflow-auto pr-1 space-y-2">
+      {Object.keys(TOPIC_MAP).map((cat) => {
+        const stat = topicStats.byCategory[cat] || { posts: 0, comments: 0 };
+        const activeCat = selectedCategory === cat && selectedTopic === "All" && !activeTrendingTopic;
+
+        return (
+          <div key={cat} className="rounded-xl border border-slate-100 bg-white">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCategory(cat);
+                setSelectedTopic("All");
+                setActiveTrendingTopic("");
+              }}
+              className={`w-full rounded-t-xl px-3 py-2 text-left text-sm font-semibold ${
+                activeCat ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-slate-800"
+              }`}
+            >
+              <span>{getTopicIcon(cat)} {cat}</span>
+              <span className="ml-1 text-[11px] font-normal text-slate-500">
+                ({stat.posts} posts, {stat.comments} comments)
+              </span>
+            </button>
+
+            {selectedCategory === cat && (
+              <div className="border-t border-slate-100 p-2 space-y-1">
+                {(TOPIC_MAP[cat] || []).map((topicVal) => {
+                  const tStat = topicStats.byTopic[topicVal] || { posts: 0, comments: 0 };
+                  const active = selectedTopic === topicVal && !activeTrendingTopic;
+                  const f = isFollowed(cat, topicVal);
+
+                  return (
+                    <div key={topicVal} className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory(cat);
+                          setSelectedTopic(topicVal);
+                          setActiveTrendingTopic("");
+                        }}
+                        className={`min-w-0 flex-1 rounded-lg px-2 py-1 text-left text-xs ${
+                          active
+                            ? "bg-blue-600 text-white"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                        title={topicVal}
+                      >
+                        <span className="block truncate">{topicVal}</span>
+                        <span className={`text-[10px] ${active ? "text-blue-100" : "text-slate-400"}`}>
+                          {tStat.posts} posts • {tStat.comments} comments
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleFollow(cat, topicVal)}
+                        className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] ${
+                          f ? "border-blue-600 text-blue-600" : "border-slate-300 text-slate-600"
+                        }`}
+                      >
+                        {f ? "Following" : "Follow"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</Card>
+
+
+
            {/* Normal Google Ad card */}
            <GoogleSidebarAd />
            
@@ -3419,16 +3588,45 @@ const byParent = allComments.reduce((acc, c) => {
             </div>
           </Card>
 
-          {activeTopicBarLabel && (
-  /*<div className="mb-3 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center shadow-sm">*/
-  /*<div className="-mt-2 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">*/
-    <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">
-    <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
-      <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
-      <span>{activeTopicBarLabel}</span>
+          
+
+<div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
+  {/*<div className="flex items-center justify-between text-sm sm:text-base font-bold text-blue-700">*/}
+    <div className="flex items-center justify-between text-[15px] font-semibold text-slate-600">
+
+    <div>
+      Posts ({visible.length})
     </div>
+
+    {/*<div className="inline-flex items-center justify-center gap-2">*/}
+    <div className="inline-flex items-center justify-center gap-2 text-blue-700 font-bold">
+      <span aria-hidden="true">
+        {activeTopicBarLabel ? getTopicIcon(selectedCategory) : "📚"}
+      </span>
+
+      <span>
+        {activeTopicBarLabel || "All Topics/Fields"}
+      </span>
+    </div>
+
+    <div>
+      Comments (
+      {visible.reduce(
+        (sum, p) =>
+          sum +
+          Number(
+            p?.threadItemCount ??
+            p?.commentCount ??
+            p?.commentsCount ??
+            (Array.isArray(p?.comments) ? p.comments.length : 0)
+          ),
+        0
+      )}
+      )
+    </div>
+
   </div>
-)}
+</div>
 
           {sorted.map((post) => (
             <Card
@@ -3478,13 +3676,17 @@ const byParent = allComments.reduce((acc, c) => {
 />
   </div>
 
-    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
+    {/*<div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
       <span>{post.author?.program || "Program"}</span>
       <span className="text-slate-300">•</span>
       <span>
         {post.category} • {post.topic}
       </span>
-    </div>
+     
+    </div>*/}
+    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
+  <span>{post.author?.program || "Program"}</span>
+</div>
   </div>
 
   {/* Delete stays on the right */}
@@ -3522,6 +3724,43 @@ const byParent = allComments.reduce((acc, c) => {
     )}
   </div>*/}
   <div className="px-3 sm:px-0">
+
+    <div className="mb-2 flex justify-center">
+    <div className="flex flex-wrap items-center justify-center gap-2">
+
+      {post.category && (
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedCategory(post.category);
+            setSelectedTopic("All");
+            setActiveTrendingTopic("");
+          }}
+          className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100"
+        >
+          <span>{getTopicIcon(post.category)}</span>
+          <span>{post.category}</span>
+        </button>
+      )}
+
+      {post.topic && (
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedCategory(post.category || "All");
+            setSelectedTopic(post.topic);
+            setActiveTrendingTopic("");
+          }}
+          className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100"
+        >
+          <span>{post.topic}</span>
+        </button>
+      )}
+
+    </div>
+  </div>
+
+
   <div className="text-lg font-semibold text-slate-900">{post.title}</div>
 
   {post.bodyHtml && (
@@ -3651,12 +3890,47 @@ const byParent = allComments.reduce((acc, c) => {
             </div>
           </Card>
 
-          <Card square>
+          {/*<Card square>
             <HeaderBar title="Community rules" square />
             <div className="p-4 text-sm text-slate-700">
               Be respectful. No harassment, plagiarism, or sharing of exam content. Cite sources when possible.
             </div>
-          </Card>
+          </Card>*/}
+          <Card square>
+  <HeaderBar title="Trending Topics" square />
+
+  <div className="p-3 space-y-2">
+    {trendingTopics.length === 0 ? (
+      <div className="text-xs text-slate-500">
+        No trending topics yet.
+      </div>
+    ) : (
+      trendingTopics.map((t) => (
+        <button
+          key={t.name}
+          type="button"
+          onClick={() => {
+            setActiveTrendingTopic(t.name);
+            setSelectedCategory("All");
+            setSelectedTopic("All");
+            setShowSavedOnly(false);
+            setMyOnly(false);
+          }}
+          className={`w-full rounded-xl border px-3 py-2 text-left text-sm ${
+            activeTrendingTopic === t.name
+              ? "border-orange-500 bg-orange-50 text-orange-700"
+              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          <div className="font-semibold">🔥 {t.name}</div>
+          <div className="text-[11px] text-slate-500">
+            {t.posts} posts • {t.comments} comments
+          </div>
+        </button>
+      ))
+    )}
+  </div>
+</Card>
 
           <Card square>
             <HeaderBar title="Academic Platforms' links" square />
