@@ -1616,6 +1616,7 @@ export default function GlobalAcademicPlatform() {
   const [showSavedOnly, setShowSavedOnly] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [selectedTrendingTopic, setSelectedTrendingTopic] = useState(null);
 
 
 
@@ -2683,12 +2684,18 @@ setPosts(remoteNorm);
   if (sort === "Top") sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
   if (sort === "Newest") sorted.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   if (sort === "Answered") sorted.sort((a, b) => b._answers - a._answers || (b.createdAt || 0) - (a.createdAt || 0));
+  /*const activeTopicBarLabel =
+  selectedTopic !== "All"
+    ? selectedTopic
+    : selectedCategory !== "All"
+    ? selectedCategory
+    : "";*/
   const activeTopicBarLabel =
   selectedTopic !== "All"
     ? selectedTopic
     : selectedCategory !== "All"
     ? selectedCategory
-    : "";
+    : "All Topics/Fields";
 
     const activeTopicPostCount = activeTopicBarLabel
   ? posts.filter((p) =>
@@ -2717,6 +2724,63 @@ const activeTopicCommentCount = activeTopicBarLabel
         0
       )
   : 0;
+
+
+  /*const trendingTopics = Object.entries(
+  posts.reduce((acc, p) => {
+    const key = p.topic && p.topic !== "All" ? p.topic : p.category;
+    if (!key || key === "All") return acc;
+
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {})
+)
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 7);*/
+  const trendingTopics = Object.values(
+  posts.reduce((acc, p) => {
+    const name = p.topic && p.topic !== "All" ? p.topic : p.category;
+    if (!name || name === "All") return acc;
+
+    const commentCount = Number(
+      p.commentCount ??
+        p.commentsCount ??
+        (Array.isArray(p.comments) ? p.comments.length : 0) ??
+        0
+    );
+
+    if (!acc[name]) {
+      acc[name] = {
+        name,
+        category: p.category || "",
+        topic: p.topic || "",
+        posts: 0,
+        comments: 0,
+        maxPostComments: 0,
+      };
+    }
+
+    acc[name].posts += 1;
+    acc[name].comments += commentCount;
+    acc[name].maxPostComments = Math.max(
+      acc[name].maxPostComments,
+      commentCount
+    );
+
+    return acc;
+  }, {})
+)
+  .filter((t) => t.posts >= 100 || t.comments >= 100 || t.maxPostComments >= 100)
+  .sort((a, b) => b.comments - a.comments || b.posts - a.posts)
+  .slice(0, 10);
+
+
+
+
+
+
+
 
   /* Collapsible inline composer for comments/replies */
 function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, setIsOpen }) {
@@ -2830,6 +2894,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   const [threadComments, setThreadComments] = useState(null);
   const [commentOpen, setCommentOpen] = useState(false);
   const [replyOpenById, setReplyOpenById] = useState({});
+  
 
   /*const answers = (post.comments || []).filter((c) => !c.parentId);
   const byParent = (post.comments || []).reduce((acc, c) => {*/
@@ -2935,7 +3000,7 @@ const byParent = visibleComments.reduce((acc, c) => {
                       />
                       <span className="text-slate-300">•</span>
 
-                       <TopicChip
+                       {/*<TopicChip
                       category={post.category}
                       onClick={() => {
                        setMyOnly(false);
@@ -2943,7 +3008,17 @@ const byParent = visibleComments.reduce((acc, c) => {
                        setSelectedTopic("All");
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
-                     />
+                     />*/}
+                     <TopicChip
+  category={post.category}
+  onClick={() => {
+    setMyOnly(false);
+    setSelectedTrendingTopic(null); // ADD THIS
+    setSelectedCategory(post.category || "All");
+    setSelectedTopic("All");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }}
+/>
                     </span>
                   </div>
 
@@ -3104,11 +3179,17 @@ const byParent = visibleComments.reduce((acc, c) => {
               <div className="p-3 space-y-2">
                 <select
                   value={selectedCategory}
-                  onChange={(e) => {
+                  /*onChange={(e) => {
                     const c = e.target.value;
                     setSelectedCategory(c);
                     setSelectedTopic("All");
-                  }}
+                  }}*/
+                  onChange={(e) => {
+                  const c = e.target.value;
+                  setSelectedTrendingTopic(null);
+                  setSelectedCategory(c);
+                  setSelectedTopic("All");
+                   }}
                   className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
                 >
                   {CATEGORIES.map((c) => (
@@ -3127,9 +3208,19 @@ const byParent = visibleComments.reduce((acc, c) => {
 
                     return (
                       <div key={topicVal} className={`flex items-center gap-2 rounded px-2 py-1 ${active ? "bg-slate-100" : "hover:bg-slate-50"}`}>
-                        <button className="text-left text-sm flex-1 truncate" onClick={() => setSelectedTopic(topicVal)} title={topicVal}>
+                        {/*<button className="text-left text-sm flex-1 truncate" onClick={() => setSelectedTopic(topicVal)} title={topicVal}>
                           {topicVal}
-                        </button>
+                        </button>*/}
+                        <button
+  className="text-left text-sm flex-1 truncate"
+  onClick={() => {
+    setSelectedTrendingTopic(null);
+    setSelectedTopic(topicVal);
+  }}
+  title={topicVal}
+>
+  {topicVal}
+</button>
                         {canFollow && (
                           <button
                             onClick={() => toggleFollow(selectedCategory, topicVal)}
@@ -3467,18 +3558,17 @@ const byParent = visibleComments.reduce((acc, c) => {
     </div>
   </div>
 )}*/}
+
+
 {activeTopicBarLabel && (
   <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
-    {/*</div><div className="grid grid-cols-3 items-center">*/}
     <div className="grid grid-cols-[110px_1fr_130px] items-center">
       <div className="text-left text-xs sm:text-sm font-semibold text-slate-600">
         Posts ({activeTopicPostCount})
       </div>
 
-      {/*</div><div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">*/}
-        <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700 whitespace-nowrap overflow-hidden">
+      <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700 whitespace-nowrap overflow-hidden">
         <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
-        {/*<span>{activeTopicBarLabel}</span>*/}
         <span className="truncate">{activeTopicBarLabel}</span>
       </div>
 
@@ -3486,6 +3576,15 @@ const byParent = visibleComments.reduce((acc, c) => {
         Comments ({activeTopicCommentCount})
       </div>
     </div>
+
+    {selectedTrendingTopic && (
+  <div className="mt-1 flex justify-center">
+    <span className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-semibold text-blue-700">
+      {/*Trending Topics ({selectedTrendingTopic.count})*/}
+      Trending Topic
+    </span>
+  </div>
+    )}
   </div>
 )}
 
@@ -3525,7 +3624,7 @@ const byParent = visibleComments.reduce((acc, c) => {
       }}
     />
 
-    {post.topic && (
+    {/*{post.topic && (
       <button
         type="button"
         onClick={() => {
@@ -3533,7 +3632,17 @@ const byParent = visibleComments.reduce((acc, c) => {
           setSelectedCategory(post.category || "All");
           setSelectedTopic(post.topic || "All");
           window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
+        }}*/}
+        {post.topic && (
+  <button
+    type="button"
+    onClick={() => {
+      setMyOnly(false);
+      setSelectedTrendingTopic(null); // ADD THIS
+      setSelectedCategory(post.category || "All");
+      setSelectedTopic(post.topic || "All");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }}
         className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-800 hover:bg-purple-100 hover:underline"
         title={`Filter by ${post.topic}`}
       >
@@ -3705,10 +3814,42 @@ const byParent = visibleComments.reduce((acc, c) => {
               </div>
             </Card>
 
-            <Card square>
+            {/*<Card square>
               <HeaderBar title="Community rules" square />
               <div className="p-4 text-sm text-slate-700">Be respectful. No harassment, plagiarism, or sharing of exam content. Cite sources when possible.</div>
-            </Card>
+            </Card>*/}
+
+            <Card square>
+  <HeaderBar title={`Trending Topics (${trendingTopics.length})`} square />
+  <div className="p-3 space-y-1 text-sm max-h-[220px] overflow-auto">
+    {trendingTopics.length === 0 ? (
+      <div className="text-slate-500">No trending topics yet.</div>
+    ) : (
+      trendingTopics.slice(0, 10).map((t) => (
+        <button
+          key={t.name}
+          type="button"
+          onClick={() => {
+            const matchedPost = posts.find(
+              (p) => p.topic === t.name || p.category === t.name
+            );
+
+            setMyOnly(false);
+            setSelectedCategory(matchedPost?.category || t.name);
+            setSelectedTopic(matchedPost?.topic === t.name ? t.name : "All");
+            setSelectedTrendingTopic(t);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="w-full text-left rounded px-2 py-1 hover:bg-slate-50"
+          title={t.name}
+        >
+          {/*{t.name} <span className="text-slate-400">({t.count})</span>*/}
+          {t.name} <span className="text-slate-400">({t.posts} posts, {t.comments} comments)</span>
+        </button>
+      ))
+    )}
+  </div>
+</Card>
 
             <Card square>
               <HeaderBar title="Academic Platforms' links" square />
