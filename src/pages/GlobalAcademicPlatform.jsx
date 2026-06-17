@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
-import { reportContent } from "../lib/moderationApi.js"; // adjust path
+import { reportContent } from "../lib/moderationApi.js"; // adjust p
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import {
   fetchPosts,
@@ -3597,21 +3597,41 @@ const byParent = visibleComments.reduce((acc, c) => {
   </div>
 )}*/}
 
-
-{activeTopicBarLabel && (
+{(
+/*{activeTopicBarLabel && (*/
   <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
     <div className="grid grid-cols-[110px_1fr_130px] items-center">
       <div className="text-left text-xs sm:text-sm font-semibold text-slate-600">
-        Posts ({activeTopicPostCount})
+        {/*Posts ({activeTopicPostCount})*/}
+        Posts ({sorted.length})
       </div>
 
       <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700 whitespace-nowrap overflow-hidden">
-        <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
-        <span className="truncate">{activeTopicBarLabel}</span>
+        {/*<span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
+        <span className="truncate">{activeTopicBarLabel}</span>*/}
+        <span aria-hidden="true">
+  {activeTopicBarLabel ? getTopicIcon(selectedCategory) : "📚"}
+</span>
+<span className="truncate">
+  {activeTopicBarLabel || "All Topics/Fields"}
+</span>
       </div>
 
       <div className="text-right text-xs sm:text-sm font-semibold text-slate-600">
-        Comments ({activeTopicCommentCount})
+        {/*Comments ({activeTopicCommentCount})*/}
+        Comments (
+  {sorted.reduce(
+    (sum, p) =>
+      sum +
+      Number(
+        p?.threadItemCount ??
+        p?.commentCount ??
+        p?.commentsCount ??
+        (Array.isArray(p?.comments) ? p.comments.length : 0)
+      ),
+    0
+  )}
+)
       </div>
     </div>
 
