@@ -25,6 +25,9 @@ const EduFinancing = lazy(() => import("./pages/EduFinancing.jsx"));
 const StudentSignUp = lazy(() => import("./pages/StudentSignUp.jsx"));
 const LecturerSignUp = lazy(() => import("./pages/LecturerSignUp.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
+const SuperTokensTestLogin = lazy(() =>
+  import("./pages/SuperTokensTestLogin.jsx")
+);
 const ForgotStart = lazy(() => import("./pages/ForgotStart.jsx"));
 const ForgotVerify = lazy(() => import("./pages/ForgotVerify.jsx"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.jsx"));
@@ -253,6 +256,7 @@ export default function App() {
           <Route path="/terms-of-use" element={<TermsOfUse />} />
 
           <Route path="/login" element={<Login />} />
+                                               <Route path="/auth-st-test" element={<SuperTokensTestLogin />} />
           <Route path="/auth/login" element={<Navigate to="/login" replace />} />
           <Route
             path="/auth/register/student"

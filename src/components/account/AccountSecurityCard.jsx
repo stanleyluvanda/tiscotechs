@@ -15,6 +15,21 @@ const AUTO_SIGN_OUT_AFTER_SECURITY_CHANGE =
 
 const SERVERLESS =
   String((import.meta.env.VITE_SERVERLESS_MODE ?? "true")).toLowerCase() === "true";
+/*const USE_SUPERTOKENS_TEST = true;*/
+/*const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";*/
+
+  /* === SuperTokens controlled switch ======================= */
+const USE_SUPERTOKENS_PROD = false;
+
+const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+const SUPERTOKENS_TEST_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
 
 /* ---------- Small helpers ---------- */
 function safeParse(json) { try { return JSON.parse(json || ""); } catch { return null; } }
@@ -522,11 +537,32 @@ function EmailModal({ userId, currentEmail, onClose }) {
 
       // 🔗 FIRST: try DynamoDB backend via Lambda
       try {
-        const resp = await apiChangeEmail({
+        /*const resp = await apiChangeEmail({
           email: prevEmailTrim,
           newEmail: nextEmailTrim,
           currentPassword: password.trim(),
-        });
+        });*/
+        let resp;
+
+if (USE_SUPERTOKENS_TEST) {
+  const res = await fetch(`${SUPERTOKENS_TEST_API}/change-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: prevEmailTrim,
+      newEmail: nextEmailTrim,
+      currentPassword: password.trim(),
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+} else {
+  resp = await apiChangeEmail({
+    email: prevEmailTrim,
+    newEmail: nextEmailTrim,
+    currentPassword: password.trim(),
+  });
+}
         if (!resp.ok) {
           throw new Error(resp.error || `HTTP ${resp.status}`);
         }
@@ -658,11 +694,35 @@ function PasswordModal({ userId, onClose, onLocalPasswordUpdate }) {
       // 🔗 FIRST: try DynamoDB backend via Lambda
       if (emailForApi) {
         try {
-          const resp = await apiChangePassword({
+          /*const resp = await apiChangePassword({
             email: emailForApi,
             currentPassword: currentPassword.trim(),
             newPassword: newPassword.trim(),
-          });
+          });*/
+
+          let resp;
+
+if (USE_SUPERTOKENS_TEST) {
+  const res = await fetch(`${SUPERTOKENS_TEST_API}/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: emailForApi,
+      currentPassword: currentPassword.trim(),
+      newPassword: newPassword.trim(),
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+} else {
+  resp = await apiChangePassword({
+    email: emailForApi,
+    currentPassword: currentPassword.trim(),
+    newPassword: newPassword.trim(),
+  });
+}
+
+
           if (!resp.ok) throw new Error(resp.error || `HTTP ${resp.status}`);
           remoteOk = true;
         } catch (e) {

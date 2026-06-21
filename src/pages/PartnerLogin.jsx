@@ -103,7 +103,25 @@ const PARTNER_AUTH_API_BASE = stripTrailingSlashes(
 );
 
 // If you later enable cookie sessions, set VITE_PARTNER_USE_COOKIES="1"
-const USE_COOKIES = String(import.meta.env.VITE_PARTNER_USE_COOKIES || "").trim() === "1";
+/*const USE_COOKIES = String(import.meta.env.VITE_PARTNER_USE_COOKIES || "").trim() === "1";*/
+const USE_COOKIES = false;
+
+/*const USE_SUPERTOKENS_TEST = false;*/
+/*const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";*/
+
+  /* === SuperTokens controlled switch ======================= */
+const USE_SUPERTOKENS_PROD = false;
+
+const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+const SUPERTOKENS_TEST_API =
+  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 /* ---------- Page ---------- */
 export default function PartnerLogin() {
@@ -296,6 +314,7 @@ export default function PartnerLogin() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotError, setForgotError] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [partnerResetLink, setPartnerResetLink] = useState("");
 
   /* ====== RESET STATE ====== */
   const [newPass, setNewPass] = useState("");
@@ -331,16 +350,39 @@ export default function PartnerLogin() {
         turnstileToken: turnToken || tokenFromSession || "",
       };
 
-      const loginUrl = `${PARTNER_AUTH_API_BASE}/api/auth/login/partner`;
+      
 
-      const res = await fetch(loginUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        ...(USE_COOKIES ? { credentials: "include" } : {}),
-        body: JSON.stringify(loginPayload),
-      });
+      let res;
+let data;
 
-      const data = await res.json().catch(() => ({}));
+if (USE_SUPERTOKENS_TEST) {
+  res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: em, password, role: "partner" }),
+  });
+
+  data = await res.json().catch(() => ({}));
+
+  if (!res.ok && data?.error === "INVALID_CREDENTIALS") {
+    res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: em, password, role: "partner" }),
+    });
+
+    data = await res.json().catch(() => ({}));
+  }
+} else {
+  res = await fetch(`${PARTNER_AUTH_API_BASE}/api/auth/login/partner`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    ...(USE_COOKIES ? { credentials: "include" } : {}),
+    body: JSON.stringify(loginPayload),
+  });
+
+  data = await res.json().catch(() => ({}));
+}
 
       /*if (res.ok && data?.ok) {
         const user = data.user || data.partner || { email: em, role: "partner" };
@@ -402,7 +444,7 @@ export default function PartnerLogin() {
       return;
     }
 
-    const partners = safeParse(localStorage.getItem("partners")) || [];
+    /*const partners = safeParse(localStorage.getItem("partners")) || [];
     const found = partners.find((p) => (p?.email || "").toLowerCase() === em);
     const partnerIdForReset = (found && (found.id || found.partnerId || found.email)) || em;
 
@@ -419,7 +461,68 @@ export default function PartnerLogin() {
     }
 
     setForgotSent(true);
-  };
+  };*/
+  let devToken = "";
+
+try {
+  const res = await fetch(
+    USE_SUPERTOKENS_TEST
+      ? `${SUPERTOKENS_TEST_API}/forgot`
+      : `${RESET_API_BASE}/api/auth/forgot`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: em, role: "partner" }),
+      /*body: JSON.stringify({
+  email: em,
+  role: "partner",
+  token: em,
+}),*/
+    }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  const resetLink = data.devLink || data.resetUrl || "";
+
+  if (resetLink) {
+    try {
+      const u = new URL(resetLink);
+      devToken = u.searchParams.get("token") || "";
+    } catch {}
+  }
+
+  if (!devToken && data.token) {
+    devToken = String(data.token);
+  }
+
+
+  if (USE_SUPERTOKENS_TEST && devToken) {
+  try {
+    await fetch(`${RESET_API_BASE}/api/auth/forgot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: em,
+        role: "partner",
+        token: devToken,
+      }),
+    });
+  } catch (err) {
+    console.warn("[Partner SuperTokens forgot] Resend email send failed:", err);
+  }
+}
+
+  if (devToken) {
+    setPartnerResetLink(`/partner/login?mode=reset&token=${encodeURIComponent(devToken)}`);
+  }
+} catch (err) {
+  console.warn("[Partner forgot] network error:", err);
+}
+
+setForgotSent(true);
+};
+
 
   const onSubmitReset = async (e) => {
     e.preventDefault();
@@ -438,7 +541,7 @@ export default function PartnerLogin() {
       return;
     }
 
-    const info = consumePartnerResetToken(resetToken);
+    /*const info = consumePartnerResetToken(resetToken);
     if (!info || !info.partnerId) {
       setResetMsg("This reset link is invalid or expired. Please request a new one.");
       return;
@@ -457,10 +560,42 @@ export default function PartnerLogin() {
       } catch (err) {
         console.warn("[Partner reset] backend reset failed:", err);
       }
+    }*/
+
+    try {
+  const res = await fetch(
+    USE_SUPERTOKENS_TEST
+      ? `${SUPERTOKENS_TEST_API}/reset`
+      : `${RESET_API_BASE}/api/auth/reset`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+     /*body: JSON.stringify({
+  email: resetToken,
+  newPassword: newPass,
+  role: "partner",*/
+  body: JSON.stringify({
+  token: resetToken,
+  newPassword: newPass,
+  role: "partner",
+}),
     }
+  );
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || !data?.ok) {
+    setResetMsg(data?.error || "Password reset failed.");
+    return;
+  }
+} catch (err) {
+  console.warn("[Partner reset] backend reset failed:", err);
+  setResetMsg("Password reset failed. Please try again.");
+  return;
+}
 
     setResetMsg("Your password has been reset. You can now log in with your new password.");
-    setTimeout(() => nav("/partner/login"), 1200);
+    setTimeout(() => nav("/partner/login"), 4000);
   };
 
   /* ====== UI ====== */
@@ -607,9 +742,18 @@ export default function PartnerLogin() {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-slate-700">
+                  {/*<p className="text-sm text-slate-700">
                     If that email exists, we’ve sent a password reset link. Check your inbox and follow the link.
-                  </p>
+                  </p>*/}
+                  <p className="text-sm text-slate-700">
+  If that email exists, we’ve sent a password reset link.
+</p>
+
+{partnerResetLink && (
+  <Link className="inline-block text-[#1a73e8] underline text-sm" to={partnerResetLink}>
+    Open reset link
+  </Link>
+)}
                   <div className="text-center">
                     <Link className="inline-block mt-4 text-[#1a73e8] underline text-sm" to="/partner/login">
                       Back to login
