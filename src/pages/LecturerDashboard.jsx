@@ -1258,6 +1258,8 @@ useEffect(() => {
           photoUrl: remotePhoto || u.photoUrl || "",
           bannerUrl: remoteBanner || u.bannerUrl || "",
 
+          
+
           // keep avatarUrl as alias, but always mirror to photoUrl
           avatarUrl: remotePhoto || remote.avatarUrl || u.avatarUrl || "",
         };
@@ -1316,6 +1318,7 @@ useEffect(() => {
     if (!user.continent || !user.country || !user.university || !user.faculty) return [];
     return safeGetPrograms(user.continent, user.country, user.university, user.faculty);
   }, [user.continent, user.country, user.university, user.faculty]);
+  
 
   /* Seed posts once */
   const seeded = useMemo(() => {
