@@ -28,6 +28,50 @@ const SERVERLESS =
 const EMAIL_DEV =
   String(import.meta?.env?.VITE_ENABLE_EMAIL_DEV ?? "false").toLowerCase() === "true";
 
+
+  /* === SuperTokens test login ======================= */
+/*const USE_SUPERTOKENS_TEST = true;
+const USE_SUPERTOKENS_LOGIN_TEST = true;
+const USE_SUPERTOKENS_FORGOT_TEST = true;
+const USE_SUPERTOKENS_RESET_TEST = true;*/
+
+/* === SuperTokens controlled switch ======================= */
+const USE_SUPERTOKENS_PROD = false;
+
+const USE_SUPERTOKENS_LOGIN_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+const USE_SUPERTOKENS_FORGOT_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+const USE_SUPERTOKENS_RESET_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+
+const SUPERTOKENS_TEST_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* === Local auth helpers for strict password check ================ */
 function lower(x) { return String(x || "").trim().toLowerCase(); }
 
@@ -489,12 +533,102 @@ const onGoogleLogin = async () => {
     // Hash the password before sending. Lambda expects { email, passwordHash, role }.
     const passwordHash = await sha256Hex(password);
 
-    const resp = await apiLogin({
+    /*const resp = await apiLogin({
       email: em,
       password,          // ✅ NEW for Cognito
       passwordHash,
       role,
+    });*/
+
+    let resp;
+/*if (USE_SUPERTOKENS_TEST) {*/
+/*if (USE_SUPERTOKENS_LOGIN_TEST) {
+  const res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: em,
+      password,
+      role,
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+
+  if (!res.ok || !resp?.ok) {
+    setError(resp?.error || "Invalid credentials.");
+    return;
+  }
+
+  // make SuperTokens response look like Cognito response
+  resp = {
+    ok: true,
+    uid: resp.userId,
+    role: resp.role || role,
+    user: {
+      email: resp.email || em,
+      ...(resp.user || {}),
+    },
+  };
+}*/
+
+if (USE_SUPERTOKENS_LOGIN_TEST) {
+  let res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: em,
+      password,
+      role,
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+
+  if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {
+    res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: em,
+        password,
+        role,
+      }),
     });
+
+    resp = await res.json().catch(() => ({}));
+  }
+
+  if (!res.ok || !resp?.ok) {
+    setError(resp?.error || "Invalid credentials.");
+    return;
+  }
+
+  resp = {
+    ok: true,
+    uid: resp.userId,
+    role: resp.role || role,
+    user: {
+      email: resp.email || em,
+      ...(resp.user || {}),
+    },
+  };
+}
+
+else {
+  resp = await apiLogin({
+    email: em,
+    password,
+    passwordHash,
+    role,
+  });
+}
 
     if (resp && resp.status) {
       const code = Number(resp.status);
@@ -704,7 +838,13 @@ if (serverRole === "lecturer") {
 
     try {
       /*const res = await fetch(`${EMAIL_API_BASE}/api/auth/forgot`, {*/
-      const res = await fetch(`${RESET_API_BASE.replace(/\/+$/, "")}/api/auth/forgot`, {
+      /*const res = await fetch(`${RESET_API_BASE.replace(/\/+$/, "")}/api/auth/forgot`, {*/
+        const res = await fetch(
+  /*USE_SUPERTOKENS_TEST*/
+  USE_SUPERTOKENS_FORGOT_TEST
+    ? `${SUPERTOKENS_TEST_API}/forgot`
+    : `${RESET_API_BASE.replace(/\/+$/, "")}/api/auth/forgot`,
+  {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: em }),
@@ -724,14 +864,44 @@ if (serverRole === "lecturer") {
       }
 
       let devToken = "";
-      if (data.devLink) {
+      /*if (data.devLink) {
         try {
           const u = new URL(data.devLink);
           devToken = u.searchParams.get("token") || "";
         } catch (err) {
           console.warn("[forgot] could not parse devLink:", err);
         }
-      }
+      }*/
+      const resetLink = data.devLink || data.resetUrl || "";
+
+if (resetLink) {
+  try {
+    const u = new URL(resetLink);
+    devToken = u.searchParams.get("token") || "";
+  } catch (err) {
+    console.warn("[forgot] could not parse reset link:", err);
+  }
+}
+
+if (!devToken && data.token) {
+  devToken = String(data.token);
+}
+
+if (USE_SUPERTOKENS_FORGOT_TEST && devToken) {
+  try {
+    await fetch(`${RESET_API_BASE.replace(/\/+$/, "")}/api/auth/forgot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: em,
+        role,
+        token: devToken,
+      }),
+    });
+  } catch (err) {
+    console.warn("[SuperTokens forgot] Resend email send failed:", err);
+  }
+}
 
       if (devToken) {
         try {
@@ -783,11 +953,32 @@ if (serverRole === "lecturer") {
 
       const resetEmail = normalizeEmail(lastEmail);
 
-      const resp = await apiCompletePasswordReset({
+      /*const resp = await apiCompletePasswordReset({
         email: resetEmail || undefined,
         code: resetToken,
         newPassword: newPass,
-      });
+      });*/
+      let resp;
+
+/*if (USE_SUPERTOKENS_TEST) {*/
+if (USE_SUPERTOKENS_RESET_TEST) {
+  const res = await fetch(`${SUPERTOKENS_TEST_API}/reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token: resetToken,
+      newPassword: newPass,
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+} else {
+  resp = await apiCompletePasswordReset({
+    email: resetEmail || undefined,
+    code: resetToken,
+    newPassword: newPass,
+  });
+}
 
       if (resp?.ok) {
         backendSucceeded = true;

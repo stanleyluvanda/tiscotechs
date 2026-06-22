@@ -925,28 +925,6 @@ try {
   );
 }
 
-/* ---------------- Helper Selects ---------------- */
-/*function Select({ label, value, onChange, options, placeholder, disabled }) {
-  return (
-    <label className="block">
-      <span className="block text-sm text-slate-600 mb-1">{label}</span>
-      <select
-        className="w-full border rounded px-3 py-2 disabled:bg-slate-50"
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-      >
-        <option value="">{placeholder}</option>
-        {(options || []).map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}*/
-
 function Select({label,value,onChange,options,placeholder,disabled,countryName = "",separatorsMap = null,})
  {
   const [open, setOpen] = useState(false);

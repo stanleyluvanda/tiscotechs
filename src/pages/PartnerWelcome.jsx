@@ -1,6 +1,7 @@
 // src/pages/PartnerWelcome.jsx
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+/*import { Link, useNavigate } from "react-router-dom";*/
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import { isVerified } from "../lib/verifyGate";
 import VerifyGate from "../components/VerifyGate";
@@ -38,6 +39,23 @@ const AUTH_BASE = (
   import.meta.env.VITE_API_URL ||
   "http://localhost:5001"
 ).replace(/\/+$/, "");
+
+/*const USE_SUPERTOKENS_TEST = true;*/
+/*const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";*/
+
+  /* === SuperTokens controlled switch ======================= */
+const USE_SUPERTOKENS_PROD = false;
+
+const USE_SUPERTOKENS_TEST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  USE_SUPERTOKENS_PROD;
+
+const SUPERTOKENS_TEST_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
+
 
 /* ---------- Content types ---------- */
 const CT_SCH = "SCHOLARSHIP";
@@ -82,11 +100,17 @@ async function apiChangePartnerEmail(oldEmail, newEmail, currentPassword) {
     role: "partner",
   };
 
-  const res = await fetch(`${AUTH_BASE}/api/auth/change-email`, {
+  /*const res = await fetch(`${AUTH_BASE}/api/auth/change-email`, {*/
+    const res = await fetch(
+  USE_SUPERTOKENS_TEST
+    ? `${SUPERTOKENS_TEST_API}/change-email`
+    : `${AUTH_BASE}/api/auth/change-email`,
+  {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+  
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.ok) {
@@ -543,7 +567,8 @@ export default function PartnerWelcome() {
     try {
       const emailChanging = (form.email || "") !== (user?.email || "");
       const wantsPwChange =
-        newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;
+        /*newPw.length > 0 || confirmPw.length > 0 || currentPw.length > 0;*/
+        newPw.trim().length > 0 || confirmPw.trim().length > 0;
 
       const trimmedEmail = (form.email || "").trim().toLowerCase();
       const oldEmail = (originalEmail || user?.email || "").trim().toLowerCase();
@@ -567,7 +592,7 @@ export default function PartnerWelcome() {
           return;
         }
 
-        if (user?.passwordHash) {
+        /*if (user?.passwordHash) {
           const enteredHash = await sha256Hex(currentPw);
           if (enteredHash !== user.passwordHash) {
             setPwErr("Current password is incorrect.");
@@ -579,7 +604,22 @@ export default function PartnerWelcome() {
             return;
           }
         }
-      }
+      }*/
+      if (!USE_SUPERTOKENS_TEST) {
+  if (user?.passwordHash) {
+    const enteredHash = await sha256Hex(currentPw);
+    if (enteredHash !== user.passwordHash) {
+      setPwErr("Current password is incorrect.");
+      return;
+    }
+  } else if (user?.password) {
+    if (currentPw !== user.password) {
+      setPwErr("Current password is incorrect.");
+      return;
+    }
+  }
+}
+}
 
       if (emailChanging) {
         if (!currentPw) {
@@ -591,7 +631,12 @@ export default function PartnerWelcome() {
 
       if (wantsPwChange) {
         try {
-          const resp = await fetch(`${AUTH_BASE}/api/auth/change-password`, {
+          /*const resp = await fetch(`${AUTH_BASE}/api/auth/change-password`, {*/
+            const resp = await fetch(
+  USE_SUPERTOKENS_TEST
+    ? `${SUPERTOKENS_TEST_API}/change-password`
+    : `${AUTH_BASE}/api/auth/change-password`,
+  {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -617,7 +662,8 @@ export default function PartnerWelcome() {
         }
       }
 
-      if (!SERVERLESS) {
+      /*if (!SERVERLESS) {*/
+      if (!SERVERLESS && !USE_SUPERTOKENS_TEST) {
         const payload = {
           email: trimmedEmail,
           userId: user?.id || user?.userId || "",
@@ -661,7 +707,7 @@ export default function PartnerWelcome() {
         }
       }
 
-      const backendUser = await apiUpdatePartnerProfile({
+      /*const backendUser = await apiUpdatePartnerProfile({
         email: trimmedEmail,
         userId: user?.userId || user?.id,
         organization: form.orgName,
@@ -669,7 +715,26 @@ export default function PartnerWelcome() {
         phone: form.phone,
         website: form.website,
         logoUrl: form.photo || "",
-      });
+      });*/
+      const backendUser = USE_SUPERTOKENS_TEST
+  ? {
+      ...(user || {}),
+      email: trimmedEmail,
+      organization: form.orgName,
+      contactName: form.contactName,
+      phone: form.phone,
+      website: form.website,
+      logoUrl: form.photo || "",
+    }
+  : await apiUpdatePartnerProfile({
+      email: trimmedEmail,
+      userId: user?.userId || user?.id,
+      organization: form.orgName,
+      contactName: form.contactName,
+      phone: form.phone,
+      website: form.website,
+      logoUrl: form.photo || "",
+    });
 
       const updated = {
         ...(user || {}),
@@ -703,14 +768,19 @@ export default function PartnerWelcome() {
   };
 
   const logout = () => {
-    localStorage.removeItem("partnerAuth");
-    nav("/partner/login", { replace: true });
-  };
+  localStorage.removeItem("partnerAuth");
+  nav("/partner/login", { replace: true });
+};
+  
 
-  if (!user) {
+  {/*if (!user) {
     return (
-      <div className="min-h-[calc(100vh-0px)] bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">
-        <div className="max-w-5xl mx-auto px-4 lg:px-8 py-10">
+      <div className="min-h-[calc(100vh-0px)] bg-gradient-to-br from-[#eef3ff] via-white to-[#f5f7fb]">*/}
+if (!user) {
+  return <Navigate to="/partner/login" replace />;
+  return null;
+}
+        /*<div className="max-w-5xl mx-auto px-4 lg:px-8 py-10">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
             Partner Welcome
           </h1>
@@ -718,7 +788,7 @@ export default function PartnerWelcome() {
         <Footer />
       </div>
     );
-  }
+  }*/
 
   if (emailForGate && !verified) {
     return (

@@ -58377,7 +58377,7 @@ universities: {
   "name": "Tanzania",
   "code": "TZ",
   "universities": {
-    "University of Dar es Salaam (UDSM)": {
+    "University of Dar es Salaam": {
       "College of Agricultural Sciences and Food Technology (CoAF)": {
         "programs": [
           "BSc in Beekeeping Science and Technology",
