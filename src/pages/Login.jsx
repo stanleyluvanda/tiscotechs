@@ -36,8 +36,8 @@ const USE_SUPERTOKENS_FORGOT_TEST = true;
 const USE_SUPERTOKENS_RESET_TEST = true;*/
 
 /* === SuperTokens controlled switch ======================= */
-const USE_SUPERTOKENS_PROD = false;
-/*const USE_SUPERTOKENS_PROD = true;*/
+/*const USE_SUPERTOKENS_PROD = false;*/
+const USE_SUPERTOKENS_PROD = true;
 
 const USE_SUPERTOKENS_LOGIN_TEST =
   window.location.hostname === "localhost" ||

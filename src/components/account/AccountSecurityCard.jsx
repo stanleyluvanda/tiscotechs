@@ -21,7 +21,8 @@ const SERVERLESS =
   window.location.hostname === "127.0.0.1";*/
 
   /* === SuperTokens controlled switch ======================= */
-const USE_SUPERTOKENS_PROD = false;
+/*const USE_SUPERTOKENS_PROD = false;*/
+const USE_SUPERTOKENS_PROD = true;
 
 const USE_SUPERTOKENS_TEST =
   window.location.hostname === "localhost" ||
