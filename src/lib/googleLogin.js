@@ -1,26 +1,37 @@
 // src/lib/googleLogin.js
 import { signInWithRedirect, signOut } from "aws-amplify/auth";
 
-export async function loginWithGoogle() {
-  // Keep current behavior (Hosted UI redirect), but request account chooser.
-  // This does NOT change your oauthRole flow (you already store oauthRole in Login.jsx).
+const SUPERTOKENS_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
+
+export async function loginWithGoogle({ useSuperTokens = false } = {}) {
+  if (useSuperTokens) {
+    const res = await fetch(
+      `${SUPERTOKENS_API}/authorisationurl?thirdPartyId=google`
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data?.url) {
+      throw new Error(data?.error || "Could not start Google login.");
+    }
+
+    window.location.href = data.url;
+    return;
+  }
+
   const redirectArgs = {
     provider: "Google",
-    // Amplify supports passing OAuth options; we keep it minimal.
-    // If your Cognito UI is “classic hosted UI”, Amplify may still append this param,
-    // and Google will show the account picker instead of auto-selecting a cached session.
     options: {
       prompt: "select_account",
     },
   };
 
   try {
-    // Normal path: just redirect
     return await signInWithRedirect(redirectArgs);
   } catch (e) {
     const msg = String(e?.name || e?.message || e || "");
 
-    // Only if Cognito complains user is already authenticated, clear session then retry
     if (
       msg.includes("UserAlreadyAuthenticated") ||
       msg.includes("already authenticated")
@@ -31,7 +42,6 @@ export async function loginWithGoogle() {
       return signInWithRedirect(redirectArgs);
     }
 
-    // Any other error: rethrow so your UI can show it
     throw e;
   }
 }

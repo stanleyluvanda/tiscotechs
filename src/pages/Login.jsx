@@ -37,6 +37,7 @@ const USE_SUPERTOKENS_RESET_TEST = true;*/
 
 /* === SuperTokens controlled switch ======================= */
 const USE_SUPERTOKENS_PROD = false;
+/*const USE_SUPERTOKENS_PROD = true;*/
 
 const USE_SUPERTOKENS_LOGIN_TEST =
   window.location.hostname === "localhost" ||
@@ -55,7 +56,8 @@ const USE_SUPERTOKENS_RESET_TEST =
 
 
 const SUPERTOKENS_TEST_API =
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
+  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 
 
@@ -389,7 +391,8 @@ const onGoogleLogin = async () => {
   try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
 
   // ✅ always redirect to Google Hosted UI
-  await loginWithGoogle();
+  /*await loginWithGoogle();*/
+  await loginWithGoogle({ useSuperTokens: USE_SUPERTOKENS_PROD });
 };
 
   /* ====== LOGIN HANDLER ====== */
@@ -574,7 +577,7 @@ const onGoogleLogin = async () => {
   };
 }*/
 
-if (USE_SUPERTOKENS_LOGIN_TEST) {
+/*if (USE_SUPERTOKENS_LOGIN_TEST) {
   let res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
     method: "POST",
     headers: {
@@ -603,7 +606,38 @@ if (USE_SUPERTOKENS_LOGIN_TEST) {
     });
 
     resp = await res.json().catch(() => ({}));
+  }*/
+  if (USE_SUPERTOKENS_LOGIN_TEST) {
+  let res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: em,
+      password,
+      role,
+    }),
+  });
+
+  resp = await res.json().catch(() => ({}));
+
+  if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {
+    res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: em,
+        password,
+        role,
+      }),
+    });
+
+    resp = await res.json().catch(() => ({}));
   }
+
 
   if (!res.ok || !resp?.ok) {
     setError(resp?.error || "Invalid credentials.");

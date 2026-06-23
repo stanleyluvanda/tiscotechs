@@ -45,7 +45,7 @@ export default function SuperTokensTestLogin() {
 
       const data = await res.json().catch(() => ({}));*/
 
-      let res = await fetch(`${API}/migrate-login`, {
+      /*let res = await fetch(`${API}/migrate-login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email: em, password, role }),
@@ -55,6 +55,23 @@ let data = await res.json().catch(() => ({}));
 
 if (!res.ok && data?.error === "INVALID_CREDENTIALS") {
   res = await fetch(`${API}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: em, password, role }),
+  });
+
+  data = await res.json().catch(() => ({}));
+}*/
+let res = await fetch(`${API}/login`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email: em, password, role }),
+});
+
+let data = await res.json().catch(() => ({}));
+
+if (!res.ok && data?.error === "INVALID_CREDENTIALS") {
+  res = await fetch(`${API}/migrate-login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email: em, password, role }),
@@ -167,6 +184,38 @@ window.dispatchEvent(new Event("user:updated"));
     }
   }
 
+
+
+  async function onGoogleLogin() {
+  setError("");
+  setResult("");
+
+  try {
+    const res = await fetch(`${API}/authorisationurl?thirdPartyId=google`);
+    const data = await res.json().catch(() => ({}));
+
+    setResult(JSON.stringify(data, null, 2));
+
+    if (!res.ok || !data?.url) {
+      setError(data?.error || "Could not start Google login.");
+      return;
+    }
+
+    window.location.href = data.url;
+  } catch (err) {
+    setError(err?.message || "Google login failed.");
+  }
+}
+
+
+
+
+
+
+
+
+
+
   const RoleTabs = (
     <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-lg border border-slate-200">
       {["student", "lecturer", "partner"].map((r) => (
@@ -257,6 +306,19 @@ window.dispatchEvent(new Event("user:updated"));
             </button>
 
             <button
+  type="button"
+  onClick={onGoogleLogin}
+  className="w-full rounded border px-3 py-2 flex items-center justify-center gap-2"
+>
+  <img
+    src="/images/Google icon.svg"
+    alt=""
+    className="h-5 w-5"
+  />
+  <span>Continue with Google</span>
+</button>
+
+            <button
               type="submit"
               className="w-full rounded bg-[#1a73e8] py-2 font-semibold text-white hover:opacity-90"
             >
@@ -285,5 +347,6 @@ window.dispatchEvent(new Event("user:updated"));
         </a>
       </footer>
     </div>
-  );
+);
 }
+

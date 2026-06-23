@@ -149,9 +149,24 @@ export default function LecturerSignUp() {
   const navigate = useNavigate();
    useNoIndex();
   const [sp] = useSearchParams();
-  const oauthMode = sp.get("oauth") === "1";
+  /*const oauthMode = sp.get("oauth") === "1";
   const oauthEmail = (sp.get("email") || "").trim();
-  const oauthName = (sp.get("name") || "").trim();
+  const oauthName = (sp.get("name") || "").trim();*/
+const oauthMode = sp.get("oauth") === "1";
+const googleSignup = sp.get("googleSignup") || "";
+const googleSignupSig = sp.get("googleSignupSig") || "";
+
+let googleSignupData = {};
+try {
+  googleSignupData = googleSignup
+    ? JSON.parse(atob(googleSignup.replace(/-/g, "+").replace(/_/g, "/")))
+    : {};
+} catch {
+  googleSignupData = {};
+}
+
+const oauthEmail = (sp.get("email") || googleSignupData.email || "").trim();
+const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
 
   /* ------------------ State ------------------ */
   const [form, setForm] = useState({
@@ -270,7 +285,19 @@ export default function LecturerSignUp() {
     setError("");
     try { sessionStorage.setItem("oauthRole", "lecturer"); } catch {}
     try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
-    await loginWithGoogle();
+    /*await loginWithGoogle();*/
+const res = await fetch(
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google"
+);
+
+const data = await res.json().catch(() => ({}));
+
+if (!res.ok || !data?.url) {
+  setError(data?.error || "Could not start Google signup.");
+  return;
+}
+
+window.location.href = data.url;
   };
 
   /* ------------------ Submit ------------------ */
@@ -412,6 +439,34 @@ try {
       }
       return;
     }
+
+if (oauthMode && googleSignup && googleSignupSig) {
+  try {
+    const linkRes = await fetch(
+      "https://l0coytc8bg.execute-api.us-east-1.amazonaws.com/default/AuthHandlerGoogleCallbackTest?action=complete-google-signup",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          googleSignup,
+          googleSignupSig,
+        }),
+      }
+    );
+
+    const linkData = await linkRes.json().catch(() => ({}));
+
+    if (!linkRes.ok || !linkData?.ok) {
+      console.warn("[lecturer-signup] google link failed:", linkData);
+    }
+  } catch (err) {
+    console.warn("[lecturer-signup] google link network error:", err);
+  }
+}
+
+
 
     //✅ Best-effort: mirror lecturer into global Users API (for Contact Lecturer list)
     try {
