@@ -639,10 +639,25 @@ const onGoogleLogin = async () => {
   }
 
 
-  if (!res.ok || !resp?.ok) {
+  /*if (!res.ok || !resp?.ok) {
     setError(resp?.error || "Invalid credentials.");
     return;
+  }*/
+  if (!res.ok || !resp?.ok) {
+  const code = String(resp?.error || "").toUpperCase();
+
+  if (
+    code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
+    code === "INVALID_CREDENTIALS" ||
+    code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR"
+  ) {
+    setError("Incorrect email or password.");
+  } else {
+    setError(resp?.error || "Login failed.");
   }
+
+  return;
+}
 
   resp = {
     ok: true,
