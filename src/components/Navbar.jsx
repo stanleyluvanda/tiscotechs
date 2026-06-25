@@ -33,13 +33,35 @@ function loadActiveUser() {
   );
 }
 
-function loadNavbarUser() {
+/*function loadNavbarUser() {
   // 1) Prefer existing logic (student/lecturer)
   const u = loadActiveUser();
-  if (u) return u;
+  if (u) return u;*/
+function loadNavbarUser() {
+  // 1) If partner session exists, prefer partnerAuth.
+  // This avoids stale currentUser overriding the partner logo/name.
+  const p = safeParse(localStorage.getItem("partnerAuth")) || null;
+  if (p?.email) {
+    return {
+      role: "partner",
+      email: p.email,
+      name: p.organization || p.orgName || p.contactName || "Partner",
+      photoUrl:
+        p.logoUrl ||
+        p.photo ||
+        p.photoUrl ||
+        p.avatarUrl ||
+        p.imageUrl ||
+        "",
+    };
+  }
+
+  // 2) Otherwise use existing student/lecturer logic.
+  return loadActiveUser();
+}
 
   // 2) Fallback: partner session (does not affect student/lecturer)
-  const p = safeParse(localStorage.getItem("partnerAuth")) || null;
+  /*const p = safeParse(localStorage.getItem("partnerAuth")) || null;
   if (!p?.email) return null;
 
   return {
@@ -49,7 +71,7 @@ function loadNavbarUser() {
     name: p.organization || p.orgName || p.contactName || "Partner",
     photoUrl: p.logoUrl || p.photo || p.avatarUrl || "",
   };
-}
+}*/
 
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
