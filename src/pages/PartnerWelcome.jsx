@@ -55,7 +55,8 @@ const USE_SUPERTOKENS_TEST =
   USE_SUPERTOKENS_PROD;
 
 const SUPERTOKENS_TEST_API =
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
+  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 
 /* ---------- Content types ---------- */

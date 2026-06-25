@@ -2,7 +2,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
-import { signOut } from "aws-amplify/auth";
+/*import { signOut } from "aws-amplify/auth";*/
+
 
 /* ---------- Small helpers ---------- */
 function safeParse(json) {
@@ -65,7 +66,7 @@ function clearAuthStateKeepData() {
   }
 }
 
-async function logoutEverywhere() {
+/*async function logoutEverywhere() {
   try { await signOut({ global: true }); } catch {}
   try {
     [
@@ -75,6 +76,25 @@ async function logoutEverywhere() {
       sessionStorage.removeItem(k);
       localStorage.removeItem(k);
     });
+  } catch {}
+}*/
+async function logoutEverywhere() {
+  try {
+    [
+      "currentUser",
+      "authUserId",
+      "activeUserId",
+      "currentUserId",
+      "loggedInUserId",
+      "partnerAuth",
+      "adminAuth",
+    ].forEach((k) => {
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
+
+    window.dispatchEvent(new Event("auth:changed"));
+    window.dispatchEvent(new Event("user:updated"));
   } catch {}
 }
 
