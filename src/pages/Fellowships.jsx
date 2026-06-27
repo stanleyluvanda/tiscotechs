@@ -712,93 +712,7 @@ const popularDestinations = [
           </div>
         </aside>
 
-        {/*<section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
-              <select
-                value={continent}
-                onChange={(e) => {
-                  setContinent(e.target.value);
-                  setCountry("All");
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {["All", ...CONTINENT_NAMES].map((c) => (
-                  <option key={c} value={c}>
-                    {c === "All" ? "All Continents" : c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={country}
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {countryOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c === "All" ? "All Countries" : c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={field}
-                onChange={(e) => {
-                  setField(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {["All", ...FIELDS_OF_STUDY].map((f) => (
-                  <option key={f} value={f}>
-                    {f === "All" ? "All Study Fields" : f}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={funding}
-                onChange={(e) => {
-                  setFunding(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {fundingOptions.map((f) => (
-                  <option key={f} value={f}>
-                    {f === "All" ? "All Funding Types" : f}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="newest">Sort by Newest</option>
-                <option value="deadlineAsc">Deadline (soonest)</option>
-                <option value="deadlineDesc">Deadline (latest)</option>
-                <option value="title">Title (A–Z)</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50"
-              >
-                Reset
-              </button>
-            </div>
-          </section>*/}
-          
+      
 
           <main className="min-w-0">
   {false && canShowAds && (
@@ -841,106 +755,88 @@ const popularDestinations = [
 
           <ul className="mt-3 grid gap-3">
             {items.map((s, index) => {
-              const snippet = truncate(stripHtml(s.description || ""), 260);
+              /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
+              const fullDescription = stripHtml(s.description || "");
+              const snippet = truncate(fullDescription, 170);
               const fundingStr = Array.isArray(s.fundingType)
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
               const logo = s.providerLogoUrl || s.providerLogoData || "";
+              const cardImage = s.imageUrl || s.imageData || logo || "";
 
               return (
                 /*<li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">*/
-                  <li key={s.id} className="rounded-none border-y border-x-0 border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0 flex flex-1 items-start gap-3">
-                      {logo ? (
-                        <img
-                          src={logo}
-                          alt={`${s.provider || "Provider"} logo`}
-                          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1 sm:h-16 sm:w-16"
-                          loading="lazy"
-                          decoding="async"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-sm font-bold text-blue-700 sm:h-16 sm:w-16">
-                          SK
-                        </div>
-                      )}
+                  <li
+  key={s.id}
+  className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6"
+>
+  <Link
+    to={`/fellowship/${s.id}`}
+    onClick={() => trackFellowship(s.id, "view")}
+    className="mb-4 block text-xl font-extrabold leading-tight text-slate-900 hover:text-blue-700 hover:underline sm:text-2xl"
+  >
+    {s.title}
+  </Link>
 
-                      <div className="min-w-0">
-                        <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg">
-                          {s.title}
-                        </h3>
+  <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+      {cardImage ? (
+        <img
+          src={cardImage}
+          alt={`${s.title || "Fellowship"} image`}
+          className="h-44 w-full rounded-lg object-cover sm:h-48 lg:h-52"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-44 w-full items-center justify-center rounded-lg bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
+          SK
+        </div>
+      )}
+    </div>
 
-                        <div className="mt-1 text-sm leading-6 text-slate-700">
-                          {s.provider && (
-                            <span className="font-semibold text-blue-950">{s.provider}</span>
-                          )}
-                          {s.country && (
-                            <span className="font-semibold text-blue-950"> • {s.country}</span>
-                          )}
-                        </div>
+    <div className="flex min-h-full flex-col">
+      <div className="space-y-3 text-base font-bold text-slate-900">
+        {s.provider && (
+          <div className="flex items-start gap-3">
+            <span className="text-purple-700">🎓</span>
+            <span>{s.provider}</span>
+          </div>
+        )}
 
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs font-semibold">
-                          {s.level && (
-                            <span className="rounded-full bg-purple-50 px-3 py-1 text-purple-700">
-                              {s.level}
-                            </span>
-                          )}
-                          {fundingStr && (
-                            <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
-                              {fundingStr}
-                            </span>
-                          )}
-                          {s.deadline && (
-                            <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
-                              Deadline: {s.deadline}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+        {s.country && (
+          <div className="flex items-start gap-3">
+            <span className="text-blue-700">📍</span>
+            <span>{s.country}</span>
+          </div>
+        )}
 
-                    <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-                      {s.amount && (
-                        <div className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          Reward: {s.amount}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+        {s.deadline && (
+          <div className="flex items-start gap-3 text-orange-700">
+            <span>📅</span>
+            <span>Deadline: {s.deadline}</span>
+          </div>
+        )}
+      </div>
 
-                  {snippet && (
-                    <p className="mt-3 text-sm leading-6 text-slate-700">{snippet}</p>
-                  )}
+      {snippet && (
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <p className="text-base leading-7 text-slate-700">
+            {snippet}
+            {fullDescription.length > 170 && "..."}
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
 
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Link
-                      to={`/fellowship/${s.id}`}
-                      onClick={() => trackFellowship(s.id, "view")}
-                      className="rounded-lg border border-blue-200 px-4 py-2 text-center text-sm font-semibold text-blue-700 hover:bg-blue-50"
-                    >
-                      View Details
-                    </Link>
-
-                    {s.partnerApplyUrl && (
-                      <a
-                        href={s.partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-blue-800"
-                      >
-                        Apply on Provider Site ↗
-                      </a>
-                    )}
-                  </div>
-
-                  {false && canShowAds && index === 1 && (
-                    <div>{/* Real Google AdSense in-feed ad goes here */}</div>
-                  )}
-                </li>
+  {false && canShowAds && index === 1 && (
+    <div>{/* Real Google AdSense in-feed ad goes here */}</div>
+  )}
+</li>
               );
             })}
           </ul>
