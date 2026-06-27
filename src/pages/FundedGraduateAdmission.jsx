@@ -925,143 +925,89 @@ const popularDestinations = [
 
           <ul className="mt-3 grid gap-3">
             {items.map((s, index) => {
-              const snippet = truncate(stripHtml(s.description || ""), 260);
+              /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
+              const fullDescription = stripHtml(s.description || "");
+              const snippet = truncate(fullDescription, 170);
               const fundingStr = Array.isArray(s.fundingType)
                 ? s.fundingType.join(", ")
                 : s.fundingType || "";
               const logo = s.providerLogoUrl || s.providerLogoData || "";
+              const cardImage = s.imageUrl || s.imageData || logo || "";
 
 return (
   <li
-    key={s.id}
-    /*className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"*/
-    className="rounded-none border-y border-x-0 border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-4"
+  key={s.id}
+  className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6"
+>
+  <Link
+    to={`/funded-graduate-admission/${s.id}`}
+    onMouseEnter={() => prefetchDetail(s.id)}
+    onMouseDown={() => prefetchDetail(s.id)}
+    onClick={() => trackItem(s.id, "view")}
+    className="mb-4 block text-xl font-extrabold leading-tight text-slate-900 hover:text-blue-700 hover:underline sm:text-2xl"
   >
-    <div className="flex flex-col gap-4">
-      {/* TOP ROW: logo, title, provider, funding badge */}
-      {/*</div><div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 lg:grid-cols-[72px_minmax(0,1fr)_auto]">*/}
-        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-4">
-        <div>
-          {logo ? (
-            <img
-              src={logo}
-              alt={`${s.provider || "University"} logo`}
-              className="h-16 w-16 rounded-lg border border-slate-200 bg-white object-contain p-1"
-              loading="lazy"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-sm font-bold text-blue-700">
-              SK
-            </div>
-          )}
+    {s.title}
+  </Link>
+
+  <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+      {cardImage ? (
+        <img
+          src={cardImage}
+          alt={`${s.title || "University-funded opportunity"} image`}
+          className="h-44 w-full rounded-lg object-cover sm:h-48 lg:h-52"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-44 w-full items-center justify-center rounded-lg bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
+          SK
         </div>
+      )}
+    </div>
 
-        <div className="min-w-0">
-          <h3 className="text-base font-bold leading-snug text-slate-900 sm:text-lg break-words [overflow-wrap:anywhere]">
-            {s.title}
-          </h3>
-
-          <div className="mt-1 text-sm leading-6 text-slate-700">
-  {s.provider && (
-    <span className="font-semibold text-blue-950">
-      {s.provider}
-    </span>
-  )}
-
-  {s.country && (
-    <span className="font-semibold text-blue-950">
-      {" • "}
-      {s.country}
-    </span>
-  )}
-</div>
-
-{s.amount && (
-  <div className="mt-3 -ml-[88px] flex justify-center">
-    <span className="inline-flex max-w-[90%] rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-sm font-semibold text-emerald-700">
-      Funding Available: {s.amount}
-    </span>
-  </div>
-)}
-
-</div>
-</div>
-
-      {/* FULL-WIDTH PILLS: starts from left margin and wraps across the card */}
-      <div className="flex max-w-full flex-wrap items-center gap-2">
-        {s.level && (
-          <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">
-            {s.level}
-          </span>
+    <div className="flex min-h-full flex-col">
+      <div className="space-y-3 text-base font-bold text-slate-900">
+        {s.provider && (
+          <div className="flex items-start gap-3">
+            <span className="text-purple-700">🎓</span>
+            <span>{s.provider}</span>
+          </div>
         )}
 
-        {String(s.field || "")
-          .split("•")
-          .map((x) => x.trim())
-          .filter(Boolean)
-          .slice(0, 30)
-          .map((program, idx) => (
-            <span
-              key={`${s.id}-program-${idx}`}
-              className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700"
-            >
-              {program}
-            </span>
-          ))}
-
-        {fundingStr && (
-          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-            {fundingStr}
-          </span>
+        {s.country && (
+          <div className="flex items-start gap-3">
+            <span className="text-blue-700">📍</span>
+            <span>{s.country}</span>
+          </div>
         )}
 
         {s.deadline && (
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-            Deadline: {s.deadline}
-          </span>
+          <div className="flex items-start gap-3 text-orange-700">
+            <span>📅</span>
+            <span>Deadline: {s.deadline}</span>
+          </div>
         )}
       </div>
 
       {snippet && (
-        <p className="text-sm leading-6 text-slate-700">
-          {snippet}
-        </p>
-      )}
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <Link
-          to={`/funded-graduate-admission/${s.id}`}
-          onMouseEnter={() => prefetchDetail(s.id)}
-          onMouseDown={() => prefetchDetail(s.id)}
-          onClick={() => trackItem(s.id, "view")}
-          className="rounded-lg border border-blue-200 px-4 py-2 text-center text-sm font-semibold text-blue-700 hover:bg-blue-50"
-        >
-          View Details
-        </Link>
-
-        {s.partnerApplyUrl && (
-          <a
-            href={s.partnerApplyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-blue-800"
-            onMouseDown={() => trackItem(s.id, "apply")}
-            onClick={() => trackItem(s.id, "apply")}
-          >
-            Apply to University ↗
-          </a>
-        )}
-      </div>
-
-      {false && canShowAds && index === 1 && (
-        <div>{/* Real Google AdSense in-feed ad goes here */}</div>
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <p className="text-base leading-7 text-slate-700">
+            {snippet}
+            {fullDescription.length > 170 && "..."}
+          </p>
+        </div>
       )}
     </div>
-  </li>
+  </div>
+
+  {false && canShowAds && index === 1 && (
+    <div>{/* Real Google AdSense in-feed ad goes here */}</div>
+  )}
+</li>
 );
 })}
 </ul>

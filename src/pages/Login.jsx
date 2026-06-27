@@ -55,9 +55,16 @@ const USE_SUPERTOKENS_RESET_TEST =
   USE_SUPERTOKENS_PROD;
 
 
-const SUPERTOKENS_TEST_API =
-  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
+/*const SUPERTOKENS_TEST_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";*/
+
+  const IS_LOCAL_SUPERTOKENS =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+const SUPERTOKENS_TEST_API = IS_LOCAL_SUPERTOKENS
+  ? "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st"
+  : "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 
 
@@ -392,7 +399,8 @@ const onGoogleLogin = async () => {
 
   // ✅ always redirect to Google Hosted UI
   /*await loginWithGoogle();*/
-  await loginWithGoogle({ useSuperTokens: USE_SUPERTOKENS_PROD });
+  /*await loginWithGoogle({ useSuperTokens: USE_SUPERTOKENS_PROD });*/
+  await loginWithGoogle({ useSuperTokens: true });
 };
 
   /* ====== LOGIN HANDLER ====== */

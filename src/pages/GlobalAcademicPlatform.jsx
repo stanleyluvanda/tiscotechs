@@ -873,6 +873,12 @@ function Lightbox({ img, onClose }) {
 
 /* ============ Categories & Topics ============ */
 const TOPIC_MAP = {
+  "Sexual Health" : [
+    "sexual health",
+    "sex and relationships",
+    " reproductive health", 
+    "STI testing",
+  ],
   Law: [
     "Admiralty (Maritime) Law",
     "Business law",
