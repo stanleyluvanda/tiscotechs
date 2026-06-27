@@ -1012,6 +1012,93 @@ const trackScholarship = (id, type) => {
           </aside>
         </div>
       </div>
+
+      {/* SCHOLARSHIP CTA */}
+{/*<section className="bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
+<section className="mt-12 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
+  <h2 className="text-3xl font-extrabold">
+    Your Scholarship Journey Starts Here
+  </h2>
+
+  <p className="mx-auto mt-4 max-w-3xl text-lg text-blue-100">
+    Discover verified scholarships, fellowships, grants, and funding opportunities
+    from universities, governments, foundations, and international organizations
+    around the world.
+  </p>
+
+  <div className="mt-8 flex flex-wrap justify-center gap-4">
+    {/*<Link
+      to="/scholarships"
+      className="rounded-full bg-white px-7 py-3 font-bold text-blue-800 hover:bg-blue-50"
+    >
+      Browse Scholarships
+    </Link>*/}
+
+    {/*<Link
+      to="/partner-submit-scholarship"
+      className="rounded-full border border-white px-7 py-3 font-bold hover:bg-white/10"
+    >
+      Submit a Scholarship
+    </Link>*/}
+  </div>
+</section>
+
+{/* SCHOLARSHIP FOOTER */}
+<section className="bg-blue-950 px-4 py-10 text-white">
+  <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+
+    <div>
+      <h3 className="text-lg font-bold">Scholarships</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/scholarships" className="block hover:text-white">All Scholarships</Link>
+        <Link to="/fellowships" className="block hover:text-white">Fellowships</Link>
+        <Link to="/funded-graduate-admission" className="block hover:text-white">Funded Graduate Admissions</Link>
+        <Link to="/scholarship-tips" className="block hover:text-white">Application Tips</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">Funding</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/scholarships?funding=Fully Funded" className="block hover:text-white">Fully Funded</Link>
+        <Link to="/scholarships?funding=Partial Funding" className="block hover:text-white">Partial Funding</Link>
+        <Link to="/scholarships?funding=Tuition Waiver" className="block hover:text-white">Tuition Waivers</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">For Universities & Organizations</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/partner-submit-scholarship" className="block hover:text-white">Post a Scholarship</Link>
+        <Link to="/partner" className="block hover:text-white">Partner With Us</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">ScholarsKnowledge</h3>
+      <p className="mt-4 text-sm leading-6 text-slate-300">
+        Connecting students with trusted scholarship and funding opportunities
+        from around the world.
+      </p>
+    </div>
+
+  </div>
+</section>
+{/* COPYRIGHT FOOTER */}
+<div className="border-t border-slate-800 bg-slate-950 py-5">
+  <div className="mx-auto max-w-7xl px-4 text-center">
+    <p className="text-sm text-slate-300">
+      © 2026 ScholarsKnowledge
+    </p>
+  </div>
+</div>
+
+
+
+
+
+
+
     </div>
   );
 }

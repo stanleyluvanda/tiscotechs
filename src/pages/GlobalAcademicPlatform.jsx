@@ -1056,6 +1056,7 @@ const TOPIC_MAP = {
 };
 // ✅ Category → icon (no deps, safe)
 const TOPIC_ICON_MAP = {
+  "Sexual Health": "⚧️",
   Law: "⚖️",
   Engineering: "🛠️",
   Research_Topics: "🔬",
@@ -1070,6 +1071,7 @@ const TOPIC_ICON_MAP = {
   "Medicine & Health": "🩺",
 };
 const TOPIC_IMAGE_MAP = {
+  "Sexual Health": "/images/topics/sexual-health.png",
   Economics: "/images/topics/economics.png",
   Law: "/images/topics/law.png",
   Engineering: "/images/topics/engineering.png",

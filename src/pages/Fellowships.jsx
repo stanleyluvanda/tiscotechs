@@ -922,5 +922,106 @@ const popularDestinations = [
         </aside>
       </div>
     </div>
+
+    {/* FELLOWSHIP CTA */}
+<section className="mt-16 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
+  <h2 className="text-3xl font-extrabold">
+    Advance Your Career with Global Fellowships
+  </h2>
+
+  <p className="mx-auto mt-4 max-w-3xl text-lg text-blue-100">
+    Explore prestigious fellowships, research grants, leadership programs,
+    and professional development opportunities offered by universities,
+    governments, foundations, and international organizations worldwide.
+  </p>
+
+  <div className="mt-8 flex flex-wrap justify-center gap-4">
+    {/*<Link
+      to="/fellowships"
+      className="rounded-full bg-white px-7 py-3 font-bold text-blue-800 hover:bg-blue-50"
+    >
+      Browse Fellowships
+    </Link>*/}
+
+    {/*<Link
+      to="/partner-submit-scholarship"
+      className="rounded-full border border-white px-7 py-3 font-bold hover:bg-white/10"
+    >
+      Submit a Fellowship
+    </Link>*/}
+  </div>
+</section>
+
+{/* FELLOWSHIP FOOTER */}
+<section className="bg-[#14213D] px-4 py-10 text-white">
+  <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+
+    <div>
+      <h3 className="text-lg font-bold">Fellowships</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/fellowships" className="block hover:text-white">
+          All Fellowships
+        </Link>
+        <Link to="/scholarships" className="block hover:text-white">
+          Scholarships
+        </Link>
+        <Link to="/funded-graduate-admission" className="block hover:text-white">
+          Funded Graduate Admissions
+        </Link>
+        <Link to="/scholarship-tips" className="block hover:text-white">
+          Application Tips
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">Funding</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/fellowships" className="block hover:text-white">
+          Research Fellowships
+        </Link>
+        <Link to="/fellowships" className="block hover:text-white">
+          Leadership Fellowships
+        </Link>
+        <Link to="/fellowships" className="block hover:text-white">
+          Professional Fellowships
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">For Organizations</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/partner-submit-scholarship" className="block hover:text-white">
+          Post a Fellowship
+        </Link>
+        <Link to="/partner" className="block hover:text-white">
+          Partner With Us
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">ScholarsKnowledge</h3>
+      <p className="mt-4 text-sm leading-6 text-slate-300">
+        Connecting students, researchers, and professionals with trusted
+        fellowship opportunities from around the world.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+{/* COPYRIGHT */}
+<div className="bg-[#312E81] py-5">
+  <div className="mx-auto max-w-7xl px-4 text-center">
+    <p className="text-sm text-white">
+      © 2026 ScholarsKnowledge
+    </p>
+  </div>
+</div>
+
+
+
   </div>
 )};
