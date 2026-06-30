@@ -255,7 +255,8 @@ export default function Navbar() {
         right: 0,
         height: NAV_H,
         zIndex: 1000,
-        backgroundColor: "#0A4595",
+        /*backgroundColor: "#0A4595",*/
+        background:"linear-gradient(180deg, #163A70 0%, #15366A 100%)",
         WebkitTransform: "translateZ(0)",
       }}
       className="border-b border-black/5 text-white"
@@ -273,9 +274,19 @@ export default function Navbar() {
             className="h-8 w-8 rounded-full object-cover"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
-          <span className="font-extrabold text-base md:text-lg text-white truncate">
+          {/*<span className="font-extrabold text-base md:text-lg text-white truncate">
             ScholarsKnowledge
-          </span>
+          </span>*/}
+
+          <span
+  className="font-extrabold text-base md:text-lg tracking-tight truncate"
+  style={{
+    fontFamily: "Georgia, 'Times New Roman', serif",
+  }}
+>
+  <span className="text-white">Scholars</span>
+  <span style={{ color: "#D9A441" }}>Knowledge</span>
+</span>
         </Link>
 
         {/* CENTER: nav (Partner after About) */}
@@ -325,6 +336,12 @@ export default function Navbar() {
     <Link to="/funding-programs" className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]">
       Funding Programs
     </Link>
+    <Link
+  to="/scholarship-tips"
+  className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]"
+>
+  Students' Resources Hub
+</Link>
   </div>
 </div>
 

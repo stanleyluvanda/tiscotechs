@@ -1109,6 +1109,69 @@ export default function FundedGraduateAdmissionDetail() {
   </section>
 )}
 
+{/* UNIVERSITY-FUNDED FOOTER */}
+<section className="bg-[#0F4C5C] px-4 py-10 text-white">
+  <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+
+    <div>
+      <h3 className="text-lg font-bold">Funded Opportunities</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-200">
+        <Link to="/funded-graduate-admission" className="block hover:text-white">
+          All Opportunities
+        </Link>
+        <Link to="/scholarships" className="block hover:text-white">
+          Scholarships
+        </Link>
+        <Link to="/fellowships" className="block hover:text-white">
+          Fellowships
+        </Link>
+        <Link to="/scholarship-tips" className="block hover:text-white">
+          Application Tips
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">Funding Types</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-200">
+        <Link to="/funded-graduate-admission" className="block hover:text-white">
+          Assistantships
+        </Link>
+        <Link to="/funded-graduate-admission" className="block hover:text-white">
+          Tuition Waivers
+        </Link>
+        <Link to="/funded-graduate-admission" className="block hover:text-white">
+          University Grants
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">For Universities</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-200">
+        <Link to="/partner-submit-scholarship" className="block hover:text-white">
+          Post an Opportunity
+        </Link>
+        <Link to="/partner" className="block hover:text-white">
+          Partner With Us
+        </Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">ScholarsKnowledge</h3>
+      <p className="mt-4 text-sm leading-6 text-slate-200">
+        Connecting international students with trusted university-funded
+        graduate admission opportunities around the world.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
+
+
       <Footer />
     </div>
   );

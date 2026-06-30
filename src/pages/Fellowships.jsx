@@ -923,8 +923,28 @@ const popularDestinations = [
       </div>
     </div>
 
+    {/* DISCLAIMER */}
+<section className="mt-10 -mx-4 sm:mx-0 border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">
+  <div className="mx-auto max-w-[1400px]">
+    <h3 className="text-base font-bold text-amber-900">
+      Disclaimer
+    </h3>
+
+    <p className="mt-2 text-sm leading-7 text-amber-900/90">
+      The funding information presented on this page is provided for general
+      informational purposes only. Eligibility criteria, application deadlines,
+      study levels, participating countries, funding benefits, and application
+      procedures may change without prior notice. Applicants are strongly
+      advised to verify all information directly with the official university,
+      scholarship provider, fellowship organization, or funding institution
+      before submitting an application.
+    </p>
+  </div>
+</section>
+
     {/* FELLOWSHIP CTA */}
-<section className="mt-16 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
+{/*<section className="mt-16 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
+<section className="mt-0 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
   <h2 className="text-3xl font-extrabold">
     Advance Your Career with Global Fellowships
   </h2>

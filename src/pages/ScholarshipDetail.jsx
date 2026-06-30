@@ -1350,6 +1350,47 @@ const res = await fetch(
         </div>
       )}
 
+      <section className="bg-slate-900 px-4 py-10 text-white">
+  <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-4">
+
+    <div>
+      <h3 className="text-lg font-bold">Scholarships</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/scholarships" className="block hover:text-white">All Scholarships</Link>
+        <Link to="/fellowships" className="block hover:text-white">Fellowships</Link>
+        <Link to="/funded-graduate-admission" className="block hover:text-white">Funded Graduate Admissions</Link>
+        <Link to="/scholarship-tips" className="block hover:text-white">Application Tips</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">Funding</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/scholarships?funding=Fully Funded" className="block hover:text-white">Fully Funded</Link>
+        <Link to="/scholarships?funding=Partial Funding" className="block hover:text-white">Partial Funding</Link>
+        <Link to="/scholarships?funding=Tuition Waiver" className="block hover:text-white">Tuition Waivers</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">For Organizations</h3>
+      <div className="mt-4 space-y-2 text-sm text-slate-300">
+        <Link to="/partner-submit-scholarship" className="block hover:text-white">Post a Scholarship</Link>
+        <Link to="/partner" className="block hover:text-white">Partner With Us</Link>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-lg font-bold">ScholarsKnowledge</h3>
+      <p className="mt-4 text-sm leading-6 text-slate-300">
+        Connecting students with trusted scholarship and funding opportunities
+        from around the world.
+      </p>
+    </div>
+
+  </div>
+</section>
+
       <Footer />
     </div>
   );

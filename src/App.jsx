@@ -15,6 +15,14 @@ import Navbar from "./components/Navbar.jsx";
 import AuthCallback from "./pages/AuthCallback.jsx";
 import Home from "./pages/Home.jsx";
 import { getLoggedInUser } from "./lib/authState.js";
+import ScholarshipTipsWinningSOP from "./pages/ScholarshipTipsWinningSOP";
+import ScholarshipTips from "./pages/ScholarshipTips";
+import ScholarshipTipsRecommendationLetters from "./pages/ScholarshipTipsRecommendationLetters";
+import ScholarshipTipsResearchProposal from "./pages/ScholarshipTipsResearchProposal";
+import ScholarshipTipsScholarshipCV from "./pages/ScholarshipTipsScholarshipCV";
+import ScholarshipTipsInterviewQuestions from "./pages/ScholarshipTipsInterviewQuestions";
+import ScholarshipTipsFullyFundedMastersPhD from "./pages/ScholarshipTipsFullyFundedMastersPhD";
+import ScholarshipTipsStayingOnTrackAbroad from "./pages/ScholarshipTipsStayingOnTrackAbroad";
 /*import GlobalAcademicPlatform from "./pages/GlobalAcademicPlatform.jsx";*/
 /*import UniversityAcademicPlatform from "./pages/UniversityAcademicPlatform.jsx";*/
 
@@ -62,7 +70,7 @@ const StudentMarketplace = lazy(() => import("./pages/StudentMarketplace.jsx"));
 const ContactLecturer = lazy(() => import("./pages/ContactLecturer.jsx"));
 const LecturerMessages = lazy(() => import("./pages/LecturerMessages.jsx"));
 
-const Scholarship = lazy(() => import("./pages/Scholarship.jsx"));
+const Scholarship = lazy(() => import("./pages/Scholarship..jsx"));
 const ScholarshipDetail = lazy(() => import("./pages/ScholarshipDetail.jsx"));
 const Fellowships = lazy(() => import("./pages/Fellowships.jsx"));
 
@@ -301,8 +309,42 @@ export default function App() {
             element={<GlobalAcademicPlatform />}
           />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+          <Route
+  path="/scholarship-tips"
+  element={<ScholarshipTips />}
+/>
+
+<Route
+  path="/scholarship-tips/how-to-write-winning-sop"
+  element={<ScholarshipTipsWinningSOP />}
+/>
+<Route
+  path="/scholarship-tips/recommendation-letters"
+  element={<ScholarshipTipsRecommendationLetters />}
+/>
+<Route
+  path="/scholarship-tips/research-proposal"
+  element={<ScholarshipTipsResearchProposal />}
+/>
+<Route
+  path="/scholarship-tips/scholarship-cv"
+  element={<ScholarshipTipsScholarshipCV />}
+/>
+<Route
+  path="/scholarship-tips/interview-preparation"
+  element={<ScholarshipTipsInterviewQuestions />}
+/>
+<Route
+  path="/scholarship-tips/fully-funded-masters-phd-guide"
+  element={<ScholarshipTipsFullyFundedMastersPhD />}
+/>
+<Route
+  path="/scholarship-tips/staying-on-track-abroad"
+  element={<ScholarshipTipsStayingOnTrackAbroad />}
+/>
+
+<Route path="*" element={<NotFound />} />
+</Routes>
       </Suspense>
     </Router>
   );

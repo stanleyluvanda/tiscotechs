@@ -1,13 +1,15 @@
 // src/pages/StudyInUS.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+//import React from "react";
 import { Link } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 /* ---------- tiny UI helpers ---------- */
 
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
     <section
+      id={id}
       className="
         bg-[#f3f6fb]
         rounded-2xl
@@ -15,6 +17,7 @@ function Section({ title, children }) {
         shadow-none
         p-6
         font-['Times_New_Roman',Times,serif]
+        scroll-mt-40
       "
     >
       <h2 className="text-3xl font-bold text-[#4B1F73]">{title}</h2>
@@ -30,68 +33,262 @@ function Section({ title, children }) {
 
 function Pill({ children }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/25 drop-shadow">
+    <span className="inline-flex items-center rounded-sm border border-white/25 bg-white/5 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-white/90">
       {children}
     </span>
   );
 }
 
+
+
+
 /* ---------- Calendly URL (opens in new tab) ---------- */
 const CALENDLY_URL =
   "https://calendly.com/stanleyluvanda/consultation-60-minutes?hide_event_type_details=1&hide_gdpr_banner=1&background_color=f3f6fb&text_color=0f172a&primary_color=2563eb";
 
+
+const guides = [
+  {
+    title: "How to Write and structure a Winning Statement of Purpose",
+    category: "Application Documents",
+    emoji: "📝",
+    time: "12 min read",
+    link: "/scholarship-tips/how-to-write-winning-sop",
+  },
+  {
+    title: "How to Get Strong Recommendation Letters",
+    category: "Letters & References",
+    emoji: "📬",
+    time: "9 min read",
+    link: "/scholarship-tips/recommendation-letters",
+  },
+  {
+    title: "How to Write a Research Proposal",
+    category: "Research Writing",
+    emoji: "🔬",
+    time: "11 min read",
+    link: "/scholarship-tips/research-proposal#what",
+  },
+  {
+    title: "How to Write a Winning Scholarship CV",
+    category: "Application Documents",
+    emoji: "📄",
+    time: "8 min read",
+    link: "/scholarship-tips/scholarship-cv#difference",
+  },
+  {
+    title: "Scholarship Interview Questions & Answers",
+    category: "Interview Preparation",
+    emoji: "🎤",
+    time: "13 min read",
+    link: "/scholarship-tips/interview-preparation",
+  },
+  {
+    title: "Fully Funded Master's & PhD Application Guide",
+    category: "Planning",
+    emoji: "🎓",
+    time: "15 min read",
+    link: "/scholarship-tips/fully-funded-masters-phd-guide",
+  },
+  {
+    title: "Staying On Track Abroad: What International Students Must Do",
+    category: "Study Abroad",
+    emoji: "🌍",
+    time: "14 min read",
+    link: "/scholarship-tips/staying-on-track-abroad",
+  },
+];
+
+
+
+
+  function TocStrip() {
+  return (
+    <div className="mb-12 flex flex-wrap items-center gap-2 rounded-md border border-[#DCD4C2] bg-[#F1ECE0] px-5 py-4">
+      <span className="mr-2 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#766F60]">
+        On this page
+      </span>
+
+      {[
+        ["#admissions", "Admissions"],
+        ["#funding", "Funding"],
+        ["#visa", "Visa"],
+        ["#stem", "STEM & OPT"],
+        ["#campus", "Campus Life"],
+        ["#culture", "English & Culture"],
+      ].map(([href, label]) => (
+        <a
+          key={href}
+          href={href}
+          className="border-r border-[#DCD4C2] px-3 text-sm font-medium text-[#3B4A63] last:border-r-0 hover:text-[#B6542C]"
+        >
+          {label}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+/*function FactRow() {
+  return (
+    <div className="mt-6 grid gap-4 md:grid-cols-3">
+      {[
+        ["20 hrs", "Max weekly on-campus work during term time under F-1 status"],
+        ["12 + 24", "Months of OPT, with STEM extension for eligible majors"],
+        ["Office hrs", "Weekly faculty time built into nearly every course"],
+      ].map(([number, label]) => (
+        <div key={number} className="rounded-md bg-[#1E2A3D] p-5 text-white">
+          <div className="font-serif text-3xl font-bold text-[#C9A24B]">
+            {number}
+          </div>
+          <p className="mt-2 text-sm leading-6 text-white/70">{label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}*/
+
+function FactRow() {
+  return (
+    <div className="mt-6 grid gap-4 md:grid-cols-3">
+      {[
+        ["20 hrs", "Max weekly on-campus work during term time under F-1 status"],
+        ["12 + 24", "Months of OPT, with STEM extension for eligible majors"],
+        ["Office hrs", "Weekly faculty time built into nearly every course"],
+      ].map(([number, label]) => (
+        <div key={number} className="rounded-md bg-[#1E2A3D] p-5 text-white">
+          <div className="font-serif text-3xl font-bold text-[#C9A24B]">
+            {number}
+          </div>
+
+          <p className="mt-2 text-sm leading-6 text-white/70">
+            {label}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+/* ==========================================================
+   Related Scholarship Guides
+========================================================== */
+
+function RelatedGuideLinks() {
+  return (
+    <div className="pt-2">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766F60]">
+        Related guides
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {guides.map((guide) => (
+          <Link
+            key={guide.title}
+            to={guide.link}
+            className="group block border-b border-[#DCD4C2] pb-4 last:border-b-0"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl">
+                {guide.emoji}
+              </span>
+
+              <div>
+                <p className="text-sm font-bold leading-5 text-[#1E2A3D] group-hover:text-[#B6542C]">
+                  {guide.title}
+                </p>
+
+                <p className="mt-1 text-xs text-[#766F60]">
+                  {guide.category} · {guide.time}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+/* ==========================================================
+   Main Component
+========================================================== */
+
+
+
+
+
 export default function StudyInUS() {
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   const openCalendly = (e) => {
     e.preventDefault();
     window.open(CALENDLY_URL, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f6fb]">
-      {/* ✅ FULL-WIDTH HERO (edge-to-edge like About/EduFinancing) */}
-      <header className="relative w-full overflow-hidden">
-        {/* Background image (LOCAL first; best quality + no blur) */}
+    <div className="min-h-screen bg-[#FAF7F0] text-[#3D3A33]">
+      {/* FULL-WIDTH EDITORIAL HERO */}
+      <header className="relative flex min-h-[560px] w-full items-center overflow-hidden bg-[#1E2A3D]">
         <img
           src="/images/studyinus-hero.png"
           alt="Travel to the United States for university"
           className="absolute inset-0 h-full w-full object-cover"
           loading="eager"
           decoding="async"
-          fetchpriority="high"
+          fetchPriority="high"
           referrerPolicy="no-referrer"
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src =
-              "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=2400&q=80";
+              "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=2400&q=80";
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1E2A3D]/95 via-[#1E2A3D]/85 to-[#1E2A3D]/20" />
+        <div className="absolute inset-0 opacity-[0.04] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:22px_22px]" />
 
-        {/* Overlay to keep image visible but text SUPER clear */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/55 to-slate-950/35" />
-        <div className="absolute inset-0 bg-white/5" />
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-16 lg:px-8">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="h-px w-10 bg-[#C9A24B]" />
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C9A24B]">
+              Destination Guide — United States
+            </span>
+          </div>
 
-        {/* ✅ Keep SAME inner width as before (only background is edge-to-edge) */}
-        <div className="relative max-w-[1500px] mx-auto px-4 lg:px-8 py-8">
-          {/* ✅ NO CARD: just the content directly on the image */}
-          <h1 className="text-2xl font-bold text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.6)]">
-            Study in The U.S
+          <h1 className="max-w-3xl font-serif text-5xl font-bold leading-none tracking-tight text-white md:text-7xl">
+            Study in <span className="italic font-normal text-[#C9A24B]">the U.S.</span>
           </h1>
 
-        
-          <p className="mt-1 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-  Studying in the United States opens doors to one of the world’s most diverse, innovative, and academically rigorous higher‑education systems. Whether you are in <b>Africa</b>, <b>Asia</b>, <b>Europe</b>, or any other region, this guide is designed to support your journey by providing clear, reliable, and student‑focused information about U.S. universities and the pathways that lead to them.
-</p>
+          <div className="mt-7 max-w-2xl space-y-4 text-[16px] leading-8 text-white/80">
+            <p>
+              Studying in the United States is a major decision. You need to understand which schools fit you, what it actually costs, how the visa process works, and what life looks like after arrival.
+            </p>
+            <p>
+              This guide brings admissions, funding, visas, STEM/OPT, English preparation, and campus life into one practical pathway for students coming from anywhere in the world.
+            </p>
+          </div>
 
-<p className="mt-4 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-  We help you understand every stage of the process—from choosing the right institution and preparing competitive applications to securing funding, navigating visa requirements, and adapting to campus life. Our goal is to equip you with the knowledge and confidence needed to pursue your academic ambitions in the United States, no matter where you are starting from.
-</p>
-
-<p className="mt-4 text-white/95 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
-  This page brings together essential insights on admissions, scholarships, financial planning, student visas, academic culture, and everyday life as an international student. With accurate guidance and practical resources, you can make informed decisions and take meaningful steps toward studying in one of the world’s most dynamic and academically respected higher‑education environments.
-</p>
-
-          {/* Pills row (same layout) */}
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-7 flex flex-wrap gap-2">
             <Pill>Admissions</Pill>
             <Pill>Funding</Pill>
             <Pill>Visas</Pill>
@@ -99,26 +296,79 @@ export default function StudyInUS() {
             <Pill>STEM &amp; OPT</Pill>
           </div>
 
-          {/* Booking button (same position) */}
-          <div className="mt-3">
+          <div className="mt-8 flex flex-wrap items-center gap-4">
             <button
               onClick={openCalendly}
-              className="inline-flex items-center rounded-md bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-white shadow-sm ring-1 ring-white/60"
+              className="inline-flex items-center rounded-sm bg-[#B6542C] px-7 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#8E3F1F]"
             >
-              Book consultation appointment
+              Book consultation appointment →
             </button>
+            <span className="font-mono text-[11px] tracking-wide text-white/55">
+              $50 · 60 minutes · 1-on-1
+            </span>
           </div>
         </div>
-
-        {/* stable hero height */}
-        <div className="h-[44vh] md:h-[56vh]" />
       </header>
 
-      {/* ✅ Everything else remains as-is */}
-      <main className="max-w-[1200px] mx-auto px-4 lg:px-8 py-8 space-y-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <main className="mx-auto max-w-7xl px-4 py-14 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* LEFT — content */}
-          <div className="space-y-6">
+          <div className="space-y-12">
+            <TocStrip />
+
+            <section className="mb-12">
+  <h1 className="font-serif text-5xl font-bold leading-tight text-[#1E2A3D]">
+    Do You Want to Study in the United States?
+  </h1>
+
+  <p className="mt-6 text-[21px] leading-10 text-slate-700">
+    Studying in the United States is one of the most rewarding academic
+    opportunities available to international students. Whether you are planning
+    to pursue a Bachelor's, Master's, or PhD, understanding the admissions
+    process, scholarships, funding opportunities, student visas, academic
+    culture, and campus life is essential for making informed decisions.
+  </p>
+
+  <p className="mt-6 text-[21px] leading-10 text-slate-700">
+    This comprehensive ScholarsKnowledge guide brings together everything you
+    need in one place—from choosing the right university and preparing strong
+    applications to understanding funding, OPT, STEM programs, English
+    proficiency, and adapting successfully to life in the United States.
+  </p>
+
+  <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-slate-600">
+    <div className="flex items-center gap-3">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#163A70] text-lg font-bold text-white">
+        SK
+      </div>
+
+      <div>
+        <p className="font-semibold text-slate-900">
+          ScholarsKnowledge Editorial
+        </p>
+
+        <p>
+          Updated June 2026 · International Students Guide
+        </p>
+      </div>
+    </div>
+
+    <span className="rounded-full bg-[#163A70] px-4 py-2 font-semibold text-white">
+      18 min read
+    </span>
+  </div>
+</section>
+
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
+
+
+
             <Section title="What is studying in the U.S. like?">
               <p>
   Studying in the United States is shaped by a flexible, credit‑based academic system that allows students to 
@@ -141,7 +391,15 @@ export default function StudyInUS() {
   Students enrolled in STEM‑designated programs may qualify for extended post‑completion training, offering valuable pathways into U.S. industries, 
   research institutions, and innovation‑driven sectors.
 </p>
+              <FactRow />
             </Section>
+           <GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-8 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 
  <Section title="Why consider U.S. graduate programs (Master’s & PhD)">
@@ -195,7 +453,14 @@ export default function StudyInUS() {
     </li>
 
   </ul>
-</Section>           
+</Section>   
+      <GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-8 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
             
 
@@ -243,12 +508,14 @@ export default function StudyInUS() {
 
   </ul>
 </Section>
+<GoogleSidebarAd className="my-2" />
 
 
 
 
 
-<Section title="Admissions: Understanding Requirements and Academic Fit">
+{/*<Section title="Admissions: Understanding Requirements and Academic Fit">*/}
+<Section id="admissions" title="Admissions: Understanding Requirements and Academic Fit">
   <p className="mb-2">
     The admissions process is the foundation of your academic journey in the United States. Selecting the right program and preparing a strong application 
     ensures that you enter an environment aligned with your academic strengths, professional goals, and long‑term aspirations. Because U.S. universities 
@@ -274,8 +541,16 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
-<Section title="Funding: Navigating Scholarships, Assistantships, and Financial Planning">
+{/*<Section title="Funding: Navigating Scholarships, Assistantships, and Financial Planning">*/}
+<Section id="funding" title="Funding: Navigating Scholarships, Assistantships, and Financial Planning">
   <p className="mb-2">
     Funding is one of the most important considerations for international students pursuing higher education in the United States. Understanding the full 
     cost of attendance—and the financial support options available—helps you make informed decisions and avoid unexpected expenses. Many U.S. universities 
@@ -300,6 +575,13 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 <Section title="Cost-effective options (public universities & tuition strategies)">
   <p className="mb-2">
@@ -340,9 +622,17 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 
-<Section title="Visas: Managing Timelines, Documentation, and Compliance">
+{/*<Section title="Visas: Managing Timelines, Documentation, and Compliance">*/}
+<Section id="visa" title="Visas: Managing Timelines, Documentation, and Compliance">
   <p className="mb-2">
     The U.S. student visa process is structured and time‑sensitive, requiring careful preparation to ensure a smooth transition into your academic program. 
     Understanding each step—from receiving your I‑20 to completing post‑arrival requirements—helps you remain compliant with immigration regulations and 
@@ -367,6 +657,13 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 <Section title="F‑1 Visa Interview: Common Questions and How to Prepare">
   <p className="mb-2">
@@ -454,8 +751,16 @@ export default function StudyInUS() {
     and make a strong impression during your visa interview.
   </p>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
-<Section title="Campus Life: Academic Culture, Support Systems, and Student Integration">
+{/*<Section title="Campus Life: Academic Culture, Support Systems, and Student Integration">*/}
+<Section id="campus" title="Campus Life: Academic Culture, Support Systems, and Student Integration">
   <p className="mb-2">
     Campus life in the United States is designed to support both academic success and personal development. Universities emphasize interactive learning, 
     academic integrity, and community engagement, creating an environment where students can grow intellectually and socially. Understanding campus culture 
@@ -480,6 +785,13 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 <Section title="Arrival Checklist: Preparing for a Smooth Transition">
   <p className="mb-2">
@@ -506,14 +818,21 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
-
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
             
 
             
             
 
-            <Section title="STEM programs directory">
+            {/*<Section title="STEM programs directory">*/}
+              <Section id="stem" title="STEM programs directory">
   <p className="mb-2">
     STEM refers to academic fields in <b>Science, Technology, Engineering, and Mathematics</b>. 
     Programs officially classified as STEM by the U.S. Department of Homeland Security may qualify international students for a <b>
@@ -551,6 +870,13 @@ export default function StudyInUS() {
     Because STEM designation varies by institution, students should always verify a program’s official classification on the university’s website or through the international student office. Confirming STEM eligibility is essential for planning long‑term academic and career pathways, especially for those intending to pursue extended training or employment in the United States.
   </p>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
            
             <Section title="Advantages of STEM programs for international students">
@@ -574,6 +900,13 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
             
 
@@ -600,9 +933,17 @@ export default function StudyInUS() {
     </li>
   </ul>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
            
-            <Section title="English proficiency (recommended tests)">
+            {/*<Section title="English proficiency (recommended tests)">*/}
+            <Section id="culture" title="English proficiency (recommended tests)">
   <p className="mb-2">
     English is the primary language of instruction at all accredited U.S. colleges and universities, making strong English proficiency essential for academic 
     success, classroom participation, research communication, and daily life. International students should prepare specifically in <b>academic English</b>, 
@@ -707,6 +1048,13 @@ export default function StudyInUS() {
     patience, practice, and openness to learning, students develop strong, confident communication skills that serve them well in the U.S. and globally.
   </p>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 <Section title="Cultural shocks for international students">
   <p className="mb-2">
@@ -765,6 +1113,13 @@ export default function StudyInUS() {
     that are valuable far beyond the classroom: adaptability, empathy, and the ability to work across cultures.
   </p>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
 <Section title="How to Build Cultural Confidence in the First 90 Days">
   <p className="mb-2">
@@ -834,6 +1189,13 @@ export default function StudyInUS() {
     success throughout their academic journey in the United States.
   </p>
 </Section>
+<GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-2 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
             {/* Book a consultation — OPEN NEW TAB */}
             <Section title="Book a 1-hour consultation ($50)">
@@ -847,7 +1209,7 @@ export default function StudyInUS() {
               <div className="mt-3">
                 <button
                   onClick={openCalendly}
-                  className="rounded-xl bg-blue-600 text-white px-5 py-3 text-sm font-medium hover:bg-blue-700 shadow-sm"
+                  className="rounded-sm bg-[#B6542C] px-5 py-3 text-sm font-semibold text-white hover:bg-[#8E3F1F] shadow-sm"
                 >
                   Check availability &amp; book ($50 / 60 min)
                 </button>
@@ -865,8 +1227,8 @@ export default function StudyInUS() {
           
 
 {/* RIGHT — consultation card + ads */}
-<aside className="space-y-6">
-  <div className="rounded-2xl border-0 ring-0 outline-none shadow-none bg-[#f3f6fb] p-3 font-['Times_New_Roman',Times,serif]">
+<aside className="space-y-6 lg:sticky lg:top-24">
+  <div className="overflow-hidden rounded-md border border-[#DCD4C2] bg-white">
     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
       <img
         className="h-full w-full object-cover"
@@ -901,9 +1263,12 @@ export default function StudyInUS() {
           </div>
         </div>
 
-        <h3 className="mt-3 text-2xl font-bold leading-tight text-[#4B1F73]">
+        {/*<h3 className="mt-3 text-2xl font-bold leading-tight text-[#4B1F73]">
           Book a One-on-One Consultation
-        </h3>
+        </h3>*/}
+        <h3 className="mt-3 whitespace-nowrap text-[1.18rem] font-extrabold leading-tight text-[#1E2A3D] lg:text-[1.22rem]">
+  Book a One-on-One Consultation
+</h3>
 
         <p className="mt-3 text-[18px] leading-8 text-slate-800">
           Schedule a 1-hour consultation for <b>$50</b> and receive personalized
@@ -934,7 +1299,7 @@ export default function StudyInUS() {
         <div className="mt-5">
           <button
             onClick={openCalendly}
-            className="w-full whitespace-nowrap rounded-xl bg-blue-600 px-4 py-3 text-[13px] md:text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="w-full whitespace-nowrap rounded-sm bg-[#B6542C] px-4 py-3 text-[13px] md:text-sm font-semibold text-white shadow-sm transition hover:bg-[#8E3F1F]"
           >
             Check availability &amp; book ($50 / 60 min)
           </button>
@@ -943,21 +1308,23 @@ export default function StudyInUS() {
     </div>
   </div>
 
-  {/* Google ads only below the consultation area */}
-  <GoogleSidebarAd />
+   {/* Related guides + invisible responsive ads */}
+  <RelatedGuideLinks />
 
-  <div
-    className="sticky top-[160px] pt-2 overflow-hidden"
-    style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
-  >
-    <GoogleSidebarAd />
-  </div>
+  <GoogleSidebarAd
+  slot="8562818627"
+  label=""
+  className="my-8 bg-transparent"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
+
 </aside>
         </div>
       </main>
 
       {/* ✅ MOVE CTA OUTSIDE <main> so it can touch both edges */}
-      <section className="w-full bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white shadow-md mt-10">
+      <section className="mt-10 w-full bg-[#16140F] text-white">
         {/* keep inner content aligned with the site */}
         <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-12 text-center">
           <h2 className="text-3xl font-extrabold">
@@ -972,7 +1339,7 @@ export default function StudyInUS() {
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Link
               to="/student-sign-up"
-              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+              className="rounded-full bg-white text-[#1E2A3D] px-5 py-2 font-semibold hover:bg-slate-100"
             >
               Student Sign Up
             </Link>
@@ -986,13 +1353,22 @@ export default function StudyInUS() {
 
             <Link
               to="/partner"
-              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+              className="rounded-full bg-[#C9A24B] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
             >
               Partner with Us
             </Link>
           </div>
         </div>
       </section>
+      {showBackToTop && (
+  <button
+    onClick={scrollToTop}
+    aria-label="Back to top"
+    className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#163A70] text-white shadow-lg transition hover:bg-[#0F2B52]"
+  >
+    ↑
+  </button>
+)}
     </div>
   );
 }

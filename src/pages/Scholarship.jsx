@@ -161,6 +161,99 @@ function filterSortPaginate({
   return { items: out.slice(start, end), total };
 }
 
+const guides = [
+  {
+    title: "How to Write and Structure a Winning Statement of Purpose",
+    category: "Application Documents",
+    emoji: "📝",
+    time: "12 min read",
+    link: "/scholarship-tips/how-to-write-winning-sop",
+  },
+  {
+    title: "How to Get Strong Recommendation Letters",
+    category: "Letters & References",
+    emoji: "📬",
+    time: "9 min read",
+    link: "/scholarship-tips/recommendation-letters",
+  },
+  {
+    title: "How to Write a Research Proposal",
+    category: "Research Writing",
+    emoji: "🔬",
+    time: "11 min read",
+    link: "/scholarship-tips/research-proposal#what",
+  },
+  {
+    title: "How to Write a Winning Scholarship CV",
+    category: "Application Documents",
+    emoji: "📄",
+    time: "8 min read",
+    link: "/scholarship-tips/scholarship-cv#difference",
+  },
+  {
+    title: "Scholarship Interview Questions & Answers",
+    category: "Interview Preparation",
+    emoji: "🎤",
+    time: "13 min read",
+    link: "/scholarship-tips/interview-preparation",
+  },
+  {
+    title: "Fully Funded Master's & PhD Application Guide",
+    category: "Planning",
+    emoji: "🎓",
+    time: "15 min read",
+    link: "/scholarship-tips/fully-funded-masters-phd-guide",
+  },
+  {
+    title: "Staying On Track Abroad: What International Students Must Do",
+    category: "Study Abroad",
+    emoji: "🌍",
+    time: "14 min read",
+    link: "/scholarship-tips/staying-on-track-abroad",
+  },
+];
+
+
+
+
+function RelatedGuideLinks() {
+  return (
+    <div className="pt-2">
+  <div className="mb-5 text-center">
+    <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+      Related Guides
+    </p>
+
+    <div className="mx-auto mt-2 h-1 w-14 rounded-full bg-[#163A70]" />
+  </div>
+
+      <div className="mt-4 space-y-4">
+        {guides.map((guide) => (
+          <Link
+            key={guide.title}
+            to={guide.link}
+            className="group block border-b border-slate-200 pb-4 last:border-b-0"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl">{guide.emoji}</span>
+
+              <div>
+                <p className="text-sm font-bold leading-5 text-slate-900 group-hover:text-blue-700">
+                  {guide.title}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  {guide.category} · {guide.time}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Scholarship() {
   // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
   const [baseItems, setBaseItems] = useState(() => {
@@ -458,6 +551,7 @@ const trackScholarship = (id, type) => {
     flag: "/images/flags/de.webp",
   },
 ];
+
 
   return (
     /*<div className="min-h-screen bg-slate-50 pb-10">*/
@@ -787,17 +881,12 @@ const trackScholarship = (id, type) => {
 
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
-          {/* LEFT PROMO / AD */}
-          <aside className="hidden xl:block">
-            <div className="sticky top-24 rounded-xl border border-purple-100 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm">
-              <div className="mb-2 text-xs text-slate-400">Ad</div>
-              <h3 className="text-lg font-extrabold leading-6 text-purple-900">Dreaming of studying abroad?</h3>
-              <p className="mt-3 text-sm leading-6 text-slate-700">Find the best scholarships and make it happen.</p>
-              <button type="button" className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white">
-                Explore Now
-              </button>
-            </div>
-          </aside>
+          {/* LEFT VERTICAL ADS */}
+<aside className="hidden xl:block">
+  <div className="sticky top-24 space-y-6">
+    {/* Google responsive vertical ads render here automatically */}
+  </div>
+</aside>
 
           {/* MAIN LIST */}
 <main className="min-w-0">
@@ -952,14 +1041,10 @@ const trackScholarship = (id, type) => {
           {/* RIGHT SIDEBAR */}
           <aside className="hidden xl:block">
             <div className="space-y-4">
-              <div className="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm">
-                <div className="mb-2 text-xs text-slate-400">Ad</div>
-                <h3 className="text-lg font-extrabold leading-6 text-purple-900">Your future starts here.</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-700">Hundreds of fully funded scholarships are waiting for you.</p>
-                <button type="button" className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white">
-                  Find Scholarships
-                </button>
-              </div>
+              {/* RIGHT RESPONSIVE AD AREA */}
+<div className="w-full overflow-hidden">
+  {/* Google responsive ad renders here automatically */}
+</div>
 
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900">Popular Study Destinations</h3>
@@ -994,7 +1079,7 @@ const trackScholarship = (id, type) => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              {/*<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900">Latest Scholarship Tips</h3>
                 <div className="mt-3 space-y-3 text-sm">
                   <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
@@ -1007,15 +1092,36 @@ const trackScholarship = (id, type) => {
                     Top Tips to Apply for Fully Funded Scholarships
                   </Link>
                 </div>
-              </div>
+              </div>*/}
+              <RelatedGuideLinks />
             </div>
           </aside>
         </div>
       </div>
+      {/* DISCLAIMER */}
+{/*<section className="mt-10 w-full border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">*/}
+<section className="mt-10 -mx-4 sm:mx-0 border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">
+  <div className="mx-auto max-w-[1400px]">
+    <h3 className="text-base font-bold text-amber-900">
+      Disclaimer
+    </h3>
+
+    <p className="mt-2 text-sm leading-7 text-amber-900/90">
+      The funding information presented on this page is provided for general
+      informational purposes only. Eligibility criteria, application deadlines,
+      study levels, participating countries, funding benefits, and application
+      procedures may change without prior notice. Applicants are strongly
+      advised to verify all information directly with the official university,
+      scholarship provider, fellowship organization, or funding institution
+      before submitting an application.
+    </p>
+  </div>
+</section>
 
       {/* SCHOLARSHIP CTA */}
 {/*<section className="bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
-<section className="mt-12 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
+{/*<section className="mt-12 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
+<section className="mt-0 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
   <h2 className="text-3xl font-extrabold">
     Your Scholarship Journey Starts Here
   </h2>

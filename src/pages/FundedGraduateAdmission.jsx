@@ -1109,8 +1109,28 @@ return (
       </div>
     </div>
 
+    {/* DISCLAIMER */}
+<section className="mt-10 w-full border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">
+  <div className="mx-auto max-w-[1400px]">
+    <h3 className="text-base font-bold text-amber-900">
+      Disclaimer
+    </h3>
+
+    <p className="mt-2 text-sm leading-7 text-amber-900/90">
+      The funding information presented on this page is provided for general
+      informational purposes only. Eligibility criteria, application deadlines,
+      study levels, participating countries, funding benefits, and application
+      procedures may change without prior notice. Applicants are strongly
+      advised to verify all information directly with the official university,
+      scholarship provider, fellowship organization, or funding institution
+      before submitting an application.
+    </p>
+  </div>
+</section>
+
     {/* UNIVERSITY-FUNDED CTA */}
-<section className="mt-16 bg-gradient-to-r from-emerald-900 via-teal-700 to-cyan-600 px-4 py-12 text-center text-white">
+{/*<section className="mt-16 bg-gradient-to-r from-emerald-900 via-teal-700 to-cyan-600 px-4 py-12 text-center text-white">*/}
+<section className="mt-0 bg-gradient-to-r from-emerald-900 via-teal-700 to-cyan-600 px-4 py-12 text-center text-white">
   <h2 className="text-3xl font-extrabold">
     Discover University-Funded Graduate Opportunities
   </h2>
@@ -1178,9 +1198,9 @@ return (
     <div>
       <h3 className="text-lg font-bold">For Universities</h3>
       <div className="mt-4 space-y-2 text-sm text-slate-200">
-        <Link to="/partner-submit-scholarship" className="block hover:text-white">
+        {/*<Link to="/partner-submit-scholarship" className="block hover:text-white">
           Post an Opportunity
-        </Link>
+        </Link>*/}
         <Link to="/partner" className="block hover:text-white">
           Partner With Us
         </Link>
