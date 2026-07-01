@@ -9,6 +9,8 @@ import {
   readFundedAdmissionsCache,
   getFundedGraduateAdmissionById, // used for hover/click prefetch to feel instant
 } from "../utils/scholarshipsApi";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
+import GoogleBannerAd from "../components/GoogleBannerAd";
 
 const CONTINENT_NAMES = Object.keys(REGIONS);
 
@@ -431,16 +433,6 @@ const popularDestinations = [
 
           return (
   <div className="min-h-screen bg-slate-50 pb-10 overflow-x-hidden">
-    {false && canShowAds && (
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
-          <div className="mx-auto max-w-[970px]">
-            {/* Real Google AdSense top banner goes here */}
-          </div>
-        </div>
-      </section>
-    )}
-
     <section
       className="relative border-b border-slate-200 bg-slate-900 bg-cover bg-center"
       style={{ backgroundImage: "url(/images/Scholarship1.webp)" }}
@@ -787,116 +779,16 @@ const popularDestinations = [
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
         <aside className="hidden xl:block">
-          <div className="sticky top-24 rounded-xl border border-purple-100 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm">
-            <div className="mb-2 text-xs text-slate-400">Ad</div>
-            <h3 className="text-lg font-extrabold leading-6 text-purple-900">
-              Find global opportunities. Fund your future.
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
-              Explore university-funded programs linked to admission.
-            </p>
-            <button
-              type="button"
-              className="mt-4 rounded-lg bg-purple-700 px-4 py-2 text-sm font-semibold text-white"
-            >
-              Explore Now
-            </button>
-          </div>
-        </aside>
+  <div className="sticky top-24">
+    <GoogleSidebarAd
+      className="w-full"
+      minHeight={600}
+    />
+  </div>
+</aside>
 
         <main className="min-w-0">
-          {/*<section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
-              <select
-                value={continent}
-                onChange={(e) => {
-                  setContinent(e.target.value);
-                  setCountry("All");
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {["All", ...CONTINENT_NAMES].map((c) => (
-                  <option key={c} value={c}>
-                    {c === "All" ? "All Continents" : c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={country}
-                onChange={(e) => {
-                  setCountry(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {countryOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c === "All" ? "All Countries" : c}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={field}
-                onChange={(e) => {
-                  setField(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {["All", ...FIELDS_OF_STUDY].map((f) => (
-                  <option key={f} value={f}>
-                    {f === "All" ? "All Study Fields" : f}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={funding}
-                onChange={(e) => {
-                  setFunding(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                {fundingOptions.map((f) => (
-                  <option key={f} value={f}>
-                    {f === "All" ? "All Funding Types" : f}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value);
-                  setPage(1);
-                }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="newest">Sort by Newest</option>
-                <option value="deadlineAsc">Deadline (soonest)</option>
-                <option value="deadlineDesc">Deadline (latest)</option>
-                <option value="title">Title (A–Z)</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50"
-              >
-                Reset
-              </button>
-            </div>
-          </section>*/}
-          {false && canShowAds && (
-  <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-    {/* Real Google AdSense responsive banner goes here */}
-  </section>
-)}
-
+        
           {/*<div className="mt-4">*/}
             <div className="mt-4 px-3 sm:px-0">
             <h2 className="text-base font-bold text-slate-900">
@@ -935,6 +827,7 @@ const popularDestinations = [
               const cardImage = s.imageUrl || s.imageData || logo || "";
 
 return (
+   <>
   <li
   key={s.id}
   className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6"
@@ -1004,10 +897,17 @@ return (
     </div>
   </div>
 
-  {false && canShowAds && index === 1 && (
-    <div>{/* Real Google AdSense in-feed ad goes here */}</div>
-  )}
 </li>
+
+{(index + 1) % 4 === 0 && (
+  <li
+    className="overflow-hidden rounded-none border-y border-x-0 border-slate-200 bg-white sm:rounded-xl sm:border"
+  >
+    <GoogleBannerAd className="w-full" />
+  </li>
+)}
+
+</>
 );
 })}
 </ul>
@@ -1039,15 +939,10 @@ return (
 
         <aside className="hidden xl:block">
           <div className="space-y-4">
-            <div className="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm">
-              <div className="mb-2 text-xs text-slate-400">Ad</div>
-              <h3 className="text-lg font-extrabold leading-6 text-purple-900">
-                Your future starts here.
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-slate-700">
-                Many universities consider admitted students for funding automatically.
-              </p>
-            </div>
+            <GoogleSidebarAd
+                  className="w-full"
+                minHeight={600}
+               />
 
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900">
@@ -1090,20 +985,10 @@ return (
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900">Application Tips</h3>
-              <div className="mt-3 space-y-3 text-sm">
-                <div className="font-semibold text-blue-800">
-                  Apply early and check funding deadlines.
-                </div>
-                <div className="font-semibold text-blue-800">
-                  Review whether funding is automatic or separate.
-                </div>
-                <div className="font-semibold text-blue-800">
-                  Prepare strong academic documents.
-                </div>
-              </div>
-            </div>
+            <GoogleSidebarAd
+            className="w-full"
+             minHeight={600}
+           />
           </div>
         </aside>
       </div>

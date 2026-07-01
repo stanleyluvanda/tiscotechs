@@ -9,7 +9,8 @@ import {
   listScholarships,
   readScholarshipsCache,
 } from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback + cache)
-
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
+import GoogleBannerAd from "../components/GoogleBannerAd";
 // ✅ Google Ads (same component you used in dashboards)
 //import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
@@ -453,25 +454,6 @@ export default function Scholarship() {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-
-
-  // 🔵 Track scholarship interactions (fire-and-forget)
-/*const trackScholarship = (id, type) => {
-  try {
-    fetch(
-      `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(id)}/track`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
-        keepalive: true, // important: allows request during navigation
-      }
-    ).catch(() => {});
-  } catch {
-    // silent fail — never break UI
-  }
-};*/
-
 // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
 const trackScholarship = (id, type) => {
   try {
@@ -500,15 +482,6 @@ const trackScholarship = (id, type) => {
 
   // ✅ AdSense content gate: only show ads when there is real publisher content
   const canShowAds = !loading && items.length >= 4;
-
-  // ✅ UI-only featured row. If you later add `featured: true` in the form/backend,
-  // those scholarships will show first. Until then, the first 4 approved scholarships show.
-  /*const featuredItems = useMemo(() => {
-    const list = Array.isArray(baseItems) ? baseItems : [];
-    const marked = list.filter((s) => s.featured === true || s.featuredLevel === "FEATURED" || s.featuredLevel === "PREMIUM_FEATURED");
-    const source = marked.length ? marked : list;
-    return source.slice(0, 4);
-  }, [baseItems]);*/
   const featuredItems = useMemo(() => {
   const list = Array.isArray(baseItems) ? baseItems : [];
 
@@ -522,13 +495,6 @@ const trackScholarship = (id, type) => {
     .slice(0, 8);
 }, [baseItems]);
 
-  /*const popularDestinations = [
-    "United States",
-    "Canada",
-    "United Kingdom",
-    "Australia",
-    "Germany",
-  ];*/
   const popularDestinations = [
   {
     name: "United States",
@@ -557,27 +523,7 @@ const trackScholarship = (id, type) => {
     /*<div className="min-h-screen bg-slate-50 pb-10">*/
       <div className="min-h-screen bg-slate-50 pb-10 overflow-x-hidden">
       {/* TOP ADSENSE BANNER AREA */}
-      {/*<section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
-          <div className="mx-auto flex min-h-[90px] max-w-[970px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-center">
-            
-
-           {canShowAds ? null : null}
-              
-            
-          </div>
-        </div>
-      </section>*/}
-
-      {false && canShowAds && (
-  <section className="border-b border-slate-200 bg-white">
-    <div className="mx-auto max-w-[1400px] px-3 sm:px-4 py-4">
-      <div className="mx-auto max-w-[970px]">
-        {/* Real Google AdSense component goes here */}
-      </div>
-    </div>
-  </section>
-)}
+    
 
       {/* HERO */}
       <section
@@ -880,21 +826,24 @@ const trackScholarship = (id, type) => {
         )}
 
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
-          {/* LEFT VERTICAL ADS */}
-<aside className="hidden xl:block">
-  <div className="sticky top-24 space-y-6">
-    {/* Google responsive vertical ads render here automatically */}
-  </div>
-</aside>
+       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
+  {/* LEFT VERTICAL ADS */}
+  <aside className="hidden xl:block">
+    <div className="sticky top-24 space-y-6">
+      <GoogleSidebarAd
+        className="w-full"
+        minHeight={600}
+      />
+    </div>
+  </aside>
 
           {/* MAIN LIST */}
 <main className="min-w-0">
-  {false && canShowAds && (
-    <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-      {/* Real Google AdSense responsive banner goes here */}
-    </section>
-  )}
+  {canShowAds && (
+  <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+    <GoogleBannerAd className="w-full" />
+  </section>
+)}
 
   {/*<div className="mt-4">*/}
   <div className="mt-4 px-3 sm:px-0">
@@ -1008,9 +957,11 @@ const trackScholarship = (id, type) => {
       </div>
     </li>
 
-    {false && canShowAds && index === 1 && (
-      <li>{/* Real Google AdSense component goes here */}</li>
-    )}
+    {(index + 1) % 4 === 0 && (
+  <li className="overflow-hidden rounded-none border-y border-x-0 border-slate-200 bg-white sm:rounded-xl sm:border">
+    <GoogleBannerAd className="w-full" />
+  </li>
+)}
   </Fragment>
 );
     })}
@@ -1042,9 +993,7 @@ const trackScholarship = (id, type) => {
           <aside className="hidden xl:block">
             <div className="space-y-4">
               {/* RIGHT RESPONSIVE AD AREA */}
-<div className="w-full overflow-hidden">
-  {/* Google responsive ad renders here automatically */}
-</div>
+<GoogleSidebarAd className="w-full" minHeight={600} />
 
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900">Popular Study Destinations</h3>

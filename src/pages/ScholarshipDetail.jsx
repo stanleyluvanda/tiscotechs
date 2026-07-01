@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
+import GoogleBannerAd from "../components/GoogleBannerAd";
 
 // ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
@@ -1082,11 +1084,10 @@ const res = await fetch(
         )}
       </div>
 
-     {false && (
-  <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
-    {/* Real Google AdSense 300x250 goes here */}
-  </div>
-)}
+    <GoogleSidebarAd
+  className="w-full"
+  minHeight={600}
+/>
 
       <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
         <div className="bg-slate-100 px-5 py-4">
@@ -1300,6 +1301,10 @@ const res = await fetch(
           </Link>
         );
       })}
+     </div>
+
+    <div className="mt-8">
+      <GoogleBannerAd className="mx-auto w-full max-w-[970px]" />
     </div>
   </section>
 )}

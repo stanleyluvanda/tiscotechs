@@ -241,18 +241,26 @@ export default function ScholarshipTips() {
                   present themselves clearly.
                 </p>
                 <p>
-                  The scholarship application process is a specific skill. It
+                  {/*The scholarship application process is a specific skill. It
                   requires a strong SOP, well-briefed recommenders, a focused
                   research proposal, and interview answers that sound clear and
-                  credible.
+                  credible.*/}
+                  The scholarship application process is a specific skill. It requires knowing how to write a Statement 
+                  of Purpose that tells a story rather than lists a CV, how to choose and brief recommenders who will go 
+                  beyond generic praise, how to craft a research proposal that convinces a committee you can think independently,
+                   and how to walk into an interview and hold your own against candidates from 70 other countries.
                 </p>
                 <p>
                   <strong className="text-slate-900">
                     These guides exist to close that gap.
                   </strong>{" "}
-                  They are written for students applying to competitive awards
-                  such as Rhodes, Chevening, Fulbright, Commonwealth, DAAD,
-                  Erasmus Mundus, Australian RTP, and university-funded awards.
+                  Each one is written for international students who are applying to competitive, fully funded opportunities — the Rhodes, 
+                  Chevening, Fulbright, Commonwealth, DAAD, Erasmus Mundus, Australian RTP, and university-specific awards worldwide. 
+                  The advice here is practical, specific, and built on what actually works in competitive applications, not what sounds good in theory.
+                </p>
+                <p>
+                 Whether you are just beginning to explore scholarship options or are two weeks from a submission deadline, start with the guide most 
+                 relevant to where you are right now — and use the checklist at the end of each one to make sure nothing slips through.
                 </p>
               </div>
             </div>
@@ -324,22 +332,6 @@ export default function ScholarshipTips() {
                 </p>
               </article>
             ))}
-          </div>
-        </section>
-
-        {/* SEARCH */}
-        <section className="border-y border-slate-200 bg-slate-50 px-4 py-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4">
-                <span className="text-xl">🔍</span>
-                <input
-                  type="search"
-                  placeholder="Search guides..."
-                  className="w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
-                />
-              </div>
-            </div>
           </div>
         </section>
 

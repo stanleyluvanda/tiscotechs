@@ -8,6 +8,8 @@ import {
   listScholarships,
   readScholarshipsCache,
 } from "../utils/scholarshipsApi";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
+import GoogleBannerAd from "../components/GoogleBannerAd";
 
 const CONTENT_TYPE = "FELLOWSHIP";
 const CONTINENT_NAMES = Object.keys(REGIONS);
@@ -701,16 +703,10 @@ const popularDestinations = [
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
         <aside className="hidden xl:block">
-          <div className="sticky top-24 rounded-xl border border-purple-100 bg-gradient-to-b from-purple-50 to-white p-4 shadow-sm">
-            <div className="mb-2 text-xs text-slate-400">Ad</div>
-            <h3 className="text-lg font-extrabold leading-6 text-purple-900">
-              Find global fellowship opportunities
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
-              Discover research, leadership, and professional fellowships.
-            </p>
-          </div>
-        </aside>
+  <div className="sticky top-24">
+    <GoogleSidebarAd className="w-full" minHeight={600} />
+  </div>
+</aside>
 
       
 
@@ -764,12 +760,11 @@ const popularDestinations = [
               const logo = s.providerLogoUrl || s.providerLogoData || "";
               const cardImage = s.imageUrl || s.imageData || logo || "";
 
-              return (
-                /*<li key={s.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">*/
-                  <li
-  key={s.id}
-  className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6"
->
+              return [
+  <li
+    key={s.id}
+    className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6"
+  >
   <Link
     to={`/fellowship/${s.id}`}
     onClick={() => trackFellowship(s.id, "view")}
@@ -833,11 +828,21 @@ const popularDestinations = [
     </div>
   </div>
 
-  {false && canShowAds && index === 1 && (
-    <div>{/* Real Google AdSense in-feed ad goes here */}</div>
-  )}
-</li>
-              );
+ </li>,
+
+(index + 1) % 4 === 0 ? (
+  <li
+    key={`ad-${index}`}
+    className="overflow-hidden rounded-none border-y border-x-0 border-slate-200 bg-white sm:rounded-xl sm:border"
+  >
+    <GoogleBannerAd className="w-full" />
+  </li>
+) : null,
+];
+
+
+
+
             })}
           </ul>
 
@@ -918,6 +923,7 @@ const popularDestinations = [
                 </div>
               </div>
             </div>
+            <GoogleSidebarAd className="w-full" minHeight={600} />
           </div>
         </aside>
       </div>

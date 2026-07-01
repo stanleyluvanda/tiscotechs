@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
+import GoogleBannerAd from "../components/GoogleBannerAd";
 
 // ✅ Same API base as scholarships (same Lambda)
 const API_BASE = (
@@ -289,7 +291,7 @@ export default function FundedGraduateAdmissionDetail() {
   const [showBanner, setShowBanner] = useState(false);
   const [recs, setRecs] = useState([]);
   const [showAllProgramTips, setShowAllProgramTips] = useState(false);
-  const canShowAds = false;
+  const canShowAds = true;
 
   // Track interactions (same endpoint, separate gate key namespace)
   const trackItem = (sid, type) => {
@@ -494,11 +496,8 @@ export default function FundedGraduateAdmissionDetail() {
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
   <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
     <aside className="hidden xl:block">
-      {canShowAds && (
-        <div className="sticky top-24 min-h-[600px] rounded-2xl border border-slate-200 bg-white p-3">
-          {/* Left responsive Google AdSense */}
-        </div>
-      )}
+      
+        <GoogleSidebarAd className="sticky top-24 w-full" minHeight={700} />
     </aside>
 
     <main className="min-w-0 w-full">
@@ -872,40 +871,8 @@ export default function FundedGraduateAdmissionDetail() {
                     </div>
 
                     {/* Sidebar Google Ad */}
-{canShowAds && (
-  <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
-    {/* Google AdSense 300x250 sidebar ad */}
-  </div>
-)}
-
-                    {/*{recs.length > 0 && (
-                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="bg-slate-100 px-5 py-4">
-                          <h4 className="text-lg font-bold text-slate-900 text-center">
-                            You may also like
-                          </h4>
-                        </div>
-
-                        <div className="divide-y divide-slate-200">
-                          {recs.map((s, idx) => {
-                            const sid = getAnyId(s) || String(idx);
-                            const label = s?.title || "Untitled opportunity";
-                            return (
-                              <Link
-                                key={sid}
-                                to={`/funded-graduate-admission/${encodeURIComponent(
-                                  sid
-                                )}`}
-                                className="block px-4 sm:px-5 py-4 text-emerald-700 hover:bg-slate-50 break-words"
-                              >
-                                <span className="font-semibold">{label}</span>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}*/}
-
+<GoogleSidebarAd className="w-full" minHeight={300} />
+                    
                     {recs.filter(
   (s) =>
     s.featured === true ||
@@ -972,21 +939,18 @@ export default function FundedGraduateAdmissionDetail() {
     </div>
   </div>
 )}
-
-
-
+<GoogleSidebarAd
+  className="w-full"
+  minHeight={600}
+/>
 
                   </aside>
                 </div>
               </div>
             </main>
             <aside className="hidden xl:block">
-      {canShowAds && (
-        <div className="sticky top-24 min-h-[600px] rounded-2xl border border-slate-200 bg-white p-3">
-          {/* Right responsive Google AdSense */}
-        </div>
-      )}
-    </aside>
+                  <GoogleSidebarAd className="sticky top-24 w-full" minHeight={700} />
+               </aside>
   
       
           </div>
@@ -1103,8 +1067,12 @@ export default function FundedGraduateAdmissionDetail() {
               )}
             </div>
           </Link>
-        );
+         );
       })}
+</div>
+
+    <div className="mt-8">
+      <GoogleBannerAd className="mx-auto w-full max-w-[970px]" />
     </div>
   </section>
 )}

@@ -129,24 +129,7 @@ const guides = [
   );
 }
 
-/*function FactRow() {
-  return (
-    <div className="mt-6 grid gap-4 md:grid-cols-3">
-      {[
-        ["20 hrs", "Max weekly on-campus work during term time under F-1 status"],
-        ["12 + 24", "Months of OPT, with STEM extension for eligible majors"],
-        ["Office hrs", "Weekly faculty time built into nearly every course"],
-      ].map(([number, label]) => (
-        <div key={number} className="rounded-md bg-[#1E2A3D] p-5 text-white">
-          <div className="font-serif text-3xl font-bold text-[#C9A24B]">
-            {number}
-          </div>
-          <p className="mt-2 text-sm leading-6 text-white/70">{label}</p>
-        </div>
-      ))}
-    </div>
-  );
-}*/
+
 
 function FactRow() {
   return (
@@ -206,6 +189,54 @@ function RelatedGuideLinks() {
             </div>
           </Link>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function SidebarOnThisPage() {
+  return (
+    <div className="rounded-md border border-[#DCD4C2] bg-[#F1ECE0] p-5">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766F60]">
+        On this page
+      </p>
+
+      <div className="mt-4 space-y-3">
+       
+        {[
+  ["#what-us-study-like", "What Studying in the U.S. Is Like"],
+  ["#why-us-graduate-programs", "Why Choose U.S. Graduate Programs"],
+  ["#prepare-before-us", "How to Prepare Before Arrival"],
+  ["#admissions", "Admissions Requirements"],
+  ["#funding", "Funding & Financial Aid"],
+  ["#cost-effective-options", "Cost-Effective Study Options"],
+  ["#visa", "Student Visa Process"],
+  ["#f1-visa-interview", "F-1 Visa Interview Preparation"],
+  ["#campus", "Campus Life"],
+  ["#arrival-checklist", "Arrival Checklist"],
+  ["#stem", "STEM Programs Directory"],
+  ["#stem-advantages", "Benefits of STEM Programs"],
+  ["#select-academic-program", "Selecting an Academic Program"],
+  ["#culture", "English Proficiency"],
+  ["#english-accent-barriers", "Accent & Communication"],
+  ["#cultural-shocks", "Cultural Adjustment"],
+  ["#first-90-days", "Build Cultural Confidence"],
+  ["#book-consultation", "Book a 1-Hour Consultation"],
+].map(([href, label]) => (
+  <a
+    key={href}
+    href={href}
+    className="block text-sm font-semibold text-[#1E2A3D] hover:text-[#B6542C]"
+  >
+    {label}
+  </a>
+))}
+
+
+
+
+
+
       </div>
     </div>
   );
@@ -369,7 +400,8 @@ export default function StudyInUS() {
 
 
 
-            <Section title="What is studying in the U.S. like?">
+            {/*<Section title="What is studying in the U.S. like?">*/}
+              <Section id="what-us-study-like" title="What is studying in the U.S. like?">
               <p>
   Studying in the United States is shaped by a flexible, credit‑based academic system that allows students to 
   design pathways aligned with their goals.Programs combine required foundational courses with a broad selection 
@@ -402,7 +434,9 @@ export default function StudyInUS() {
 />
 
 
- <Section title="Why consider U.S. graduate programs (Master’s & PhD)">
+ {/*<Section title="Why consider U.S. graduate programs (Master’s & PhD)">*/}
+  <Section id="why-us-graduate-programs" title="Why consider U.S. graduate programs (Master’s & PhD)">
+
   <p className="mb-2">
     For international students, pursuing a graduate degree in the United States—whether a Master’s or PhD—often provides far greater academic, financial, and 
     professional benefits than enrolling in an undergraduate program. Graduate education in the U.S. is designed to develop advanced expertise, research 
@@ -463,8 +497,8 @@ export default function StudyInUS() {
 />
 
             
-
-<Section title="How to prepare before coming to the U.S.">
+<Section id="prepare-before-us" title="How to prepare before coming to the U.S.">
+{/*<Section title="How to prepare before coming to the U.S.">*/}
   <p className="mb-2">
     Preparing to study in the United States requires a thoughtful combination of academic planning, financial readiness, and immigration compliance. 
     Before departure, students must ensure that their application materials, funding strategies, and visa processes are fully aligned with university and 
@@ -514,7 +548,7 @@ export default function StudyInUS() {
 
 
 
-{/*<Section title="Admissions: Understanding Requirements and Academic Fit">*/}
+
 <Section id="admissions" title="Admissions: Understanding Requirements and Academic Fit">
   <p className="mb-2">
     The admissions process is the foundation of your academic journey in the United States. Selecting the right program and preparing a strong application 
@@ -550,7 +584,7 @@ export default function StudyInUS() {
 />
 
 {/*<Section title="Funding: Navigating Scholarships, Assistantships, and Financial Planning">*/}
-<Section id="funding" title="Funding: Navigating Scholarships, Assistantships, and Financial Planning">
+<Section id="funding" title="Funding: Navigating Scholarships, Assistantships,Financial Aid, and Financial Planning">
   <p className="mb-2">
     Funding is one of the most important considerations for international students pursuing higher education in the United States. Understanding the full 
     cost of attendance—and the financial support options available—helps you make informed decisions and avoid unexpected expenses. Many U.S. universities 
@@ -582,8 +616,8 @@ export default function StudyInUS() {
   minHeight={250}
   keepPlaceholder={false}
 />
-
-<Section title="Cost-effective options (public universities & tuition strategies)">
+<Section id="cost-effective-options" title="Cost-effective options (public universities & tuition strategies)">
+{/*<Section title="Cost-effective options (public universities & tuition strategies)">*/}
   <p className="mb-2">
     The cost of studying in the United States varies widely depending on the state, city, and type of institution. Public universities—especially those located 
     in smaller or mid-sized cities across the Midwest, South, and interior regions—tend to offer the most affordable tuition and living expenses. In contrast, 
@@ -664,8 +698,8 @@ export default function StudyInUS() {
   minHeight={250}
   keepPlaceholder={false}
 />
-
-<Section title="F‑1 Visa Interview: Common Questions and How to Prepare">
+<Section id="f1-visa-interview" title="F-1 Visa Interview: Common Questions and How to Prepare">
+{/*<Section title="F‑1 Visa Interview: Common Questions and How to Prepare">*/}
   <p className="mb-2">
     The F‑1 visa interview is a brief but important evaluation of your academic intentions, financial readiness, and long‑term plans. Consular officers ask 
     targeted questions to confirm that you are a genuine student who understands your program, can afford your studies, and intends to return home after 
@@ -793,7 +827,8 @@ export default function StudyInUS() {
   keepPlaceholder={false}
 />
 
-<Section title="Arrival Checklist: Preparing for a Smooth Transition">
+<Section id="arrival-checklist" title="Arrival Checklist: Preparing for a Smooth Transition">
+{/*<Section title="Arrival Checklist: Preparing for a Smooth Transition">*/}
   <p className="mb-2">
     The arrival phase marks the beginning of your academic experience in the United States. Completing essential tasks early ensures a smooth transition 
     and helps you settle into your new environment with confidence. This checklist supports first‑time travelers and returning students alike as they 
@@ -878,8 +913,8 @@ export default function StudyInUS() {
   keepPlaceholder={false}
 />
 
-           
-            <Section title="Advantages of STEM programs for international students">
+           <Section id="stem-advantages" title="Advantages of STEM programs for international students">
+            {/*<Section title="Advantages of STEM programs for international students">*/}
   <ul className="list-disc pl-5 space-y-1">
     <li>
       STEM‑designated degrees provide international students with the opportunity to pursue up to 
@@ -909,8 +944,8 @@ export default function StudyInUS() {
 />
 
             
-
-            <Section title="How to select an academic program">
+<Section id="select-academic-program" title="How to select an academic program">
+            {/*<Section title="How to select an academic program">*/}
   <p className="mb-2">
     Selecting the right academic program is one of the most important decisions in a student’s educational journey. The program you choose shapes your academic development, career opportunities, and long‑term professional direction. Because the process can feel overwhelming—especially when comparing curricula, faculty expertise, funding options, and career outcomes—students often benefit from structured guidance. ScholarsKnowledge provides clear, research‑driven support to help you evaluate programs confidently and make informed choices aligned with your goals.
   </p>
@@ -991,7 +1026,8 @@ export default function StudyInUS() {
   </ul>
 </Section>
 
-<Section title="English accent barriers and communication challenges">
+<Section id="english-accent-barriers" title="English accent barriers and communication challenges">
+{/*<Section title="English accent barriers and communication challenges">*/}
   <p className="mb-2">
     Even when international students have strong test scores in English, real‑world communication in the United States can feel challenging. American English 
     includes a wide range of regional accents, fast speech, slang, and idiomatic expressions that are rarely covered in textbooks or exam preparation. These 
@@ -1056,7 +1092,8 @@ export default function StudyInUS() {
   keepPlaceholder={false}
 />
 
-<Section title="Cultural shocks for international students">
+<Section id="cultural-shocks" title="Cultural shocks for international students">
+{/*<Section title="Cultural shocks for international students">*/}
   <p className="mb-2">
     Cultural shock describes the confusion, stress, or discomfort that many international students feel when they encounter a new social environment, 
     especially in the first weeks or months in the United States. Even well‑prepared students can be surprised by differences in classroom behavior, 
@@ -1121,7 +1158,8 @@ export default function StudyInUS() {
   keepPlaceholder={false}
 />
 
-<Section title="How to Build Cultural Confidence in the First 90 Days">
+<Section id="first-90-days" title="How to Build Cultural Confidence in the First 90 Days">
+{/*<Section title="How to Build Cultural Confidence in the First 90 Days">*/}
   <p className="mb-2">
     The first 90 days in the United States are a critical adjustment period for international students. During this time, students encounter new academic 
     expectations, unfamiliar social norms, and diverse communication styles. While the transition can feel overwhelming, it is also the period when students 
@@ -1198,7 +1236,8 @@ export default function StudyInUS() {
 />
 
             {/* Book a consultation — OPEN NEW TAB */}
-            <Section title="Book a 1-hour consultation ($50)">
+            <Section id="book-consultation" title="Book a 1-hour consultation ($50)">
+            {/*<Section title="Book a 1-hour consultation ($50)">*/}
               <p>
   Get personalized, one‑on‑one guidance on programs, funding, applications, and visas. When you book a consultation, you will meet with an advisor who will 
   review your academic background, career goals, and preferred study destinations to help you make informed decisions. During the session, you can expect 
@@ -1228,6 +1267,7 @@ export default function StudyInUS() {
 
 {/* RIGHT — consultation card + ads */}
 <aside className="space-y-6 lg:sticky lg:top-24">
+  
   <div className="overflow-hidden rounded-md border border-[#DCD4C2] bg-white">
     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
       <img
@@ -1310,6 +1350,7 @@ export default function StudyInUS() {
 
    {/* Related guides + invisible responsive ads */}
   <RelatedGuideLinks />
+  <SidebarOnThisPage />
 
   <GoogleSidebarAd
   slot="8562818627"

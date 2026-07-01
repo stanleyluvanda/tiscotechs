@@ -82,6 +82,22 @@ export default function ScholarshipTipsInterviewQuestions() {
 
           <section id="testing" className="mt-14">
             <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold text-slate-950">
+              What separates shortlisted applicants from the rest
+            </h2>
+
+            <p className="mt-6 text-lg leading-9 text-slate-700">
+              Scholarship committees at the Rhodes Trust, the UK Foreign Office (Chevening), the US State Department (Fulbright), and other major funders read thousands of applications every cycle. 
+              The candidates who make it to interview are rarely the ones with the highest GPAs — they are the ones who wrote with clarity and specificity, chose recommenders who could speak to concrete moments, 
+              and demonstrated that they had thought seriously about what they would do with the opportunity.
+              The most common reason strong candidates are rejected is not a lack of achievement — it is a failure to communicate their achievement in the way the committee is asking for. A Statement of 
+              Purpose that reads like a list of qualifications, a recommendation letter that praises without evidence, a research proposal that is too broad to be credible, or an interview that rehearses scripted 
+              answers rather than engaging in genuine dialogue — these are the gaps that these guides are designed to close.
+              Use each guide as a working document, not just reading material. The checklists, templates, and do/don't comparisons are built to be applied directly to your own application as you work through it.
+            </p>
+          </section>
+
+          <section id="testing" className="mt-14">
+            <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold text-slate-950">
               What interviews are actually testing
             </h2>
 
@@ -168,31 +184,6 @@ export default function ScholarshipTipsInterviewQuestions() {
               ))}
             </div>
           </section>
-
-          <div className="mt-14 rounded-3xl bg-[#163A70] p-8 text-center text-white">
-            <h3 className="font-serif text-3xl font-bold">
-              Find scholarships to interview for
-            </h3>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/80">
-              Browse fully funded scholarship opportunities across 150+ countries.
-            </p>
-
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/scholarship"
-                className="rounded-full bg-amber-400 px-6 py-3 text-sm font-bold text-[#163A70] hover:bg-amber-300"
-              >
-                Browse Scholarships
-              </Link>
-
-              <Link
-                to="/student-sign-up"
-                className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white hover:border-white"
-              >
-                Create Free Account
-              </Link>
-            </div>
-          </div>
         </article>
 
         <aside className="hidden lg:block">
@@ -267,22 +258,52 @@ export default function ScholarshipTipsInterviewQuestions() {
   keepPlaceholder={false}
 />
 
-            <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-6 text-white">
-              <h3 className="font-serif text-xl font-bold">
-                Browse scholarships
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-white/75">
-                Find fully funded opportunities across 150+ countries.
-              </p>
-              <Link
-                to="/scholarship"
-                className="mt-5 inline-flex rounded-full bg-[#D4AF37] px-5 py-2 text-sm font-bold text-[#163A70]"
-              >
-                Explore now →
-              </Link>
-            </div>
+            
           </div>
-        </aside>
+         </aside>
+      </section>
+
+      <section className="w-full bg-[#163A70] text-white">
+        <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
+          <h3 className="font-serif text-4xl font-bold leading-tight">
+            Find scholarships to interview for
+          </h3>
+
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/85">
+            Browse verified scholarships, fellowships, and university-funded
+            graduate programs organized by destination, degree level, and deadline.
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/scholarship"
+              className="rounded-full bg-amber-400 px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              Browse Scholarships
+            </Link>
+
+            <Link
+              to="/fellowship"
+              className="rounded-full bg-amber-400 px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              Browse Fellowships
+            </Link>
+
+            <Link
+              to="/funded-graduate-admission"
+              className="rounded-full bg-amber-400 px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              University-Funded Programs
+            </Link>
+
+            <Link
+              to="/student-sign-up"
+              className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+            >
+              Create Free Account
+            </Link>
+          </div>
+        </div>
       </section>
     </main>
   );

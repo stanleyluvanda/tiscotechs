@@ -1,31 +1,8 @@
 //ScholarshipTipsStayingOnTrackAbroad.jsx//
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
 
-function ResponsiveAd({ slot, className = "", format = "auto" }) {
-  useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        window.adsbygoogle.push({});
-      }
-    } catch {
-      // AdSense may not be ready yet
-    }
-  }, []);
 
-  return (
-    <div className={`w-full overflow-hidden ${className}`}>
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
-    </div>
-  );
-}
 
 const validStatus = [
   "Maintaining full-time enrollment every semester, based on your specific course-load minimum.",
@@ -110,8 +87,7 @@ const checklist = [
   "I know that any legal trouble, however minor it seems, must be reported to my international office immediately.",
 ];
 
-/*export default function ScholarshipTipsStayingOnTrackAbroad() {*/
-    function ScholarshipTipsStayingOnTrackAbroad() {
+export default function ScholarshipTipsStayingOnTrackAbroad() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
       <section className="relative mx-auto max-w-6xl px-4 py-10 lg:px-8">
@@ -138,18 +114,11 @@ const checklist = [
         </p>
 
         {/* DESKTOP TOP-RIGHT GOOGLE AD */}
-        <div className="hidden xl:block">
-          <div className="absolute right-4 top-[145px] w-[320px]">
-            <ins
-              className="adsbygoogle"
-              style={{ display: "block" }}
-              data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
-              data-ad-slot="YOUR_TOP_RIGHT_SLOT"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
-          </div>
-        </div>
+<div className="hidden xl:block">
+  <div className="absolute right-4 top-[145px] w-[320px]">
+    <GoogleSidebarAd className="h-[280px]" />
+  </div>
+</div>
 
         <div className="mt-8 flex max-w-[720px] items-center justify-between border-y border-slate-200 py-6">
           <div className="flex items-center">
@@ -184,16 +153,9 @@ const checklist = [
           </div>
 
           {/* GOOGLE ADS - IMAGE RIGHT */}
-          <div className="hidden w-[320px] shrink-0 xl:block">
-            <ins
-              className="adsbygoogle"
-              style={{ display: "block" }}
-              data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
-              data-ad-slot="YOUR_IMAGE_RIGHT_SLOT"
-              data-ad-format="auto"
-              data-full-width-responsive="true"
-            />
-          </div>
+<div className="hidden w-[320px] shrink-0 xl:block">
+  <GoogleSidebarAd />
+</div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -225,8 +187,10 @@ const checklist = [
               </div>
             </section>
 
-            {/* GOOGLE ADS - MID ARTICLE */}
-            <ResponsiveAd slot="XXXXXXXXXX" className="mx-auto my-10 max-w-[720px]" />
+           {/* GOOGLE ADS - MID ARTICLE */}
+<GoogleSidebarAd
+  className="mx-auto my-10 max-w-[720px]"
+/>
 
             <hr className="my-12 border-slate-200" />
 
@@ -368,8 +332,9 @@ const checklist = [
             </section>
 
             {/* GOOGLE ADS - BELOW ARTICLE BODY */}
-            <ResponsiveAd slot="XXXXXXXXXX" className="mx-auto my-10 max-w-[720px]" />
-
+<GoogleSidebarAd
+  className="mx-auto my-10 max-w-[720px]"
+/>
             <hr className="my-12 border-slate-200" />
 
             <section id="academic">
@@ -419,20 +384,8 @@ const checklist = [
               </ul>
             </section>
 
-            <div className="mt-14 rounded-2xl bg-[#163A70] p-8 text-center text-white">
-              <h3 className="font-serif text-3xl font-bold">Need more guidance before you go?</h3>
-              <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/75">
-                Browse fully funded scholarships and connect with the ScholarsKnowledge community of students preparing for study abroad.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link to="/scholarship" className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70]">
-                  Browse Scholarships
-                </Link>
-                <Link to="/student-sign-up" className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white">
-                  Join Free
-                </Link>
-              </div>
-            </div>
+            
+            
           </article>
 
           <aside className="hidden lg:block">
@@ -469,18 +422,57 @@ const checklist = [
                 </div>
               </div>
 
-              {/* GOOGLE ADS - SIDEBAR RESPONSIVE */}
-              <ResponsiveAd slot="XXXXXXXXXX" className="mx-auto mt-2 mb-0 max-w-[720px]" />
+             {/* GOOGLE ADS - SIDEBAR RESPONSIVE */}
+<GoogleSidebarAd
+  className="mx-auto mt-2 mb-0 max-w-[720px]"
+/>
 
-              <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-6 text-white">
-                <h3 className="font-serif text-xl font-bold">Browse scholarships</h3>
-                <p className="mt-3 text-sm leading-6 text-white/75">Find fully funded opportunities across 150+ countries.</p>
-                <Link to="/scholarship" className="mt-5 inline-flex rounded-full bg-[#D4AF37] px-5 py-2 text-sm font-bold text-[#163A70]">
-                  Explore now →
-                </Link>
-              </div>
+             
             </div>
           </aside>
+        </div>
+      </section>
+
+      <section className="w-full bg-[#163A70] text-white">
+        <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
+          <h3 className="font-serif text-4xl font-bold leading-tight">
+            Need more guidance before you go?
+          </h3>
+
+          <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/85">
+            Browse verified scholarships, fellowships, and university-funded
+            graduate programs organized by destination, degree level, and deadline.
+          </p>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/scholarship"
+              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              Browse Scholarships
+            </Link>
+
+            <Link
+              to="/fellowship"
+              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              Browse Fellowships
+            </Link>
+
+            <Link
+              to="/funded-graduate-admission"
+              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+            >
+              University-Funded Programs
+            </Link>
+
+            <Link
+              to="/student-sign-up"
+              className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+            >
+              Join Free
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -525,5 +517,5 @@ const checklist = [
     </main>
   );
 }
-export default ScholarshipTipsStayingOnTrackAbroad;
+
 

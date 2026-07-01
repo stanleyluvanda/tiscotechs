@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
@@ -667,34 +667,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
   className="my-10 bg-transparent"
   minHeight={250}
   keepPlaceholder={false}
-/>
-
-            <div className="mt-14 rounded-2xl bg-[#163A70] p-8 text-center text-white">
-              <h3 className="font-serif text-3xl font-bold">
-                Ready to find a fully funded opportunity?
-              </h3>
-
-              <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/75">
-                Browse scholarships, fellowships, and funded graduate programs
-                organized by destination, level, and deadline.
-              </p>
-
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <Link
-                  to="/scholarship"
-                  className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70]"
-                >
-                  Browse Scholarships
-                </Link>
-
-                <Link
-                  to="/scholarship-tips"
-                  className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white"
-                >
-                  More Guides
-                </Link>
-              </div>
-            </div>
+/>       
           </article>
 
           <aside className="hidden lg:block">
@@ -780,31 +753,62 @@ export default function FullyFundedMastersPhDApplicationGuide() {
               </div>
 
               {/* GOOGLE ADS - SIDEBAR RESPONSIVE */}
-              <ResponsiveAd
-                slot="XXXXXXXXXX"
-                className="mx-auto mt-2 mb-0 max-w-[720px]"
-              />
+             <GoogleSidebarAd
+  className="mx-auto mt-2 mb-0 max-w-[720px]"
+/>
 
-              <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-6 text-white">
-                <h3 className="font-serif text-xl font-bold">
-                  Browse scholarships
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-white/75">
-                  Find fully funded opportunities across 150+ countries.
-                </p>
-
-                <Link
-                  to="/scholarship"
-                  className="mt-5 inline-flex rounded-full bg-[#D4AF37] px-5 py-2 text-sm font-bold text-[#163A70]"
-                >
-                  Explore now →
-                </Link>
-              </div>
+              
             </div>
           </aside>
         </div>
       </section>
+
+      <section className="w-full bg-[#163A70] text-white">
+  <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
+
+    <h3 className="font-serif text-4xl font-bold leading-tight">
+      Ready to find a fully funded opportunity?
+    </h3>
+
+    <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/85">
+      Browse verified scholarships, fellowships, and university-funded graduate
+      programs organized by destination, degree level, and application deadline.
+    </p>
+
+    <div className="mt-8 flex flex-wrap justify-center gap-3">
+
+      <Link
+        to="/scholarship"
+        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+      >
+        Browse Scholarships
+      </Link>
+
+      <Link
+        to="/fellowship"
+        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+      >
+        Browse Fellowships
+      </Link>
+
+      <Link
+        to="/funded-graduate-admission"
+        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+      >
+        University-Funded Programs
+      </Link>
+
+      <Link
+        to="/student-sign-up"
+        className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+      >
+        Create Free Account
+      </Link>
+
+    </div>
+
+  </div>
+</section>
 
       <footer className="w-full border-t border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-14 lg:px-8">
