@@ -39,7 +39,8 @@ export default function GoogleSidebarAd({
     <div
       className={"w-full overflow-hidden " + className}
       /*style={{ minHeight }}*/
-      style={{ minHeight: keepPlaceholder ? minHeight : 0 }}
+      /*style={{ minHeight: keepPlaceholder ? minHeight : 0 }}*/
+      style={{ minHeight: keepPlaceholder ? minHeight : undefined }}
     >
       <ins
         ref={adRef}

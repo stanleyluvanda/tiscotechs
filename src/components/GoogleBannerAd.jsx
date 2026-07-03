@@ -2,7 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { loadAdsenseScript } from "../lib/loadAdsense";
 
-export default function GoogleBannerAd() {
+/*export default function GoogleBannerAd() {*/
+export default function GoogleBannerAd({
+  enabled = true,
+  reserveSpace = true,
+}) {
   const adRef = useRef(null);
   const [ready, setReady] = useState(false);
 
@@ -39,20 +43,22 @@ export default function GoogleBannerAd() {
       console.log("Google ad error:", e);
     }
   }, [ready]);
-
+   if (!enabled) return null;
   return (
     <ins
-      ref={adRef}
-      className="adsbygoogle"
-      style={{
-        display: "block",
-        width: "100%",
-        maxHeight: "90px",
-      }}
-      data-ad-client="ca-pub-2132263917593964"
-      data-ad-slot="4919459228"
-      data-ad-format="horizontal"
-      data-full-width-responsive="true"
-    />
+  ref={adRef}
+  className="adsbygoogle"
+  style={{
+  display: "block",
+  width: "100%",
+  height: reserveSpace ? "100px" : undefined,
+  maxHeight: reserveSpace ? "100px" : undefined,
+  overflow: "hidden",
+}}
+  data-ad-client="ca-pub-2132263917593964"
+  data-ad-slot="4919459228"
+  data-ad-format="horizontal"
+  data-full-width-responsive="true"
+/>
   );
 }

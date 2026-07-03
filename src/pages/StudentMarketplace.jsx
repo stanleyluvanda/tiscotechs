@@ -230,17 +230,6 @@ async function fileToDownscaledDataURL(file, maxW, maxH, quality = 0.84, targetK
 }
 
 /* ============ Tiny UI bits ============ */
-/*function Card({ className = "", children, square = false }) {
-  return (
-    <div
-      className={`${
-        square ? "rounded-none" : "rounded-2xl"
-      } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
-    >
-      {children}
-    </div>
-  );
-}*/
 function Card({ className = "", children, square = false }) {
   return (
     <div
@@ -2156,23 +2145,12 @@ const filtered =
       </div>
 
       {/* Layout */}
-      {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      {/*<main className="max-w-[1360px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-        {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
+     
         <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT: Filters */}
         {/*<aside className="space-y-4 pb-32">*/}
         <aside className="hidden lg:block space-y-4 pb-32">
-          {/*<Card square>
-            <CardHeader title="Student Marketplace" square />
-            <CardBody>
-              <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
-              {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
-              <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
-                {feedLoading ? "Refreshing listings…" : "\u00A0"}
-              </div>
-            </CardBody>
-          </Card>*/}
+         
           <Card square>
   <CardHeader
     title={
@@ -2216,71 +2194,40 @@ const filtered =
   <CardBody>
     <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
     {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
-    <div className="mt-1 text-[11px] text-slate-500 text-center h-4">
+    {/*<div className="mt-1 text-[11px] text-slate-500 text-center h-4">
       {feedLoading ? "Refreshing listings…" : "\u00A0"}
-    </div>
+    </div>*/}
+    <div className="mt-1 h-4" />
   </CardBody>
 </Card>
 
-          <Card square>
-            <CardHeader title="My listings" square />
-            <CardBody>
-              {/*<button
-                onClick={() => setShowMine((v) => !v)}
-                className={`w-full rounded-full px-3 py-1.5 text-sm ${
-                  showMine ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                {showMine ? "On" : "Off"}
-              </button>*/}
-
-              <button
-  onClick={() =>
-    setShowMine((v) => {
-      const next = !v;
-      if (next) setSellerFilter(null);
-      return next;
-    })
-  }
+         <div className="mb-3">
+  <button
+    onClick={() =>
+      setShowMine((v) => {
+        const next = !v;
+        if (next) setSellerFilter(null);
+        return next;
+      })
+    }
+    className={`w-full rounded-full px-4 py-2 text-sm font-semibold transition ${
+      showMine
+        ? "bg-blue-600 text-white"
+        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+    }`}
+  >
+    My listings: {showMine ? "On" : "Off"}
+  </button>
+</div>
 
 
-  className={`w-full rounded-full px-3 py-1.5 text-sm ${
-    showMine ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"
-  }`}
->
-  {showMine ? "On" : "Off"}
-</button>
+             {showMine && (
+  <p className="mt-2 text-center text-xs text-slate-500">
+    Showing only your listings.
+  </p>
+)}
 
-
-
-              {showMine && (
-                <ul className="mt-3 space-y-2 text-sm">
-                  {visibleItems.filter((i) => i.seller && i.seller.id === userId).length === 0 && (
-                    <li className="text-slate-500">No listings yet.</li>
-                  )}
-                  {visibleItems
-                    .filter((i) => i.seller && i.seller.id === userId)
-                    .map((i) => (
-                      <li key={i.id} className="flex items-center gap-2">
-                        <span className="truncate">{i.title}</span>
-                        <Link
-                          to="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            jumpToListing(i.id);
-                          }}
-                          className="ml-auto text-xs text-blue-600 underline"
-                        >
-                          View
-                        </Link>
-                      </li>
-                    ))}
-                </ul>
-              )}
-            </CardBody>
-          </Card>
-
-          <Card square>
+          {/*<Card square>
             <CardHeader title="Search" square />
             <CardBody>
               <input
@@ -2292,8 +2239,20 @@ const filtered =
             </CardBody>
           </Card>
 
+          {/*<Card square>
+            <CardHeader title="Search" square />
+            <CardBody>
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search listings…"
+                className="w-full border border-slate-200 rounded px-3 py-2"
+              />
+            </CardBody>
+          </Card>*/}
+
           <Card square>
-            <CardHeader title="Category" square />
+            <CardHeader title="Search by Category" square />
             <CardBody className="space-y-2">
               <select
                 value={catFilter}
@@ -2303,12 +2262,6 @@ const filtered =
                 }}
                 className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
               >
-                {/*<option>All</option>
-                {MAIN_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}*/}
 <option value="All">All</option>
 
 {DEFAULT_MAIN_CATEGORIES.map((c) => (
@@ -2332,8 +2285,7 @@ const filtered =
       : "bg-amber-100 text-amber-700 font-bold"
   }
 >
-   
-    {group.categories.map((c) => (
+      {group.categories.map((c) => (
       <option key={c} value={c}>
         {c}
       </option>
@@ -2383,11 +2335,14 @@ const filtered =
             </CardBody>
           </Card>
 
-          <GoogleSidebarAd />
-          <div className="sticky top-[160px] pt-2 overflow-hidden" style={{ maxHeight: "calc(100vh - 160px - 24px)" }}>
-            <GoogleSidebarAd />
-          </div>
-        </aside>
+        <GoogleSidebarAd keepPlaceholder={false} />
+<div
+  className="sticky top-[160px] pt-2 overflow-hidden"
+  style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
+>
+  <GoogleSidebarAd keepPlaceholder={false} />
+</div>
+</aside>
 
         {/* CENTER: Composer + Feed */}
         {/*<section className="space-y-4">*/}
@@ -2656,8 +2611,12 @@ const filtered =
               )}
             </CardBody>
           </Card>
-
-
+         <div className="mt-2">
+  <GoogleSidebarAd
+    keepPlaceholder={false}
+    minHeight={85}
+  />
+</div>
 
           {/* MOBILE marketplace navigation/filter card */}
 <Card className="block lg:hidden overflow-hidden">
@@ -2868,7 +2827,8 @@ const filtered =
   </div>
 </Card>
 
-          {filtered.map((item) => {
+          {/*{filtered.map((item) => {*/}
+          {filtered.map((item, idx) => {
             const sellerFromPost = item.seller && typeof item.seller === "object" ? item.seller : {};
 
             const seller = {
@@ -2922,33 +2882,12 @@ const filtered =
 
             const currencyLabel = String(rawCurrency).trim() || (hasPrice ? "$" : "");
 
-            return (
-              <Card key={item.id} id={`listing-${item.id}`}>
-                <CardBody>
-                  {/*<div className="flex items-center gap-3">
-                    <Avatar url={seller.photoUrl} name={seller.name} />
-                    <div className="min-w-0">
-                      <div className="font-semibold text-slate-900">{seller.name}</div>
-                      <div className="text-xs text-slate-500">
-                        {seller.program} {item.createdAt ? `• ${new Date(item.createdAt).toLocaleString()}` : ""}
-                      </div>
-                    </div>
-                    <Badge>
-                      {item.mainCategory}
-                      {item.subCategory ? ` • ${item.subCategory}` : ""}
-                    </Badge>
-
-                    {seller.id === userId && ( // ✅ canonical
-                      <button
-                        onClick={() => deleteListing(item.id)}
-                        className="ml-2 text-xs rounded-full border border-red-200 text-red-600 px-2 py-0.5 hover:bg-red-50"
-                        title="Delete listing"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>*/}
-                  {/* Desktop seller header - unchanged */}
+           return (
+  <div key={item.id} className="space-y-1">
+    <Card id={`listing-${item.id}`}>
+    
+    <CardBody>
+                  
 <div className="hidden sm:flex items-center gap-3">
   <Avatar url={seller.photoUrl} name={seller.name} />
 
@@ -3251,10 +3190,16 @@ const filtered =
                     onOpen={() => ensureThreadLoaded(item.id)}
                     loading={!!threadLoading[item.id]}
                   />
-                </CardBody>
-              </Card>
-            );
-          })}
+               
+           </CardBody>
+         </Card>
+         {(idx + 1) % 10 === 0 && (
+  <GoogleSidebarAd keepPlaceholder={false} />
+)}
+</div>
+        
+          );
+         })}
 
           {/* ✅ Pagination: Load more */}
           {cursor && (
@@ -3336,11 +3281,14 @@ const filtered =
           
           </Card>
 
-          <GoogleSidebarAd />
-          <div className="sticky top-[160px] pt-2 overflow-hidden" style={{ maxHeight: "calc(100vh - 160px - 24px)" }}>
-            <GoogleSidebarAd />
-          </div>
-        </aside>
+  <GoogleSidebarAd keepPlaceholder={false} />
+<div
+  className="sticky top-[160px] pt-2 overflow-hidden"
+  style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
+>
+  <GoogleSidebarAd keepPlaceholder={false} />
+</div>
+</aside>
       </main>
 
 
@@ -3380,13 +3328,7 @@ const filtered =
                   </div>
                 </div>
 
-                {/*<button
-                  type="button"
-                  onClick={() => setSubToast((t) => ({ ...t, open: false }))}
-                  className="ml-auto rounded-full border border-slate-200 px-3 py-1 text-xs hover:bg-slate-50"
-                >
-                  Close
-                </button>*/}
+              
                 <button
                  type="button"
                   onClick={() => setSubToast((t) => ({ ...t, open: false }))}

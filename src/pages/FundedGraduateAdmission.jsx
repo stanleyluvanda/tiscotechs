@@ -161,6 +161,105 @@ function filterSortPaginate({
   return { items: out.slice(start, end), total };
 }
 
+
+const guides = [
+  {
+    title: "How to Write and structure a Winning Statement of Purpose",
+    category: "Application Documents",
+    emoji: "📝",
+    time: "12 min read",
+    link: "/scholarship-tips/how-to-write-winning-sop",
+  },
+  {
+    title: "How to Get Strong Recommendation Letters",
+    category: "Letters & References",
+    emoji: "📬",
+    time: "9 min read",
+    link: "/scholarship-tips/recommendation-letters",
+  },
+  {
+    title: "How to Write a Research Proposal",
+    category: "Research Writing",
+    emoji: "🔬",
+    time: "11 min read",
+    link: "/scholarship-tips/research-proposal#what",
+  },
+  {
+    title: "How to Write a Winning Scholarship CV",
+    category: "Application Documents",
+    emoji: "📄",
+    time: "8 min read",
+    link: "/scholarship-tips/scholarship-cv#difference",
+  },
+  {
+    title: "Scholarship Interview Questions & Answers",
+    category: "Interview Preparation",
+    emoji: "🎤",
+    time: "13 min read",
+    link: "/scholarship-tips/interview-preparation",
+  },
+  {
+    title: "Fully Funded Master's & PhD Application Guide",
+    category: "Planning",
+    emoji: "🎓",
+    time: "15 min read",
+    link: "/scholarship-tips/fully-funded-masters-phd-guide",
+  },
+  {
+  title: "What Is a Fellowship? A Complete Guide for International Students",
+  category: "Fellowships",
+  emoji: "🏆",
+  time: "14 min read",
+  link: "/fellowship-guide#find",
+},
+  {
+    title: "Staying On Track Abroad: What International Students Must Do",
+    category: "Study Abroad",
+    emoji: "🌍",
+    time: "14 min read",
+    link: "/scholarship-tips/staying-on-track-abroad",
+  },
+];
+
+
+function RelatedGuideLinks() {
+  return (
+    <div className="pt-2">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766F60]">
+        Related guides
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {guides.map((guide) => (
+          <Link
+            key={guide.title}
+            to={guide.link}
+            className="group block border-b border-[#DCD4C2] pb-4 last:border-b-0"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl">
+                {guide.emoji}
+              </span>
+
+              <div>
+                <p className="text-sm font-bold leading-5 text-[#1E2A3D] group-hover:text-[#B6542C]">
+                  {guide.title}
+                </p>
+
+                <p className="mt-1 text-xs text-[#766F60]">
+                  {guide.category} · {guide.time}
+                </p>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
 export default function FundedGraduateAdmission() {
   // ✅ baseItems is the full approved list (cache → then API refresh)
   const [baseItems, setBaseItems] = useState(() => {
@@ -440,16 +539,28 @@ const popularDestinations = [
       <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/20" />
 
       <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
-        <div className="max-w-6xl">
+
+
+
+        <div className="pointer-events-none absolute right-4 top-4 hidden h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden lg:block">
+  <GoogleBannerAd reserveSpace={false} />
+</div>
+
+
+
+        {/*<div className="max-w-6xl">*/}
+          <div className="max-w-[700px] lg:max-w-[60%]">
           <h1
-            className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white lg:whitespace-nowrap"
+            /*className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white lg:whitespace-nowrap"*/
+            className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white"
             style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
           >
             University-Funded Admission Opportunities for International Students
           </h1>
 
           <p
-            className="mt-3 max-w-6xl text-sm sm:text-base font-medium text-white/90 lg:whitespace-nowrap"
+            /*className="mt-3 max-w-6xl text-sm sm:text-base font-medium text-white/90 lg:whitespace-nowrap"*/
+            className="mt-3 text-sm sm:text-base font-medium text-white/90"
             style={{ textShadow: "0 2px 10px rgba(0,0,0,0.55)" }}
           >
             Find universities and academic programs where admitted students may be automatically considered for University grants, assistantships, tuition waivers, scholarships,and financial aid.
@@ -900,10 +1011,8 @@ return (
 </li>
 
 {(index + 1) % 4 === 0 && (
-  <li
-    className="overflow-hidden rounded-none border-y border-x-0 border-slate-200 bg-white sm:rounded-xl sm:border"
-  >
-    <GoogleBannerAd className="w-full" />
+  <li className="overflow-hidden">
+    <GoogleBannerAd reserveSpace={false} />
   </li>
 )}
 
@@ -974,7 +1083,7 @@ return (
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            {/*<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h3 className="text-sm font-bold text-slate-900">Funding Types</h3>
               <div className="mt-3 space-y-2 text-sm text-slate-700">
                 <div>Teaching Assistantships</div>
@@ -983,7 +1092,8 @@ return (
                 <div>University Grants</div>
                 <div>Merit-based Aid</div>
               </div>
-            </div>
+            </div>*/}
+            <RelatedGuideLinks />
 
             <GoogleSidebarAd
             className="w-full"

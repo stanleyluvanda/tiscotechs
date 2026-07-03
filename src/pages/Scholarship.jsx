@@ -533,6 +533,15 @@ const trackScholarship = (id, type) => {
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/60 to-slate-900/20" />
         {/*<div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-8 lg:py-10">*/}
           <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
+
+
+            <div className="pointer-events-none absolute right-4 top-4 hidden h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden lg:block">
+  <GoogleBannerAd reserveSpace={false} />
+</div>
+
+
+
+
           <div className="max-w-3xl">
             <h1
   /*className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold leading-tight text-white whitespace-nowrap"*/
@@ -839,9 +848,9 @@ const trackScholarship = (id, type) => {
 
           {/* MAIN LIST */}
 <main className="min-w-0">
-  {canShowAds && (
-  <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-    <GoogleBannerAd className="w-full" />
+ {canShowAds && (
+  <section className="overflow-hidden">
+    <GoogleBannerAd reserveSpace={false} />
   </section>
 )}
 
@@ -958,8 +967,8 @@ const trackScholarship = (id, type) => {
     </li>
 
     {(index + 1) % 4 === 0 && (
-  <li className="overflow-hidden rounded-none border-y border-x-0 border-slate-200 bg-white sm:rounded-xl sm:border">
-    <GoogleBannerAd className="w-full" />
+  <li className="overflow-hidden">
+    <GoogleBannerAd reserveSpace={false} />
   </li>
 )}
   </Fragment>
