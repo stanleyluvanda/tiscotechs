@@ -91,6 +91,13 @@ const guides = [
     link: "/scholarship-tips/fully-funded-masters-phd-guide",
   },
   {
+  title: "What Is a Fellowship? A Complete Guide for International Students",
+  category: "Fellowships",
+  emoji: "🏆",
+  time: "14 min read",
+  link: "/fellowship-guide#find",
+},
+  {
     title: "Staying On Track Abroad: What International Students Must Do",
     category: "Study Abroad",
     emoji: "🌍",

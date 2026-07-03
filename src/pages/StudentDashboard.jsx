@@ -1199,9 +1199,13 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
   onReport,
   currentUser,
   isHighlighted,
+  onOpenComments,
 }) {
 
-  const [showComments,setShowComments]=useState(true);
+ 
+
+  {/*const [showComments,setShowComments]=useState(true);// This hide the comment from loading automatically*/}
+  const [showComments,setShowComments]=useState(false);
   const [cmt,setCmt]=useState("");
   const [cmtImages,setCmtImages]=useState([]); // [{name,dataUrl}]
   const [cmtFiles,setCmtFiles]=useState([]);   // [{name,mime,dataUrl}]
@@ -1515,9 +1519,29 @@ const files = mergedFiles.filter((a) => {
           <svg viewBox="0 0 20 20" className="w-4 h-4" fill={post.liked?"currentColor":"none"} stroke="currentColor"><path d="M10 17l-1.45-1.32C4.4 11.36 2 9.28 2 6.5 2 4.5 3.5 3 5.5 3c1.54 0 2.99.99 3.57 2.36h1.86C11.51 3.99 12.96 3 14.5 3 16.5 3 18 4.5 18 6.5c0 2.78-2.4 4.86-6.55 9.18L10 17z"/></svg>
           Like {post.likes>0 && <span className="text-slate-500">({post.likes})</span>}
         </button>
-        <button onClick={()=>setShowComments(s=>!s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+        {/*<button onClick={()=>setShowComments(s=>!s)} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
           💬 Comment {post.comments?.length>0 && <span className="text-slate-500">({post.comments.length})</span>}
-        </button>
+        </button>*/}
+
+        <button
+  onClick={async () => {
+    if (!showComments) {
+      await onOpenComments?.();
+      setShowComments(true);
+    } else {
+      setShowComments(false);
+    }
+  }}
+  className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+>
+  💬 Comment {post.comments?.length > 0 && (
+    <span className="text-slate-500">({post.comments.length})</span>
+  )}
+</button>
+
+
+
+
         <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">↗ Share</button>
 
         <button
@@ -4234,25 +4258,31 @@ if (showingTab === "Top") {
             </div>
           </SidebarCard>
            {/* Normal Google Ad card */}
-                    {showSidebarAds ? <GoogleSidebarAd /> : null}
+{showSidebarAds ? (
+  <GoogleSidebarAd
+    className="bg-transparent"
+    minHeight={250}
+    keepPlaceholder={false}
+  />
+) : null}
 
-            
-                 {/* Sticky Google Ad card (stays visible while scrolling) */}
-          <div className="sticky top-[160px] pt-2">
-            {/* "safe" height: viewport minus top offset minus bottom gap */}
-            <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
-              {showSidebarAds ? <GoogleSidebarAd /> : null}
-            </div>
-          </div>
-        </aside>
-
-      
-
+{/* Sticky Google Ad card */}
+{showSidebarAds ? (
+  <div className="sticky top-[160px] pt-2">
+    <GoogleSidebarAd
+      slot="8562818627"
+      className="bg-transparent"
+      minHeight={600}
+      keepPlaceholder={false}
+    />
+  </div>
+) : null}
+</aside>
 
         {/* CENTER */}
         {/*<section className="space-y-4">*/} 
           {/*<section className="space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">*/}
-            <section className="w-full max-w-full overflow-x-hidden space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">
+            <section className="w-full max-w-full overflow-x-hidden space-y-1 lg:space-y-1 min-w-0 mt-[85px] lg:mt-0">
           {/*<Card>*/}
             <Card className="w-full max-w-full overflow-hidden">
             {!composerOpen ? (
@@ -4780,11 +4810,29 @@ if (showingTab === "Top") {
         </Card>
       </div>
     )}
+  {/* Sponsored Google ad after every 3 posts */}
+{(idx + 1) % 5 === 0 && (
+  <div className="-mx-3 sm:mx-0 my-4">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 bg-slate-50 px-3 py-1">
+        <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+          Sponsored
+        </span>
+      </div>
+
+      <div className="px-3 py-2">
+        <GoogleSidebarAd
+          className="w-full"
+          minHeight={0}
+          keepPlaceholder={false}
+        />
+      </div>
+    </div>
+  </div>
+)}
+
   </div>
 ))}
-
-
-
   </section>
 
         {/* RIGHT */}
@@ -4869,15 +4917,25 @@ if (showingTab === "Top") {
   </ul>
 </div>
  {/* Normal Google Ad card */}
-          {showSidebarAds ? <GoogleSidebarAd /> : null}
-  
-       {/* Sticky Google Ad card (stays visible while scrolling) */}
-<div className="sticky top-[160px] pt-2">
-  {/* "safe" height: viewport minus top offset minus bottom gap */}
-  <div className="max-h-[calc(100vh-160px-80px)] overflow-hidden">
-  {showSidebarAds ? <GoogleSidebarAd /> : null}
+{showSidebarAds ? (
+  <GoogleSidebarAd
+    className="bg-transparent"
+    minHeight={250}
+    keepPlaceholder={false}
+  />
+) : null}
+
+{/* Sticky Google Ad card */}
+{showSidebarAds ? (
+  <div className="sticky top-[160px] pt-2">
+    <GoogleSidebarAd
+      slot="8562818627"
+      className="bg-transparent"
+      minHeight={600}
+      keepPlaceholder={false}
+    />
   </div>
-</div>
+) : null}
         </aside>
       </main>
 

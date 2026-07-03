@@ -23,6 +23,7 @@ import ScholarshipTipsScholarshipCV from "./pages/ScholarshipTipsScholarshipCV";
 import ScholarshipTipsInterviewQuestions from "./pages/ScholarshipTipsInterviewQuestions";
 import ScholarshipTipsFullyFundedMastersPhD from "./pages/ScholarshipTipsFullyFundedMastersPhD";
 import ScholarshipTipsStayingOnTrackAbroad from "./pages/ScholarshipTipsStayingOnTrackAbroad";
+import FellowshipGuide from "./pages/FellowshipGuide";
 /*import GlobalAcademicPlatform from "./pages/GlobalAcademicPlatform.jsx";*/
 /*import UniversityAcademicPlatform from "./pages/UniversityAcademicPlatform.jsx";*/
 
@@ -342,6 +343,7 @@ export default function App() {
   path="/scholarship-tips/staying-on-track-abroad"
   element={<ScholarshipTipsStayingOnTrackAbroad />}
 />
+<Route path="/fellowship-guide" element={<FellowshipGuide />} />
 
 <Route path="*" element={<NotFound />} />
 </Routes>

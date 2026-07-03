@@ -1417,6 +1417,7 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
   };
 
   // Build merged list in remote order (so feed ordering stays consistent)
+  
   const merged = remote.map(rp => {
     const lp = localById.get(rp?.id);
     if (!lp) return rp;
@@ -2982,20 +2983,39 @@ if (Array.isArray(remotePosts)) {
         const multiPrograms = Array.from(new Set(arr.map(a => a.authorProgram))).sort();
         
 
-        const allC = [];
+        /*const allC = [];
 arr.forEach(a => (a.comments || []).forEach(c => allC.push(c)));
 
 // ✅ Deduplicate across sibling posts by logical identity (merges replies too)
 const mergedComments = mergeDuplicateCommentsByLogicalKey(allC);
-
 const rep = {
   ...base,
   multiGroupId: key,
   multiPrograms,
   displayProgramLabel: `Multiple programs (${multiPrograms.length})${base.targetYear ? ` • ${base.targetYear}` : ""}`,
   comments: mergedComments,
-};
+};*/
 
+const allC = [];
+for (const p of arr) {
+  if (Array.isArray(p.comments)) allC.push(...p.comments);
+}
+
+const mergedComments = mergeDuplicateCommentsByLogicalKey(allC);
+
+const mergedCommentCount = Math.max(
+  mergedComments.length,
+  ...arr.map((a) => Number(a.commentCount || a.commentsCount || 0))
+);
+
+const rep = {
+  ...base,
+  multiGroupId: key,
+  multiPrograms,
+  displayProgramLabel: `Multiple programs (${multiPrograms.length})${base.targetYear ? ` • ${base.targetYear}` : ""}`,
+  commentCount: mergedCommentCount,
+  comments: mergedComments,
+};
 
         result.push(rep);
       }
@@ -3407,21 +3427,21 @@ async function clearNotificationsServerBacked() {
             </div>
           </SidebarCard>
            {/* Normal Google Ad card */}
-           <GoogleSidebarAd />
-           
-           {/* Sticky Google Ad card */}
-           <div
-             className="sticky top-[160px] pt-2 overflow-hidden"
-             style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
-           >
-             <GoogleSidebarAd />
-           </div>
+<GoogleSidebarAd keepPlaceholder={false} />
+
+{/* Sticky Google Ad card */}
+<div
+  className="sticky top-[160px] pt-2 overflow-hidden"
+  style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
+>
+  <GoogleSidebarAd keepPlaceholder={false} />
+</div>
 
         </aside>
 
         {/* CENTER: Composer + Feed */}
         {/*<section className="space-y-4 min-w-0">*/}
-       <section className="w-full max-w-full overflow-x-hidden min-w-0 space-y-3 lg:space-y-4 mt-[85px] lg:mt-0">
+       <section className="w-full max-w-full overflow-x-hidden min-w-0 space-y-1 lg:space-y-1 mt-[85px] lg:mt-0">
           
           <ErrorBoundary>
             {/*<Card>*/}
@@ -4072,33 +4092,41 @@ async function clearNotificationsServerBacked() {
           {/* Feed (deduped multi-program posts) */}
           
 
-          {filtered.map((p) => {
+        
+
+{filtered.map((p, idx) => {
   const key = p.multiGroupId || p.id;
 
   return (
-    <div key={key} id={`post-${key}`} className="scroll-mt-24">
-      <PostCard
-        post={p}
-        onToggleLike={() => toggleLikeBy(p)}
-        onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
-        onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
-        onDelete={() => deletePost(p)}
-        /*onReport={onReport}*/
-        onReport={(payload) => onReport({ ...payload, me: user })}
-        currentUser={user}
-        onOpenComments={() => ensureThreadLoadedForPost(p)}
-        commentsLoading={
-          p.multiGroupId
-            ? (posts || []).some(
-                (x) => x?.multiGroupId === p.multiGroupId && threadLoading[x.id]
-              )
-            : !!threadLoading[p.id]
-        }
+    <React.Fragment key={key}>
+      <div id={`post-${key}`} className="scroll-mt-24">
+        <PostCard
+          post={p}
+          onToggleLike={() => toggleLikeBy(p)}
+          onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
+          onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
+          onDelete={() => deletePost(p)}
+          onReport={(payload) => onReport({ ...payload, me: user })}
+          currentUser={user}
+          onOpenComments={() => ensureThreadLoadedForPost(p)}
+          commentsLoading={
+            p.multiGroupId
+              ? (posts || []).some(
+                  (x) => x?.multiGroupId === p.multiGroupId && threadLoading[x.id]
+                )
+              : !!threadLoading[p.id]
+          }
+          forceOpenComments={forceOpenKey === key}
+        />
+      </div>
 
-        // ✅ ADD THIS PROP (safe: frontend-only)
-        forceOpenComments={forceOpenKey === key}
-      />
-    </div>
+      {(idx + 1) % 5 === 0 ? (
+        <GoogleSidebarAd
+          className="w-full"
+          keepPlaceholder={false}
+        />
+      ) : null}
+    </React.Fragment>
   );
 })}
        
@@ -4170,15 +4198,15 @@ async function clearNotificationsServerBacked() {
            </ul>
           </div> 
            {/* Normal Google Ad card */}
-           <GoogleSidebarAd />
-           
-           {/* Sticky Google Ad card */}
-           <div
-             className="sticky top-[160px] pt-2 overflow-hidden"
-             style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
-           >
-             <GoogleSidebarAd />
-           </div>
+<GoogleSidebarAd keepPlaceholder={false} />
+
+{/* Sticky Google Ad card */}
+<div
+  className="sticky top-[160px] pt-2 overflow-hidden"
+  style={{ maxHeight: "calc(100vh - 160px - 24px)" }}
+>
+  <GoogleSidebarAd keepPlaceholder={false} />
+</div>
         </aside>
       </main>
 
@@ -4882,7 +4910,13 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
         }}
        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
        >
-        💬 Comment {post.comments?.length > 0 && <span className="text-slate-500">({post.comments.length})</span>}
+        {/*💬 Comment {post.comments?.length > 0 && <span className="text-slate-500">({post.comments.length})</span>}*/}
+        💬 Comment{" "}
+{Number(post.commentCount || post.comments?.length || 0) > 0 && (
+  <span className="text-slate-500">
+    ({Number(post.commentCount || post.comments?.length || 0)})
+  </span>
+)}
        {commentsLoading ? <span className="text-xs text-slate-500">(loading…)</span> : null}
         </button>
 

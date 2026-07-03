@@ -1,5 +1,6 @@
 // src/pages/UniversityAcademicPlatform.jsx
-import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";
+/*import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";*/
+import { useEffect, useMemo, useRef, useState, memo, forwardRef, Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
@@ -3226,19 +3227,21 @@ const byParent = allComments.reduce((acc, c) => {
 
 
            {/* Normal Google Ad card */}
-           <GoogleSidebarAd />
+           {/*<GoogleSidebarAd />*/}
+           <GoogleSidebarAd keepPlaceholder={false} />
            
            {/* Sticky Google Ad card */}
            <div
              className="sticky top-[160px] pt-2 overflow-hidden"
              style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
            >
-             <GoogleSidebarAd />
+             {/*<GoogleSidebarAd />*/}
+             <GoogleSidebarAd keepPlaceholder={false} />
            </div>
         </aside>
 
         {/* CENTER */}
-        <section className="min-w-0 space-y-3 lg:space-y-4">
+        <section className="min-w-0 space-y-3 lg:space-y-1">
           <Card>
             <div className="p-4">
               {!editorOpen ? (
@@ -3647,10 +3650,11 @@ const byParent = allComments.reduce((acc, c) => {
   </div>
 </div>
 
-          {sorted.map((post) => (
-            <Card
-              key={post.id}
-              className="p-0"
+          {sorted.map((post, idx) => (
+  <Fragment key={post.id}>
+    <Card
+      className="p-0"
+
               ref={(el) => {
                 if (el) postRefs.current[post.id] = el;
               }}
@@ -3858,6 +3862,13 @@ const byParent = allComments.reduce((acc, c) => {
                 </div>*/}
               </div>
             </Card>
+             {(idx + 1) % 5 === 0 ? (
+      <GoogleSidebarAd
+        className="w-full"
+        keepPlaceholder={false}
+      />
+    ) : null}
+  </Fragment>
           ))}
 
 
@@ -3981,14 +3992,16 @@ const byParent = allComments.reduce((acc, c) => {
           </Card>
 
          {/* Normal Google Ad card */}
-         <GoogleSidebarAd />
+         {/*<GoogleSidebarAd />*/}
+         <GoogleSidebarAd keepPlaceholder={false} />
          
          {/* Sticky Google Ad card */}
          <div
            className="sticky top-[160px] pt-2 overflow-hidden"
            style={{ maxHeight: "calc(100vh - 160px - 24px)" }} // 24px bottom gap
          >
-           <GoogleSidebarAd />
+           {/*<GoogleSidebarAd />*/}
+           <GoogleSidebarAd keepPlaceholder={false} />
          </div>
         </aside>
       </main>

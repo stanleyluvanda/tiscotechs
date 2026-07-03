@@ -6,6 +6,7 @@ export default function GoogleSidebarAd({
   className = "",
   minHeight = 250,
   enabled = true,
+  keepPlaceholder = true,
 }) {
   const adRef = useRef(null);
   const pushedSlotRef = useRef(false);
@@ -37,15 +38,16 @@ export default function GoogleSidebarAd({
   return (
     <div
       className={"w-full overflow-hidden " + className}
-      style={{ minHeight }}
+      /*style={{ minHeight }}*/
+      style={{ minHeight: keepPlaceholder ? minHeight : 0 }}
     >
       <ins
         ref={adRef}
         className="adsbygoogle"
         style={{
-          display: "block",
-          width: "100%",
-          minHeight,
+        display: "block",
+        width: "100%",
+        minHeight: keepPlaceholder ? minHeight : 0,
         }}
         data-ad-client="ca-pub-2132263917593964"
         data-ad-slot={slot}
