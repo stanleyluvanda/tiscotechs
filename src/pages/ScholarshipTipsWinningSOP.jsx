@@ -371,7 +371,7 @@ export default function ScholarshipTipsWinningSOP() {
       your achievements much easier to evaluate.
     </p>
 
-    <div className="mt-8 overflow-hidden rounded-2xl border border-emerald-200 border-l-[6px] border-l-emerald-700 bg-emerald-50">
+    <div className="mt-8 max-sm:-ml-[52px] overflow-hidden rounded-2xl border border-emerald-200 border-l-[6px] border-l-emerald-700 bg-emerald-50">
   <div className="p-6">
     <h4 className="font-bold text-emerald-800">
       Example — professional impact
@@ -409,7 +409,7 @@ export default function ScholarshipTipsWinningSOP() {
       benefit, and how this scholarship will help you achieve that outcome.
     </p>
 
-    <div className="mt-8 grid gap-5 md:grid-cols-2">
+    <div className="mt-8 max-sm:-ml-[52px] grid gap-5 md:grid-cols-2">
       <div className="rounded-xl border border-red-200 bg-red-50 p-4 sm:p-6">
         <h4 className="font-bold text-red-700">✗ Vague goals</h4>
 
@@ -465,7 +465,7 @@ export default function ScholarshipTipsWinningSOP() {
       changing anything, it is still too generic.
     </p>
 
-    <div className="mt-8 overflow-hidden rounded-2xl border border-amber-200 border-l-[6px] border-l-amber-700 bg-amber-50">
+    <div className="mt-8 max-sm:-ml-[52px] overflow-hidden rounded-2xl border border-amber-200 border-l-[6px] border-l-amber-700 bg-amber-50">
   <div className="p-6">
     <h4 className="font-bold text-amber-800">
       Example — specific “why this scholarship” paragraph
