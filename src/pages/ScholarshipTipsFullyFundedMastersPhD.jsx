@@ -160,7 +160,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
   const [openFaq, setOpenFaq] = useState(null);
 
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       <section className="relative mx-auto max-w-6xl px-4 py-10 lg:px-8">
         <div className="text-sm text-slate-500">
           <Link to="/home" className="hover:text-blue-900">Home</Link>
@@ -174,13 +174,13 @@ export default function FullyFundedMastersPhDApplicationGuide() {
           Scholarship Tips &amp; Guides
         </div>
 
-        <h1 className="mt-8 max-w-4xl font-serif text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
+        <h1 className="mt-8 max-w-4xl break-words font-serif text-[38px] font-bold leading-[1.12] text-slate-950 sm:text-4xl md:text-6xl">
           Fully Funded{" "}
           <span className="italic text-[#163A70]">Master&apos;s &amp; PhD</span>{" "}
           Application Guide
         </h1>
 
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-700">
+        <p className="mt-6 max-w-full break-words text-base leading-8 text-slate-700 sm:max-w-3xl sm:text-lg">
           A complete end-to-end guide for international students applying for fully
           funded graduate study abroad — from choosing the right scholarships to
           preparing documents, approaching recommenders, and submitting a competitive
@@ -199,7 +199,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
     />
   </div>
 </div>
-        <div className="mt-8 flex max-w-[720px] items-center justify-between border-y border-slate-200 py-6">
+        <div className="mt-8 flex max-w-[720px] flex-wrap items-center gap-4 border-y border-slate-200 py-6">
           <div className="flex items-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#163A70] font-serif text-lg font-bold text-white">
               SK
@@ -217,18 +217,18 @@ export default function FullyFundedMastersPhDApplicationGuide() {
             </div>
           </div>
 
-          <span className="whitespace-nowrap rounded-full bg-[#163A70] px-4 py-2 text-sm font-bold text-white">
+          <span className="rounded-full bg-[#163A70] px-3 py-1.5 text-xs font-bold text-white sm:px-4 sm:py-2 sm:text-sm">
             15 min read
           </span>
         </div>
 
         {/* HERO IMAGE + RIGHT RESPONSIVE GOOGLE AD */}
-        <div className="mt-8 mb-2 flex items-start gap-8">
-          <div className="max-w-[720px] flex-1">
+        <div className="-mx-4 mt-8 mb-2 flex items-start gap-8 sm:mx-0">
+          <div className="max-w-full flex-1 sm:max-w-[720px]">
             <img
   src="/images/Scholarship1.webp"
   alt="International students graduating from a university abroad"
-  className="h-[280px] w-full rounded-2xl object-cover shadow-sm md:h-[380px]"
+  className="h-[220px] w-full rounded-none object-cover shadow-sm sm:rounded-2xl md:h-[380px]"
 />
           </div>
 
@@ -244,8 +244,8 @@ export default function FullyFundedMastersPhDApplicationGuide() {
 </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <article className="max-w-3xl">
+        <div className="grid min-w-0 gap-8 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
+          <article className="max-w-full overflow-hidden lg:max-w-3xl">
             <section id="possible" className="mt-6">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
                 Is a fully funded Master&apos;s or PhD really possible?
@@ -305,16 +305,16 @@ export default function FullyFundedMastersPhDApplicationGuide() {
 
               <div className="mt-8 grid gap-5">
                 {applicationStages.map((stage, index) => (
-                  <div key={stage.title} className="grid grid-cols-[56px_1fr] gap-5">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#163A70] font-serif text-xl font-bold text-white">
+                  <div key={stage.title} className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#163A70] font-serif text-sm font-bold text-white sm:h-14 sm:w-14 sm:text-xl">
                       {index + 1}
                     </div>
 
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-950">
+              <div className="min-w-0">
+                      <h3 className="break-words text-base font-bold leading-snug text-slate-950 sm:text-xl">
                         {stage.title}
                       </h3>
-                      <p className="mt-4 text-lg leading-9 text-slate-700">
+                      <p className="mt-2 break-words text-sm leading-7 text-slate-700 sm:mt-4 sm:text-lg sm:leading-9">
                         {stage.body}
                       </p>
                     </div>
@@ -345,11 +345,11 @@ export default function FullyFundedMastersPhDApplicationGuide() {
 
               <div className="mt-8 space-y-5">
                 {scholarshipProfiles.map((item) => (
-                  <div key={item.name} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                    <div className="bg-[#163A70] px-5 py-4 text-white">
+                  <div key={item.name} className="w-full max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white sm:rounded-2xl">
+                    <div className="bg-[#163A70] px-4 py-4 text-white sm:px-5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-serif text-2xl font-bold">
+                     <div className="min-w-0">
+                          <h3 className="break-words font-serif text-xl font-bold leading-tight sm:text-2xl">
                             {item.name}
                           </h3>
                           <p className="mt-1 text-sm text-white/75">
@@ -364,7 +364,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
                              </div>
                     </div>
 
-                    <div className="p-5">
+                    <div className="p-4 sm:p-5">
                       <div className="grid gap-3 md:grid-cols-3">
                         <div className="rounded-xl bg-slate-50 p-4">
                           <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
@@ -443,7 +443,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
               </p>
 
               <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
-                <div className="min-w-[720px]">
+                <div className="min-w-[560px] sm:min-w-[720px]">
                   <div className="grid grid-cols-[1.1fr_1fr_1fr_2fr] bg-[#163A70] text-sm font-bold uppercase tracking-widest text-white">
                     <div className="p-4">Scholarship</div>
                     <div className="p-4">Destination</div>
@@ -489,12 +489,12 @@ export default function FullyFundedMastersPhDApplicationGuide() {
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
                 <div className="overflow-hidden rounded-2xl border border-blue-200 border-l-[6px] border-l-[#163A70] bg-blue-50">
-                  <div className="p-6">
+                 <div className="p-4 sm:p-6">
                     <h3 className="font-bold text-[#163A70]">
                       Key Insight — your documents must agree with each other
                     </h3>
 
-                    <p className="mt-4 leading-8 text-slate-700">
+                    <p className="mt-4 text-sm leading-7 text-slate-700 sm:text-base sm:leading-8">
                       Your SOP, CV, recommendation letters, and research proposal
                       should not feel like separate documents from different people.
                       They should reinforce the same academic direction and future
@@ -653,9 +653,9 @@ export default function FullyFundedMastersPhDApplicationGuide() {
                 {checklist.map((item) => (
                   <li
                     key={item}
-                    className="flex gap-4 border-b border-slate-200 pb-4 text-lg leading-8 text-slate-700"
+                    className="flex gap-3 border-b border-slate-200 pb-4 text-base leading-7 text-slate-700 sm:gap-4 sm:text-lg sm:leading-8"
                   >
-                    <span className="mt-2 h-5 w-5 shrink-0 rounded border-2 border-[#163A70]" />
+                    <span className="mt-1 h-4 w-4 shrink-0 rounded border-2 border-[#163A70] sm:mt-2 sm:h-5 sm:w-5" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -766,7 +766,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
       <section className="w-full bg-[#163A70] text-white">
   <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
 
-    <h3 className="font-serif text-4xl font-bold leading-tight">
+   <h3 className="font-serif text-3xl font-bold leading-tight sm:text-4xl">
       Ready to find a fully funded opportunity?
     </h3>
 
@@ -779,28 +779,28 @@ export default function FullyFundedMastersPhDApplicationGuide() {
 
       <Link
         to="/scholarship"
-        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+        className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
       >
         Browse Scholarships
       </Link>
 
       <Link
         to="/fellowship"
-        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+        className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
       >
         Browse Fellowships
       </Link>
 
       <Link
         to="/funded-graduate-admission"
-        className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+        className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
       >
         University-Funded Programs
       </Link>
 
       <Link
         to="/student-sign-up"
-        className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+        className="w-full rounded-full border border-white/40 px-6 py-3 text-center text-sm font-bold text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
       >
         Create Free Account
       </Link>
@@ -813,7 +813,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
       <footer className="w-full border-t border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-6xl px-4 py-14 lg:px-8">
           <div className="grid gap-12 md:grid-cols-3">
-            <div>
+        <div className="min-w-0">
               <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                 In This Guide
               </h3>
@@ -841,7 +841,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
               </div>
             </div>
 
-            <div>
+       <div className="min-w-0">
               <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                 Share this guide
               </h3>
