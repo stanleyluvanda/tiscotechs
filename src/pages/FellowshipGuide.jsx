@@ -6,11 +6,11 @@ const GOLD = "#C8951F";
 
 function PullQuote({ label, children }) {
   return (
-    <div className="my-8 rounded-r-xl border-l-4 border-[#C8951F] bg-[#FBF5E6] px-7 py-6">
-      <div className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#C8951F]">
+    <div className="my-8 max-w-full overflow-hidden rounded-none border-l-4 border-[#C8951F] bg-[#FBF5E6] px-4 py-5 sm:rounded-r-xl sm:px-7 sm:py-6">
+      <div className="mb-3 break-words text-[11px] font-bold uppercase tracking-[0.12em] text-[#C8951F] sm:text-xs">
         {label}
       </div>
-      <p className="font-serif text-2xl italic leading-10 text-slate-950">
+      <p className="break-words font-serif text-xl italic leading-9 text-slate-950 sm:text-2xl sm:leading-10">
         {children}
       </p>
     </div>
@@ -156,19 +156,22 @@ export default function FellowshipGuide() {
           <GoogleSidebarAd className="mb-8 w-full" minHeight={120} />
 
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_330px]">
-            <article className="max-w-4xl">
+            {/*<article className="max-w-4xl">*/}
+              <article className="max-w-4xl px-0 sm:px-0">
               <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#C8951F]">
                 Fellowships
               </p>
 
-              <h1 className="mt-6 font-serif text-5xl font-bold leading-tight text-slate-950 md:text-6xl">
+             <h1 className="mt-6 max-w-full break-words font-serif text-[38px] font-bold leading-[1.12] text-slate-950 sm:text-4xl md:text-6xl">
+              {/*<h1 className="mt-6 font-serif text-5xl font-bold leading-tight text-slate-950 md:text-6xl">*/}
                 What Is a Fellowship?{" "}
                 <span className="italic text-[#0B2D5F]">
                   A Complete Guide for International Students
                 </span>
               </h1>
 
-              <div className="mt-7 flex items-center gap-5 border-y border-slate-200 py-6">
+              {/*<div className="mt-7 flex items-center gap-5 border-y border-slate-200 py-6">*/}
+              <div className="mt-7 flex flex-wrap items-center gap-4 border-y border-slate-200 py-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0B2D5F] font-serif font-bold text-white">
                   SK
                 </div>
@@ -183,7 +186,8 @@ export default function FellowshipGuide() {
                 </span>
               </div>
 
-              <p className="mt-10 text-2xl leading-[2.1] text-[#0B2D5F] first-letter:float-left first-letter:mr-4 first-letter:font-serif first-letter:text-8xl first-letter:font-bold">
+              {/*<p className="mt-10 text-2xl leading-[2.1] text-[#0B2D5F] first-letter:float-left first-letter:mr-4 first-letter:font-serif first-letter:text-8xl first-letter:font-bold">*/}
+                <p className="mt-8 max-w-full break-words text-[18px] leading-8 text-[#0B2D5F] sm:text-xl sm:leading-10 md:text-2xl md:leading-[2.1] first-letter:float-left first-letter:mr-3 sm:first-letter:mr-4 first-letter:font-serif first-letter:text-5xl sm:first-letter:text-7xl md:first-letter:text-8xl first-letter:font-bold">
                 The word "fellowship" appears constantly in the world of international education — on university websites, in scholarship databases, in advisor emails — and yet most students remain uncertain about what a fellowship actually is, how it differs from a scholarship, and whether it is something they should be pursuing. This guide answers all of it, drawing on guidance from Columbia University, Harvard, SFSU, ProFellow, and current program data, so you can decide whether a fellowship belongs in your funding strategy.
               </p>
 
@@ -204,11 +208,11 @@ export default function FellowshipGuide() {
 </div>
 
               <section id="what" className="pt-14">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   What is a fellowship — really?
                 </h2>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   At its core, a fellowship is a <strong>competitive, merit-based, funded opportunity to do something exceptional</strong> — and that definition is deliberately broad, because fellowships themselves are enormously varied. Unlike scholarships, which are essentially financial aid tied to academic record, a fellowship is an investment in a person who shows specific promise for future impact in their field.
                 </p>
 
@@ -228,31 +232,37 @@ export default function FellowshipGuide() {
                   "A fellowship is a funded opportunity to do something exceptional. It is funded, competitive, merit-based, short-term, and exceptional."
                 </PullQuote>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   What this means in practice: a fellowship is a short-to-medium-term programme that funds a proposed activity — research, teaching, graduate study, community work, professional development — and selects recipients based on demonstrated <em>potential</em> rather than past grades alone.
                 </p>
               </section>
 
-              <GoogleSidebarAd className="my-10 w-full" minHeight={250} />
+              <GoogleSidebarAd
+  className="-mx-4 my-8 w-auto sm:mx-0 sm:w-full"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
               <section id="difference" className="pt-10">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   Fellowship vs scholarship — the key difference
                 </h2>
 
                 <DoDont />
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p /*className="mt-8 text-xl leading-10 text-slate-700">*/
+                  className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   It is worth noting that the distinction is not always clean. The Rhodes Scholarship is, technically, a scholarship — but it operates like a fellowship: highly competitive, selecting for extraordinary all-round potential, with structured expectations for leadership, service, and long-term impact.
                 </p>
               </section>
 
               <section id="types" className="pt-12">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   Types of fellowships available
                 </h2>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p /*className="mt-8 text-xl leading-10 text-slate-700">*/
+                  className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   The range of fellowship programmes is much wider than most students realize. Here is a breakdown of the main categories and what each one typically involves.
                 </p>
 
@@ -273,11 +283,12 @@ export default function FellowshipGuide() {
               </section>
 
               <section id="pay" className="pt-12">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   What fellowships pay for
                 </h2>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p /*className="mt-8 text-xl leading-10 text-slate-700">*/
+                  className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   Fellowship funding packages vary widely, but the most comprehensive programmes cover far more than tuition alone.
                 </p>
 
@@ -301,14 +312,19 @@ export default function FellowshipGuide() {
                 </div>
               </section>
 
-              <GoogleSidebarAd className="my-10 w-full" minHeight={250} />
+              <GoogleSidebarAd
+  className="-mx-4 my-8 w-auto sm:mx-0 sm:w-full"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
               <section id="examples" className="pt-12">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   Notable fellowships for international students (2026)
                 </h2>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p /*className="mt-8 text-xl leading-10 text-slate-700">*/
+                  className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   The following are among the most significant and widely known fellowship programmes available to international students.
                 </p>
 
@@ -506,16 +522,18 @@ export default function FellowshipGuide() {
 </div>
               </section>
               <GoogleSidebarAd
-              className="my-10 w-full"
-              minHeight={250}
-             />
+  className="-mx-4 my-8 w-auto sm:mx-0 sm:w-full"
+  minHeight={250}
+  keepPlaceholder={false}
+/>
 
               <section id="apply" className="pt-12">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   How to prepare a strong fellowship application
                 </h2>
 
-                <p className="mt-8 text-xl leading-10 text-slate-700">
+                <p /*className="mt-8 text-xl leading-10 text-slate-700">*/
+                  className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-xl sm:leading-10">
                   Fellowship selection committees are not looking for the most decorated applicant — they are looking for the one who shows the clearest, most credible vision of what they will do with the opportunity.
                 </p>
 
@@ -548,7 +566,7 @@ export default function FellowshipGuide() {
               </section>
 
               <section id="find" className="pt-12">
-                <h2 className="border-b border-slate-200 pb-4 font-serif text-3xl font-bold">
+                <h2 className="break-words border-b border-slate-200 pb-4 font-serif text-2xl font-bold leading-tight sm:text-3xl">
                   How to find the right fellowship for you
                 </h2>
 
