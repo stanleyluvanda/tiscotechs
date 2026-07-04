@@ -136,7 +136,7 @@ function FellowshipCard({ color, name, country, badge, meta, text, selects, open
 
 export default function FellowshipGuide() {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       <div className="sticky top-0 z-40 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm lg:px-10">
         <Link to="/scholarship-tips" className="text-[#0B2D5F] hover:underline">
           ← Back to guides
@@ -187,13 +187,20 @@ export default function FellowshipGuide() {
                 The word "fellowship" appears constantly in the world of international education — on university websites, in scholarship databases, in advisor emails — and yet most students remain uncertain about what a fellowship actually is, how it differs from a scholarship, and whether it is something they should be pursuing. This guide answers all of it, drawing on guidance from Columbia University, Harvard, SFSU, ProFellow, and current program data, so you can decide whether a fellowship belongs in your funding strategy.
               </p>
 
-              <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">
-  <img
+              {/*<div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm">*/}
+                <div className="-mx-4 mt-8 overflow-hidden rounded-none border-y border-slate-200 bg-slate-50 shadow-sm sm:mx-0 sm:rounded-2xl sm:border">
+  {/*<img
     src="/images/fellowship-guide.png"
     alt="International students researching fellowship and funding opportunities"
     className="h-[260px] w-full object-cover md:h-[420px]"
     loading="eager"
-  />
+  />*/}
+  <img
+  src="/images/fellowship-guide.png"
+  alt="International students researching fellowship and funding opportunities"
+  className="h-[260px] w-full object-cover sm:h-[340px] md:h-[420px]"
+  loading="eager"
+/>
 </div>
 
               <section id="what" className="pt-14">

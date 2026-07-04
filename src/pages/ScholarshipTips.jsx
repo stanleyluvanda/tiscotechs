@@ -128,7 +128,8 @@ export default function ScholarshipTips() {
         style={{ width: `${scrollProgress}%` }}
       />
 
-      <main className="min-h-screen bg-white text-slate-900">
+      {/*<main className="min-h-screen bg-white text-slate-900">*/}
+      <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
         {/* MAGAZINE HERO */}
         <section className="bg-[#163A70] text-white">
           <div className="mx-auto max-w-7xl px-4 py-16 text-center lg:px-8">
@@ -187,8 +188,10 @@ export default function ScholarshipTips() {
               <div className="h-px flex-1 bg-slate-200" />
             </div>
 
-            <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md md:grid md:grid-cols-2">
-              <div className="relative min-h-[220px] bg-[#163A70] md:min-h-[340px]">
+            {/*<article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md md:grid md:grid-cols-2">*/}
+              <article className="overflow-hidden rounded-none border-y border-slate-200 bg-white shadow-sm transition hover:shadow-md sm:rounded-2xl sm:border md:grid md:grid-cols-2">
+              {/*<div className="relative min-h-[220px] bg-[#163A70] md:min-h-[340px]">*/}
+              <div className="relative -mx-4 min-h-[240px] bg-[#163A70] sm:mx-0 md:min-h-[340px]">
                 <img
                   src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=900&q=80"
                   alt="Student writing a scholarship statement of purpose"
@@ -384,9 +387,11 @@ export default function ScholarshipTips() {
                 <Link
                   key={guide.title}
                   to={guide.link}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                  /*className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"*/
+                  className="group overflow-hidden rounded-none border-y border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:rounded-2xl sm:border"
                 >
-                  <div className="relative h-52 overflow-hidden bg-[#163A70]">
+                  {/*<div className="relative h-52 overflow-hidden bg-[#163A70]">*/}
+                    <div className="relative -mx-4 h-56 overflow-hidden bg-[#163A70] sm:mx-0 sm:h-52">
                     <img
                       src={guide.img}
                       alt={guide.title}
