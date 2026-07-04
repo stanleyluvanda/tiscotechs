@@ -286,6 +286,7 @@ export default function FundedGraduateAdmission() {
   // Level multi-select stored in array, shown via compact dropdown
   const [levels, setLevels] = useState([]);
   const [levelOpen, setLevelOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
@@ -568,7 +569,22 @@ const popularDestinations = [
         </div>
 
         <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
-  <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">
+  {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
+    <button
+  type="button"
+  onClick={() => setMobileFiltersOpen((v) => !v)}
+  className="flex w-full items-center justify-between rounded-lg bg-blue-700 px-4 py-3 text-sm font-bold text-white lg:hidden"
+>
+  <span>Search & Filter Opportunities</span>
+  <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
+</button>
+
+<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+>
     <input
       value={q}
       onChange={(e) => {
@@ -953,13 +969,13 @@ return (
     {s.title}
   </Link>
 
-  <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+  <div className="grid gap-4 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:gap-6 lg:items-start">
+    <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">
       {cardImage ? (
         <img
           src={cardImage}
           alt={`${s.title || "University-funded opportunity"} image`}
-          className="h-44 w-full rounded-lg object-cover sm:h-48 lg:h-52"
+          className="h-56 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"
           loading="lazy"
           decoding="async"
           onError={(e) => {
@@ -967,13 +983,13 @@ return (
           }}
         />
       ) : (
-        <div className="flex h-44 w-full items-center justify-center rounded-lg bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
+        <div className="flex h-56 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">
           SK
         </div>
       )}
     </div>
 
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col px-4 sm:px-0">
       <div className="space-y-3 text-base font-bold text-slate-900">
         {s.provider && (
           <div className="flex items-start gap-3">
