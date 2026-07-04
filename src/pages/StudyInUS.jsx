@@ -11,14 +11,20 @@ function Section({ id, title, children }) {
     <section
       id={id}
       className="
-        bg-[#f3f6fb]
-        rounded-2xl
-        border-0 ring-0 outline-none
-        shadow-none
-        p-6
-        font-['Times_New_Roman',Times,serif]
-        scroll-mt-40
-      "
+  -mx-4
+  bg-[#f3f6fb]
+  rounded-none
+  border-y border-slate-200
+  ring-0 outline-none
+  shadow-none
+  p-4
+  font-['Times_New_Roman',Times,serif]
+  scroll-mt-40
+  sm:mx-0
+  sm:rounded-2xl
+  sm:border-0
+  sm:p-6
+"
     >
       <h2 className="break-words text-2xl font-bold leading-tight text-[#4B1F73] sm:text-3xl">{title}</h2>
 
