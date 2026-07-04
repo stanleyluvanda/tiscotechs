@@ -1,6 +1,7 @@
 //ScholarshipTipsWinningSOP//
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import GoogleSidebarAd from "../components/GoogleSidebarAd";
 
 function ResponsiveAd({ slot, className = "" }) {
   useEffect(() => {
@@ -29,7 +30,7 @@ function ResponsiveAd({ slot, className = "" }) {
 
 export default function ScholarshipTipsWinningSOP() {
   return (
-    <main className="min-h-screen bg-white text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-white text-slate-900">
       {/*<section className="mx-auto max-w-6xl px-4 py-10 lg:px-8">*/}
         <section className="relative mx-auto max-w-6xl px-4 py-10 lg:px-8">
         <div className="text-sm text-slate-500">
@@ -46,7 +47,7 @@ export default function ScholarshipTipsWinningSOP() {
 
         {/*<div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">*/}
 
-  <h1 className="mt-8 max-w-4xl font-serif text-4xl font-bold leading-tight text-slate-950 md:text-6xl">
+  <h1 className="mt-8 max-w-4xl break-words font-serif text-[38px] font-bold leading-[1.12] text-slate-950 sm:text-4xl md:text-6xl">
   How to Write a{" "}
   <span className="italic text-[#163A70]">Winning</span>{" "}
   Statement of Purpose for Scholarship Applications
@@ -86,7 +87,7 @@ export default function ScholarshipTipsWinningSOP() {
 
         
 
-<div className="mt-8 flex max-w-[720px] items-center justify-between border-y border-slate-200 py-6">
+<div className="mt-8 flex max-w-[720px] flex-wrap items-center gap-4 border-y border-slate-200 py-6">
 
   <div className="flex items-center">
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#163A70] font-serif text-lg font-bold text-white">
@@ -105,7 +106,7 @@ export default function ScholarshipTipsWinningSOP() {
     </div>
   </div>
 
-  <span className="rounded-full bg-[#163A70] px-4 py-2 text-sm font-bold text-white whitespace-nowrap">
+  <span className="rounded-full bg-[#163A70] px-3 py-1.5 text-xs font-bold text-white sm:px-4 sm:py-2 sm:text-sm">
     12 min read
   </span>
 
@@ -113,7 +114,7 @@ export default function ScholarshipTipsWinningSOP() {
  
 {/* HERO IMAGE + RIGHT RESPONSIVE GOOGLE AD */}
 <div className="mt-8 mb-2 flex items-start gap-8">
-  <div className="max-w-[720px] flex-1">
+  <div className="max-w-full flex-1 sm:max-w-[720px]">
     <img
       src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&q=80"
       alt="Student writing a scholarship statement of purpose"
@@ -143,14 +144,14 @@ export default function ScholarshipTipsWinningSOP() {
         {/*<div className="grid gap-8 pt-2 lg:grid-cols-[minmax(0,1fr)_320px]">*/}
         {/*<div className="grid gap-8 pt-0 lg:grid-cols-[minmax(0,1fr)_320px]">*/}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-  <article className="max-w-3xl">
+  <article className="max-w-full overflow-hidden lg:max-w-3xl">
     {/*<section id="what-is-sop">*/}
 <section id="what-is-sop" className="mt-6">
-    <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+    <h2 className="break-words font-serif text-2xl font-bold leading-tight text-slate-950 sm:text-3xl">
       What is a Statement of Purpose — and why does it matter so much?
     </h2>
 
-    <p className="mt-6 text-lg leading-9 text-slate-700">
+    <p className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-lg sm:leading-9">
       A Statement of Purpose (SOP) — sometimes called a Personal Statement or
       Letter of Motivation — is a short essay, typically 500 to 1,500 words,
       that you submit as part of a scholarship or graduate school application.
@@ -203,12 +204,15 @@ export default function ScholarshipTipsWinningSOP() {
       allocate your word count:
     </p>
 
-    <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
+    {/*<div className="mt-8 overflow-hidden rounded-xl border border-slate-200">*/}
+      <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
+  <div className="min-w-[560px] sm:min-w-[720px]">
       <div className="grid grid-cols-[1.1fr_2fr_0.8fr] bg-[#163A70] text-sm font-bold uppercase tracking-widest text-white">
         <div className="p-4">Section</div>
         <div className="p-4">What it covers</div>
         <div className="p-4 text-right">Word %</div>
       </div>
+      </div>  
 
       {[
         ["Opening hook", "A specific moment, observation, or question that launched your interest", "8–12%"],
@@ -240,7 +244,7 @@ export default function ScholarshipTipsWinningSOP() {
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#163A70] font-serif text-xl font-bold text-white">
         1
       </div>
-      <div>
+   <div className="min-w-0">
         <h3 className="text-xl font-bold text-slate-950">
           Open with a specific moment, not a general statement
         </h3>
@@ -298,17 +302,17 @@ export default function ScholarshipTipsWinningSOP() {
 
   <hr className="my-12 border-slate-200" />
 
-<div className="grid grid-cols-[56px_1fr] gap-5">
+<div className="grid grid-cols-[40px_minmax(0,1fr)] gap-3 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-5">
   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#163A70] font-serif text-xl font-bold text-white">
     2
   </div>
 
-  <div>
-    <h3 className="text-xl font-bold text-slate-950">
+ <div className="min-w-0">
+    <h3 className="break-words text-base font-bold leading-snug text-slate-950 sm:text-xl">
       Connect your academic background to your goals — don't just list it
     </h3>
 
-    <p className="mt-4 text-lg leading-9 text-slate-700">
+    <p className="mt-2 break-words text-sm leading-7 text-slate-700 sm:mt-4 sm:text-lg sm:leading-9">
       Your transcript already shows what you studied. The Statement of Purpose
       should explain <strong>why</strong> it matters and what you did with that
       knowledge. Instead of repeating every course you completed, select two or
@@ -324,12 +328,12 @@ export default function ScholarshipTipsWinningSOP() {
     </p>
 
     <div className="mt-8 overflow-hidden rounded-2xl border border-blue-200 border-l-[6px] border-l-[#163A70] bg-blue-50">
-  <div className="p-6">
+  <div className="p-4 sm:p-6">
     <h4 className="font-bold text-[#163A70]">
       Example — connecting academic work to future goals
     </h4>
 
-    <p className="mt-4 italic leading-8 text-slate-700">
+    <p className="mt-4 break-words text-sm italic leading-7 text-slate-700 sm:text-base sm:leading-8">
       "My Master's thesis at the University at Albany examined bilateral
       remittance flows across fifty country pairs using panel regression and
       fixed-effects estimation. That research revealed that remittance flows
@@ -347,11 +351,10 @@ export default function ScholarshipTipsWinningSOP() {
 <hr className="my-12 border-slate-200" />
 
 <div className="grid grid-cols-[56px_1fr] gap-5">
-  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#163A70] font-serif text-xl font-bold text-white">
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#163A70] font-serif text-sm font-bold text-white sm:h-14 sm:w-14 sm:text-xl">
     3
   </div>
-
-  <div>
+<div className="min-w-0">
     <h3 className="text-xl font-bold text-slate-950">
       Show professional experience as evidence of impact — not a job list
     </h3>
@@ -395,7 +398,7 @@ export default function ScholarshipTipsWinningSOP() {
     4
   </div>
 
-  <div>
+  <div className="min-w-0">
     <h3 className="text-xl font-bold text-slate-950">
       State your future goals with specificity and realism
     </h3>
@@ -407,7 +410,7 @@ export default function ScholarshipTipsWinningSOP() {
     </p>
 
     <div className="mt-8 grid gap-5 md:grid-cols-2">
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 sm:p-6">
         <h4 className="font-bold text-red-700">✗ Vague goals</h4>
 
         <ul className="mt-5 space-y-3 leading-7">
@@ -417,7 +420,7 @@ export default function ScholarshipTipsWinningSOP() {
         </ul>
       </div>
 
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:p-6">
         <h4 className="font-bold text-emerald-700">✓ Specific goals</h4>
 
         <ul className="mt-5 space-y-3 leading-7">
@@ -443,7 +446,7 @@ export default function ScholarshipTipsWinningSOP() {
     5
   </div>
 
-  <div>
+ <div className="min-w-0">
     <h3 className="text-xl font-bold text-slate-950">
       Explain why this scholarship — not just any scholarship
     </h3>
@@ -550,16 +553,16 @@ export default function ScholarshipTipsWinningSOP() {
       "I have followed the scholarship’s specific SOP instructions.",
       "The 'why this scholarship' section cannot be copied into another application without being rewritten.",
     ].map((item) => (
-      <div key={item} className="flex gap-3 p-4 text-slate-700">
-        <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-[#163A70]" />
+      <div key={item} className="flex gap-3 p-4 text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">
+        <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border-2 border-[#163A70] sm:h-5 sm:w-5" />
         <span className="leading-7">{item}</span>
       </div>
     ))}
   </div>
 </section>
 
-<div className="mt-14 rounded-3xl bg-[#163A70] p-8 text-center text-white">
-  <h3 className="font-serif text-3xl font-bold">
+<div className="mt-14 rounded-2xl bg-[#163A70] p-5 text-center text-white sm:rounded-3xl sm:p-8">
+  <h3 className="break-words font-serif text-2xl font-bold sm:text-3xl">
     Ready to find the right scholarship to apply for?
   </h3>
 
@@ -579,7 +582,7 @@ export default function ScholarshipTipsWinningSOP() {
 
     <Link
       to="/student-sign-up"
-      className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white hover:border-white"
+      className="w-full rounded-full bg-amber-400 px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
     >
       Create Free Account
     </Link>
@@ -774,26 +777,25 @@ export default function ScholarshipTipsWinningSOP() {
     </div>
 
     {/* GOOGLE ADS - SIDEBAR RESPONSIVE */}
-    <ResponsiveAd
-  slot="XXXXXXXXXX"
-  className="mx-auto mt-2 mb-0 max-w-[720px]"
+<GoogleSidebarAd
+  className="mx-auto mt-2 mb-0 w-full"
+  keepPlaceholder={false}
 />
-    
 
     {/* CTA */}
-    <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-6 text-white">
-      <h3 className="font-serif text-xl font-bold">
+   <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-5 text-white sm:p-6">
+      <h3 className="break-words font-serif text-lg font-bold sm:text-xl">
         Browse scholarships
       </h3>
 
-      <p className="mt-3 text-sm leading-6 text-white/75">
+      <p className="mt-3 text-sm leading-6 text-white/75 sm:text-base">
         Find fully funded opportunities across 150+ countries.
       </p>
 
       <Link
-        to="/scholarship"
-        className="mt-5 inline-flex rounded-full bg-[#D4AF37] px-5 py-2 text-sm font-bold text-[#163A70]"
-      >
+  to="/scholarship"
+  className="mt-5 inline-flex w-full justify-center rounded-full bg-[#D4AF37] px-5 py-2 text-center text-sm font-bold text-[#163A70] sm:w-auto"
+>
         Explore now →
       </Link>
     </div>
@@ -808,7 +810,7 @@ export default function ScholarshipTipsWinningSOP() {
     <div className="grid gap-12 md:grid-cols-3">
 
       {/* In this guide */}
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
           In This Guide
         </h3>
@@ -837,7 +839,7 @@ export default function ScholarshipTipsWinningSOP() {
       </div>
 
       {/* Share */}
-      <div>
+      <div className="min-w-0">
         <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
           Share this guide
         </h3>
