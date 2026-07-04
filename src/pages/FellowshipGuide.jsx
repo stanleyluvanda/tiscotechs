@@ -6,11 +6,11 @@ const GOLD = "#C8951F";
 
 function PullQuote({ label, children }) {
   return (
-    <div className="my-8 max-w-full overflow-hidden rounded-none border-l-4 border-[#C8951F] bg-[#FBF5E6] px-4 py-5 sm:rounded-r-xl sm:px-7 sm:py-6">
-      <div className="mb-3 break-words text-[11px] font-bold uppercase tracking-[0.12em] text-[#C8951F] sm:text-xs">
+    <div className="my-8 w-full max-w-full overflow-hidden rounded-none border-l-4 border-[#C8951F] bg-[#FBF5E6] px-4 py-5 sm:rounded-r-xl sm:px-7 sm:py-6">
+      <div className="mb-3 max-w-full break-words text-[11px] font-bold uppercase tracking-[0.12em] text-[#C8951F] sm:text-xs">
         {label}
       </div>
-      <p className="break-words font-serif text-xl italic leading-9 text-slate-950 sm:text-2xl sm:leading-10">
+      <p className="max-w-full break-words font-serif text-lg italic leading-8 text-slate-950 sm:text-2xl sm:leading-10">
         {children}
       </p>
     </div>
@@ -19,12 +19,12 @@ function PullQuote({ label, children }) {
 
 function DoDont() {
   return (
-    <div className="my-8 grid gap-5 md:grid-cols-2">
-      <div className="rounded-xl border border-green-200 bg-green-50 p-6">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-green-800">
+    <div className="my-8 grid w-full max-w-full gap-5 md:grid-cols-2">
+      <div className="w-full max-w-full overflow-hidden rounded-xl border border-green-200 bg-green-50 p-4 sm:p-6">
+        <h3 className="break-words text-sm font-bold uppercase tracking-widest text-green-800">
           Fellowship
         </h3>
-        <ul className="mt-5 space-y-5 text-[15px] leading-7 text-slate-900">
+        <ul className="mt-5 space-y-4 text-sm leading-7 text-slate-900 sm:text-[15px]">
           {[
             "Awarded based on future potential and what you will do with the award",
             "Usually comes with structured programme components",
@@ -34,18 +34,18 @@ function DoDont() {
             "Usually short-term: weeks to a few years",
             "Provides stipend, travel, living expenses, and professional development",
           ].map((x) => (
-            <li key={x} className="pl-7 before:absolute before:-ml-7 before:font-bold before:text-green-700 before:content-['✓']">
+            <li key={x} className="relative break-words pl-7 before:absolute before:left-0 before:font-bold before:text-green-700 before:content-['✓']">
               {x}
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-red-800">
+      <div className="w-full max-w-full overflow-hidden rounded-xl border border-red-200 bg-red-50 p-4 sm:p-6">
+        <h3 className="break-words text-sm font-bold uppercase tracking-widest text-red-800">
           Scholarship
         </h3>
-        <ul className="mt-5 space-y-5 text-[15px] leading-7 text-slate-900">
+        <ul className="mt-5 space-y-4 text-sm leading-7 text-slate-900 sm:text-[15px]">
           {[
             "Awarded based on past achievement — grades, test scores, awards",
             "Usually reduces or eliminates tuition with fewer structured programme requirements",
@@ -55,7 +55,7 @@ function DoDont() {
             "Can be renewable year to year across an entire degree",
             "Primarily covers tuition, sometimes accommodation and living costs",
           ].map((x) => (
-            <li key={x} className="pl-7 before:absolute before:-ml-7 before:font-bold before:text-red-800 before:content-['×']">
+            <li key={x} className="relative break-words pl-7 before:absolute before:left-0 before:font-bold before:text-red-800 before:content-['×']">
               {x}
             </li>
           ))}
@@ -67,13 +67,15 @@ function DoDont() {
 
 function StepBlock({ n, title, children }) {
   return (
-    <div className="my-9 grid grid-cols-[56px_1fr] gap-5">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0B2D5F] font-serif text-xl font-bold text-white">
+    <div className="my-8 grid w-full max-w-full grid-cols-[44px_minmax(0,1fr)] gap-4 sm:my-9 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-5">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0B2D5F] font-serif text-base font-bold text-white sm:h-14 sm:w-14 sm:text-xl">
         {n}
       </div>
-      <div>
-        <h3 className="text-xl font-bold text-slate-950">{title}</h3>
-        <p className="mt-3 text-lg leading-9 text-slate-700">{children}</p>
+      <div className="min-w-0">
+        <h3 className="break-words text-lg font-bold text-slate-950 sm:text-xl">{title}</h3>
+        <p className="mt-3 break-words text-base leading-8 text-slate-700 sm:text-lg sm:leading-9">
+          {children}
+        </p>
       </div>
     </div>
   );
@@ -81,38 +83,40 @@ function StepBlock({ n, title, children }) {
 
 function FellowshipCard({ color, name, country, badge, meta, text, selects, opens, closes }) {
   return (
-    <div className="my-8 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-6 text-white" style={{ background: color }}>
-        <div>
-          <h3 className="font-serif text-2xl font-bold">{name}</h3>
-          <p className="mt-2 text-sm text-white/85">{country}</p>
+    <div className="my-8 w-full max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="flex flex-col gap-4 px-4 py-5 text-white sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6 sm:py-6" style={{ background: color }}>
+        <div className="min-w-0">
+          <h3 className="break-words font-serif text-2xl font-bold sm:text-2xl">{name}</h3>
+          <p className="mt-2 break-words text-sm text-white/85">{country}</p>
         </div>
-        <span className="rounded-full bg-white/20 px-4 py-2 text-sm font-bold">
+        <span className="w-fit rounded-full bg-white/20 px-4 py-2 text-sm font-bold">
           {badge}
         </span>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="grid gap-4 md:grid-cols-3">
           {meta.map(([label, value]) => (
-            <div key={label} className="rounded-xl bg-slate-50 p-4">
-              <div className="text-xs font-bold uppercase tracking-widest text-slate-500">
+            <div key={label} className="min-w-0 rounded-xl bg-slate-50 p-4">
+              <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">
                 {label}
               </div>
-              <div className="mt-3 font-bold text-slate-950">{value}</div>
+              <div className="mt-3 break-words font-bold text-slate-950">{value}</div>
             </div>
           ))}
         </div>
 
-        <p className="mt-6 text-lg leading-8 text-slate-700">{text}</p>
+        <p className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-lg">
+          {text}
+        </p>
 
         <div className="mt-6">
-          <div className="text-sm font-bold uppercase tracking-wider text-[#0B2D5F]">
+          <div className="break-words text-sm font-bold uppercase tracking-wider text-[#0B2D5F]">
             ✓ What it selects for
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {selects.map((x) => (
-              <span key={x} className="rounded-full border border-[#F0D9A0] bg-[#FBF5E6] px-4 py-2 text-sm font-medium text-[#7A5A0E]">
+              <span key={x} className="max-w-full break-words rounded-full border border-[#F0D9A0] bg-[#FBF5E6] px-3 py-2 text-sm font-medium text-[#7A5A0E] sm:px-4">
                 {x}
               </span>
             ))}
@@ -120,13 +124,13 @@ function FellowshipCard({ color, name, country, badge, meta, text, selects, open
         </div>
 
         <div className="mt-6 grid gap-4 border-t border-dashed border-slate-200 pt-5 md:grid-cols-2">
-          <div className="rounded-xl bg-blue-50 p-4">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">📂 Opens</div>
-            <div className="mt-2 font-bold text-slate-950">{opens}</div>
+          <div className="min-w-0 rounded-xl bg-blue-50 p-4">
+            <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">📂 Opens</div>
+            <div className="mt-2 break-words font-bold text-slate-950">{opens}</div>
           </div>
-          <div className="rounded-xl bg-red-50 p-4">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-500">🔒 Deadline</div>
-            <div className="mt-2 font-bold text-slate-950">{closes}</div>
+          <div className="min-w-0 rounded-xl bg-red-50 p-4">
+            <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">🔒 Deadline</div>
+            <div className="mt-2 break-words font-bold text-slate-950">{closes}</div>
           </div>
         </div>
       </div>
@@ -144,7 +148,7 @@ export default function FellowshipGuide() {
         <span className="mx-4 font-semibold">Tips & Guides › What Is a Fellowship? A Complete Guide for International Students</span>
       </div>
 
-      <section className="mx-auto grid max-w-[1500px] gap-6 px-4 py-10 lg:grid-cols-[180px_minmax(0,1fr)_180px] lg:px-6">
+      <section className="mx-auto grid w-full max-w-[1500px] gap-6 overflow-hidden px-4 py-10 lg:grid-cols-[180px_minmax(0,1fr)_180px] lg:px-6">
         <aside className="hidden lg:block">
           <div className="sticky top-28 space-y-6">
             <GoogleSidebarAd className="w-full" minHeight={600} />
@@ -152,7 +156,7 @@ export default function FellowshipGuide() {
           </div>
         </aside>
 
-        <div className="mx-auto w-full max-w-6xl">
+        <div className="mx-auto w-full max-w-6xl min-w-0 overflow-hidden">
           <GoogleSidebarAd className="mb-8 w-full" minHeight={120} />
 
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_330px]">
