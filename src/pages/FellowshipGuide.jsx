@@ -7,10 +7,10 @@ const GOLD = "#C8951F";
 function PullQuote({ label, children }) {
   return (
     <div className="my-8 w-full max-w-full overflow-hidden rounded-none border-l-4 border-[#C8951F] bg-[#FBF5E6] px-4 py-5 sm:rounded-r-xl sm:px-7 sm:py-6">
-      <div className="mb-3 max-w-full break-words text-[11px] font-bold uppercase tracking-[0.12em] text-[#C8951F] sm:text-xs">
+      <div className="mb-3 max-w-full break-words text-[10px] font-bold uppercase tracking-[0.08em] text-[#C8951F] sm:text-xs sm:tracking-[0.12em]">
         {label}
       </div>
-      <p className="max-w-full break-words font-serif text-lg italic leading-8 text-slate-950 sm:text-2xl sm:leading-10">
+      <p className="max-w-full break-words font-serif text-base italic leading-8 text-slate-950 sm:text-2xl sm:leading-10">
         {children}
       </p>
     </div>
@@ -67,13 +67,15 @@ function DoDont() {
 
 function StepBlock({ n, title, children }) {
   return (
-    <div className="my-8 grid w-full max-w-full grid-cols-[44px_minmax(0,1fr)] gap-4 sm:my-9 sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-5">
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0B2D5F] font-serif text-base font-bold text-white sm:h-14 sm:w-14 sm:text-xl">
+    <div className="my-7 flex w-full max-w-full gap-3 sm:my-9 sm:grid sm:grid-cols-[56px_minmax(0,1fr)] sm:gap-5">
+      <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0B2D5F] font-serif text-sm font-bold text-white sm:h-14 sm:w-14 sm:text-xl">
         {n}
       </div>
-      <div className="min-w-0">
-        <h3 className="break-words text-lg font-bold text-slate-950 sm:text-xl">{title}</h3>
-        <p className="mt-3 break-words text-base leading-8 text-slate-700 sm:text-lg sm:leading-9">
+      <div className="min-w-0 flex-1">
+        <h3 className="break-words text-base font-bold leading-snug text-slate-950 sm:text-xl">
+          {title}
+        </h3>
+        <p className="mt-2 break-words text-sm leading-7 text-slate-700 sm:mt-3 sm:text-lg sm:leading-9">
           {children}
         </p>
       </div>
@@ -83,54 +85,71 @@ function StepBlock({ n, title, children }) {
 
 function FellowshipCard({ color, name, country, badge, meta, text, selects, opens, closes }) {
   return (
-    <div className="my-8 w-full max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="flex flex-col gap-4 px-4 py-5 text-white sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6 sm:py-6" style={{ background: color }}>
+    <div className="my-8 w-full max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white sm:rounded-2xl">
+      <div
+        className="flex flex-col gap-3 px-4 py-5 text-white sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6 sm:py-6"
+        style={{ background: color }}
+      >
         <div className="min-w-0">
-          <h3 className="break-words font-serif text-2xl font-bold sm:text-2xl">{name}</h3>
-          <p className="mt-2 break-words text-sm text-white/85">{country}</p>
+          <h3 className="break-words font-serif text-xl font-bold leading-tight sm:text-2xl">
+            {name}
+          </h3>
+          <p className="mt-2 break-words text-sm leading-6 text-white/85">
+            {country}
+          </p>
         </div>
-        <span className="w-fit rounded-full bg-white/20 px-4 py-2 text-sm font-bold">
+        <span className="w-fit max-w-full break-words rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold sm:px-4 sm:py-2 sm:text-sm">
           {badge}
         </span>
       </div>
 
       <div className="p-4 sm:p-6">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           {meta.map(([label, value]) => (
             <div key={label} className="min-w-0 rounded-xl bg-slate-50 p-4">
-              <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">
+              <div className="break-words text-[11px] font-bold uppercase tracking-widest text-slate-500 sm:text-xs">
                 {label}
               </div>
-              <div className="mt-3 break-words font-bold text-slate-950">{value}</div>
+              <div className="mt-3 break-words text-sm font-bold leading-6 text-slate-950 sm:text-base">
+                {value}
+              </div>
             </div>
           ))}
         </div>
 
-        <p className="mt-6 break-words text-base leading-8 text-slate-700 sm:text-lg">
+        <p className="mt-5 break-words text-sm leading-7 text-slate-700 sm:mt-6 sm:text-lg sm:leading-8">
           {text}
         </p>
 
-        <div className="mt-6">
-          <div className="break-words text-sm font-bold uppercase tracking-wider text-[#0B2D5F]">
+        <div className="mt-5 sm:mt-6">
+          <div className="break-words text-xs font-bold uppercase tracking-wider text-[#0B2D5F] sm:text-sm">
             ✓ What it selects for
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {selects.map((x) => (
-              <span key={x} className="max-w-full break-words rounded-full border border-[#F0D9A0] bg-[#FBF5E6] px-3 py-2 text-sm font-medium text-[#7A5A0E] sm:px-4">
+              <span key={x} className="max-w-full break-words rounded-full border border-[#F0D9A0] bg-[#FBF5E6] px-3 py-1.5 text-xs font-medium text-[#7A5A0E] sm:px-4 sm:py-2 sm:text-sm">
                 {x}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 border-t border-dashed border-slate-200 pt-5 md:grid-cols-2">
+        <div className="mt-5 grid gap-3 border-t border-dashed border-slate-200 pt-5 md:grid-cols-2">
           <div className="min-w-0 rounded-xl bg-blue-50 p-4">
-            <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">📂 Opens</div>
-            <div className="mt-2 break-words font-bold text-slate-950">{opens}</div>
+            <div className="break-words text-[11px] font-bold uppercase tracking-widest text-slate-500 sm:text-xs">
+              📂 Opens
+            </div>
+            <div className="mt-2 break-words text-sm font-bold leading-6 text-slate-950 sm:text-base">
+              {opens}
+            </div>
           </div>
           <div className="min-w-0 rounded-xl bg-red-50 p-4">
-            <div className="break-words text-xs font-bold uppercase tracking-widest text-slate-500">🔒 Deadline</div>
-            <div className="mt-2 break-words font-bold text-slate-950">{closes}</div>
+            <div className="break-words text-[11px] font-bold uppercase tracking-widest text-slate-500 sm:text-xs">
+              🔒 Deadline
+            </div>
+            <div className="mt-2 break-words text-sm font-bold leading-6 text-slate-950 sm:text-base">
+              {closes}
+            </div>
           </div>
         </div>
       </div>
@@ -224,7 +243,8 @@ export default function FellowshipGuide() {
                   Here is how some of the world's leading fellowship offices put it:
                 </p>
 
-                <PullQuote label="Columbia University — Office of Undergraduate Research">
+              <PullQuote
+                 label="Columbia University — Office of Undergraduate Research">
                   "Fellowship is a generic term that encompasses globally and nationally competitive grants, scholarships, and similar funding opportunities. Typically, fellowships fund study, research, or teaching in the U.S. or abroad."
                 </PullQuote>
 
@@ -414,12 +434,12 @@ export default function FellowshipGuide() {
 
 
                 {/* CHEVENING FELLOWSHIPS */}
-<div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+<div className="w-full max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-3xl">
 
-  <div className="bg-gradient-to-r from-sky-700 to-blue-900 px-8 py-8 text-white">
-    <div className="flex items-start justify-between gap-6">
+  <div className="bg-gradient-to-r from-sky-700 to-blue-900 px-4 py-5 text-white sm:px-8 sm:py-8">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div>
-        <h3 className="font-serif text-4xl font-bold">
+        <h3 className="break-words font-serif text-2xl font-bold leading-tight sm:text-4xl">
           Chevening Fellowships
         </h3>
 
@@ -428,20 +448,20 @@ export default function FellowshipGuide() {
         </p>
       </div>
 
-      <span className="rounded-full bg-white/20 px-5 py-2 font-semibold">
+     <span className="w-fit max-w-full break-words rounded-full bg-white/20 px-3 py-1.5 text-xs font-semibold sm:px-5 sm:py-2 sm:text-base">
         Leadership & Policy
       </span>
     </div>
   </div>
 
-  <div className="p-8">
+  <div className="p-4 sm:p-8">
 
     <div className="grid gap-4 md:grid-cols-3">
       <div className="rounded-2xl bg-slate-50 p-5">
         <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
           Duration
         </p>
-        <p className="mt-3 text-2xl font-bold">
+        <p className="mt-3 break-words text-base font-bold leading-7 sm:text-2xl">
           Short-term Fellowship
         </p>
       </div>
