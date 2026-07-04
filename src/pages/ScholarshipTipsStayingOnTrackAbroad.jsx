@@ -145,7 +145,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
             <img
               src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=80"
               alt="International student walking on a university campus abroad"
-              className="h-[280px] w-full rounded-2xl object-cover shadow-sm md:h-[380px]"
+             className="h-[220px] w-full rounded-none object-cover shadow-sm sm:rounded-2xl md:h-[380px]"
               onError={(e) => {
                 e.currentTarget.src = "/images/Scholarship1.webp";
               }}
@@ -158,10 +158,10 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <article className="max-w-3xl">
+        <div className="grid min-w-0 gap-8 overflow-hidden lg:grid-cols-[minmax(0,1fr)_320px]">
+         <article className="max-w-full overflow-hidden lg:max-w-3xl">
             <section id="intro" className="mt-6">
-              <p className="text-lg leading-9 text-slate-700 first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-6xl first-letter:font-bold first-letter:leading-none first-letter:text-[#163A70]">
+              <p className="mt-8 max-w-full break-words text-[18px] leading-8 text-slate-700 sm:text-xl sm:leading-10 first-letter:float-left first-letter:mr-3 sm:first-letter:mr-4 first-letter:font-serif first-letter:text-5xl sm:first-letter:text-7xl first-letter:font-bold">
                 Getting the acceptance letter, the visa stamp, and the scholarship award is the hardest part — or so it feels. In reality, it is only the beginning. Every year, international students who worked incredibly hard to get to the US, Canada, the UK, or Europe lose their visa status, academic standing, or future immigration eligibility because they did not understand the rules that govern their stay.
               </p>
             </section>
@@ -170,17 +170,17 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="why">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Why this guide exists</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 This guide is not meant to frighten you. It is meant to do something scholarship offices, university orientation sessions, and well-meaning friends often fail to do clearly enough: lay out, in plain language, what protects your ability to stay, study, and eventually build a career abroad — and what destroys it.
               </p>
-              <p className="mt-5 text-lg leading-9 text-slate-700">
+              <p className="mt-5 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Read this once when you arrive, and again at the start of every academic year. The principles apply broadly across the US, Canada, the UK, and the EU/Schengen area, though specific details vary by country.
               </p>
 
               <div className="mt-8 overflow-hidden rounded-2xl border border-red-200 border-l-[6px] border-l-red-700 bg-red-50">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-red-800">Critical</h3>
-                  <p className="mt-3 text-base leading-8 text-slate-800">
+                  <p className="mt-3 text-sm leading-7 text-slate-800 sm:text-base sm:leading-8">
                     A visa revocation, a criminal record, or a deportation order can follow you for the rest of your life and affect future visa applications to other countries. Treat this guide as seriously as you treat your scholarship offer letter.
                   </p>
                 </div>
@@ -196,15 +196,15 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="why-came">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Remember why you came</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 You did not travel thousands of miles, leave your family, and accept major financial sacrifice to lose focus after a few months abroad. You came to complete a specific academic program, on a specific timeline, tied to your visa, residence permit, or scholarship.
               </p>
-              <p className="mt-5 text-lg leading-9 text-slate-700">
+              <p className="mt-5 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Every decision abroad should pass a simple test: <strong className="text-slate-950">does this support or threaten my academic progress and legal status?</strong> If an opportunity, relationship, job, or social situation puts either of those at risk, it is not worth it.
               </p>
 
               <div className="mt-8 overflow-hidden rounded-xl border border-blue-100 border-l-[6px] border-l-[#163A70] bg-blue-50">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-[#163A70]">Key Insight</h3>
                   <p className="mt-3 text-base leading-8 text-[#163A70]">
                     Your conduct abroad does not only affect you. It affects whether future students from your school, country, or community are trusted with the same opportunity.
@@ -217,19 +217,19 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="status">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Maintaining your legal status</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Your visa or residence permit comes with conditions. Violating them, even unintentionally, can result in your status being terminated, which may mean leaving the country quickly and possibly being barred from returning.
               </p>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-800">✓ What keeps your status valid</h3>
                   <ul className="mt-5 space-y-3 text-base leading-7 text-slate-800">
                     {validStatus.map((item) => <li key={item}>✓ {item}</li>)}
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-red-800">⚠ What can terminate your status</h3>
                   <ul className="mt-5 space-y-3 text-base leading-7 text-slate-800">
                     {riskyStatus.map((item) => <li key={item}>⚠ {item}</li>)}
@@ -237,7 +237,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
                 </div>
               </div>
 
-              <p className="mt-8 text-lg leading-9 text-slate-700">
+              <p className="mt-8 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 If your academic plan changes, speak to your international student advisor before acting. Most status violations happen because students did not know they needed permission first.
               </p>
             </section>
@@ -247,17 +247,17 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
             <section id="criminal">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Criminal activity — zero tolerance</h2>
               <div className="mt-8 overflow-hidden rounded-2xl border border-red-200 border-l-[6px] border-l-red-700 bg-red-50">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-red-800">Zero tolerance</h3>
-                  <p className="mt-3 text-base leading-8 text-slate-800">
+                 <p className="mt-3 text-sm leading-7 text-slate-800 sm:text-base sm:leading-8">
                     Any criminal charge, even one that feels minor, can trigger visa review, revocation, deportation proceedings, and a permanent record affecting future visa applications.
                   </p>
                 </div>
               </div>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Students often underestimate issues such as shoplifting, fighting, driving under the influence, public intoxication, controlled substance possession, or fraud. Do not assume a misunderstanding will resolve quietly.
               </p>
-              <p className="mt-5 text-lg leading-9 text-slate-700">
+              <p className="mt-5 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 If you are stopped, questioned, or detained, contact your university’s international student office and, where possible, a lawyer before making statements.
               </p>
             </section>
@@ -266,19 +266,19 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="work">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Unauthorized work — the most common mistake</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Unauthorized work is one of the most common status violations among international students. It is treated seriously because it directly violates the terms under which many students were admitted.
               </p>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2">
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-emerald-800">✓ Generally permitted — check your visa</h3>
                   <ul className="mt-5 space-y-3 text-base leading-7 text-slate-800">
                     {permittedWork.map((item) => <li key={item}>✓ {item}</li>)}
                   </ul>
                 </div>
 
-                <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-red-800">⚠ High-risk work decisions</h3>
                   <ul className="mt-5 space-y-3 text-base leading-7 text-slate-800">
                     {riskyWork.map((item) => <li key={item}>⚠ {item}</li>)}
@@ -287,7 +287,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
               </div>
 
               <div className="mt-8 overflow-hidden rounded-2xl border border-amber-200 border-l-[6px] border-l-amber-700 bg-amber-50">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h3 className="font-bold text-amber-800">Rule of thumb</h3>
                   <p className="mt-4 leading-8 text-slate-700">
                     If you are not sure whether a job is authorized, assume it is not authorized until your international student office confirms it in writing.
@@ -300,12 +300,12 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="money">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Managing your money responsibly</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Financial stress is one of the main reasons students make risky decisions abroad. Build a realistic budget early and speak to your university if funding changes unexpectedly.
               </p>
 
               <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
-                <div className="min-w-[680px]">
+                <div className="min-w-[560px] sm:min-w-[680px]">
                   <div className="grid grid-cols-[1fr_1fr_2fr] bg-[#163A70] text-sm font-bold uppercase tracking-widest text-white">
                     <div className="p-4">Budget item</div>
                     <div className="p-4">Typical range</div>
@@ -322,7 +322,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
               </div>
 
               <div className="mt-8 overflow-hidden rounded-xl border border-blue-100 border-l-[6px] border-l-[#163A70] bg-blue-50">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <h3 className="text-sm font-bold uppercase tracking-widest text-[#163A70]">Emergency fund principle</h3>
                   <p className="mt-3 text-base leading-8 text-[#163A70]">
                     Keep at least one month of essential living costs untouched if possible. Visa fees, medical costs, and emergency travel are common reasons students fall into financial difficulty.
@@ -339,10 +339,10 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="academic">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Academic standing matters too</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 Your visa status is usually tied to maintaining good academic standing, not just enrollment. Falling below university requirements or failing to make satisfactory progress can trigger status review.
               </p>
-              <p className="mt-5 text-lg leading-9 text-slate-700">
+              <p className="mt-5 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 If you are struggling, speak to your academic advisor and international student office early. Tutoring centers, writing centers, academic coaching, and mental health support exist because students need support before problems become permanent.
               </p>
             </section>
@@ -351,15 +351,15 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="countries">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Country-specific notes</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 The core principles apply broadly, but each destination has its own terminology and compliance system.
               </p>
 
               <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {countryNotes.map((country) => (
-                  <div key={country.title} className="rounded-2xl border border-slate-200 border-t-4 border-t-[#163A70] bg-slate-50 p-5">
+                  <div key={country.title} className="rounded-xl border border-slate-200 border-t-4 border-t-[#163A70] bg-slate-50 p-4 sm:rounded-2xl sm:p-5">
                     <div className="text-3xl">{country.flag}</div>
-                    <h3 className="mt-3 font-serif text-xl font-bold text-slate-950">{country.title}</h3>
+                    <h3 className="mt-3 font-serif text-lg font-bold text-slate-950 sm:text-xl">{country.title}</h3>
                     <p className="mt-3 text-sm leading-7 text-slate-700">{country.body}</p>
                   </div>
                 ))}
@@ -370,14 +370,14 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
             <section id="reality">
               <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">Final reality check</h2>
-              <p className="mt-6 text-lg leading-9 text-slate-700">
+              <p className="mt-6 text-[17px] leading-8 sm:text-lg sm:leading-9 text-slate-700">
                 The students who have the smoothest experience abroad are usually the ones who manage their status, finances, and academic standing from day one — not the ones who wait until there is a problem.
               </p>
 
               <ul className="mt-8 space-y-4">
                 {checklist.map((item) => (
-                  <li key={item} className="flex gap-4 border-b border-slate-200 pb-4 text-lg leading-8 text-slate-700">
-                    <span className="mt-2 h-5 w-5 shrink-0 rounded border-2 border-[#163A70]" />
+                  <li key={item} className="flex gap-3 border-b border-slate-200 pb-4 text-base leading-7 text-slate-700 sm:gap-4 sm:text-lg sm:leading-8">
+                    <span className="mt-1 h-4 w-4 shrink-0 rounded border-2 border-[#163A70] sm:mt-2 sm:h-5 sm:w-5" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -390,7 +390,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">In this guide</h3>
                 <div className="mt-5 space-y-4 text-sm font-medium text-slate-700">
                   <a href="#why" className="block hover:text-[#163A70]">Why this guide exists</a>
@@ -404,7 +404,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-6">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">More guides</h3>
                 <div className="mt-5 space-y-4">
                   <Link to="/scholarship-tips/fully-funded-masters-phd-guide" className="block border-b border-slate-100 pb-4 hover:text-[#163A70]">
@@ -435,7 +435,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
 
       <section className="w-full bg-[#163A70] text-white">
         <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
-          <h3 className="font-serif text-4xl font-bold leading-tight">
+          <h3 className="font-serif text-3xl font-bold leading-tight sm:text-4xl">
             Need more guidance before you go?
           </h3>
 
@@ -447,7 +447,7 @@ export default function ScholarshipTipsStayingOnTrackAbroad() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/scholarship"
-              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+             className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
             >
               Browse Scholarships
             </Link>
