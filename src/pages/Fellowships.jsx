@@ -270,6 +270,7 @@ export default function Fellowships() {
 
   const [levels, setLevels] = useState([]);
   const [levelOpen, setLevelOpen] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
@@ -525,7 +526,28 @@ const popularDestinations = [
 
        {/* Hero search bar */}
 <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
-  <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">
+  {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
+    <button
+  type="button"
+  onClick={() => setMobileFiltersOpen((v) => !v)}
+  className="flex w-full items-center justify-between rounded-lg bg-blue-700 px-4 py-3 text-sm font-bold text-white lg:hidden"
+>
+  <span>Search & Filter Fellowships</span>
+  <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
+</button>
+
+{/*<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+></div>*/}
+<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+>
     <input
       value={q}
       onChange={(e) => {
