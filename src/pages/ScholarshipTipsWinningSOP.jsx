@@ -561,35 +561,10 @@ export default function ScholarshipTipsWinningSOP() {
   </div>
 </section>
 
-<div className="mt-14 rounded-2xl bg-[#163A70] p-5 text-center text-white sm:rounded-3xl sm:p-8">
-  <h3 className="break-words font-serif text-2xl font-bold sm:text-3xl">
-    Ready to find the right scholarship to apply for?
-  </h3>
 
-  <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/80">
-    Browse verified, fully-funded scholarships from universities and institutions
-    across 150+ countries — organized by destination, level of study, and
-    deadline.
-  </p>
 
-  <div className="mt-7 flex flex-wrap justify-center gap-3">
-    <Link
-      to="/scholarship"
-      className="rounded-full bg-amber-400 px-6 py-3 text-sm font-bold text-[#163A70] hover:bg-amber-300"
-    >
-      Browse Scholarships
-    </Link>
 
-    <Link
-      to="/student-sign-up"
-      className="w-full rounded-full bg-amber-400 px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
-    >
-      Create Free Account
-    </Link>
-  </div>
-</div>
-
-<section>
+{/*<section>
   <h2 className="font-serif text-3xl font-bold text-slate-950">
     Related guides
   </h2>
@@ -688,9 +663,9 @@ export default function ScholarshipTipsWinningSOP() {
       </div>
     </Link>
   </div>
-</section>
+</section>*/}
 
-<hr className="my-14 border-slate-200" />
+{/*<hr className="my-14 border-slate-200" />*/}
 
 
 </article>
@@ -783,26 +758,60 @@ export default function ScholarshipTipsWinningSOP() {
 />
 
     {/* CTA */}
-   <div className="rounded-2xl border border-[#163A70] bg-[#163A70] p-5 text-white sm:p-6">
-      <h3 className="break-words font-serif text-lg font-bold sm:text-xl">
-        Browse scholarships
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-white/75 sm:text-base">
-        Find fully funded opportunities across 150+ countries.
-      </p>
-
-      <Link
-  to="/scholarship"
-  className="mt-5 inline-flex w-full justify-center rounded-full bg-[#D4AF37] px-5 py-2 text-center text-sm font-bold text-[#163A70] sm:w-auto"
->
-        Explore now →
-      </Link>
-    </div>
+   
   </div>
 </aside>
         </div>
       </section>
+
+      <section className="w-full bg-[#163A70] px-4 py-14 text-white">
+  <div className="mx-auto max-w-6xl text-center">
+
+    <h2 className="font-serif text-3xl font-bold sm:text-4xl">
+      Ready to find the right scholarship to apply for?
+    </h2>
+
+    <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-white/85 sm:text-lg">
+      Explore verified scholarships, fellowships, and university-funded Master's
+      and PhD opportunities from leading institutions around the world. Find
+      funding opportunities that match your academic background, career goals,
+      and study destination.
+    </p>
+
+    <div className="mt-10 flex flex-wrap justify-center gap-4">
+
+      <Link
+        to="/scholarship"
+        className="w-full rounded-full bg-[#D4AF37] px-7 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
+      >
+        Browse Scholarships
+      </Link>
+
+      <Link
+        to="/fellowships"
+        className="w-full rounded-full bg-[#D4AF37] px-7 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
+      >
+        Explore Fellowships
+      </Link>
+
+      <Link
+        to="/funded-graduate-admissions"
+        className="w-full rounded-full bg-[#D4AF37] px-7 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
+      >
+        University-Funded Programs
+      </Link>
+
+      <Link
+        to="/student-sign-up"
+        className="w-full rounded-full border border-white/40 px-7 py-3 text-center text-sm font-bold text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
+      >
+        Create Free Account
+      </Link>
+
+    </div>
+
+  </div>
+</section>
 
     <footer className="w-full border-t border-slate-200 bg-slate-50">
   <div className="mx-auto max-w-6xl px-4 py-14 lg:px-8">
