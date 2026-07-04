@@ -892,13 +892,13 @@ const popularDestinations = [
     {s.title}
   </Link>
 
-  <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+  <div className="grid gap-4 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:gap-6 lg:items-start">
+    <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">
       {cardImage ? (
         <img
           src={cardImage}
           alt={`${s.title || "Fellowship"} image`}
-          className="h-44 w-full rounded-lg object-cover sm:h-48 lg:h-52"
+          className="h-56 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"
           loading="lazy"
           decoding="async"
           onError={(e) => {
@@ -906,13 +906,13 @@ const popularDestinations = [
           }}
         />
       ) : (
-        <div className="flex h-44 w-full items-center justify-center rounded-lg bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
+        <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">
           SK
         </div>
       )}
     </div>
 
-    <div className="flex min-h-full flex-col">
+    <div className="flex min-h-full flex-col px-4 sm:px-0">
       <div className="space-y-3 text-base font-bold text-slate-900">
         {s.provider && (
           <div className="flex items-start gap-3">
