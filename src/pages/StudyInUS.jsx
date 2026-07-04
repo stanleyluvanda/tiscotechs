@@ -396,6 +396,15 @@ export default function StudyInUS() {
     </span>
   </div>
 </section>
+{/* MOBILE STUDY USA IMAGE */}
+<div className="-mx-4 mt-8 overflow-hidden border-y border-slate-200 bg-white sm:hidden">
+  <img
+    src="/images/Study in the USA with diversity.png"
+    alt="Study in USA for international students"
+    className="h-auto w-full object-cover"
+    loading="lazy"
+  />
+</div>
 
 <GoogleSidebarAd
   slot="8562818627"
