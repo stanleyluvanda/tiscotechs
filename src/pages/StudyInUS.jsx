@@ -20,9 +20,9 @@ function Section({ id, title, children }) {
         scroll-mt-40
       "
     >
-      <h2 className="text-3xl font-bold text-[#4B1F73]">{title}</h2>
+      <h2 className="break-words text-2xl font-bold leading-tight text-[#4B1F73] sm:text-3xl">{title}</h2>
 
-      <div className="mt-4 text-[18px] leading-8 text-slate-800 text-justify">
+      <div className="mt-4 break-words text-base leading-8 text-slate-800 sm:text-[18px] sm:text-justify">
         {children}
       </div>
     </section>
@@ -285,10 +285,10 @@ export default function StudyInUS() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F0] text-[#3D3A33]">
+    <div className="min-h-screen overflow-x-hidden bg-[#FAF7F0] text-[#3D3A33]">
       {/* FULL-WIDTH EDITORIAL HERO */}
-      <header className="relative flex min-h-[560px] w-full items-center overflow-hidden bg-[#1E2A3D]">
-        <img
+      <header className="relative flex min-h-[520px] w-full items-center overflow-hidden bg-[#1E2A3D] sm:min-h-[560px]">
+         <img
           src="/images/studyinus-hero.png"
           alt="Travel to the United States for university"
           className="absolute inset-0 h-full w-full object-cover"
@@ -313,11 +313,11 @@ export default function StudyInUS() {
             </span>
           </div>
 
-          <h1 className="max-w-3xl font-serif text-5xl font-bold leading-none tracking-tight text-white md:text-7xl">
+          <h1 className="max-w-3xl break-words font-serif text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl md:text-7xl">
             Study in <span className="italic font-normal text-[#C9A24B]">the U.S.</span>
           </h1>
 
-          <div className="mt-7 max-w-2xl space-y-4 text-[16px] leading-8 text-white/80">
+          <div className="mt-6 max-w-2xl space-y-4 text-sm leading-7 text-white/85 sm:mt-7 sm:text-[16px] sm:leading-8">
             <p>
               Studying in the United States is a major decision. You need to understand which schools fit you, what it actually costs, how the visa process works, and what life looks like after arrival.
             </p>
@@ -355,11 +355,11 @@ export default function StudyInUS() {
             <TocStrip />
 
             <section className="mb-12">
-  <h1 className="font-serif text-5xl font-bold leading-tight text-[#1E2A3D]">
+  <h1 className="break-words font-serif text-3xl font-bold leading-tight text-[#1E2A3D] sm:text-5xl">
     Do You Want to Study in the United States?
   </h1>
 
-  <p className="mt-6 text-[21px] leading-10 text-slate-700">
+  <p className="mt-5 break-words text-base leading-8 text-slate-700 sm:mt-6 sm:text-[21px] sm:leading-10">
     Studying in the United States is one of the most rewarding academic
     opportunities available to international students. Whether you are planning
     to pursue a Bachelor's, Master's, or PhD, understanding the admissions
@@ -367,7 +367,7 @@ export default function StudyInUS() {
     culture, and campus life is essential for making informed decisions.
   </p>
 
-  <p className="mt-6 text-[21px] leading-10 text-slate-700">
+  <p className="mt-5 break-words text-base leading-8 text-slate-700 sm:mt-6 sm:text-[21px] sm:leading-10">
     This comprehensive ScholarsKnowledge guide brings together everything you
     need in one place—from choosing the right university and preparing strong
     applications to understanding funding, OPT, STEM programs, English
@@ -1275,7 +1275,7 @@ export default function StudyInUS() {
 {/* RIGHT — consultation card + ads */}
 <aside className="space-y-6 lg:sticky lg:top-24">
   
-  <div className="overflow-hidden rounded-md border border-[#DCD4C2] bg-white">
+  <div className="-mx-4 overflow-hidden rounded-none border-y border-[#DCD4C2] bg-white sm:mx-0 sm:rounded-md sm:border">
     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
       <img
         className="h-full w-full object-cover"
@@ -1293,7 +1293,7 @@ export default function StudyInUS() {
       </div>
     </div>
 
-    <div className="mt-3 overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200">
+    <div className="mt-3 overflow-hidden rounded-none bg-white shadow-md ring-1 ring-slate-200 sm:rounded-2xl">
       <div className="aspect-[3/4] w-full overflow-hidden">
         <img
           className="h-full w-full object-cover"
@@ -1313,11 +1313,11 @@ export default function StudyInUS() {
         {/*<h3 className="mt-3 text-2xl font-bold leading-tight text-[#4B1F73]">
           Book a One-on-One Consultation
         </h3>*/}
-        <h3 className="mt-3 whitespace-nowrap text-[1.18rem] font-extrabold leading-tight text-[#1E2A3D] lg:text-[1.22rem]">
+        <h3 className="mt-3 break-words text-lg font-extrabold leading-tight text-[#1E2A3D] sm:whitespace-nowrap lg:text-[1.22rem]">
   Book a One-on-One Consultation
 </h3>
 
-        <p className="mt-3 text-[18px] leading-8 text-slate-800">
+        <p className="mt-3 text-base leading-8 text-slate-800 sm:text-[18px]">
           Schedule a 1-hour consultation for <b>$50</b> and receive personalized
           guidance on all major aspects of studying in the United States,
           including admissions, academic program selection, funding,
@@ -1387,7 +1387,7 @@ export default function StudyInUS() {
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Link
               to="/student-sign-up"
-              className="rounded-full bg-white text-[#1E2A3D] px-5 py-2 font-semibold hover:bg-slate-100"
+              className="w-full rounded-full bg-white px-5 py-2 text-center font-semibold text-[#1E2A3D] hover:bg-slate-100 sm:w-auto"
             >
               Student Sign Up
             </Link>
@@ -1401,7 +1401,7 @@ export default function StudyInUS() {
 
             <Link
               to="/partner"
-              className="rounded-full bg-[#C9A24B] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+              className="w-full rounded-full bg-[#C9A24B] px-5 py-2 text-center font-semibold text-slate-900 hover:opacity-90 sm:w-auto"
             >
               Partner with Us
             </Link>
