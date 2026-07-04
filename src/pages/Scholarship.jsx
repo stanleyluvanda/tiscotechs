@@ -283,6 +283,7 @@ export default function Scholarship() {
   const [levelOpen, setLevelOpen] = useState(false);
 
   // Default to NEWEST so fresh posts appear first
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const pageSize = 100;
@@ -561,7 +562,28 @@ const trackScholarship = (id, type) => {
 
           {/* Hero search bar */}
           <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
-  <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">
+  {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
+    <button
+  type="button"
+  onClick={() => setMobileFiltersOpen((v) => !v)}
+  className="flex w-full items-center justify-between rounded-lg bg-blue-700 px-4 py-3 text-sm font-bold text-white lg:hidden"
+>
+  <span>Search & Filter Scholarships</span>
+  <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
+</button>
+
+{/*<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+></div>*/}
+<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+>
     <input
       value={q}
       onChange={(e) => {
@@ -908,13 +930,13 @@ const trackScholarship = (id, type) => {
 </Link>
       {/*<div className="grid gap-5 lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1fr)] lg:items-start">*/}
       <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+        <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">
           {cardImage ? (
             <img
               src={cardImage}
               alt={`${s.title || "Scholarship"} image`}
               /*className="h-56 w-full object-cover sm:h-64 lg:h-72"*/
-              className="h-44 w-full rounded-lg object-cover sm:h-48 lg:h-52"
+              className="h-52 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"
               loading="lazy"
               decoding="async"
               onError={(e) => {
@@ -923,7 +945,7 @@ const trackScholarship = (id, type) => {
             />
           ) : (
             /*<div className="flex h-56 w-full items-center justify-center bg-blue-50 text-2xl font-bold text-blue-700 sm:h-64 lg:h-72">*/
-              <div className="flex h-44 w-full items-center justify-center rounded-lg bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
+              <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">
               SK
             </div>
           )}
