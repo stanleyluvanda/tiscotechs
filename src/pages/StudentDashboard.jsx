@@ -1,5 +1,6 @@
 // src/pages/StudentDashboard.jsx
-import { useEffect, useMemo, useRef, useState } from "react";
+//import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 //import { Link, useNavigate } from "react-router-dom";
 import { getPrograms, YEARS } from "../data/eduData.js";
 import YouTubeEmbed from "../components/YouTubeEmbed";
@@ -17,8 +18,12 @@ import {fetchPosts,createPost,deletePostOnServer,createComment,createReply,saveP
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
+import {callAssistAI,callAssistAIChunked,sanitizeSimpleAiHtml,} from "../utils/aiAssist";
 //import {getConversation,listPeople,listThreads,markRead,sendMessage,} from "../lib/messagingApi";
 import MessagingDock from "../components/MessagingDock";
+const AiStudyAssistantEmbedded = lazy(() =>
+  import("../components/AiStudyAssistantEmbedded.jsx")
+);
 
 
 /* ================= Utils ================ */
@@ -1840,7 +1845,7 @@ function formatTimeAgo(input) {
 
 
 /* ================== AI-BLOCK ================== */
-const AI_BASE = (import.meta.env.VITE_AI_API_BASE || "").replace(/\/+$/, "");
+/*const AI_BASE = (import.meta.env.VITE_AI_API_BASE || "").replace(/\/+$/, "");
 
 async function callAssistAI(action, text) {
   const res = await fetch(`${AI_BASE}/api/ai`, {
@@ -1907,7 +1912,7 @@ async function callAssistAIChunked(action, text) {
   }
 
   return results.join("\n\n");
-}
+}*/
 
 
 /* ================== MAIN ================== */
@@ -3138,6 +3143,7 @@ useEffect(() => {
   const [aiResult, setAiResult] = useState("");
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMode, setAiMode] = useState("text"); // "text" | "html"
+  const [centerMode, setCenterMode] = useState("feed");
   // ⬇️ NEW: S3-backed attachments from AttachmentUploader
   // Shape: [{ url, key, fileName, size, mime, type }]
   const [attachments, setAttachments] = useState([]);
@@ -4214,6 +4220,8 @@ if (showingTab === "Top") {
   }
 />
 
+
+
 {/* My posts */}
 <SidebarCard
   headerOnly
@@ -4224,7 +4232,6 @@ if (showingTab === "Top") {
       <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm font-medium leading-none whitespace-nowrap">
   View my posts
 </span>
-
 
       <button
         onClick={() => setShowMineOnly((v) => !v)}
@@ -4239,6 +4246,30 @@ if (showingTab === "Top") {
     </div>
   }
 />
+{/* AI Study Assistant */}
+<SidebarCard
+  headerOnly
+  title={
+    <div className="flex items-center justify-between gap-3 min-w-0">
+      <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm font-medium leading-none whitespace-nowrap">
+        AI Study Assistant
+      </span>
+
+      <button
+        type="button"
+        onClick={() => setCenterMode((v) => (v === "ai" ? "feed" : "ai"))}
+        className={`px-4 py-1 rounded-full text-sm ${
+          centerMode === "ai"
+            ? "bg-blue-600 text-white"
+            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+        }`}
+      >
+        {centerMode === "ai" ? "On" : "Off"}
+      </button>
+    </div>
+  }
+/>
+
 
 
 
@@ -4283,6 +4314,23 @@ if (showingTab === "Top") {
         {/*<section className="space-y-4">*/} 
           {/*<section className="space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">*/}
             <section className="w-full max-w-full overflow-x-hidden space-y-1 lg:space-y-1 min-w-0 mt-[85px] lg:mt-0">
+
+
+              {centerMode === "ai" ? (
+  <Suspense
+    fallback={
+      <Card>
+        <div className="text-sm text-slate-500">
+          Loading AI Study Assistant…
+        </div>
+      </Card>
+    }
+  >
+    <AiStudyAssistantEmbedded />
+  </Suspense>
+) : (
+  <>
+  
           {/*<Card>*/}
             <Card className="w-full max-w-full overflow-hidden">
             {!composerOpen ? (
@@ -4647,6 +4695,18 @@ if (showingTab === "Top") {
 
 <button
   type="button"
+  onClick={() => setCenterMode((v) => (v === "ai" ? "feed" : "ai"))}
+  className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
+    centerMode === "ai"
+      ? "bg-blue-600 text-white border-blue-600"
+      : "bg-[#e8f1ff] text-[#174ea6] border-[#c8dcff]"
+  }`}
+>
+  AI Assistant {centerMode === "ai" ? "On" : "Off"}
+</button>
+
+<button
+  type="button"
   onClick={onToggleLecturerOnly}
   className={`rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition ${
     showLecturerOnly
@@ -4833,6 +4893,9 @@ if (showingTab === "Top") {
 
   </div>
 ))}
+ </>
+)}
+
   </section>
 
         {/* RIGHT */}
@@ -5118,6 +5181,7 @@ if (showingTab === "Top") {
                     {r}
                   </option>
                 ))}
+              
               </select>
             </div>
 

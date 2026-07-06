@@ -6,19 +6,13 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* 1) HERO */}
-      <section className="relative overflow-hidden">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        >
-          <source src="/videos/hero-campus.mp4" type="video/mp4" />
-        </video>
-
-        <div className="absolute inset-0 bg-black/10" />
+      <section
+  className="relative overflow-hidden bg-cover bg-center"
+  style={{
+    backgroundImage: "url('/images/welcome.webp')",
+  }}
+>
+  <div className="absolute inset-0 bg-black/55" />
 
         <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
           <div>
@@ -50,15 +44,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
-          <div className="relative">
-            <img
-              src="/images/welcome.webp"
-              alt="Students and lecturers using a digital academic platform"
-              className="w-full rounded-2xl shadow-md"
-            />
-            <div className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-[#fbbc04]/90 shadow" />
-          </div>
+          <div />
         </div>
       </section>
 
