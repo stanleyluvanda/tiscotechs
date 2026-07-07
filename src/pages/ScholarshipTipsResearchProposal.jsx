@@ -62,7 +62,7 @@ export default function ScholarshipTipsResearchProposal() {
         <div className="mt-8 mb-2 flex items-start gap-8">
           <div className="max-w-[720px] flex-1">
             <img
-              src="https://images.unsplash.com/photo-1532094349884-543559244d98?w=1200&q=80"
+              src="/images/Research Proposals.webp"
               alt="PhD student working on research in a university library"
               className="h-[280px] w-full rounded-2xl object-cover shadow-sm md:h-[380px]"
             />
