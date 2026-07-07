@@ -73,18 +73,6 @@ export default function ScholarshipTipsWinningSOP() {
     />
   </div>
 </div>
-
-{/*<div className="mt-8 flex flex-wrap items-center gap-4 border-b border-slate-200 pb-8 text-sm text-slate-500">
-
-        
-        
-          <span className="rounded-full bg-[#163A70] px-3 py-1 font-semibold text-white">
-            12 min read
-          </span>
-          <span>Updated June 2026</span>
-          <span>Applies to: Rhodes, Chevening, Fulbright, Commonwealth, RTP & more</span>
-        </div>*/}
-
         
 
 <div className="mt-8 flex max-w-[720px] flex-wrap items-center gap-4 border-y border-slate-200 py-6">
@@ -230,6 +218,202 @@ export default function ScholarshipTipsWinningSOP() {
           <div className="p-4 text-right font-bold text-[#163A70]">{pct}</div>
         </div>
       ))}
+    </div>
+  </section>
+
+  <hr className="my-12 border-slate-200" />
+
+  <section id="what-committees-look-for">
+    <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+      What admissions committees are really looking for
+    </h2>
+
+    <p className="mt-6 text-lg leading-9 text-slate-700">
+      A strong Statement of Purpose does more than say that you want a
+      scholarship or graduate degree. It helps the committee understand whether
+      you have a clear academic direction, whether your previous preparation
+      supports that direction, and whether the program or scholarship is a
+      sensible next step. In other words, the committee is not only asking{" "}
+      <em>what do you want?</em> They are also asking{" "}
+      <em>why this field, why now, why this institution, and why are you ready?</em>
+    </p>
+
+    <p className="mt-5 text-lg leading-9 text-slate-700">
+      The best SOPs answer those questions through evidence. They connect
+      coursework, research, professional experience, leadership, service, or
+      personal motivation to a focused academic plan. A committee should finish
+      your essay with a clear picture of the problem you want to study, the
+      preparation you bring, the skills you still need to develop, and the way
+      the opportunity will help you contribute after the award or degree.
+    </p>
+
+    <div className="mt-8 overflow-hidden rounded-xl border border-blue-100 border-l-[6px] border-l-[#163A70] bg-blue-50">
+      <div className="p-6">
+        <h3 className="text-sm font-bold uppercase tracking-widest text-[#163A70]">
+          Think like the reader
+        </h3>
+
+        <p className="mt-3 text-base leading-8 text-[#163A70]">
+          Faculty and scholarship reviewers often read your SOP alongside your
+          CV, transcript, recommendation letters, and application form. Do not
+          repeat those documents. Use the SOP to explain the meaning behind
+          them: what shaped your academic interests, what you learned from your
+          experiences, and why those experiences make you ready for the next
+          stage.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr className="my-12 border-slate-200" />
+
+  <section id="questions-to-answer">
+    <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+      Five questions every strong SOP should answer
+    </h2>
+
+    <p className="mt-6 text-lg leading-9 text-slate-700">
+      Different universities and scholarship bodies use different prompts, but
+      most of them are looking for the same core information. Before you write,
+      make sure your essay has a clear answer to each of these questions.
+    </p>
+
+    <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
+      <div className="min-w-[560px] sm:min-w-[720px]">
+        <div className="grid grid-cols-[1fr_2fr] bg-[#163A70] text-sm font-bold uppercase tracking-widest text-white">
+          <div className="p-4">Question</div>
+          <div className="p-4">What your answer should prove</div>
+        </div>
+
+        {[
+          [
+            "Why this field?",
+            "You have a genuine academic interest that grew from experience, study, research, work, or a problem you want to solve.",
+          ],
+          [
+            "Why graduate study or this scholarship now?",
+            "The opportunity is a logical next step, not a vague escape route or a general desire to study abroad.",
+          ],
+          [
+            "What preparation do you bring?",
+            "Your coursework, thesis, research, internship, work, leadership, or service has prepared you for advanced study.",
+          ],
+          [
+            "What do you want to study or achieve?",
+            "You can name a research area, professional direction, policy problem, or academic goal with enough detail to sound informed.",
+          ],
+          [
+            "Why this program or scholarship?",
+            "You have researched the institution, faculty, curriculum, resources, values, and community, and you can explain the fit.",
+          ],
+        ].map(([question, answer]) => (
+          <div
+            key={question}
+            className="grid grid-cols-[1fr_2fr] border-t border-slate-200 odd:bg-slate-50"
+          >
+            <div className="p-4 font-bold text-slate-950">{question}</div>
+            <div className="p-4 text-slate-700">{answer}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr className="my-12 border-slate-200" />
+
+  <section id="program-fit">
+    <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+      How to prove fit with the university or scholarship
+    </h2>
+
+    <p className="mt-6 text-lg leading-9 text-slate-700">
+      Fit is one of the most important parts of a Statement of Purpose. A weak
+      essay says the university is prestigious, diverse, or internationally
+      respected. A stronger essay explains how the program&apos;s curriculum,
+      faculty expertise, research centres, fieldwork opportunities, professional
+      networks, or scholarship mission connect directly to your goals.
+    </p>
+
+    <p className="mt-5 text-lg leading-9 text-slate-700">
+      Before writing this section, read the department website, course list,
+      faculty profiles, research group pages, scholarship mission statement, and
+      recent student or alumni profiles. If the program allows or expects you to
+      name potential supervisors, mention faculty whose work genuinely connects
+      with your interests. Do not force names into the essay simply to impress
+      the reader; explain the intellectual connection.
+    </p>
+
+    <div className="mt-8 grid gap-5 md:grid-cols-2">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+        <h4 className="font-bold text-red-700">✗ Generic fit</h4>
+
+        <p className="mt-4 leading-8 text-slate-700">
+          "Your university has an excellent reputation and world-class faculty.
+          I believe studying there will help me become a successful leader."
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+        <h4 className="font-bold text-emerald-700">✓ Specific fit</h4>
+
+        <p className="mt-4 leading-8 text-slate-700">
+          "I am particularly interested in the program&apos;s applied policy
+          analysis courses and the work of faculty studying financial inclusion
+          and household decision-making. These resources would help me extend my
+          previous work on digital banking adoption into a stronger research
+          agenda on access to finance for low-income communities."
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <hr className="my-12 border-slate-200" />
+
+  <section id="sop-vs-personal-statement">
+    <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+      Statement of Purpose vs. Personal Statement
+    </h2>
+
+    <p className="mt-6 text-lg leading-9 text-slate-700">
+      Some universities ask for both a Statement of Purpose and a Personal
+      Statement or Personal History Statement. Do not submit the same essay for
+      both. The SOP should focus mainly on academic preparation, research
+      interests, professional goals, and fit with the program. The personal
+      statement gives more space to formative experiences, values, challenges,
+      leadership, community service, and the perspective you bring to the
+      university community.
+    </p>
+
+    <div className="mt-8 overflow-x-auto rounded-xl border border-slate-200">
+      <div className="min-w-[560px] sm:min-w-[720px]">
+        <div className="grid grid-cols-[1fr_2fr] bg-[#163A70] text-sm font-bold uppercase tracking-widest text-white">
+          <div className="p-4">Document</div>
+          <div className="p-4">Main focus</div>
+        </div>
+
+        {[
+          [
+            "Statement of Purpose",
+            "Academic interests, preparation, research direction, professional goals, and why the program or scholarship fits.",
+          ],
+          [
+            "Personal Statement",
+            "Your personal journey, motivations, values, leadership, community engagement, and the experiences that shaped your path.",
+          ],
+          [
+            "Personal History Statement",
+            "Background, barriers, responsibilities, resilience, service, and how your experiences shaped your readiness for graduate study.",
+          ],
+        ].map(([document, focus]) => (
+          <div
+            key={document}
+            className="grid grid-cols-[1fr_2fr] border-t border-slate-200 odd:bg-slate-50"
+          >
+            <div className="p-4 font-bold text-slate-950">{document}</div>
+            <div className="p-4 text-slate-700">{focus}</div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -486,6 +670,52 @@ export default function ScholarshipTipsWinningSOP() {
 
 <hr className="my-12 border-slate-200" />
 
+<section id="context-and-tailoring">
+  <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
+    How to handle weaknesses, setbacks, and multiple applications
+  </h2>
+
+  <p className="mt-6 text-lg leading-9 text-slate-700">
+    If your academic record has a weakness, do not ignore it and do not turn
+    the SOP into an apology. Briefly provide context only when it helps the
+    committee understand your record more fairly. Illness, family
+    responsibilities, financial hardship, excessive work hours, limited access
+    to academic resources, or other serious circumstances can be mentioned in a
+    positive and concise way. The focus should remain on what you did next:
+    how you recovered, what you learned, and why you are now prepared for
+    graduate-level work.
+  </p>
+
+  <p className="mt-5 text-lg leading-9 text-slate-700">
+    If you are applying to several universities or scholarships, start with one
+    strong core essay, but do not submit the same version everywhere. Rework
+    the sections on program fit, faculty alignment, scholarship values,
+    curriculum, research opportunities, and career goals for each application.
+    Reviewers can quickly recognize an essay that could have been sent to any
+    university. A tailored SOP shows seriousness, research, and respect for the
+    specific opportunity.
+  </p>
+
+  <div className="mt-8 overflow-hidden rounded-xl border border-amber-200 border-l-[6px] border-l-amber-700 bg-amber-50">
+    <div className="p-6">
+      <h3 className="text-sm font-bold uppercase tracking-widest text-amber-800">
+        Write with evidence, not adjectives
+      </h3>
+
+      <p className="mt-3 text-base leading-8 text-slate-700">
+        Avoid relying on claims such as "I am hardworking," "I am passionate,"
+        or "I am determined." Show those qualities through examples: a research
+        project completed despite limited data, a demanding job balanced with
+        academic study, a community initiative you helped lead, or a technical
+        problem you solved. Concrete actions are more persuasive than personal
+        labels.
+      </p>
+    </div>
+  </div>
+</section>
+
+<hr className="my-12 border-slate-200" />
+
 <section id="mistakes">
   <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950">
     The 7 most common mistakes — and how to fix them
@@ -561,116 +791,10 @@ export default function ScholarshipTipsWinningSOP() {
   </div>
 </section>
 
-
-
-
-{/*<section>
-  <h2 className="font-serif text-3xl font-bold text-slate-950">
-    Related guides
-  </h2>
-
-  <p className="mt-3 text-lg leading-8 text-slate-700">
-    Continue learning with more practical scholarship application guides from
-    ScholarsKnowledge.
-  </p>
-
-  <div className="mt-8 grid gap-6 md:grid-cols-2">
-    <Link
-      to="/scholarship-tips/recommendation-letters"
-      className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#163A70] hover:shadow-lg"
-    >
-      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#163A70]">
-        Scholarship Tips
-      </span>
-
-      <h3 className="mt-5 text-xl font-bold text-slate-900 group-hover:text-[#163A70]">
-        How to Get Strong Recommendation Letters for International Scholarships
-      </h3>
-
-      <p className="mt-3 leading-7 text-slate-600">
-        Learn how to request recommendation letters that genuinely strengthen
-        your scholarship application.
-      </p>
-
-      <div className="mt-6 font-semibold text-[#163A70]">
-        Read guide →
-      </div>
-    </Link>
-
-    <Link
-      to="/scholarship-tips/rhodes-vs-chevening-vs-fulbright"
-      className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#163A70] hover:shadow-lg"
-    >
-      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#163A70]">
-        Scholarship Tips
-      </span>
-
-      <h3 className="mt-5 text-xl font-bold text-slate-900 group-hover:text-[#163A70]">
-        Rhodes vs Chevening vs Fulbright — Which Scholarship Fits You?
-      </h3>
-
-      <p className="mt-3 leading-7 text-slate-600">
-        Compare three of the world's most competitive scholarships and discover
-        which one best matches your profile.
-      </p>
-
-      <div className="mt-6 font-semibold text-[#163A70]">
-        Read guide →
-      </div>
-    </Link>
-
-    <Link
-      to="/scholarship-tips/nigeria-scholarships-2026"
-      className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#163A70] hover:shadow-lg"
-    >
-      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-[#163A70]">
-        Scholarship Tips
-      </span>
-
-      <h3 className="mt-5 text-xl font-bold text-slate-900 group-hover:text-[#163A70]">
-        10 Scholarships Open to Nigerian Students in 2026
-      </h3>
-
-      <p className="mt-3 leading-7 text-slate-600">
-        Explore fully funded opportunities currently accepting applications from
-        Nigerian students.
-      </p>
-
-      <div className="mt-6 font-semibold text-[#163A70]">
-        Read guide →
-      </div>
-    </Link>
-
-    <Link
-      to="/scholarship-tips/funding-masters-degree"
-      className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#163A70] hover:shadow-lg"
-    >
-      <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-700">
-        EduFinancing
-      </span>
-
-      <h3 className="mt-5 text-xl font-bold text-slate-900 group-hover:text-[#163A70]">
-        How to Fund a Master's Degree Abroad with No Family Savings
-      </h3>
-
-      <p className="mt-3 leading-7 text-slate-600">
-        Practical funding strategies, scholarships, assistantships, and grants
-        that reduce the cost of studying overseas.
-      </p>
-
-      <div className="mt-6 font-semibold text-[#163A70]">
-        Read guide →
-      </div>
-    </Link>
-  </div>
-</section>*/}
-
 {/*<hr className="my-14 border-slate-200" />*/}
 
 
 </article>
-
-
 
 
          
@@ -692,8 +816,28 @@ export default function ScholarshipTipsWinningSOP() {
           The structure that works
         </a>
 
+        <a href="#what-committees-look-for" className="block hover:text-[#163A70]">
+          What committees look for
+        </a>
+
+        <a href="#questions-to-answer" className="block hover:text-[#163A70]">
+          Questions your SOP must answer
+        </a>
+
+        <a href="#program-fit" className="block hover:text-[#163A70]">
+          Proving program fit
+        </a>
+
+        <a href="#sop-vs-personal-statement" className="block hover:text-[#163A70]">
+          SOP vs. personal statement
+        </a>
+
         <a href="#writing" className="block hover:text-[#163A70]">
           Writing each section
+        </a>
+
+        <a href="#context-and-tailoring" className="block hover:text-[#163A70]">
+          Setbacks and tailoring
         </a>
 
         <a href="#mistakes" className="block hover:text-[#163A70]">
