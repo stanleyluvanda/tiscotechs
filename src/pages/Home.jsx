@@ -90,7 +90,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#2f4ea2]">
-              Funding for international students
+              Funding for international students in Canada & US
             </h2>
           </div>
 

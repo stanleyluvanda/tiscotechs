@@ -23,24 +23,26 @@ export default function EduFinancing() {
 
   // ✅ Premium “glass” cards: no border at rest, subtle outline only on hover
 const cardClass =
-  "rounded-2xl border border-transparent bg-white/80 backdrop-blur " +
-  "p-6 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
-  "hover:shadow-md transition text-justify";
+  "rounded-[1.75rem] border border-slate-200/80 bg-white/95 backdrop-blur " +
+  "p-6 md:p-8 shadow-[0_18px_45px_rgba(15,23,42,0.06)] " +
+  "ring-1 ring-white/70 transition duration-300 hover:-translate-y-0.5 " +
+  "hover:shadow-[0_24px_60px_rgba(15,23,42,0.09)] text-justify";
 
 const miniCardClass =
-  "rounded-xl border border-transparent bg-white/80 backdrop-blur " +
-  "p-4 shadow-sm ring-0 hover:ring-1 hover:ring-slate-200/35 " +
-  "hover:shadow-md transition text-justify"; 
+  "rounded-2xl border border-slate-200/75 bg-white/95 backdrop-blur " +
+  "p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)] ring-1 ring-white/70 " +
+  "transition duration-300 hover:-translate-y-0.5 hover:border-blue-100 " +
+  "hover:shadow-[0_18px_45px_rgba(15,23,42,0.075)] text-justify"; 
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-[#f9fbff] via-white to-[#f2f6ff]">
+    <div className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top_left,#eef6ff_0,#ffffff_34%,#f8fafc_100%)] text-slate-900">
       {/* ✅ FULL-WIDTH HERO (sharp background + clear text) */}
-      <header className="relative w-full overflow-hidden min-h-[50vh] md:min-h-[62vh] flex items-center">
+      <header className="relative flex min-h-[54vh] w-full items-center overflow-hidden border-b border-slate-200/70 md:min-h-[68vh]">
         {/* ✅ Background image (local first; if it’s low-res/missing, use a sharp U.S. campus fallback) */}
         <img
           src="/images/edufinancing-hero.jpg"
           alt="United States university campus"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover scale-[1.01]"
           loading="eager"
           decoding="async"
           fetchpriority="high"
@@ -52,15 +54,16 @@ const miniCardClass =
         />
 
         {/* ✅ Contrast overlay (makes text pop while keeping image visible) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/55 via-slate-900/45 to-slate-900/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-900/58 to-slate-900/28" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/55 to-transparent" />
 
         {/* Content */}
-        <div className="relative w-full max-w-6xl mx-auto px-4 py-12 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)]">
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center text-white md:py-20">
+          <h1 className="text-4xl font-extrabold tracking-tight drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)] md:text-6xl">
             EduFinancing
           </h1>
 
-          <p className="mt-5 text-base md:text-lg text-white/95 max-w-4xl mx-auto leading-relaxed drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]">
+          <p className="mx-auto mt-6 max-w-4xl text-base leading-8 text-white/95 drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)] md:text-xl md:leading-9">
             International students can finance education in destinations like the{" "}
             <span className="font-semibold">United States</span> through a smart
             mix of{" "}
@@ -75,16 +78,16 @@ const miniCardClass =
 
           {/* badges */}
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold ring-1 ring-white/25 shadow-sm backdrop-blur">
               Loans
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold ring-1 ring-white/25 shadow-sm backdrop-blur">
               Scholarships
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold ring-1 ring-white/25 shadow-sm backdrop-blur">
               Low-cost Schools
             </span>
-            <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-semibold ring-1 ring-white/25 drop-shadow">
+            <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold ring-1 ring-white/25 shadow-sm backdrop-blur">
               Savings Strategy
             </span>
           </div>
@@ -92,17 +95,17 @@ const miniCardClass =
       </header>
 
       {/*<div className="max-w-6xl mx-auto px-4 py-10 flex-grow">*/}
-      <div className="max-w-7xl mx-auto px-4 py-10 flex-grow">
+      <div className="mx-auto max-w-7xl flex-grow px-4 py-10 md:py-14">
         {/* 2-column layout: main + right sidebar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* MAIN CONTENT */}
-          <main className="md:col-span-2 space-y-6">
+          <main className="space-y-8">
 
 
 
             {/* NEW INTRODUCTION CARD */}
       <section className={cardClass}>
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
           Higher Education Funding for international students
         </h2>
         <p className="mt-2 text-slate-600 leading-relaxed">
@@ -121,11 +124,18 @@ const miniCardClass =
           for financing their studies.
         </p>
       </section>
+      <div className="my-6">
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={280}
+    keepPlaceholder={false}
+  />
+</div>
 
 
       {/* NEW INTRODUCTION CARD */}
       <section className={cardClass}>
-        <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
           Mixing Funding Options for a Personalized Financial Strategy
         </h2>
         <p className="mt-2 text-slate-600 leading-relaxed">
@@ -146,10 +156,17 @@ const miniCardClass =
           Whether a student secures one opportunity or several, combining available resources creates a practical, sustainable, and realistic financial strategy that supports long‑term academic and personal success.
         </p>
       </section>
+      <div className="my-6">
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={280}
+    keepPlaceholder={false}
+  />
+</div>
 
             {/* Card: Financing Options */}
             <section className={cardClass}>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
                 Key Financing Options
               </h2>
               <p className="mt-2 text-slate-600">
@@ -227,9 +244,17 @@ const miniCardClass =
 
             </section>
 
+            <div className="my-6">
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={280}
+    keepPlaceholder={false}
+  />
+</div>
+
             {/* Card: Strategy Combos */}
             <section className={cardClass}>
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+              <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
                 Optimizing Your Funding Strategy
               </h2>
               <p className="mt-2 text-slate-600">
@@ -430,9 +455,17 @@ const miniCardClass =
               </div>
             </section>
 
+            <div className="my-6">
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={280}
+    keepPlaceholder={false}
+  />
+</div>
+
             {/* Card: How We Help */}
             <section className={cardClass}>
-               <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+               <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
   How We Support You
 </h2>
 
@@ -450,7 +483,7 @@ const miniCardClass =
     <span className="text-[#0076CE]">•</span> Navigate directly to MPOWER’s loan application experience when structured financing is needed.
   </li>
   <li className="flex gap-2">
-    <span className="text-[#0076CE]">•</span> Learn how to balance scholarships, savings, university‑funded programs, and—when appropriate—educational loans to build a realistic financial plan.
+    <span className="text-[#0076CE]">•</span> Learn how to balance scholarships, savings, university‑funded programs, and—when appropriate—educational loans to build a realistic financial plan while studying.
   </li>
   <li className="flex gap-2">
     <span className="text-[#0076CE]">•</span> Explore practical, student‑focused content designed to support your academic success, career development, and financial well‑being.
@@ -483,15 +516,15 @@ const miniCardClass =
           </main>
 
           {/* SIDEBAR (Right) */}
-          <aside className="md:col-span-1">
+          <aside>
             {/*<div className="md:sticky md:top-24 space-y-6">*/}
-              <div className="space-y-6">
+              <div className="space-y-6 lg:sticky lg:top-24">
               {/* Image Card */}
               <div className={`${cardClass} p-4`}>
                 <img
                   src="/images/edufinancing-side.jpg"
                   alt="EduFinancing students"
-                  className="w-full h-48 object-cover rounded-xl"
+                  className="h-56 w-full rounded-2xl object-cover shadow-sm"
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://images.pexels.com/photos/6147161/pexels-photo-6147161.jpeg?cs=srgb&dl=pexels-keira-burton-6147161.jpg&fm=jpg";
@@ -504,7 +537,7 @@ const miniCardClass =
   <img
     src="/images/OneOnOne Funding consultation.png"
     alt="Financial funding strategy consultation"
-    className="w-full h-auto rounded-xl"
+    className="h-auto w-full rounded-2xl shadow-sm"
   />
 
   <div className="mt-4">
@@ -521,7 +554,7 @@ const miniCardClass =
     <div className="mt-4 flex justify-center">
   <button
     onClick={openCalendly}
-    className="inline-flex items-center justify-center rounded-xl bg-[#F4A000] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#db9000]"
+    className="inline-flex items-center justify-center rounded-full bg-[#F4A000] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#db9000] hover:shadow-md"
   >
     Book Consultation
   </button>
@@ -532,22 +565,24 @@ const miniCardClass =
 
    {/* GOOGLE ADS AREA */}
 <div className="space-y-6">
-  <div className={`${cardClass} p-4`}>
-    {/*<GoogleSidebarAd slot="4919459228" />*/}
-    <GoogleSidebarAd slot="4919459228" minHeight={600} />
-  </div>
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={600}
+    keepPlaceholder={false}
+  />
 
-  <div className={`${cardClass} p-4`}>
-    {/*<GoogleSidebarAd slot="4919459228" />*/}
-    <GoogleSidebarAd slot="4919459228" minHeight={800} />
-  </div>
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={800}
+    keepPlaceholder={false}
+  />
 
-  <div className={`${cardClass} p-4`}>
-    {/*<GoogleSidebarAd slot="4919459228" />*/}
-    <GoogleSidebarAd slot="4919459228" minHeight={1200} />
-  </div>
+  <GoogleSidebarAd
+    slot="4919459228"
+    minHeight={1200}
+    keepPlaceholder={false}
+  />
 </div>
-
     
 
   
@@ -559,8 +594,8 @@ const miniCardClass =
       </div>
 
       {/* ✅ FULL-WIDTH CTA (edge-to-edge, like About page) */}
-      <section className="w-full mt-6">
-        <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
+      <section className="mt-8 w-full">
+        <div className="bg-gradient-to-r from-[#0A4595] via-[#0f5fc7] to-[#1a73e8] p-10 text-center text-white shadow-[0_-12px_40px_rgba(15,23,42,0.08)] md:p-14">
           <h2 className="text-3xl font-extrabold">
             Join the Global Learning Community
           </h2>
@@ -574,21 +609,21 @@ const miniCardClass =
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Link
               to="/student-sign-up"
-              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
+              className="rounded-full bg-white px-5 py-2 font-semibold text-[#0A4595] shadow-sm transition hover:bg-slate-100"
             >
               Student Sign Up
             </Link>
 
             <Link
               to="/lecturer-sign-up"
-              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
+              className="rounded-full border border-white/70 px-5 py-2 font-semibold text-white transition hover:bg-white/10"
             >
               Lecturer Sign Up
             </Link>
 
             <Link
               to="/partner"
-              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
+              className="rounded-full bg-[#fbbc04] px-5 py-2 font-semibold text-slate-900 shadow-sm transition hover:opacity-90"
             >
               Partner with Us
             </Link>
@@ -597,7 +632,7 @@ const miniCardClass =
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 py-6 mt-10">
+      <footer className="mt-0 bg-slate-950 py-7 text-slate-300">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-sm">
             © {new Date().getFullYear()} ScholarsKnowledge. All rights reserved.
