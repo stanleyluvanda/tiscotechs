@@ -4247,7 +4247,7 @@ if (showingTab === "Top") {
   }
 />
 {/* AI Study Assistant */}
-<SidebarCard
+{/*<SidebarCard
   headerOnly
   title={
     <div className="flex items-center justify-between gap-3 min-w-0">
@@ -4268,7 +4268,7 @@ if (showingTab === "Top") {
       </button>
     </div>
   }
-/>
+/>*/}
 
 
 

@@ -282,6 +282,7 @@ export default function FullyFundedMastersPhDApplicationGuide() {
               </div>
             </section>
             <GoogleSidebarAd
+                
                 slot="8562818627"
                 label=""
                  className="my-10 bg-transparent"

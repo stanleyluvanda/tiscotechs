@@ -19,7 +19,7 @@ function ResponsiveAd({ slot, className = "" }) {
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+        data-ad-client="ca-pub-2132263917593964"
         data-ad-slot={slot}
         data-ad-format="auto"
         data-full-width-responsive="true"
@@ -61,7 +61,7 @@ export default function ScholarshipTipsWinningSOP() {
 </p>
 
 {/* DESKTOP TOP-RIGHT GOOGLE AD */}
-<div className="hidden xl:block">
+{/*<div className="hidden xl:block">
   <div className="absolute right-4 top-[145px] w-[320px]">
     <ins
       className="adsbygoogle"
@@ -71,6 +71,12 @@ export default function ScholarshipTipsWinningSOP() {
       data-ad-format="auto"
       data-full-width-responsive="true"
     />
+  </div>
+</div>*/}
+{/* DESKTOP TOP-RIGHT GOOGLE AD */}
+<div className="hidden xl:block">
+  <div className="absolute right-4 top-[145px] w-[320px]">
+    <GoogleSidebarAd className="h-[280px]" />
   </div>
 </div>
         
@@ -115,7 +121,7 @@ export default function ScholarshipTipsWinningSOP() {
     <ins
       className="adsbygoogle"
       style={{ display: "block" }}
-      data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+      data-ad-client="ca-pub-2132263917593964"
       data-ad-slot="YOUR_IMAGE_RIGHT_SLOT"
       data-ad-format="auto"
       data-full-width-responsive="true"
