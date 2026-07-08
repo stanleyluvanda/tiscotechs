@@ -142,14 +142,15 @@ const payload = {
 
       const base = String(API_BASE || "").replace(/\/+$/, "");
       {/*const res = await fetch(`${base}/api/auth/register/partner`, {*/}
+     
       const res = await fetch(
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st/register/partner",
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/register/partner",
   {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        /*credentials: "include",*/
-        body: JSON.stringify(payload),
-      });
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    /*credentials: "include",*/
+    body: JSON.stringify(payload),
+  });
 
       const data = await res.json().catch(() => ({}));
 
