@@ -176,7 +176,8 @@ async function fetchAllMembersFromServer() {
   const BASE = apiBase();
 
   // ✅ FIX: use the real DynamoDB-backed endpoint you just added and tested
-  const r = await fetch(`${BASE}/api/admin/members`, {
+  /*const r = await fetch(`${BASE}/api/admin/members`, {*/
+  const r = await fetch(`${BASE}/api/admin`, {
     method: "GET",
     headers: {
       "content-type": "application/json",
