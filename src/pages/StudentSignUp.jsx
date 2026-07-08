@@ -409,7 +409,6 @@ try {
       headers: {
         "Content-Type": "application/json",
       },
-      /*credentials: "include",*/
       body: JSON.stringify({
         email: emailNorm,
         password: form.password,
