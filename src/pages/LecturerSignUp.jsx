@@ -415,9 +415,17 @@ try {
     scopeKey,
     gsi_scopeRole,
     profile,
-    ...(oauthMode
+    /*...(oauthMode
       ? { oauth: true, authProvider: "google" }
-      : { password: form.password, passwordHash }),
+      : { password: form.password, passwordHash }),*/
+    ...(oauthMode
+  ? {
+      oauth: true,
+      authProvider: "google",
+      password: `GoogleOAuth-${Date.now()}-${Math.random().toString(36).slice(2)}@`,
+      passwordHash: "",
+    }
+  : { password: form.password, passwordHash }),
   };
 
   const res = await fetch(
