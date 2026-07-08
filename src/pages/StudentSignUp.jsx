@@ -381,22 +381,23 @@ window.location.href = data.url;
     const scopeKey = buildScopeKey({ university: form.university, faculty: form.faculty });
 
     // Build profile object
-    const profile = {
-      name: form.name,
-      fullName: form.name,
-      studentName: form.name,
-      gender: form.gender,
-      continent: form.continent,
-      country: form.country,
-      countryCode: form.countryCode,
-      university: form.university,
-      faculty: form.faculty,
-      program: form.program,
-      year: form.year,
-      photoUrl: photo || "", // <-- S3 URL
-      // optional (harmless): store also inside profile for convenience
-      scopeKey,
-    };
+    const gsi_scopeRole = `${scopeKey}#student`;
+const profile = {
+  name: form.name,
+  fullName: form.name,
+  studentName: form.name,
+  gender: form.gender,
+  continent: form.continent,
+  country: form.country,
+  countryCode: form.countryCode,
+  university: form.university,
+  faculty: form.faculty,
+  program: form.program,
+  year: form.year,
+  photoUrl: photo || "",
+  scopeKey,
+  gsi_scopeRole,
+};
 
     /* ----------------- BACKEND CALL ----------------- */
 let backendResp;
@@ -526,23 +527,29 @@ if (oauthMode && googleSignup && googleSignupSig) {
     }
 
     const id = `u_${Date.now()}`;
-    const newUser = {
-      id,
-      uid: id,
-      role: "student",
-      name: form.name,
-      gender: form.gender,
-      email: emailNorm,
-      continent: form.continent,
-      country: form.country,
-      countryCode: form.countryCode,
-      university: form.university,
-      faculty: form.faculty,
-      program: form.program,
-      year: form.year,
-      photoUrl: photo || "",
-      createdAt: new Date().toISOString(),
-    };
+    const gsi_scopeRole = `${scopeKey}#student`;
+
+const newUser = {
+  id,
+  uid: id,
+  role: "student",
+  name: form.name,
+  fullName: form.name,
+  studentName: form.name,
+  gender: form.gender,
+  email: emailNorm,
+  continent: form.continent,
+  country: form.country,
+  countryCode: form.countryCode,
+  university: form.university,
+  faculty: form.faculty,
+  program: form.program,
+  year: form.year,
+  scopeKey,
+  gsi_scopeRole,
+  photoUrl: photo || "",
+  createdAt: new Date().toISOString(),
+};
 
     const users = safeParse(localStorage.getItem("users")) || [];
     const byId = safeParse(localStorage.getItem("usersById")) || {};
