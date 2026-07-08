@@ -418,10 +418,10 @@ try {
     /*...(oauthMode
       ? { oauth: true, authProvider: "google" }
       : { password: form.password, passwordHash }),*/
-    ...(oauthMode
+   ...(oauthMode
   ? {
       oauth: true,
-      authProvider: "google",
+      authProvider: "supertokens-google",
       password: `GoogleOAuth-${Date.now()}-${Math.random().toString(36).slice(2)}@`,
       passwordHash: "",
     }

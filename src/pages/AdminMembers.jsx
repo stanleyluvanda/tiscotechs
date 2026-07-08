@@ -15,7 +15,7 @@ function getKey(u) {
   return u?.id || u?.uid || u?.userId || u?.email || u?.username || null;
 }
 
-function inferRole(u) {
+/*function inferRole(u) {
   const r = (u.role || u.accountType || u.userType || "").toString().toLowerCase();
   if (r.includes("partner")) return "partner";
   if (r.includes("lect")) return "lecturer";
@@ -23,6 +23,25 @@ function inferRole(u) {
   // heuristics
   if (u.program || u.year || u.studentId) return "student";
   if (u.staffId || u.faculty || u.department) return "lecturer";
+  return "student";
+}*/
+function inferRole(u) {
+  const r = (u.role || u.accountType || u.userType || "")
+    .toString()
+    .toLowerCase();
+
+  if (r.includes("admin")) return "admin";
+  if ((u.email || "").toLowerCase() === "admin@scholarsknowledge.com")
+    return "admin";
+
+  if (r.includes("partner")) return "partner";
+  if (r.includes("lect")) return "lecturer";
+  if (r.includes("stud")) return "student";
+
+  // heuristics
+  if (u.program || u.year || u.studentId) return "student";
+  if (u.staffId || u.faculty || u.department) return "lecturer";
+
   return "student";
 }
 
@@ -151,15 +170,21 @@ function readAllUsersFromStorageFallback() {
   ).replace(/\/+$/, "");
 }*/
 
-function apiBase() {
+/*function apiBase() {
   return (
     import.meta.env.VITE_AUTH_API_BASE ||
+    import.meta.env.VITE_ADMIN_MEMBERS_API_BASE ||
     import.meta.env.VITE_POSTS_API_BASE ||
     import.meta.env.VITE_CONTACTS_API_BASE ||
     "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com"
   ).replace(/\/+$/, "");
+}*/
+function apiBase() {
+  return (
+    import.meta.env.VITE_ADMIN_MEMBERS_API_BASE ||
+    "https://izhwiz3a17.execute-api.us-east-1.amazonaws.com"
+  ).replace(/\/+$/, "");
 }
-
 
 
 // Optional admin auth token (only if you already use it)
@@ -177,7 +202,7 @@ async function fetchAllMembersFromServer() {
 
   // ✅ FIX: use the real DynamoDB-backed endpoint you just added and tested
   /*const r = await fetch(`${BASE}/api/admin/members`, {*/
-  const r = await fetch(`${BASE}/api/admin`, {
+  const r = await fetch(`${BASE}/api/admin/members`, {
     method: "GET",
     headers: {
       "content-type": "application/json",
