@@ -51,6 +51,8 @@ const SERVERLESS =
 
 // Final chosen API_BASE (for display/debug). We still try fallbacks at request time.
 const API_BASE = RAW_API_BASE;
+const SUPERTOKENS_API_BASE =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default";
 
 // Expose endpoints for quick inspection in DevTools
 if (typeof window !== "undefined") {
@@ -162,8 +164,9 @@ function normalizeNetError(e) {
   return "network";
 }
 
-/** Core POST JSON with fallback candidates; returns { ok, status, ...json } */
+/*Core POST JSON with fallback candidates; returns { ok, status, ...json } */
 async function corePostJSON(pathOrUrl, body, init = {}) {
+  
   try {
     let candidates = [];
     if (/^https?:\/\//i.test(String(pathOrUrl))) {
@@ -191,6 +194,11 @@ async function corePostJSON(pathOrUrl, body, init = {}) {
     return { ok: false, status: 0, error: normalizeNetError(e) };
   }
 }
+function supertokensPostJSON(path, body) {
+  return corePostJSON(`${SUPERTOKENS_API_BASE}${path}`, body);
+}
+
+
 
 /** Core GET JSON with fallback candidates; returns { ok, status, ...json } */
 async function coreGetJSON(pathOrUrl, init = {}) {
@@ -256,17 +264,17 @@ export function confirmEmailCode(email, code, reason = "verify") {
  *   - role          (e.g. "student")
  *   - profile       (object with name, country, etc.)
  */
+
 export async function apiRegisterStudent(payload) {
-  return corePostJSON("/api/auth/register/student", payload);
+  /*return corePostJSON("/api/auth-st-prod/register/student", payload);*/
+  return supertokensPostJSON("/api/auth-st-prod/register/student", payload);
 }
 
 /**
  * Register a lecturer (same backend, different route).
  * Payload shape mirrors student: { email, passwordHash, role, profile }
  */
-/*export async function apiRegisterLecturer(payload) {
-  return corePostJSON("/api/auth/register/lecturer", payload);
-}*/
+
 export async function apiRegisterLecturer(payload) {
   // ✅ Non-breaking: do not mutate caller object
   const next = { ...(payload || {}) };
@@ -288,7 +296,9 @@ export async function apiRegisterLecturer(payload) {
     // next.profile.gsi_scopeRole = next.gsi_scopeRole;
   }
 
-  return corePostJSON("/api/auth/register/lecturer", next);
+  /*return corePostJSON("/api/auth/register/lecturer", next);*/
+  /*return corePostJSON("/api/auth-st-prod/register/lecturer", next);*/
+  return supertokensPostJSON("/api/auth-st-prod/register/lecturer", next);
 }
 
 

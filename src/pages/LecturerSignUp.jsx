@@ -286,8 +286,11 @@ const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
     try { sessionStorage.setItem("oauthRole", "lecturer"); } catch {}
     try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
     /*await loginWithGoogle();*/
-const res = await fetch(
+/*const res = await fetch(
   "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google"
+);*/
+const res = await fetch(
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google&role=lecturer"
 );
 
 const data = await res.json().catch(() => ({}));
@@ -439,8 +442,6 @@ try {
     error: "network",
   };
 }
-
-
 
 
     if (!backendResp || !backendResp.ok) {
