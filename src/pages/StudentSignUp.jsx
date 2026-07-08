@@ -527,7 +527,6 @@ if (oauthMode && googleSignup && googleSignupSig) {
     }
 
     const id = `u_${Date.now()}`;
-    const gsi_scopeRole = `${scopeKey}#student`;
 
 const newUser = {
   id,
