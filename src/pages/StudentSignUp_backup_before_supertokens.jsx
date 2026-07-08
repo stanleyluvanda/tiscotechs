@@ -13,7 +13,7 @@ import {
 } from "../data/eduData.js";
 
 import SingleImageUploader from "../components/upload/SingleImageUploader";
-//import { apiRegisterStudent } from "../lib/api";
+import { apiRegisterStudent } from "../lib/api";
 import { loginWithGoogle } from "../lib/googleLogin";
 
 /* ---------- Helpers ---------- */
@@ -399,22 +399,20 @@ window.location.href = data.url;
     };
 
     /* ----------------- BACKEND CALL ----------------- */
-let backendResp;
+    let backendResp;
+    try {
+      backendResp = await apiRegisterStudent({
+        // Only send password fields for traditional sign-up
+        ...(!oauthMode ? { password: form.password, passwordHash } : {}),
 
-try {
-  const res = await fetch(
-    "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/register/student",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
+        // Optional: let backend know this is OAuth profile creation
+        ...(oauthMode ? { oauth: true, authProvider: "google" } : {}),
         email: emailNorm,
-        password: form.password,
-        role: "student",
+        password: form.password,     // ✅ NEW (Cognito)
+        passwordHash,
+        // ✅ ADD THIS scopeKey (top-level for DynamoDB column + messaging API)
         scopeKey,
+        role: "student",
         profile,
         name: form.name,
         gender: form.gender,
@@ -426,23 +424,13 @@ try {
         program: form.program,
         year: form.year,
         photo: photo || "",
-        photoUrl: photo || "",
         turnstileToken,
-      }),
+      });
+    } catch (err) {
+      console.error("[student-signup] backend network error:", err);
+      backendResp = { ok: false, error: "network" };
     }
-  );
 
-  backendResp = await res.json().catch(() => ({
-    ok: false,
-    error: "BAD_JSON",
-  }));
-} catch (err) {
-  console.error("[student-signup] backend network error:", err);
-  backendResp = {
-    ok: false,
-    error: "network",
-  };
-}
     if (!backendResp || !backendResp.ok) {
       const code = String(backendResp?.error || "").toUpperCase();
       if (["ALREADY_EXISTS", "EMAIL_EXISTS", "EMAIL_EXISTS_STUDENT"].includes(code)) {
