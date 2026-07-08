@@ -11,7 +11,7 @@ import {
 } from "../data/eduData.js";
 
 import SingleImageUploader from "../components/upload/SingleImageUploader";
-import { apiRegisterLecturer } from "../lib/api";
+//import { apiRegisterLecturer } from "../lib/api";
 import { loginWithGoogle } from "../lib/googleLogin";
 
 // Small rectangular flag PNG (24x18)
@@ -404,24 +404,41 @@ const gsi_scopeRole = buildGsiScopeRole({ scopeKey, role: "lecturer" });
     }*/
 
     let backendResp;
+
 try {
   const payload = {
     email: emailNorm,
     role: "lecturer",
-    scopeKey,        // ✅ safe to add
-    gsi_scopeRole,   // ✅ safe to add
+    scopeKey,
+    gsi_scopeRole,
     profile,
     ...(oauthMode
-      ? { oauth: true, authProvider: "google" }     // ✅ OAuth path (no password fields)
-      : { password: form.password, passwordHash }), // ✅ Traditional path (unchanged)
+      ? { oauth: true, authProvider: "google" }
+      : { password: form.password, passwordHash }),
   };
 
-  backendResp = await apiRegisterLecturer(payload);
+  const res = await fetch(
+    "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/register/lecturer",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  backendResp = await res.json().catch(() => ({
+    ok: false,
+    error: "BAD_JSON",
+  }));
 } catch (err) {
   console.error("[lecturer-signup] network error:", err);
-  backendResp = { ok: false, error: "network" };
+  backendResp = {
+    ok: false,
+    error: "network",
+  };
 }
-
 
 
 
