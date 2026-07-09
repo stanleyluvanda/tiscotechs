@@ -412,7 +412,10 @@ try {
       },
       body: JSON.stringify({
         email: emailNorm,
-        password: form.password,
+        /*password: form.password,*/
+        password: oauthMode
+  ? `GoogleOAuth-${Date.now()}-${Math.random().toString(36).slice(2)}@`
+  : form.password,
         role: "student",
         scopeKey,
         profile,
@@ -428,15 +431,17 @@ try {
         photo: photo || "",
         photoUrl: photo || "",
         turnstileToken,
-      ...(oauthMode && googleSignup && googleSignupSig
-    ? {
-        oauth: true,
-        googleSignup,
-        googleSignupSig,
-      }
-    : {
-        passwordHash,
-      }),
+    ...(oauthMode && googleSignup && googleSignupSig
+  ? {
+      oauth: true,
+      googleSignup,
+      googleSignupSig,
+      authProvider: "supertokens-google",
+      passwordHash: "",
+    }
+  : {
+      passwordHash,
+    }),
 }),
     }
   );
