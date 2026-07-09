@@ -428,7 +428,16 @@ try {
         photo: photo || "",
         photoUrl: photo || "",
         turnstileToken,
+      ...(oauthMode && googleSignup && googleSignupSig
+    ? {
+        oauth: true,
+        googleSignup,
+        googleSignupSig,
+      }
+    : {
+        passwordHash,
       }),
+}),
     }
   );
 
