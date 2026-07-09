@@ -4,6 +4,7 @@
 import { Fragment, useEffect } from "react";
 import Footer from "../components/Footer.jsx";
 import { Link } from "react-router-dom";
+const CAN_SHOW_ADS = false;
 
 const stemCards = [
   {
@@ -100,28 +101,30 @@ const stemCards = [
 ];
 
 
-function ResponsiveSidebarAd({ slotId = "REPLACE_WITH_STEM_SIDEBAR_SLOT" }) {
+function ResponsiveSidebarAd({ slotId = "8562818627" }) {
   useEffect(() => {
+    if (!CAN_SHOW_ADS) return;
+
     try {
       if (window.adsbygoogle) {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       }
     } catch {
-      // AdSense may not be available in local/dev environments.
+      // ignore
     }
   }, []);
 
+  if (!CAN_SHOW_ADS) return null;
+
   return (
-    <div className="min-h-0">
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-        data-ad-slot={slotId}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
-    </div>
+    <ins
+      className="adsbygoogle"
+      style={{ display: "block" }}
+      data-ad-client="ca-pub-2132263917593964"
+      data-ad-slot={slotId}
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
   );
 }
 
@@ -257,9 +260,9 @@ export default function STEMPrograms() {
                   </div>
                 
           
-              <div className="my-6">
+              <div className="my-0 min-h-0">
   <ResponsiveSidebarAd slotId="8562818627" />
-    </div>
+</div>
 
               <div className="mt-6 space-y-5">
   {stemCards.map((card, index) => (
@@ -306,9 +309,9 @@ export default function STEMPrograms() {
       </article>
 
       {(index + 1) % 2 === 0 && index !== stemCards.length - 1 ? (
-        <div className="my-6">
-          <ResponsiveSidebarAd slotId="8562818627" />
-        </div>
+        <div className="my-0 min-h-0">
+  <ResponsiveSidebarAd slotId="8562818627" />
+</div>
       ) : null}
     </Fragment>
   ))}
