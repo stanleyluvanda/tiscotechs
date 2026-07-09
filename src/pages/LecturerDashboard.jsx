@@ -1211,7 +1211,8 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
 
   // ✅ ADD THIS RIGHT HERE (scopeKey for MessagingDock)
   const scopeKey =
-  `${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();
+  /*`${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();*/
+   `${user?.university || ""}#${user?.faculty || ""}`;
   
 
 
