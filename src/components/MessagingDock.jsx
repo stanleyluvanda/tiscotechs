@@ -828,11 +828,11 @@ function myOnlineNow() {
   >
     {myRole === "student" ? "Lecturers" : "Students"}
 
-    {/*{myRole === "student" && unreadCountsByRole.lecturers > 0 ? (
+    {myRole === "student" && unreadCountsByRole.lecturers > 0 ? (
       <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-600 text-white text-[11px] font-semibold">
         {unreadCountsByRole.lecturers}
       </span>
-    ) : null}*/}
+    ) : null}
   </button>
 
   <button
