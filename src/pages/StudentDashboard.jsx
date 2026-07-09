@@ -2039,7 +2039,8 @@ export default function StudentDashboard() {
 
    // ✅ ADD THIS RIGHT HERE (after user exists)
   const scopeKey =
-  `${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();
+  /*`${user?.university || ""}#${user?.faculty || ""}`.toLowerCase();*/
+  `${user?.university || ""}#${user?.faculty || ""}`;
 
 
   // Presence heartbeat
