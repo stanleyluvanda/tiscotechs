@@ -67,6 +67,15 @@ const guides = [
   desc: "A complete step-by-step guide to finding, preparing for, and winning fully funded Master's and PhD scholarships worldwide.",
   link: "/scholarship-tips/fully-funded-masters-phd-guide",
 },
+{
+  title: "STEM MBA Universities & Programs Guide",
+  category: "STEM MBA",
+  emoji: "💼",
+  time: "12 min read",
+  img: "/images/mbaSTEM.webp",
+  desc: "Discover what makes an MBA STEM-designated, which specializations commonly qualify, how STEM designation may affect post-graduation work opportunities, and what every international student should verify before applying.",
+  link: "/stem-mba-guide#universities",
+},
 
 {
   title: "What Is a Fellowship? A Complete Guide for International Students",

@@ -375,6 +375,12 @@ export default function STEMPrograms() {
 
                 <div className="mt-4 space-y-2">
                   <Link
+  to="/stem-mba-guide#universities"
+  className="block rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-[#0A4595] hover:bg-blue-50"
+>
+  STEM MBA Universities
+</Link>
+                  <Link
                     to="/study-in-us"
                     className="block rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/15"
                   >

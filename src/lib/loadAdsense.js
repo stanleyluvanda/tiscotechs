@@ -15,17 +15,24 @@ export function loadAdsenseScript() {
   }
 
   adsenseLoadPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector(
+    /*const existing = document.querySelector(
       'script[data-adsense-script="true"]'
-    );
+    );*/
+const existing = document.querySelector(
+  'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+);
 
-    if (existing) {
+    /*if (existing) {
       existing.addEventListener("load", () => resolve(true), { once: true });
       existing.addEventListener("error", () => reject(new Error("AdSense failed to load")), {
         once: true,
       });
       return;
-    }
+    }*/
+    if (existing) {
+  resolve(true);
+  return;
+}
 
     const script = document.createElement("script");
     script.async = true;

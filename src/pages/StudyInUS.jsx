@@ -97,6 +97,13 @@ const guides = [
     link: "/scholarship-tips/fully-funded-masters-phd-guide",
   },
   {
+  title: "STEM MBA Universities & Programs Guide",
+  category: "STEM MBA",
+  emoji: "💼",
+  time: "10 min read",
+  link: "/stem-mba-guide#universities",
+},
+  {
   title: "What Is a Fellowship? A Complete Guide for International Students",
   category: "Fellowships",
   emoji: "🏆",

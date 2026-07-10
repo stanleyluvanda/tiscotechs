@@ -113,6 +113,7 @@ const FundedGraduateAdmissionDetail = lazy(() =>
 );
 
 const STEMPrograms = lazy(() => import("./pages/STEMPrograms"));
+const STEMMBA = lazy(() => import("./pages/STEMMBA"));
 const FundingPrograms = lazy(() =>
   import("./pages/FundingPrograms.jsx")
 );
@@ -297,6 +298,7 @@ export default function App() {
           </Route>
 
           <Route path="/stem-programs" element={<STEMPrograms />} />
+          <Route path="/stem-mba-guide" element={<STEMMBA />} />
 
           <Route path="/contact" element={<Contact />} />
           <Route path="/contact-lecturer/*" element={<ContactLecturer />} />
