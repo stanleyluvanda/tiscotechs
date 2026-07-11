@@ -136,6 +136,60 @@ const quillModules = {
   ],
 };
 
+const Delta = Quill.import("delta");
+
+const BULLET_LINE_RE = /^\s*[•●▪◦‣⁃*\-–—]\s+/;
+const ORDERED_LINE_RE = /^\s*\d+[.)]\s+/;
+
+/**
+ * Preserve bullet/number formatting when a partner pastes plain text.
+ * Returns true only when the pasted block contains recognizable list lines.
+ */
+function pastePlainTextLists(quill, text) {
+  const source = String(text || "").replace(/\r\n?/g, "\n");
+  const lines = source.split("\n");
+
+  const hasRecognizableList = lines.some(
+    (line) => BULLET_LINE_RE.test(line) || ORDERED_LINE_RE.test(line)
+  );
+
+  if (!hasRecognizableList) return false;
+
+  const range = quill.getSelection(true) || {
+    index: quill.getLength() - 1,
+    length: 0,
+  };
+
+  const delta = new Delta()
+    .retain(range.index)
+    .delete(range.length);
+
+  lines.forEach((rawLine, index) => {
+    const isLastLine = index === lines.length - 1;
+
+    if (BULLET_LINE_RE.test(rawLine)) {
+      const content = rawLine.replace(BULLET_LINE_RE, "");
+      delta.insert(content);
+      delta.insert("\n", { list: "bullet" });
+      return;
+    }
+
+    if (ORDERED_LINE_RE.test(rawLine)) {
+      const content = rawLine.replace(ORDERED_LINE_RE, "");
+      delta.insert(content);
+      delta.insert("\n", { list: "ordered" });
+      return;
+    }
+
+    delta.insert(rawLine);
+    if (!isLastLine) delta.insert("\n");
+  });
+
+  quill.updateContents(delta, "user");
+  quill.setSelection(range.index + Math.max(0, source.length), 0, "silent");
+  return true;
+}
+
 /* ---- Helper: get the logged-in partner's email (from localStorage.partnerAuth) ---- */
 function getPartnerEmail() {
   try {
@@ -640,6 +694,23 @@ const onChange = (e) => {
       });
       host.dataset.inited = "1";
       host.__quill = q;
+
+      // Preserve plain-text bullets such as:
+      // • Item, - Item, * Item, 1. Item, or 1) Item.
+      q.root.addEventListener("paste", (event) => {
+        const clipboard = event.clipboardData;
+        if (!clipboard) return;
+
+        const html = clipboard.getData("text/html");
+        const text = clipboard.getData("text/plain");
+
+        // Let Quill handle genuine HTML lists from Word, Google Docs, websites, etc.
+        if (/<\s*(ul|ol|li)\b/i.test(html)) return;
+
+        if (pastePlainTextLists(q, text)) {
+          event.preventDefault();
+        }
+      });
 
       // Keep form state (HTML) in sync as user types
       q.on("text-change", () => {

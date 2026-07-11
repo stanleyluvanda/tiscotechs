@@ -638,19 +638,24 @@ const res = await fetch(
     <div className="bg-slate-50 min-h-screen flex flex-col">
      
       <style>{` 
-  .rich-html ul {
-    list-style: disc;
-    padding-left: 1.5rem;
+  .rich-html ul,
+  .rich-html ol {
+    padding-left: 1.65rem;
     margin: 0.5rem 0 0.75rem;
   }
 
+  .rich-html ul {
+    list-style-type: disc;
+  }
+
   .rich-html ol {
-    padding-left: 1.5rem;
-    margin: 0.5rem 0 0.75rem;
+    list-style-type: decimal;
+    counter-reset: quill-ordered;
   }
 
   .rich-html li {
     margin: 0.25rem 0;
+    padding-left: 0.15rem;
   }
 
   .rich-html p {
@@ -661,45 +666,53 @@ const res = await fetch(
     text-decoration: underline;
   }
 
+  /* Standard HTML pasted as <ul>/<ol>. */
   .rich-html ul > li {
-    list-style: disc;
+    display: list-item;
+    list-style-type: disc;
   }
 
   .rich-html ol > li:not([data-list]) {
-    list-style: decimal;
+    display: list-item;
+    list-style-type: decimal;
   }
 
-  .rich-html ol li[data-list="bullet"],
-  .rich-html ol li[data-list="ordered"] {
-    list-style: none;
+  /*
+   * Quill 2 stores both bullet and numbered rows inside <ol>,
+   * then distinguishes them with data-list.
+   */
+  .rich-html li[data-list="bullet"],
+  .rich-html li[data-list="ordered"] {
+    display: block;
+    list-style: none !important;
     position: relative;
   }
 
-  .rich-html ol li[data-list="bullet"]::before {
+  /* Prevent Quill's invisible UI span from producing its own marker. */
+  .rich-html .ql-ui {
+    display: none !important;
+  }
+
+  .rich-html li[data-list="bullet"]::before {
     content: "•";
     position: absolute;
-    left: -1rem;
-    top: 0.22rem;
-    font-size: 1.15em;
-    line-height: 1;
+    left: -1.15rem;
+    top: 0.08rem;
+    font-size: 1.1em;
+    line-height: inherit;
   }
 
-  .rich-html ol {
-    counter-reset: quill-ordered;
-  }
-
-  .rich-html ol li[data-list="ordered"] {
+  .rich-html li[data-list="ordered"] {
     counter-increment: quill-ordered;
   }
 
-  .rich-html ol li[data-list="ordered"]::before {
+  .rich-html li[data-list="ordered"]::before {
     content: counter(quill-ordered) ".";
     position: absolute;
-    left: -1.5rem;
+    left: -1.65rem;
     top: 0;
-    min-width: 1.25rem;
+    width: 1.35rem;
     text-align: right;
-
   }
     `}</style>
 
