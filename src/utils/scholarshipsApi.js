@@ -177,13 +177,23 @@ export async function listScholarships({
   page = 1,
   pageSize = 50,
   contentType = "", // ✅ ADD
+  view = "",
 } = {}) {
+
+
   const params = new URLSearchParams({
     q,
     status,
     page: String(page),
     pageSize: String(pageSize),
   });
+  if (contentType) {
+  params.set("contentType", String(contentType));
+}
+
+if (view) {
+  params.set("view", String(view));
+}
   if (contentType) {
   params.set("contentType", String(contentType));
 }
@@ -231,6 +241,82 @@ export async function listScholarships({
 
   return { items: paged, total, meta: { source: "local-dev" } };
 }
+
+
+
+
+/**
+ * Retrieve the complete scholarship collection in API-sized batches.
+ *
+ * Lambda limits each response to 100 records, so this helper requests
+ * additional pages until the API-reported total has been collected.
+ */
+export async function listAllScholarships({
+  q = "",
+  status = "all",
+  contentType = "",
+  pageSize = 100,
+   view = "",
+} = {}) {
+  const allItems = [];
+  let page = 1;
+  let total = 0;
+  let source = "api";
+
+  do {
+    const response = await listScholarships({
+      q,
+      status,
+      contentType,
+      page,
+      pageSize,
+      view,
+    });
+
+    const batch = Array.isArray(response?.items)
+      ? response.items
+      : [];
+
+    allItems.push(...batch);
+
+    total = Number.isFinite(Number(response?.total))
+      ? Number(response.total)
+      : allItems.length;
+
+    source = response?.meta?.source || source;
+
+    if (batch.length === 0) break;
+
+    page += 1;
+  } while (allItems.length < total);
+
+  const completeResult = {
+    items: allItems,
+    total: allItems.length,
+  };
+
+  // Replace the partial first-page cache with the complete collection.
+  writeScholarshipsCache(
+    status,
+    contentType || "all",
+    completeResult
+  );
+
+  return {
+    ...completeResult,
+    meta: { source },
+  };
+}
+
+
+
+
+
+
+
+
+
+
 
 
 /* ================= INSERT NEW FUNCTION BELOW THIS LINE ================= */

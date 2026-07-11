@@ -5,10 +5,14 @@ import { Link, useSearchParams } from "react-router-dom";
 import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { shouldSendTrackOnce } from "../lib/trackGate"; // already imported in your file
-import {
+/*import {
   listScholarships,
   readScholarshipsCache,
-} from "../utils/scholarshipsApi"; // ✅ unified source (API + fallback + cache)
+} from "../utils/scholarshipsApi"; */// ✅ unified source (API + fallback + cache)
+import {
+  listAllScholarships,
+  readScholarshipsCache,
+} from "../utils/scholarshipsApi";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
 // ✅ Google Ads (same component you used in dashboards)
@@ -47,6 +51,20 @@ function truncate(s = "", n = 180) {
   const t = s.trim();
   return t.length > n ? t.slice(0, n - 1) + "…" : t;
 }
+function prepareScholarships(list) {
+  if (!Array.isArray(list)) return [];
+
+  return list.map((item) => {
+    const descriptionText =
+      item.descriptionText ||
+      stripHtml(item.description || "");
+
+    return {
+      ...item,
+      descriptionText,
+    };
+  });
+}
 
 /** Apply client-side filters/sort/pagination (used after fetching approved list) */
 function filterSortPaginate({
@@ -74,7 +92,8 @@ function filterSortPaginate({
           s.country,
           s.field,
           s.level,
-          stripHtml(s.description || ""),
+          /*stripHtml(s.description || ""),*/
+          s.descriptionText,
         ]
           .filter(Boolean)
           .join(" ")
@@ -262,11 +281,41 @@ function RelatedGuideLinks() {
   );
 }
 
+
+
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia(query).matches;
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+
+    const handleChange = () => {
+      setMatches(mediaQuery.matches);
+    };
+
+    handleChange();
+
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, [query]);
+
+  return matches;
+}
+
 export default function Scholarship() {
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const isExtraLargeScreen = useMediaQuery("(min-width: 1280px)");
   // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
   const [baseItems, setBaseItems] = useState(() => {
     const cached = readScholarshipsCache("approved", CONTENT_TYPE);
-    return cached?.items || [];
+    /*return cached?.items || [];*/
+    return prepareScholarships(cached?.items || []);
   });
 
   const [loading, setLoading] = useState(() => {
@@ -293,7 +342,7 @@ export default function Scholarship() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
-  const pageSize = 100;
+  const displayPageSize = 20;
 
   // Close the level dropdown when clicking outside
   useEffect(() => {
@@ -398,7 +447,8 @@ export default function Scholarship() {
       levels,
       sort,
       page,
-      pageSize,
+      /*pageSize,*/
+      pageSize: displayPageSize,
     });
   }, [baseItems, q, continent, country, field, funding, levels, sort, page]);
 
@@ -418,17 +468,26 @@ export default function Scholarship() {
 }
 
       try {
-        const res = await listScholarships({
+        /*const res = await listScholarships({
           status: "approved",
           contentType: CONTENT_TYPE, // ✅ prevents FUNDED_GRAD_ADMISSION from mixing in
           q: "", // ✅ fetch once; keep filtering client-side for instant UI
           page: 1,
           pageSize: 200, // generous; your client filtering expects a big list
-        });
+        });*/
+        const res = await listAllScholarships({
+  status: "approved",
+  contentType: CONTENT_TYPE,
+  q: "",
+  pageSize: 100,
+  view: "summary",
+});
 
         if (!alive) return;
 
-        const next = Array.isArray(res?.items) ? res.items : [];
+        /*const next = Array.isArray(res?.items) ? res.items : [];
+        setBaseItems(next);*/
+        const next = prepareScholarships(res?.items);
         setBaseItems(next);
 
         // informational banner: dev local or cache is not "offline", but you can show if you want
@@ -460,7 +519,8 @@ export default function Scholarship() {
     setPage(1);
   };
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  /*const totalPages = Math.max(1, Math.ceil(total / pageSize));*/
+  const totalPages = Math.max(1,Math.ceil(total / displayPageSize));
 
 // 🔵 Track scholarship interactions (fire-and-forget) + single-device guard
 const trackScholarship = (id, type) => {
@@ -543,9 +603,14 @@ const trackScholarship = (id, type) => {
           <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
 
 
-            <div className="pointer-events-none absolute right-4 top-4 hidden h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden lg:block">
+            {/*<div className="pointer-events-none absolute right-4 top-4 hidden h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden lg:block">
   <GoogleBannerAd reserveSpace={false} />
-</div>
+</div>*/}
+{isLargeScreen && (
+  <div className="pointer-events-none absolute right-4 top-4 h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden">
+    <GoogleBannerAd reserveSpace={false} />
+  </div>
+)}
 
 
 
@@ -866,14 +931,24 @@ const trackScholarship = (id, type) => {
 
        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
   {/* LEFT VERTICAL ADS */}
-  <aside className="hidden xl:block">
+  {/*<aside className="hidden xl:block">
     <div className="sticky top-24 space-y-6">
       <GoogleSidebarAd
         className="w-full"
         minHeight={600}
       />
     </div>
-  </aside>
+  </aside>*/}
+  <aside className="hidden xl:block">
+  <div className="sticky top-24 space-y-6">
+    {isExtraLargeScreen && (
+      <GoogleSidebarAd
+        className="w-full"
+        minHeight={600}
+      />
+    )}
+  </div>
+</aside>
 
           {/* MAIN LIST */}
 <main className="min-w-0">
@@ -917,7 +992,9 @@ const trackScholarship = (id, type) => {
   <ul className="mt-3 grid gap-3">
     {items.map((s, index) => {
       /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
-      const snippet = truncate(stripHtml(s.description || ""), 170);
+      /*const snippet = truncate(stripHtml(s.description || ""), 170);*/
+      const descriptionText = s.descriptionText || "";
+      const snippet = truncate(descriptionText, 170);
       const fundingStr = Array.isArray(s.fundingType)
         ? s.fundingType.join(", ")
         : s.fundingType || "";
@@ -985,21 +1062,32 @@ const trackScholarship = (id, type) => {
 
           {snippet && (
   <div className="mt-4 border-t border-slate-200 pt-4">
-    <p className="text-base leading-7 text-slate-700">
+    {/*<p className="text-base leading-7 text-slate-700">
       {snippet}
       {stripHtml(s.description || "").length > 170 && "..."}
-    </p>
+    </p>*/}
+    <p className="text-base leading-7 text-slate-700">
+  {snippet}
+</p>
   </div>
 )}
         </div>
       </div>
     </li>
 
-    {(index + 1) % 4 === 0 && (
+    {/*{(index + 1) % 4 === 0 && (
+  <li className="overflow-hidden">
+    <GoogleBannerAd reserveSpace={false} />
+  </li>
+)}*/}
+
+{(index === 3 || index === 11) && (
   <li className="overflow-hidden">
     <GoogleBannerAd reserveSpace={false} />
   </li>
 )}
+
+
   </Fragment>
 );
     })}
@@ -1028,10 +1116,17 @@ const trackScholarship = (id, type) => {
           </main>
 
           {/* RIGHT SIDEBAR */}
-          <aside className="hidden xl:block">
+          {/*<aside className="hidden xl:block">
             <div className="space-y-4">
-              {/* RIGHT RESPONSIVE AD AREA */}
-<GoogleSidebarAd className="w-full" minHeight={600} />
+<GoogleSidebarAd className="w-full" minHeight={600} />*/}
+<aside className="hidden xl:block">
+  <div className="space-y-4">
+    {isExtraLargeScreen && (
+      <GoogleSidebarAd
+        className="w-full"
+        minHeight={600}
+      />
+    )}
 
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900">Popular Study Destinations</h3>
