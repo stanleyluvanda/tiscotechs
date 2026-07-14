@@ -127,12 +127,22 @@ const FUNDING_OPTIONS = [
 ];
 
 /** Quill toolbar/modules (shared) */
-const quillModules = {
+/*const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link", "clean"],
+  ],
+};*/
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    [{ color: [] }],
+    ["clean"],
   ],
 };
 
@@ -948,6 +958,11 @@ if (form.deadlineMode === "single") {
   providerLogoUrl: logoUrl,
   providerLogoData: form.providerLogoData || "",
   partnerEmail: String(partnerEmail),
+  // Public attribution
+  postedBy: "ScholarsKnowledge",
+  postedAt: Date.now(),
+  updatedBy: "",
+  updatedAt: null,
   createdAt: Date.now(),
   status: "pending",
 };
