@@ -84,9 +84,18 @@ function getPartner() {
   }
 }
 
-function setPartner(p) {
+/*function setPartner(p) {
   localStorage.setItem("partnerAuth", JSON.stringify(p));
   window.dispatchEvent(new Event("storage"));
+}*/
+function setPartner(p) {
+  localStorage.setItem("partnerAuth", JSON.stringify(p));
+
+  localStorage.setItem("currentUser", JSON.stringify(p));
+  sessionStorage.setItem("currentUser", JSON.stringify(p));
+
+  window.dispatchEvent(new Event("storage"));
+  window.dispatchEvent(new Event("auth:changed"));
 }
 
 async function sha256Hex(str) {
@@ -396,7 +405,7 @@ export default function PartnerWelcome() {
         const u = await partnerGetProfile(email);
         if (cancelled) return;
 
-        const next = {
+        /*const next = {
           ...user,
           orgName: u.orgName ?? u.organization ?? user?.orgName ?? "",
           contactName: u.contactName ?? user?.contactName ?? "",
@@ -406,7 +415,86 @@ export default function PartnerWelcome() {
           bannerUrl: u.bannerUrl ?? user?.bannerUrl ?? "",
           photo: u.logoUrl ?? user?.photo ?? user?.logoUrl ?? "",
           email: (u.email || email).toLowerCase(),
-        };
+        };*/
+        const next = {
+  ...(user || {}),
+  ...u,
+
+  orgName:
+    u.orgName ||
+    u.organization ||
+    user?.orgName ||
+    user?.organization ||
+    "",
+
+  organization:
+    u.organization ||
+    u.orgName ||
+    user?.organization ||
+    user?.orgName ||
+    "",
+
+  contactName:
+    u.contactName ||
+    user?.contactName ||
+    "",
+
+  phone:
+    u.phone ||
+    user?.phone ||
+    "",
+
+  website:
+    u.website ||
+    user?.website ||
+    "",
+
+  logoUrl:
+    u.logoUrl ||
+    u.photo ||
+    u.photoUrl ||
+    user?.logoUrl ||
+    user?.photo ||
+    user?.photoUrl ||
+    "",
+
+  photo:
+    u.photo ||
+    u.logoUrl ||
+    u.photoUrl ||
+    user?.photo ||
+    user?.logoUrl ||
+    user?.photoUrl ||
+    "",
+
+  photoUrl:
+    u.photoUrl ||
+    u.photo ||
+    u.logoUrl ||
+    user?.photoUrl ||
+    user?.photo ||
+    user?.logoUrl ||
+    "",
+
+  bannerUrl:
+    u.bannerUrl ||
+    u.banner ||
+    user?.bannerUrl ||
+    user?.banner ||
+    "",
+
+  banner:
+    u.banner ||
+    u.bannerUrl ||
+    user?.banner ||
+    user?.bannerUrl ||
+    "",
+
+  email:
+    String(u.email || user?.email || email)
+      .trim()
+      .toLowerCase(),
+};
 
         setPartner(next);
         setUser(next);
