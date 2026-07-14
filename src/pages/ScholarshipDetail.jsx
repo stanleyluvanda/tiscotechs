@@ -847,7 +847,7 @@ const res = await fetch(
                     )}
                   </div>
 
-                  <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
+                  {/*<div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
                     {partnerApplyUrl && (
                       <a
                         href={partnerApplyUrl}
@@ -871,7 +871,61 @@ const res = await fetch(
                         Visit website
                       </a>
                     )}
-                  </div>
+                  </div>*/}
+
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+  <div className="flex flex-wrap gap-3">
+    {partnerApplyUrl && (
+      <a
+        href={partnerApplyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackScholarship(id, "apply")}
+        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+      >
+        Apply Now
+      </a>
+    )}
+
+    {link && (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackScholarship(id, "website")}
+        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+      >
+        Visit website
+      </a>
+    )}
+  </div>
+
+  {(item.publishedBy || item.updatedAt) && (
+    <div className="text-xs text-slate-500 sm:text-right">
+      {item.updatedAt ? (
+        <>
+          Updated by{" "}
+          <span className="font-semibold text-slate-700">
+            {item.updatedBy || item.publishedBy}
+          </span>
+          {" • "}
+          {new Date(item.updatedAt).toLocaleDateString()}
+        </>
+      ) : (
+        <>
+          Published by{" "}
+          <span className="font-semibold text-slate-700">
+            {item.publishedBy}
+          </span>
+          {" • "}
+          {new Date(item.publishedAt).toLocaleDateString()}
+        </>
+      )}
+    </div>
+  )}
+
+</div>
                 </div>
               </div>
 
