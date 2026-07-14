@@ -958,11 +958,17 @@ if (form.deadlineMode === "single") {
   providerLogoUrl: logoUrl,
   providerLogoData: form.providerLogoData || "",
   partnerEmail: String(partnerEmail),
-  // Public attribution
-  postedBy: "ScholarsKnowledge",
-  postedAt: Date.now(),
-  updatedBy: "",
-  updatedAt: null,
+  // Publisher information
+publishedBy:
+  currentUser?.role === "partner"
+    ? currentUser.organization || currentUser.name
+    : "ScholarsKnowledge",
+
+publishedAt: Date.now(),
+
+updatedBy: "",
+updatedAt: null,
+
   createdAt: Date.now(),
   status: "pending",
 };
