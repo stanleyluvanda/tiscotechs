@@ -53,6 +53,9 @@ const USE_SUPERTOKENS_TEST =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1" ||
   USE_SUPERTOKENS_PROD;
+const IS_LOCALHOST =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
 
 const SUPERTOKENS_TEST_API =
   /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
@@ -383,7 +386,8 @@ export default function PartnerWelcome() {
 
     async function loadProfile() {
       try {
-        if (SERVERLESS) return;
+        /*if (SERVERLESS) return;*/
+        if (SERVERLESS || IS_LOCALHOST) return;
         const email = (user?.email || "").trim().toLowerCase();
         if (!email) return;
 
@@ -680,7 +684,7 @@ export default function PartnerWelcome() {
         if (payload.userId) {
           const persisted = await partnerUpdateProfile(payload);
 
-          const merged = {
+          /*const merged = {
             ...(user || {}),
             orgName: persisted.orgName ?? persisted.organization ?? payload.organization,
             contactName: persisted.contactName ?? payload.contactName,
@@ -690,7 +694,51 @@ export default function PartnerWelcome() {
             logoUrl: persisted.logoUrl ?? payload.logoUrl,
             bannerUrl: persisted.bannerUrl ?? payload.bannerUrl,
             photo: (persisted.logoUrl ?? payload.logoUrl) || (user?.photo || ""),
-          };
+          };*/
+
+          const merged = {
+  ...(user || {}),
+
+  orgName:
+    persisted.orgName ??
+    persisted.organization ??
+    payload.organization,
+
+  organization:
+    persisted.organization ??
+    persisted.orgName ??
+    payload.organization,
+
+  contactName:
+    persisted.contactName ??
+    payload.contactName,
+
+  phone:
+    persisted.phone ??
+    payload.phone,
+
+  website:
+    persisted.website ??
+    payload.website,
+
+  email:
+    (persisted.email || payload.email).toLowerCase(),
+
+  logoUrl:
+    persisted.logoUrl ??
+    payload.logoUrl,
+
+  bannerUrl:
+    persisted.bannerUrl ??
+    payload.bannerUrl,
+
+  photo:
+    (persisted.logoUrl ?? payload.logoUrl) ||
+    user?.photo ||
+    "",
+};
+
+
 
           setPartner(merged);
           setUser(merged);

@@ -269,7 +269,7 @@ export default function Navbar() {
         {/* LEFT: logo + brand (tight together) */}
         <Link to="/home" className="flex items-center gap-2 min-w-0 shrink-0">
           <img
-            src="/images/1754280544595.jpeg"
+            src="/images/1754280544595.webp"
             alt="ScholarsKnowledge logo"
             className="h-8 w-8 rounded-full object-cover"
             onError={(e) => { e.currentTarget.style.display = "none"; }}

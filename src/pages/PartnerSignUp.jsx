@@ -167,7 +167,7 @@ const payload = {
       }
 
       // ✅ Store only the current session (NOT a local “database”)
-      const user =
+      /*const user =
         data.user || {
           email,
           role: "partner",
@@ -175,7 +175,72 @@ const payload = {
           contactName: payload.contactName,
           photo: payload.photo,
           banner: payload.banner,
-        };
+        };*/
+
+        // ✅ Store only the current session (NOT a local “database”)
+// Merge the API user with the submitted partner profile so that the
+// organization name and uploaded logo are available immediately.
+const backendUser = data.user || {};
+
+const user = {
+  ...backendUser,
+
+  email: backendUser.email || email,
+  role: backendUser.role || "partner",
+
+  orgName:
+    backendUser.orgName ||
+    backendUser.organization ||
+    payload.orgName ||
+    "",
+
+  organization:
+    backendUser.organization ||
+    backendUser.orgName ||
+    payload.orgName ||
+    "",
+
+  contactName:
+    backendUser.contactName ||
+    payload.contactName ||
+    "",
+
+  logoUrl:
+    backendUser.logoUrl ||
+    backendUser.photo ||
+    payload.logoUrl ||
+    "",
+
+  photo:
+    backendUser.photo ||
+    backendUser.logoUrl ||
+    payload.logoUrl ||
+    "",
+
+  bannerUrl:
+    backendUser.bannerUrl ||
+    backendUser.banner ||
+    payload.bannerUrl ||
+    "",
+
+  banner:
+    backendUser.banner ||
+    backendUser.bannerUrl ||
+    payload.bannerUrl ||
+    "",
+};
+
+localStorage.setItem("partnerAuth", JSON.stringify(user));
+localStorage.setItem("currentUser", JSON.stringify(user));
+sessionStorage.setItem("currentUser", JSON.stringify(user));
+
+window.dispatchEvent(new Event("storage"));
+window.dispatchEvent(new Event("auth:changed"));
+
+nav("/partner/welcome", { replace: true });
+
+
+
 
       localStorage.setItem("partnerAuth", JSON.stringify(user));
       nav("/partner/welcome", { replace: true });

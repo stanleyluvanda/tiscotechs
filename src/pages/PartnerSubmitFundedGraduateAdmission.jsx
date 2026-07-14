@@ -109,12 +109,22 @@ const FUNDING_OPTIONS = [
   "Grant",
 ];
 
-const quillModules = {
+/*const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link", "clean"],
+  ],
+};*/
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    [{ color: [] }],
+    ["clean"],
   ],
 };
 
@@ -128,6 +138,55 @@ function getPartnerEmail() {
     return "";
   }
 }
+
+
+function getPublisherName() {
+  try {
+    const partnerRaw = localStorage.getItem("partnerAuth");
+    const currentRaw =
+      localStorage.getItem("currentUser") ||
+      sessionStorage.getItem("currentUser");
+
+    const partner = partnerRaw ? JSON.parse(partnerRaw) : null;
+    const currentUser = currentRaw ? JSON.parse(currentRaw) : null;
+
+    const user = partner || currentUser || {};
+
+    const isPartner =
+      String(user.role || "").toLowerCase() === "partner";
+
+    if (isPartner) {
+      return (
+        user.organization ||
+        user.organizationName ||
+        user.orgName ||
+        user.companyName ||
+        user.providerName ||
+        user.name ||
+        user.fullName ||
+        user.email ||
+        "Registered Partner"
+      );
+    }
+
+    return "ScholarsKnowledge";
+  } catch {
+    return "ScholarsKnowledge";
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function formatDateForDisplay(value) {
   if (!value) return "";
@@ -312,6 +371,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
   const [fieldQuery, setFieldQuery] = useState("");
   const [showFieldMenu, setShowFieldMenu] = useState(false);
   const partnerEmail = getPartnerEmail();
+  const publisherName = getPublisherName();
 
   const [importingHosted, setImportingHosted] = useState(false);
   const pendingHostedRef = useRef("");
@@ -821,6 +881,11 @@ let finalDeadline = "";
       providerLogoData: form.providerLogoData || "",
 
       partnerEmail: String(partnerEmail),
+      // Public publisher attribution
+publishedBy: publisherName,
+publishedAt: Date.now(),
+updatedBy: "",
+updatedAt: null,
       featured: Boolean(form.featured),
       featuredLevel: form.featuredLevel || "STANDARD",
       createdAt: Date.now(),
