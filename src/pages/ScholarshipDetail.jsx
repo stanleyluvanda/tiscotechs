@@ -957,8 +957,9 @@ const res = await fetch(
       )}
 
       {bannerSrc && (
-  /*<section className="rounded-2xl bg-white border border-slate-200 overflow-hidden">*/
-  <section className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
+  <section className="rounded-none bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
+  {/*<section className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">*/}
+  
     <button
       type="button"
       onClick={() => setShowBanner(true)}

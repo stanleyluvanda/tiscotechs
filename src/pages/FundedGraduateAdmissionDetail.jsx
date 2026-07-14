@@ -490,9 +490,6 @@ export default function FundedGraduateAdmissionDetail() {
       `}</style>
 
       <div className="flex-1">
-        {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4 lg:px-5">
-          <div className="mx-auto w-full max-w-[1120px]">
-            <main className="min-w-0 w-full">*/}
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
   <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
     <aside className="hidden xl:block">
@@ -653,8 +650,8 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
 
                     {bannerSrc && (
-                      /*<section className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden mx-4 sm:mx-5 lg:mx-6">*/
-                        <section className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden mx-0 sm:mx-5 lg:mx-6">
+                      <section className="bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden mx-0 sm:mx-5 lg:mx-6">
+                        {/*<section className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden mx-0 sm:mx-5 lg:mx-6">*/}                       
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -799,7 +796,6 @@ export default function FundedGraduateAdmissionDetail() {
 
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
-                      /*<div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">*/
                          <div className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
                         <button
                           type="button"
@@ -808,8 +804,6 @@ export default function FundedGraduateAdmissionDetail() {
                           title="Click to enlarge"
                         >
                           <img
-                            /*src={bannerSrc}
-                            alt={`${provider || title} banner`}*/
                             src={logo || bannerSrc}
                             alt={`${provider || "University"} logo`}
                             /*className="w-full h-auto object-contain bg-white"*/
@@ -1014,8 +1008,6 @@ export default function FundedGraduateAdmissionDetail() {
       </p>
     </div>
 
-    {/*<div className="flex gap-4 overflow-x-auto pb-3">*/}
-    {/*<div className="flex gap-3 overflow-x-auto pb-4 px-1">*/}
     <div className="mx-auto flex max-w-[1600px] gap-3 overflow-x-auto pb-4 px-1 justify-center">
       {recs.slice(0, 6).map((r) => {
         const sid = getAnyId(r);

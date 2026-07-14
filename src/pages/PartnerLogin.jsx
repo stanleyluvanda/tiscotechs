@@ -120,9 +120,12 @@ const USE_SUPERTOKENS_TEST =
   window.location.hostname === "127.0.0.1" ||
   USE_SUPERTOKENS_PROD;
 
-const SUPERTOKENS_TEST_API =
+/*const SUPERTOKENS_TEST_API =*/
+const SUPERTOKENS_TEST_API = import.meta.env.DEV
+
   /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
+  ? "/local-auth-st-prod"
+  :"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 /* ---------- Page ---------- */
 export default function PartnerLogin() {
