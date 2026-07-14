@@ -602,7 +602,7 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
                   </div>
 
-                  <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                  {/*<div className="mt-4 flex flex-col sm:flex-row gap-3">
                     {partnerApplyUrl && (
                       <a
                         href={partnerApplyUrl}
@@ -626,7 +626,70 @@ export default function FundedGraduateAdmissionDetail() {
                         Visit website
                       </a>
                     )}
-                  </div>
+                  </div>*/}
+                  {/*<div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">*/}
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div className="flex flex-col sm:flex-row gap-3">
+    {partnerApplyUrl && (
+      <a
+        href={partnerApplyUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackItem(id, "apply")}
+        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+      >
+        Apply Now
+      </a>
+    )}
+
+    {link && (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackItem(id, "website")}
+        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+      >
+        Visit website
+      </a>
+    )}
+  </div>
+
+  {(item?.publishedBy || item?.updatedAt) && (
+
+    <div className="text-sm text-slate-500 whitespace-nowrap sm:ml-auto sm:text-right">
+      {item?.updatedAt ? (
+        <>
+          Updated by{" "}
+          <span className="font-semibold text-slate-700">
+            {item?.updatedBy || item?.publishedBy}
+          </span>
+          {" • "}
+          {new Date(item.updatedAt).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </>
+      ) : (
+        <>
+          Published by{" "}
+          <span className="font-semibold text-slate-700">
+            {item?.publishedBy}
+          </span>
+          {" • "}
+          {new Date(item.publishedAt).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </>
+      )}
+    </div>
+  )}
+</div>
+
+
                 </div>
               </div>
 
@@ -666,9 +729,9 @@ export default function FundedGraduateAdmissionDetail() {
                             decoding="async"
                           />
                         </button>
-                        <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
+                        {/*<div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
                           Click image to enlarge
-                        </div>
+                        </div>*/}
                       </section>
                     )}
 
