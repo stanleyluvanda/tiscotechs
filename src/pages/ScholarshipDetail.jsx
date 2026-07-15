@@ -694,13 +694,14 @@ const res = await fetch(
   }
 
   .rich-html li[data-list="bullet"]::before {
-    content: "•";
-    position: absolute;
-    left: -1.15rem;
-    top: 0.08rem;
-    font-size: 1.1em;
-    line-height: inherit;
-  }
+  content: "•";
+  position: absolute;
+  left: -1.2rem;
+  top: -0.02rem;
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1;
+}
 
   .rich-html li[data-list="ordered"] {
     counter-increment: quill-ordered;
