@@ -211,6 +211,32 @@ function getPartnerEmail() {
     return "";
   }
 }
+function getPublisherName() {
+  try {
+    const partnerRaw = localStorage.getItem("partnerAuth");
+    const currentRaw =
+      localStorage.getItem("currentUser") ||
+      sessionStorage.getItem("currentUser");
+
+    const partner = partnerRaw ? JSON.parse(partnerRaw) : null;
+    const currentUser = currentRaw ? JSON.parse(currentRaw) : null;
+
+    const user = partner || currentUser || {};
+
+    return (
+      user.organization ||
+      user.organizationName ||
+      user.orgName ||
+      user.companyName ||
+      user.providerName ||
+      user.name ||
+      user.fullName ||
+      "ScholarsKnowledge"
+    );
+  } catch {
+    return "ScholarsKnowledge";
+  }
+}
 
 function formatDateForDisplay(value) {
   if (!value) return "";
@@ -384,6 +410,7 @@ link: "",
   const [showFieldMenu, setShowFieldMenu] = useState(false);
 
   const partnerEmail = getPartnerEmail();
+  const publisherName = getPublisherName();
 
   // ✅ NEW: filtered field-of-study options
 const filteredFields = useMemo(() => {
@@ -959,10 +986,11 @@ if (form.deadlineMode === "single") {
   providerLogoData: form.providerLogoData || "",
   partnerEmail: String(partnerEmail),
   // Publisher information
-publishedBy:
+/*publishedBy:
   currentUser?.role === "partner"
     ? currentUser.organization || currentUser.name
-    : "ScholarsKnowledge",
+    : "ScholarsKnowledge",*/
+    publishedBy: publisherName,
 
 publishedAt: Date.now(),
 

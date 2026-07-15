@@ -1027,8 +1027,10 @@ export default function ScholarshipTipsWinningSOP() {
         </p>
 
         <div className="mt-6 flex flex-wrap justify-start gap-5 text-sm text-slate-500 md:justify-end">
-          <Link to="/privacy">Privacy Policy</Link>
-          <Link to="/terms">Terms of Use</Link>
+          <Link to="/privacy-policy" className="hover:underline">
+              Privacy Policy
+            </Link>
+          <Link to="/terms-of-use" className="hover:underline">Terms of Use</Link>
           <Link to="/contact">Contact</Link>
         </div>
 
