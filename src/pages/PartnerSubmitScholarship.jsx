@@ -986,10 +986,6 @@ if (form.deadlineMode === "single") {
   providerLogoData: form.providerLogoData || "",
   partnerEmail: String(partnerEmail),
   // Publisher information
-/*publishedBy:
-  currentUser?.role === "partner"
-    ? currentUser.organization || currentUser.name
-    : "ScholarsKnowledge",*/
     publishedBy: publisherName,
 
 publishedAt: Date.now(),
