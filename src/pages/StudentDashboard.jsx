@@ -2,7 +2,11 @@
 //import { useEffect, useMemo, useRef, useState } from "react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 //import { Link, useNavigate } from "react-router-dom";
-import { getPrograms, YEARS } from "../data/eduData.js";
+import { YEARS } from "../data/eduConstants.js";
+import {
+  loadContinentData,
+  getProgramsFromData,
+} from "../data/eduDataLoader.js";
 import YouTubeEmbed from "../components/YouTubeEmbed";
 import StudentAlertsCTA from "../components/StudentAlertsCTA";
 import { computeUnreadForStudent } from "../lib/contactStore";
@@ -1697,29 +1701,6 @@ window.setAuthRecordForStudent = ({ userId, email, password }) => {
     window.dispatchEvent(new CustomEvent("auth:passwordChanged", { detail: { userId } }));
   }
 };
-
-/* ================= Programs loader adapter (split data safe) ================= */
-function getProgramsSafe(continent, country, university, faculty, fallbackProgram) {
-  try {
-    const arr = getPrograms?.(continent, country, university, faculty);
-    if (Array.isArray(arr) && arr.length) return arr;
-  } catch {}
-  // Fallback: try a cached per-continent dataset you may have loaded at login
-  const cache = safeParse(localStorage.getItem("eduDataByContinent")) || {};
-  const cont = (continent || "").trim();
-  const cn = (country || "").trim();
-  const uni = (university || "").trim();
-  const fac = (faculty || "").trim();
-  const list =
-    cache?.[cont]?.[cn]?.[uni]?.[fac]?.programs ||
-    cache?.[cont]?.[cn]?.[uni]?.programs ||
-    cache?.[cont]?.[cn]?.programs ||
-    [];
-  if (Array.isArray(list) && list.length) return list;
-  return [fallbackProgram].filter(Boolean);
-}
-
-
 
 /* ================= make comment/reply attachments URL-based (CloudFront), never base64 ================= */
 function guessMime(name = "", fallback = "application/octet-stream") {
@@ -3980,7 +3961,76 @@ if (showingTab === "Top") {
   //const [securityOpen, setSecurityOpen] = useState(false);
   const [securityOpen, setSecurityOpen] = useState(() => editProfile);
   const [editName,setEditName]=useState(user.name);
-  const availablePrograms = getProgramsSafe(user.continent, user.country, user.university, user.faculty, user.program);
+  const [availablePrograms, setAvailablePrograms] = useState(() =>
+    [user?.program].filter(Boolean)
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const continent = String(user?.continent || "").trim();
+    const country = String(user?.country || "").trim();
+    const university = String(user?.university || "").trim();
+    const faculty = String(user?.faculty || "").trim();
+    const savedProgram = String(user?.program || "").trim();
+
+    if (!continent || !country || !university || !faculty) {
+      setAvailablePrograms([savedProgram].filter(Boolean));
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    loadContinentData(continent)
+      .then((continentData) => {
+        if (cancelled) return;
+
+        const loadedPrograms = getProgramsFromData(
+          continentData,
+          country,
+          university,
+          faculty
+        );
+
+        const nextPrograms = Array.isArray(loadedPrograms)
+          ? loadedPrograms.filter(Boolean)
+          : [];
+
+        // Preserve existing users even when their saved program is no longer
+        // present in the current education dataset.
+        if (savedProgram && !nextPrograms.includes(savedProgram)) {
+          nextPrograms.unshift(savedProgram);
+        }
+
+        setAvailablePrograms(
+          nextPrograms.length
+            ? nextPrograms
+            : [savedProgram].filter(Boolean)
+        );
+      })
+      .catch((err) => {
+        if (cancelled) return;
+
+        console.error(
+          "[StudentDashboard] failed to load profile programs:",
+          err
+        );
+
+        setAvailablePrograms([savedProgram].filter(Boolean));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user?.continent,
+    user?.country,
+    user?.university,
+    user?.faculty,
+    user?.program,
+  ]);
+
   const [editProgram,setEditProgram]=useState(user.program);
   const [editYear,setEditYear]=useState(user.year);
   const applyMeUpdates = ()=>{
