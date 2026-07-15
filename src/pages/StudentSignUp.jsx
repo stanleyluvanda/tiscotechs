@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate,useSearchParams, Link } from "react-router-dom";
 import { US_UNIVERSITY_STATE_SEPARATORS } from "../data/usStateUniversityGroups";
 
+import { YEARS } from "../data/eduConstants.js";
 import {
   getContinents,
-  getCountriesWithFlags,
-  getUniversities,
-  getFaculties,
-  getPrograms,
-  YEARS,
-} from "../data/eduData.js";
+  loadContinentData,
+  getCountriesWithFlagsFromData,
+  getUniversitiesFromData,
+  getFacultiesFromData,
+  getProgramsFromData,
+} from "../data/eduDataLoader.js";
 
 import SingleImageUploader from "../components/upload/SingleImageUploader";
 //import { apiRegisterStudent } from "../lib/api";
@@ -191,7 +192,53 @@ const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
     agree: false,
   });
 
+  // Load only the continent selected by the student.
+  const [continentData, setContinentData] = useState([]);
+  const [educationLoading, setEducationLoading] = useState(false);
+  const [educationLoadError, setEducationLoadError] = useState("");
+
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!form.continent) {
+      setContinentData([]);
+      setEducationLoading(false);
+      setEducationLoadError("");
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setEducationLoading(true);
+    setEducationLoadError("");
+
+    loadContinentData(form.continent)
+      .then((data) => {
+        if (cancelled) return;
+        setContinentData(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+
+        console.error("[student-signup] education data load failed:", err);
+        setContinentData([]);
+        setEducationLoadError(
+          "Could not load education options. Please select the continent again."
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setEducationLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [form.continent]);
 
   /* ----------------- OAUTH PREFILL (Google) ----------------- */
   useEffect(() => {
@@ -593,15 +640,32 @@ const newUser = {
 
   /* ----------------- OPTIONS ----------------- */
   const continents = getContinents();
-  const rawCountries = form.continent ? getCountriesWithFlags(form.continent) : [];
+
+  const rawCountries = form.continent
+    ? getCountriesWithFlagsFromData(continentData)
+    : [];
+
   const countries = (rawCountries || []).map((c) => ({
     name: c.name || c.value,
     code: String(c.code || c.iso || "").toUpperCase(),
   }));
 
-  const universities = getUniversities(form.continent, form.country) || [];
-  const faculties = getFaculties(form.continent, form.country, form.university) || [];
-  const programs = getPrograms(form.continent, form.country, form.university, form.faculty) || [];
+  const universities = form.country
+    ? getUniversitiesFromData(continentData, form.country)
+    : [];
+
+  const faculties = form.university
+    ? getFacultiesFromData(continentData, form.country, form.university)
+    : [];
+
+  const programs = form.faculty
+    ? getProgramsFromData(
+        continentData,
+        form.country,
+        form.university,
+        form.faculty
+      )
+    : [];
 
   /* ----------------- RENDER ----------------- */
   
@@ -654,6 +718,12 @@ const newUser = {
             {error && (
               <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
                 {error}
+              </p>
+            )}
+
+            {educationLoadError && (
+              <p className="text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+                {educationLoadError}
               </p>
             )}
 
@@ -905,7 +975,7 @@ const newUser = {
             {/* COUNTRY */}
             <CountrySelect
               label="Country"
-              disabled={!form.continent}
+              disabled={!form.continent || educationLoading}
               countries={countries}
               value={{ name: form.country, code: form.countryCode }}
               onSelect={({ name, code }) =>
@@ -919,7 +989,7 @@ const newUser = {
               onChange={onUniversity}
               options={universities}
               placeholder="Select University"
-              disabled={!form.country}
+              disabled={!form.country || educationLoading}
                countryName={form.country}
                separatorsMap={US_UNIVERSITY_STATE_SEPARATORS}
             />
@@ -930,7 +1000,7 @@ const newUser = {
               onChange={onFaculty}
               options={faculties}
               placeholder="Select Faculty/School"
-              disabled={!form.university}
+              disabled={!form.university || educationLoading}
             />
 
             <Select
@@ -939,7 +1009,7 @@ const newUser = {
               onChange={onProgram}
               options={programs}
               placeholder="Select Program"
-              disabled={!form.faculty}
+              disabled={!form.faculty || educationLoading}
             />
 
             <Select
@@ -948,7 +1018,7 @@ const newUser = {
               onChange={onYear}
               options={YEARS}
               placeholder="Select Year"
-              disabled={!form.program}
+              disabled={!form.program || educationLoading}
             />
 
             {/* TERMS + TURNSTILE */}
