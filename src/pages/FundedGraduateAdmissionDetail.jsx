@@ -481,13 +481,75 @@ export default function FundedGraduateAdmissionDetail() {
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
-      <style>{`
+      {/*<style>{`
         .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.2rem 0 0.35rem; }
         .rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.15rem 0 0.25rem; }
         .rich-html li { display: list-item; margin: 0.12rem 0; }
         .rich-html p { margin: 0.12rem 0; }
         .rich-html a { text-decoration: underline; }
-      `}</style>
+      `}</style>*/}
+
+      <style>{`
+  .rich-html ul,
+  .rich-html ol { padding-left: 1.65rem; margin: 0.5rem 0 0.75rem;}
+
+  .rich-html ul {list-style-type: disc;}
+
+  .rich-html ol {list-style-type: decimal;counter-reset: quill-ordered;}
+
+  .rich-html li {margin: 0.25rem 0;padding-left: 0.15rem;}
+
+  .rich-html p {margin: 0.5rem 0;}
+
+  .rich-html a {text-decoration: underline;}
+
+  /* Normal HTML bullet lists */
+  .rich-html ul > li {display: list-item;list-style-type: disc;}
+
+  /* Normal HTML numbered lists */
+  .rich-html ol > li:not([data-list]) {display: list-item; list-style-type: decimal;}
+
+  /*
+   * Quill 2 stores bullets and numbered items inside <ol>,
+   * then identifies the intended type with data-list.
+   */
+  .rich-html li[data-list="bullet"],
+  .rich-html li[data-list="ordered"] {
+    display: block;
+    list-style: none !important;
+    position: relative;
+  }
+
+  /* Hide Quill's internal list marker element */
+  .rich-html .ql-ui {
+    display: none !important;
+  }
+
+  /* Quill bullet lists */
+    .rich-html li[data-list="bullet"]::before {
+  content: "•";
+  position: absolute;
+  left: -1.2rem;
+  top: -0.02rem;
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+  /* Quill numbered lists */
+  .rich-html li[data-list="ordered"] {
+    counter-increment: quill-ordered;
+  }
+
+  .rich-html li[data-list="ordered"]::before {
+    content: counter(quill-ordered) ".";
+    position: absolute;
+    left: -1.65rem;
+    top: 0;
+    width: 1.35rem;
+    text-align: right;
+  }
+`}</style>
 
       <div className="flex-1">
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
