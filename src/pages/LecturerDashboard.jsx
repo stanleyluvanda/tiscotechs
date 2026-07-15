@@ -1,7 +1,11 @@
 // src/pages/LecturerDashboard.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { YEARS as YEARS_DATA, getPrograms as rawGetPrograms } from "../data/eduData.js";
+import { YEARS as YEARS_DATA } from "../data/eduConstants.js";
+import {
+  loadContinentData,
+  getProgramsFromData,
+} from "../data/eduDataLoader.js";
 import { computeUnreadForLecturer } from "../lib/contactStore";
 import AccountSecurityCard from "../components/account/AccountSecurityCard.jsx";
 import VerifyGate from "../components/VerifyGate";
@@ -439,15 +443,6 @@ const YEARS_SAFE = Array.isArray(YEARS_DATA) && YEARS_DATA.length
   ? YEARS_DATA
   : ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"];
 
-function safeGetPrograms(continent, country, university, faculty) {
-  try {
-    if (typeof rawGetPrograms === "function") {
-      const arr = rawGetPrograms(continent, country, university, faculty);
-      return Array.isArray(arr) ? arr : [];
-    }
-  } catch {}
-  return [];
-}
 const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
 
 /* Canonical lecturer profile href (also seeds it so other pages pick it up) */
@@ -1315,10 +1310,57 @@ useEffect(() => {
   const facultyLabel = user.faculty || facultyTerm;
 
   /* Available programs */
-  const availablePrograms = useMemo(() => {
-    if (!user.continent || !user.country || !user.university || !user.faculty) return [];
-    return safeGetPrograms(user.continent, user.country, user.university, user.faculty);
-  }, [user.continent, user.country, user.university, user.faculty]);
+  const [availablePrograms, setAvailablePrograms] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const continent = String(user?.continent || "").trim();
+    const country = String(user?.country || "").trim();
+    const university = String(user?.university || "").trim();
+    const faculty = String(user?.faculty || "").trim();
+
+    if (!continent || !country || !university || !faculty) {
+      setAvailablePrograms([]);
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    loadContinentData(continent)
+      .then((continentData) => {
+        if (cancelled) return;
+
+        const nextPrograms = getProgramsFromData(
+          continentData,
+          country,
+          university,
+          faculty
+        );
+
+        setAvailablePrograms(
+          Array.isArray(nextPrograms) ? nextPrograms : []
+        );
+      })
+      .catch((err) => {
+        if (cancelled) return;
+
+        console.error(
+          "[LecturerDashboard] failed to load faculty programs:",
+          err
+        );
+        setAvailablePrograms([]);
+      })
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    user?.continent,
+    user?.country,
+    user?.university,
+    user?.faculty,
+  ]);
   
 
   /* Seed posts once */
