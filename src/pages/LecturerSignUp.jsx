@@ -648,7 +648,7 @@ if (oauthMode && googleSignup && googleSignupSig) {
   /* ------------------ Render ------------------ */
   
   return (
-  <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50">
+  <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50">
     {/* Cognito-like soft background blobs */}
     <div
       className="pointer-events-none absolute -left-[420px] -top-[260px] h-[900px] w-[900px] rounded-full blur-[55px] opacity-80"
@@ -1066,6 +1066,8 @@ if (oauthMode && googleSignup && googleSignupSig) {
 function Select({label,value,onChange,options,placeholder,disabled,countryName = "",separatorsMap = null,})
  {
   const [open, setOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [menuMaxHeight, setMenuMaxHeight] = useState(288);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -1093,6 +1095,30 @@ function Select({label,value,onChange,options,placeholder,disabled,countryName =
     setOpen(false);
   };
 
+  const toggleMenu = () => {
+    if (disabled) return;
+
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      const shouldOpenUpward =
+        spaceBelow < 320 && spaceAbove > spaceBelow;
+
+      const availableSpace = shouldOpenUpward
+        ? spaceAbove - 16
+        : spaceBelow - 16;
+
+      setOpenUpward(shouldOpenUpward);
+      setMenuMaxHeight(
+        Math.max(160, Math.min(320, availableSpace))
+      );
+    }
+
+    setOpen((v) => !v);
+  };
+
   return (
     <div className="relative block" ref={ref}>
       <span className="block text-sm text-slate-600 mb-1">{label}</span>
@@ -1100,7 +1126,7 @@ function Select({label,value,onChange,options,placeholder,disabled,countryName =
       <button
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setOpen((v) => !v)}
+        onClick={toggleMenu}
         className={`w-full border rounded px-3 py-2 text-left bg-white ${
           disabled ? "bg-slate-50 cursor-not-allowed" : "hover:bg-slate-50"
         }`}
@@ -1109,7 +1135,14 @@ function Select({label,value,onChange,options,placeholder,disabled,countryName =
       </button>
 
       {open && !disabled && (
-        <div className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+        <div
+          className={`absolute z-[100] w-full overflow-auto rounded-lg border bg-white shadow-lg ${
+            openUpward
+              ? "bottom-full mb-2"
+              : "top-full mt-2"
+          }`}
+          style={{ maxHeight: `${menuMaxHeight}px` }}
+        >
           <button
             type="button"
             onClick={() => triggerChange("")}
