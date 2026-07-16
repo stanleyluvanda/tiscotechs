@@ -5,7 +5,7 @@ import { REGIONS } from "../data/regions";
 import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { shouldSendTrackOnce } from "../lib/trackGate";
 import {
-  listScholarships,
+  listAllScholarships,
   readScholarshipsCache,
 } from "../utils/scholarshipsApi";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
@@ -392,13 +392,13 @@ export default function Fellowships() {
       if (!baseItems || baseItems.length === 0) setLoading(true);
 
       try {
-        const res = await listScholarships({
-          status: "approved",
-          contentType: CONTENT_TYPE,
-          q: "",
-          page: 1,
-          pageSize: 2000,
-        });
+const res = await listAllScholarships({
+  status: "approved",
+  contentType: CONTENT_TYPE,
+  q: "",
+  pageSize: 100,
+  view: "summary",
+});
 
         if (!alive) return;
 
