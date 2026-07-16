@@ -422,7 +422,8 @@ export default function FundedGraduateAdmission() {
           contentType: "FUNDED_GRAD_ADMISSION",
           q: "",
           page: 1,
-          pageSize: 2000,
+          pageSize: 100,
+          view: "summary",
         });
 
         if (!alive) return;

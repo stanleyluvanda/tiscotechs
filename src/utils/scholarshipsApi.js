@@ -326,6 +326,7 @@ export async function listFundedGraduateAdmissions({
   status = "all",
   page = 1,
   pageSize = 50,
+  view = "",
 } = {}) {
   const params = new URLSearchParams({
     q,
@@ -334,6 +335,9 @@ export async function listFundedGraduateAdmissions({
     pageSize: String(pageSize),
     contentType: FUNDED_TYPE,
   });
+  if (view) {
+  params.set("view", String(view));
+}
 
   const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
     method: "GET",
