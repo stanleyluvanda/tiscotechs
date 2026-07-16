@@ -101,7 +101,7 @@ export default function Home() {
           >
             <div className="p-6 md:p-10 grid md:grid-cols-[120px_1fr] gap-6 items-center">
               <img
-                src="/images/mpower.png"
+                src="/images/mpower.webp"
                 alt="Mpower Financing logo"
                 className="w-24 h-24 object-contain opacity-90"
                 loading="lazy"
@@ -168,7 +168,7 @@ export default function Home() {
 
           <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StoryCard
-              image="/images/USfundedprogram.jpg"
+              image="/images/USfundedprogram.webp"
               title="University-Funded graduate programs in the U.S."
               linkTo="/funded-graduate-admission?country=United%20States"
               linkText="Explore U.S. funded graduate programs"

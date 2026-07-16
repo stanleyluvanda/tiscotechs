@@ -302,7 +302,7 @@ export default function StudyInUS() {
       {/* FULL-WIDTH EDITORIAL HERO */}
       <header className="relative flex min-h-[520px] w-full items-center overflow-hidden bg-[#1E2A3D] sm:min-h-[560px]">
          <img
-          src="/images/studyinus-hero.png"
+          src="/images/studyinus-hero.webp"
           alt="Travel to the United States for university"
           className="absolute inset-0 h-full w-full object-cover"
           loading="eager"
@@ -412,7 +412,7 @@ export default function StudyInUS() {
 {/* MOBILE STUDY USA IMAGE */}
 <div className="-mx-4 mt-8 overflow-hidden border-y border-slate-200 bg-white sm:hidden">
   <img
-    src="/images/Study in the USA with diversity.png"
+    src="/images/Study-in-the-USA-with-diversity.webp"
     alt="Study in USA for international students"
     className="h-auto w-full object-cover"
     loading="lazy"
@@ -1301,25 +1301,17 @@ export default function StudyInUS() {
     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
       <img
         className="h-full w-full object-cover"
-        src="/images/Study in the USA with diversity.png"
+        src="/images/Study-in-the-USA-with-diversity.webp"
         alt="U.S. university campus building"
         loading="lazy"
       />
-      <div className="absolute bottom-3 right-3 flex items-center">
-        <img
-          src="/images/study-usa-banner.png"
-          alt="Study in USA"
-          className="ml-1 h-16 w-auto rounded-md shadow-md md:h-20"
-          loading="lazy"
-        />
-      </div>
     </div>
 
     <div className="mt-3 overflow-hidden rounded-none bg-white shadow-md ring-1 ring-slate-200 sm:rounded-2xl">
       <div className="aspect-[3/4] w-full overflow-hidden">
         <img
           className="h-full w-full object-cover"
-          src="/images/OneOnOne Consultation.png"
+          src="/images/OneOnOne Consultation.webp"
           alt="One-on-one academic consultation"
           loading="lazy"
         />
