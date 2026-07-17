@@ -9,10 +9,9 @@ import { Link } from "react-router-dom";
 const SizeStyle = Quill.import("attributors/style/size");
 
 SizeStyle.whitelist = [
-  "14px",
-  "18px",
-  "24px",
-  "32px",
+  "small",
+  "large",
+  "huge",
 ];
 
 Quill.register(SizeStyle, true);
@@ -148,7 +147,7 @@ const FUNDING_OPTIONS = [
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
-    [{ size: ["14px", "18px", "24px", "32px"] }],
+    [{ size: ["small", false, "large", "huge"] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
