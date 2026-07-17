@@ -683,7 +683,7 @@ const onChange = (e) => {
 
       // Preserve plain-text bullets such as:
       // • Item, - Item, * Item, 1. Item, or 1) Item.
-      q.root.addEventListener("paste", (event) => {
+      /*q.root.addEventListener("paste", (event) => {
         const clipboard = event.clipboardData;
         if (!clipboard) return;
 
@@ -696,7 +696,30 @@ const onChange = (e) => {
         if (pastePlainTextLists(q, text)) {
           event.preventDefault();
         }
-      });
+      });*/
+      q.root.addEventListener("paste", (event) => {
+  const clipboard = event.clipboardData;
+  if (!clipboard) return;
+
+  const html = clipboard.getData("text/html");
+  const text = clipboard.getData("text/plain");
+
+  const hasMeaningfulHtml =
+    html &&
+    /<\s*(p|div|br|ul|ol|li|strong|b|em|i|u|a|h[1-6])\b/i.test(html);
+
+  // Let Quill handle rich content from ChatGPT, Word,
+  // Google Docs, websites, and other formatted sources.
+  if (hasMeaningfulHtml) {
+    return;
+  }
+
+  // Only manually convert bullets when the clipboard
+  // contains plain text without meaningful HTML.
+  if (pastePlainTextLists(q, text)) {
+    event.preventDefault();
+  }
+});
 
       // Keep form state (HTML) in sync as user types
       q.on("text-change", () => {
