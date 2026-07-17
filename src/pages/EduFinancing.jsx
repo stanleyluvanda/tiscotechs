@@ -21,23 +21,21 @@ export default function EduFinancing() {
 
   
 
-  // ✅ Premium “glass” cards: no border at rest, subtle outline only on hover
-const cardClass =
-  "rounded-[1.75rem] border border-slate-200/80 bg-white/95 backdrop-blur " +
-  "p-6 md:p-8 shadow-[0_18px_45px_rgba(15,23,42,0.06)] " +
-  "ring-1 ring-white/70 transition duration-300 hover:-translate-y-0.5 " +
-  "hover:shadow-[0_24px_60px_rgba(15,23,42,0.09)] text-justify";
+  // Editorial content treatment: open sections, restrained dividers, and
+  // accent-led subsections instead of a page made entirely from cards.
+  const cardClass =
+    "border-b border-slate-200 bg-transparent py-10 md:py-14";
 
-const miniCardClass =
-  "rounded-2xl border border-slate-200/75 bg-white/95 backdrop-blur " +
-  "p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)] ring-1 ring-white/70 " +
-  "transition duration-300 hover:-translate-y-0.5 hover:border-blue-100 " +
-  "hover:shadow-[0_18px_45px_rgba(15,23,42,0.075)] text-justify"; 
+  const miniCardClass =
+    "border-l-4 border-[#D1A94A] bg-white/70 px-5 py-5 md:px-6";
+
+  const sidebarCardClass =
+    "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm";
 
   return (
-    <div className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top_left,#eef6ff_0,#ffffff_34%,#f8fafc_100%)] text-slate-900">
+    <div className="flex min-h-screen flex-col bg-[#F6F8F7] text-slate-900">
       {/* ✅ FULL-WIDTH HERO (sharp background + clear text) */}
-      <header className="relative flex min-h-[54vh] w-full items-center overflow-hidden border-b border-slate-200/70 md:min-h-[68vh]">
+      <header className="relative flex min-h-[58vh] w-full items-center overflow-hidden border-b border-slate-200 md:min-h-[72vh]">
         {/* ✅ Background image (local first; if it’s low-res/missing, use a sharp U.S. campus fallback) */}
         <img
           src="/images/edufinancing-hero.jpg"
@@ -45,7 +43,7 @@ const miniCardClass =
           className="absolute inset-0 h-full w-full object-cover scale-[1.01]"
           loading="eager"
           decoding="async"
-          fetchpriority="high"
+          fetchPriority="high"
           onError={(e) => {
             // ✅ HIGH-RES fallback (sharp, professional, U.S. campus)
             e.currentTarget.src =
@@ -54,18 +52,18 @@ const miniCardClass =
         />
 
         {/* ✅ Contrast overlay (makes text pop while keeping image visible) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/75 via-slate-900/58 to-slate-900/28" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#f8fafc] via-[#f8fafc]/55 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#092F35]/90 via-[#103F48]/72 to-[#173D45]/38" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#F6F8F7] via-[#F6F8F7]/45 to-transparent" />
 
         {/* Content */}
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center text-white md:py-20">
-          <h1 className="text-4xl font-extrabold tracking-tight drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)] md:text-6xl">
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-16 text-left text-white md:py-24">
+          <h1 className="font-serif text-4xl font-semibold tracking-tight drop-shadow-[0_2px_18px_rgba(0,0,0,0.55)] md:text-6xl">
             EduFinancing
           </h1>
 
-          <p className="mx-auto mt-6 max-w-4xl text-base leading-8 text-white/95 drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)] md:text-xl md:leading-9">
+          <p className="mt-6 max-w-4xl text-base leading-8 text-white/90 drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)] md:text-xl md:leading-9">
             International students can finance education in destinations like the{" "}
-            <span className="font-semibold">United States</span> through a smart
+            <span className="font-semibold">United States and Canada</span> through a smart
             mix of{" "}
             <span className="font-semibold text-white">
               MPOWER Financing educational loans
@@ -77,7 +75,7 @@ const miniCardClass =
           </p>
 
           {/* badges */}
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-7 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold ring-1 ring-white/25 shadow-sm backdrop-blur">
               Loans
             </span>
@@ -95,20 +93,20 @@ const miniCardClass =
       </header>
 
       {/*<div className="max-w-6xl mx-auto px-4 py-10 flex-grow">*/}
-      <div className="mx-auto max-w-7xl flex-grow px-4 py-10 md:py-14">
+      <div className="mx-auto max-w-7xl flex-grow px-4 py-10 md:py-16">
         {/* 2-column layout: main + right sidebar */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-16">
           {/* MAIN CONTENT */}
-          <main className="space-y-8">
+          <main>
 
 
 
             {/* NEW INTRODUCTION CARD */}
       <section className={cardClass}>
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
+        <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#123D46] md:text-3xl">
           Higher Education Funding for international students
         </h2>
-        <p className="mt-2 text-slate-600 leading-relaxed">
+        <p className="mt-5 text-base leading-8 text-slate-600">
           Studying abroad is a major academic and financial decision, and for many
           international students, access to the right funding information is just as
           important as choosing the right university or academic program. A strong
@@ -116,7 +114,7 @@ const miniCardClass =
           help students identify realistic pathways toward achieving their educational
           goals.
         </p>
-        <p className="mt-3 text-slate-600 leading-relaxed">
+        <p className="mt-4 text-base leading-8 text-slate-600">
           This page is designed to help students understand the major funding options
           available, including scholarships, loans, personal savings, affordable
           universities, and university-funded opportunities. By looking at these
@@ -124,7 +122,7 @@ const miniCardClass =
           for financing their studies.
         </p>
       </section>
-      <div className="my-6">
+      <div className="my-8 border-y border-slate-200 py-6">
   <GoogleSidebarAd
     slot="4919459228"
     minHeight={280}
@@ -135,28 +133,28 @@ const miniCardClass =
 
       {/* NEW INTRODUCTION CARD */}
       <section className={cardClass}>
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
+        <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#123D46] md:text-3xl">
           Mixing Funding Options for a Personalized Financial Strategy
         </h2>
-        <p className="mt-2 text-slate-600 leading-relaxed">
+        <p className="mt-5 text-base leading-8 text-slate-600">
          Every student’s financial situation is unique, and it is rare—if not impossible—for one person to secure all available funding opportunities at once. 
          Instead, most students build a personalized financial plan by combining whichever options they qualify for. 
          Educational loans,Scholarships, personal savings, low‑cost universities, and university‑funded programs can be mixed in different ways to create a strategy that aligns with individual circumstances, 
          academic goals, and family resources.
         </p>
-        <p className="mt-3 text-slate-600 leading-relaxed">
+        <p className="mt-4 text-base leading-8 text-slate-600">
           Some students may secure strong scholarships but have limited savings. 
           Others may choose a low‑cost university to reduce tuition while relying on departmental assistantships for additional support. 
           Many students combine modest family savings with partial scholarships and program‑level funding to keep their expenses manageable. 
           The strength of this approach lies in its flexibility: each component contributes to lowering costs, and even securing one or two of these options can significantly reduce financial pressure.
         </p>
-        <p className="mt-3 text-slate-600 leading-relaxed">
+        <p className="mt-4 text-base leading-8 text-slate-600">
           This mix‑and‑match model empowers students to pursue an international education without relying on a single source of funding. 
           It also helps families plan more confidently, knowing that multiple pathways exist to make higher education affordable. 
           Whether a student secures one opportunity or several, combining available resources creates a practical, sustainable, and realistic financial strategy that supports long‑term academic and personal success.
         </p>
       </section>
-      <div className="my-6">
+      <div className="my-8 border-y border-slate-200 py-6">
   <GoogleSidebarAd
     slot="4919459228"
     minHeight={280}
@@ -166,22 +164,22 @@ const miniCardClass =
 
             {/* Card: Financing Options */}
             <section className={cardClass}>
-              <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
+              <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#123D46] md:text-3xl">
                 Key Financing Options
               </h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-5 text-base leading-8 text-slate-600">
                 Financing an international education often requires a strategic blend of resources tailored to each student’s background, eligibility, and long‑term goals. 
                 Understanding the major pathways available can help you plan more confidently, compare opportunities, and make informed decisions that support both your academic journey and financial well‑being. 
                 The options below represent the most common and reliable avenues students use to fund their studies, each offering distinct advantages depending on your circumstances.
               </p>
 
               
-              <div className="mt-4 grid grid-cols-1 gap-4">
+              <div className="mt-8 grid grid-cols-1 gap-5">
   <div className={miniCardClass}>
-    <div className="text-sm uppercase tracking-wide text-[#0076CE] font-semibold">
+    <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#1F6F78]">
       MPOWER Financing
     </div>
-    <p className="mt-2 text-sm text-slate-700">
+    <p className="mt-3 text-sm leading-7 text-slate-700">
       MPOWER Financing provides an accessible pathway for international students who may not qualify for traditional loans. 
       Its model is specifically designed to remove common barriers—no co‑signer, no collateral, and no U.S. credit history required. 
       This makes it particularly valuable for students coming from countries where credit systems differ or where securing a guarantor is difficult. 
@@ -190,10 +188,10 @@ const miniCardClass =
   </div>
 
   <div className={miniCardClass}>
-    <div className="text-sm uppercase tracking-wide text-emerald-700 font-semibold">
+    <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#2E6E63]">
       Scholarships
     </div>
-    <p className="mt-2 text-sm text-slate-700">
+    <p className="mt-3 text-sm leading-7 text-slate-700">
       Scholarships remain one of the most impactful ways to reduce the overall cost of education. 
       They are awarded based on academic merit, financial need, leadership, community involvement, or specific fields of study. 
       Opportunities come from universities, government bodies, private foundations, and global organizations committed to expanding access to higher education. 
@@ -203,10 +201,10 @@ const miniCardClass =
   </div>
 
   <div className={miniCardClass}>
-    <div className="text-sm uppercase tracking-wide text-indigo-700 font-semibold">
+    <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#465A8C]">
       Personal Savings
     </div>
-    <p className="mt-2 text-sm text-slate-700">
+    <p className="mt-3 text-sm leading-7 text-slate-700">
       Personal and family savings continue to play a central role in education financing. Even partial savings can reduce the amount a student needs to borrow, 
       improve financial flexibility, and provide a buffer for unexpected expenses such as housing, textbooks, or health insurance. 
       For many families, combining savings with scholarships or low‑interest loans creates a balanced approach that supports long‑term financial stability..
@@ -214,10 +212,10 @@ const miniCardClass =
   </div>
 
   <div className={miniCardClass}>
-    <div className="text-sm uppercase tracking-wide text-amber-700 font-semibold">
+    <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#A06A18]">
       Low-cost Universities
     </div>
-    <p className="mt-2 text-sm text-slate-700">
+    <p className="mt-3 text-sm leading-7 text-slate-700">
       Choosing an affordable university—particularly public institutions or colleges located in smaller, less expensive cities—can dramatically reduce the total cost of attendance. 
       These institutions often offer high‑quality academic programs at a fraction of the cost of major metropolitan or private universities. For students aiming to minimize debt while still earning a reputable degree, 
       low‑cost universities represent a strategic and financially responsible option. 
@@ -226,11 +224,11 @@ const miniCardClass =
   </div>
 
   <div className={miniCardClass}>
-    {/*</div><div className="text-sm uppercase tracking-wide text-amber-700 font-semibold">*/}
-    <div className="text-sm uppercase tracking-wide text-purple-900 font-semibold">
+    {/*</div><div className="text-xs font-bold uppercase tracking-[0.16em] text-[#A06A18]">*/}
+    <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#71528A]">
       University‑Funded Programs
     </div>
-    <p className="mt-2 text-sm text-slate-700">
+    <p className="mt-3 text-sm leading-7 text-slate-700">
       Beyond traditional scholarship searches—which can be highly competitive and limited in availability—students should also explore funding opportunities embedded directly within their academic programs. 
       Many universities allocate substantial financial support at the department, faculty, or college level to attract strong applicants and support their academic progression. These opportunities may include tuition waivers, 
       departmental scholarships, research assistantships, teaching assistantships, graduate fellowships, or program‑specific grants tied to a particular field of study.
@@ -244,7 +242,7 @@ const miniCardClass =
 
             </section>
 
-            <div className="my-6">
+            <div className="my-8 border-y border-slate-200 py-6">
   <GoogleSidebarAd
     slot="4919459228"
     minHeight={280}
@@ -254,10 +252,10 @@ const miniCardClass =
 
             {/* Card: Strategy Combos */}
             <section className={cardClass}>
-              <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
+              <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#123D46] md:text-3xl">
                 Optimizing Your Funding Strategy
               </h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-5 text-base leading-8 text-slate-600">
                 Designing a sustainable funding plan is just as important as choosing the right academic program. 
                 Most students benefit from combining multiple financial resources to reduce overall costs, maintain flexibility, 
                 and keep their budget predictable throughout their studies. By strategically blending loans, scholarships, savings, 
@@ -265,17 +263,17 @@ const miniCardClass =
                 The combinations below illustrate practical, student‑friendly strategies that maximize affordability while minimizing debt.
               </p>
 
-              <div className="mt-4 space-y-4">
+              <div className="mt-8 space-y-5">
                 <div className={miniCardClass}>
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Scholarships
                     </h3>
-                    <span className="text-xs rounded-full bg-sky-50 text-sky-700 px-2 py-1 border border-sky-100">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-sky-50 text-sky-700 px-2 py-1 border border-sky-100">
                       Balanced Cost
                   </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Pairing an MPOWER loan with external or university‑based scholarships offers a strong, cost‑efficient strategy. 
                     The loan provides reliable coverage for tuition and mandatory fees, while scholarships directly reduce the amount you need to borrow. 
                     This combination is especially effective for students who secure partial funding but still require a predictable financing option to close the gap. 
@@ -288,11 +286,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Personal Savings
                     </h3>
-                    <span className="text-xs rounded-full bg-emerald-50/80 text-emerald-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-emerald-50/80 text-emerald-700 px-2 py-1 border border-transparent ring-0">
                      Lower Debt
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Using personal or family savings to cover living expenses—such as housing, food, transportation, 
                     and books—while relying on an MPOWER loan for academic costs creates a balanced and manageable financial plan. 
                     This approach minimizes the need for larger loans, reduces interest accumulation, and provides greater control over your monthly budget. 
@@ -305,11 +303,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Low-cost Universities
                     </h3>
-                    <span className="text-xs rounded-full bg-amber-50/80 text-amber-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-amber-50/80 text-amber-700 px-2 py-1 border border-transparent ring-0">
                        Smart Choice
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Combining a flexible MPOWER loan with enrollment at an affordable university—especially public institutions or colleges in low‑cost regions—significantly reduces the total cost of your degree. 
                     This strategy keeps tuition manageable while ensuring you still have access to quality academic programs. 
                     For many international students, this pairing offers the best of both worlds: accessible financing and a degree that remains financially sustainable long after graduation.
@@ -321,11 +319,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + University‑Funded Programs
                     </h3>
-                    <span className="text-xs rounded-full bg-violet-50/80 text-violet-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-violet-50/80 text-violet-700 px-2 py-1 border border-transparent ring-0">
                       Strategic Leverage
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Combining an MPOWER loan with university‑funded opportunities creates one of the most powerful and sustainable financing strategies for international students. 
                     Many academic departments, faculties, and colleges offer program‑specific funding such as tuition waivers, departmental scholarships, research assistantships, 
                     teaching assistantships, or competitive fellowships tied directly to the student’s field of study. 
@@ -343,11 +341,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Scholarships + Personal Savings
                     </h3>
-                    <span className="text-xs rounded-full bg-rose-50/80 text-rose-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-rose-50/80 text-rose-700 px-2 py-1 border border-transparent ring-0">
                            Holistic Affordability
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Combining an MPOWER loan with scholarships and personal savings creates one of the most balanced and financially resilient strategies for international students. 
                     Each component plays a distinct role: scholarships reduce the total amount you need to borrow, personal or family savings help cover living expenses without relying on high‑interest credit, and the MPOWER loan provides stable, 
                     predictable funding for tuition and academic fees—without requiring a co‑signer, collateral, or U.S. credit history.
@@ -364,11 +362,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Scholarships + Personal Savings + Low‑Cost Universities
                     </h3>
-                    <span className="text-xs rounded-full bg-cyan-50/80 text-cyan-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-cyan-50/80 text-cyan-700 px-2 py-1 border border-transparent ring-0">
                          Comprehensive Affordability Strategy
                       </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Combining an MPOWER loan with scholarships, personal savings, and enrollment at a low‑cost university creates one of the most financially sustainable pathways for international students. 
                     Each component contributes a unique layer of support: scholarships reduce the total amount you need to borrow, personal or family savings help cover living expenses without relying on high‑interest credit, 
                     and choosing an affordable institution significantly lowers tuition from the outset. The MPOWER loan then provides predictable, reliable funding to cover any remaining academic costs—without requiring a co‑signer, collateral, or U.S. credit history.
@@ -385,11 +383,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       MPOWER Financing + Scholarships + Personal Savings + Low‑Cost Universities + University‑Funded Programs
                     </h3>
-                    <span className="text-xs rounded-full bg-fuchsia-50/80 text-fuchsia-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-fuchsia-50/80 text-fuchsia-700 px-2 py-1 border border-transparent ring-0">
                        Ultimate Comprehensive Strategy
                   </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     Combining an MPOWER loan with scholarships, personal savings, low‑cost universities, and university‑funded programs creates the most robust, affordable, and sustainable financing pathway for international students. 
                     This multi‑layered approach strategically reduces costs at every stage—before, during, and after enrollment—while ensuring that students have predictable, reliable funding throughout their academic journey.
 
@@ -413,11 +411,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       Scholarships + Personal Savings + Low‑Cost Universities + University‑Funded Programs
                     </h3>
-                    <span className="text-xs rounded-full bg-lime-50/80 text-lime-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-lime-50/80 text-lime-700 px-2 py-1 border border-transparent ring-0">
                         Debt-Free Pathway
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     For students and families seeking to avoid educational debt entirely, combining scholarships, personal savings, low‑cost universities, and university‑funded programs 
                     offers one of the most financially responsible and sustainable pathways to earning a degree abroad. This strategy reduces costs at every stage—tuition, living expenses, 
                     and academic fees—while ensuring that students still access reputable, high‑quality academic programs.
@@ -442,11 +440,11 @@ const miniCardClass =
                     <h3 className="font-semibold text-slate-900">
                       Full MPOWER Financing Educational Loan
                     </h3>
-                    <span className="text-xs rounded-full bg-indigo-50/80 text-indigo-700 px-2 py-1 border border-transparent ring-0">
+                    <span className="shrink-0 border-b-2 border-[#D1A94A] pb-1 text-[11px] font-bold uppercase tracking-wide bg-indigo-50/80 text-indigo-700 px-2 py-1 border border-transparent ring-0">
                   Maximum Coverage
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
+                  <p className="mt-3 text-sm leading-7 text-slate-700">
                     When scholarships, savings, or institutional funding are limited, a full MPOWER education loan can still make it possible to pursue a top‑tier degree. 
                     This option provides comprehensive coverage for tuition and, in some cases, living expenses, allowing students to enroll in competitive programs without financial barriers. 
                     While it involves a greater repayment commitment, it remains a viable and empowering pathway for students who prioritize academic excellence and long‑term career opportunities.
@@ -455,7 +453,7 @@ const miniCardClass =
               </div>
             </section>
 
-            <div className="my-6">
+            <div className="my-8 border-y border-slate-200 py-6">
   <GoogleSidebarAd
     slot="4919459228"
     minHeight={280}
@@ -465,17 +463,17 @@ const miniCardClass =
 
             {/* Card: How We Help */}
             <section className={cardClass}>
-               <h2 className="text-xl font-extrabold tracking-tight text-slate-950 md:text-2xl">
+               <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#123D46] md:text-3xl">
   How We Support You
 </h2>
 
-<p className="mt-2 text-slate-600">
+<p className="mt-5 text-base leading-8 text-slate-600">
   At <span className="font-semibold text-[#0076CE]">ScholarsKnowledge</span>, we are committed to helping international students make informed, confident, and financially sustainable decisions about their education. Through strategic partnerships with 
   <span className="font-medium"> MPOWER Financing</span> and trusted global scholarship providers, we guide you toward credible funding opportunities and practical tools that support both your academic journey and long‑term goals.
 </p>
 
 {/*<ul className="mt-4 space-y-2 text-slate-700">*/}
-<ul className="mt-4 space-y-2 text-slate-700 text-justify">
+<ul className="mt-6 space-y-3 text-slate-700">
   <li className="flex gap-2">
     <span className="text-[#0076CE]">•</span> Access curated, verified scholarships tailored to international students.
   </li>
@@ -497,7 +495,7 @@ const miniCardClass =
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to="/scholarship"
-                  className="rounded-full bg-[#0A4595] text-white px-5 py-2 text-sm font-semibold hover:bg-[#0a3d83]"
+                  className="rounded-md bg-[#123D46] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0D3037]"
                 >
                   Browse Scholarships
                 </Link>
@@ -506,8 +504,7 @@ const miniCardClass =
                   href="https://www.mpowerfinancing.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full border border-transparent ring-0 hover:ring-1 hover:ring-slate-200/35
-                             text-[#0076CE] px-5 py-2 text-sm font-semibold hover:bg-blue-50/60 transition"
+                  className="rounded-md border border-slate-300 px-5 py-3 text-sm font-semibold text-[#1F6F78] transition hover:border-[#1F6F78] hover:bg-white"
                 >
                   Learn about MPOWER FINANCING Education loans
                 </a>
@@ -520,11 +517,11 @@ const miniCardClass =
             {/*<div className="md:sticky md:top-24 space-y-6">*/}
               <div className="space-y-6 lg:sticky lg:top-24">
               {/* Image Card */}
-              <div className={`${cardClass} p-4`}>
+              <div className={sidebarCardClass}>
                 <img
                   src="/images/edufinancing-side.jpg"
                   alt="EduFinancing students"
-                  className="h-56 w-full rounded-2xl object-cover shadow-sm"
+                  className="h-56 w-full rounded-xl object-cover"
                   onError={(e) => {
                     e.currentTarget.src =
                       "https://images.pexels.com/photos/6147161/pexels-photo-6147161.jpeg?cs=srgb&dl=pexels-keira-burton-6147161.jpg&fm=jpg";
@@ -533,11 +530,11 @@ const miniCardClass =
                 <p className="mt-3 text-sm text-slate-600">{/* optional */}</p>
               </div>
                {/* FINANCIAL STRATEGY CONSULTATION CARD */}
-<div className={`${cardClass} p-4`}>
+<div className={sidebarCardClass}>
   <img
     src="/images/OneOnOne Funding consultation.png"
     alt="Financial funding strategy consultation"
-    className="h-auto w-full rounded-2xl shadow-sm"
+    className="h-auto w-full rounded-xl"
   />
 
   <div className="mt-4">
@@ -554,7 +551,7 @@ const miniCardClass =
     <div className="mt-4 flex justify-center">
   <button
     onClick={openCalendly}
-    className="inline-flex items-center justify-center rounded-full bg-[#F4A000] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#db9000] hover:shadow-md"
+    className="inline-flex items-center justify-center rounded-md bg-[#D1A94A] px-6 py-3 text-sm font-bold text-[#17353A] transition hover:bg-[#DDB85E]"
   >
     Book Consultation
   </button>
@@ -595,8 +592,8 @@ const miniCardClass =
 
       {/* ✅ FULL-WIDTH CTA (edge-to-edge, like About page) */}
       <section className="mt-8 w-full">
-        <div className="bg-gradient-to-r from-[#0A4595] via-[#0f5fc7] to-[#1a73e8] p-10 text-center text-white shadow-[0_-12px_40px_rgba(15,23,42,0.08)] md:p-14">
-          <h2 className="text-3xl font-extrabold">
+        <div className="bg-gradient-to-r from-[#123D46] via-[#1F5963] to-[#2E6E63] p-10 text-center text-white md:p-14">
+          <h2 className="font-serif text-3xl font-semibold">
             Join the Global Learning Community
           </h2>
           <p className="mt-3 text-white/90 max-w-2xl mx-auto">
@@ -609,21 +606,21 @@ const miniCardClass =
           <div className="mt-6 flex flex-wrap gap-3 justify-center">
             <Link
               to="/student-sign-up"
-              className="rounded-full bg-white px-5 py-2 font-semibold text-[#0A4595] shadow-sm transition hover:bg-slate-100"
+              className="rounded-md bg-[#D1A94A] px-5 py-3 font-bold text-[#17353A] transition hover:bg-[#DDB85E]"
             >
               Student Sign Up
             </Link>
 
             <Link
               to="/lecturer-sign-up"
-              className="rounded-full border border-white/70 px-5 py-2 font-semibold text-white transition hover:bg-white/10"
+              className="rounded-md border border-white/60 px-5 py-3 font-semibold text-white transition hover:bg-white/10"
             >
               Lecturer Sign Up
             </Link>
 
             <Link
               to="/partner"
-              className="rounded-full bg-[#fbbc04] px-5 py-2 font-semibold text-slate-900 shadow-sm transition hover:opacity-90"
+              className="rounded-md border border-white/60 px-5 py-3 font-semibold text-white transition hover:bg-white/10"
             >
               Partner with Us
             </Link>
@@ -632,7 +629,7 @@ const miniCardClass =
       </section>
 
       {/* Footer */}
-      <footer className="mt-0 bg-slate-950 py-7 text-slate-300">
+      <footer className="mt-0 bg-[#0B252A] py-7 text-slate-300">
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-sm">
             © {new Date().getFullYear()} ScholarsKnowledge. All rights reserved.

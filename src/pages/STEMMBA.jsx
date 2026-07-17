@@ -555,21 +555,22 @@ function ResponsiveAd({ slotId = DEFAULT_AD_SLOT, className = "" }) {
   );
 }
 
+
 function SectionTitle({ eyebrow, title, children }) {
   return (
     <div>
       {eyebrow ? (
-        <div className="mb-3 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#163A70]">
+        <p className="text-xs font-bold uppercase tracking-[0.17em] text-[#2E6E63]">
           {eyebrow}
-        </div>
+        </p>
       ) : null}
 
-      <h2 className="font-serif text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
+      <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-[#153D49] sm:text-4xl">
         {title}
       </h2>
 
       {children ? (
-        <p className="mt-4 max-w-3xl text-base leading-8 text-slate-700 sm:text-lg">
+        <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">
           {children}
         </p>
       ) : null}
@@ -577,57 +578,111 @@ function SectionTitle({ eyebrow, title, children }) {
   );
 }
 
-function ToneCard({ card }) {
-  const tone =
+function SectionAd() {
+  return (
+    <ResponsiveAd
+      slotId="8562818627"
+      className="my-8 w-full border-y border-slate-200 py-5"
+    />
+  );
+}
+
+function QuickAnswerItem({ card, index }) {
+  const accent =
     card.tone === "red"
-      ? "border-red-200 bg-red-50 text-red-800"
+      ? "text-rose-700"
       : card.tone === "green"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-      : "border-blue-200 bg-blue-50 text-[#163A70]";
+      ? "text-emerald-700"
+      : "text-[#245A8D]";
 
   return (
-    <div className={`rounded-2xl border p-5 shadow-sm ${tone}`}>
-      <div className="text-xs font-bold uppercase tracking-[0.16em]">{card.label}</div>
-      <h3 className="mt-3 text-xl font-bold text-slate-950">{card.title}</h3>
-      <p className="mt-3 text-sm leading-7 text-slate-700">{card.body}</p>
+    <div className="grid gap-3 border-t border-slate-200 py-6 first:border-t-0 md:grid-cols-[58px_190px_minmax(0,1fr)]">
+      <span className="font-serif text-sm font-semibold text-[#B28625]">
+        0{index + 1}
+      </span>
+
+      <div>
+        <p className={`text-xs font-bold uppercase tracking-[0.14em] ${accent}`}>
+          {card.label}
+        </p>
+        <h3 className="mt-2 font-semibold text-[#153D49]">{card.title}</h3>
+      </div>
+
+      <p className="text-sm leading-7 text-slate-600">{card.body}</p>
     </div>
+  );
+}
+
+function NumberedTextItem({ number, title, body }) {
+  return (
+    <div className="grid gap-4 border-t border-slate-200 py-6 first:border-t-0 sm:grid-cols-[48px_minmax(0,1fr)]">
+      <div className="font-serif text-sm font-semibold text-[#B28625]">
+        {String(number).padStart(2, "0")}
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-[#153D49]">{title}</h3>
+        <p className="mt-2 leading-7 text-slate-600">{body}</p>
+      </div>
+    </div>
+  );
+}
+
+function SidebarLink({ href, children }) {
+  return (
+    <a href={href} className="block hover:text-[#163A70]">
+      {children}
+    </a>
   );
 }
 
 export default function STEMMBA() {
   const [showAllUniversities, setShowAllUniversities] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "STEM MBA Programs in the United States | ScholarsKnowledge";
+  }, []);
+
+  const visibleUniversities = showAllUniversities
+    ? universities
+    : universities.slice(0, 12);
+
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="relative overflow-hidden bg-[#163A70] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(212,175,55,0.18),transparent_35%)]" />
+    <main className="min-h-screen bg-[#F6F7F3] text-slate-900">
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-[#153D49] text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.20),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.10),transparent_35%)]" />
 
-        <div className="relative mx-auto max-w-[1400px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="relative mx-auto max-w-[1400px] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="max-w-5xl">
-            <div className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/90">
-              MBA & STEM Designation — U.S. Guide
-            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#E5C76D]">
+              MBA and STEM Designation, U.S. Guide
+            </p>
 
-            <h1 className="mt-6 max-w-5xl font-serif text-4xl font-bold leading-tight md:text-6xl">
+            <h1 className="mt-6 max-w-5xl font-serif text-4xl font-semibold leading-tight md:text-6xl">
               Is an MBA a STEM Program in the United States?
             </h1>
 
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-white/85">
+            <div className="mt-5 h-1 w-24 bg-[#D4AF37]" />
+
+            <p className="mt-7 max-w-3xl text-lg leading-8 text-white/85">
               A traditional MBA is usually not a STEM program. However, many U.S.
-              universities now offer STEM-designated MBA programs with strong analytics,
+              universities now offer STEM designated MBA programs with strong analytics,
               technology, data, quantitative, and management science components.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#quick-answer"
-                className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+                className="rounded-md bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#153D49] transition hover:bg-[#E2C25C]"
               >
                 Quick Answer
               </a>
+
               <a
                 href="#check-before-applying"
-                className="rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                className="rounded-md border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
               >
                 What to Check
               </a>
@@ -637,200 +692,196 @@ export default function STEMMBA() {
       </section>
 
       <ResponsiveAd className="mx-auto max-w-[1100px] px-4 py-4" />
-      {/* MBA INTRO — ALIGNED WITH MAIN ARTICLE CARD */}
-<section className="mx-auto max-w-[1400px] px-4 pt-10 sm:px-6 lg:px-8">
-  <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
 
-    {/* SAME COLUMN WIDTH AS THE MAIN ARTICLE */}
-    {/*<div className="min-w-0">*/}
-      <div className="min-w-0 xl:pr-8">
-      <div className="w-fit rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#163A70]">
-        MBA Admissions Guide
-      </div>
+      {/* INTRODUCTION, SAME COLUMN MEASURES */}
+      <section className="mx-auto max-w-[1400px] px-4 pt-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0 xl:pr-8">
+            <p className="text-xs font-bold uppercase tracking-[0.17em] text-[#2E6E63]">
+              MBA Admissions Guide
+            </p>
 
-      <h2 className="mt-8 font-serif text-[40px] font-bold leading-[1.12] text-slate-950 sm:text-5xl md:text-6xl">
-  Looking for a{" "}
-  <span className="italic text-[#163A70]">
-    STEM-Designated
-  </span>{" "}
-  MBA in the United States?
-</h2>
+            <h2 className="mt-6 font-serif text-[40px] font-semibold leading-[1.12] text-[#153D49] sm:text-5xl md:text-6xl">
+              Looking for a{" "}
+              <span className="italic text-[#2E6E63]">
+                STEM Designated
+              </span>{" "}
+              MBA in the United States?
+            </h2>
 
-<p className="mt-6 text-lg leading-8 text-slate-700">
-  Discover what makes an MBA STEM-designated, which specializations commonly
-  qualify, how STEM designation may affect post-graduation work opportunities,
-  and what every international student should verify before applying.
-</p>
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Discover what makes an MBA STEM designated, which specializations commonly
+              qualify, how STEM designation may affect post graduation work opportunities,
+              and what every international student should verify before applying.
+            </p>
 
-<div className="mt-8 flex max-w-[720px] items-center justify-between border-y border-slate-200 py-6">
-  <div className="flex items-center">
-    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#163A70] font-serif text-lg font-bold text-white">
-      SK
-    </div>
+            <div className="mt-8 flex max-w-[720px] items-center justify-between border-y border-slate-300 py-6">
+              <div className="flex items-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#153D49] font-serif text-lg font-bold text-white">
+                  SK
+                </div>
 
-    <div className="ml-4 flex-1">
-      <p className="font-bold text-slate-950">
-        ScholarsKnowledge Editorial
-      </p>
+                <div className="ml-4 flex-1">
+                  <p className="font-bold text-slate-950">
+                    ScholarsKnowledge Editorial
+                  </p>
 
-      <p className="text-sm text-slate-500">
-        Updated July 2026 · Applies to STEM MBA programs across U.S. universities
-      </p>
-    </div>
-  </div>
+                  <p className="text-sm text-slate-500">
+                    Updated July 2026 · Applies to STEM MBA programs across U.S. universities
+                  </p>
+                </div>
+              </div>
 
-  <span className="whitespace-nowrap rounded-full bg-[#163A70] px-4 py-2 text-sm font-bold text-white">
-    12 min read
-  </span>
-</div>
+              <span className="whitespace-nowrap border-l border-slate-300 pl-4 text-sm font-bold text-[#153D49]">
+                12 min read
+              </span>
+            </div>
 
-<p className="mt-6 text-lg leading-8 text-slate-700">
-  A STEM-designated MBA combines the core principles of business administration
-  with advanced quantitative, analytical, and technology-focused coursework.
-  Unlike a traditional MBA, a STEM MBA may include subjects such as business
-  analytics, data science, information systems, operations research, artificial
-  intelligence, supply chain analytics, financial engineering, and technology
-  management. These programs are designed to prepare graduates to solve complex
-  business challenges using data-driven decision-making while developing strong
-  leadership and strategic management skills.
-</p>
-<ResponsiveAd
-  slotId="8562818627"
-  className="my-8 w-full"
-/>
+            <p className="mt-7 text-lg leading-8 text-slate-600">
+              A STEM designated MBA combines the core principles of business administration
+              with advanced quantitative, analytical, and technology focused coursework.
+              Unlike a traditional MBA, a STEM MBA may include subjects such as business
+              analytics, data science, information systems, operations research, artificial
+              intelligence, supply chain analytics, financial engineering, and technology
+              management. These programs are designed to prepare graduates to solve complex
+              business challenges using data driven decision making while developing strong
+              leadership and strategic management skills.
+            </p>
 
-<p className="mt-6 text-lg leading-8 text-slate-700">
-  Over the past several years, many U.S. business schools have redesigned their
-  MBA curricula to reflect the growing demand for professionals who can bridge
-  business strategy with technology and analytics. As organizations increasingly
-  rely on artificial intelligence, big data, automation, cloud computing, and
-  digital transformation, employers are seeking graduates who understand both
-  business leadership and quantitative problem-solving. In response, a growing
-  number of universities have introduced STEM-designated MBA pathways that
-  better align with the skills required in today's global economy.
-</p>
-<ResponsiveAd
-  slotId="8562818627"
-  className="my-8 w-full"
-/>
+            <SectionAd />
 
-<p className="mt-6 text-lg leading-8 text-slate-700">
-  For international students, a STEM-designated MBA can provide additional
-  practical advantages beyond the classroom. Depending on the university,
-  program structure, and U.S. immigration regulations in effect at the time of
-  graduation, eligible graduates may qualify for an extended period of Optional
-  Practical Training (OPT), allowing them to gain more professional experience
-  in the United States after completing their degree. Because STEM designation
-  is assigned to individual academic programs rather than entire universities,
-  applicants should always verify the current CIP code and STEM classification
-  directly with each business school before submitting an application.
-</p>
+            <p className="mt-7 text-lg leading-8 text-slate-600">
+              Over the past several years, many U.S. business schools have redesigned their
+              MBA curricula to reflect the growing demand for professionals who can bridge
+              business strategy with technology and analytics. As organizations increasingly
+              rely on artificial intelligence, big data, automation, cloud computing, and
+              digital transformation, employers are seeking graduates who understand both
+              business leadership and quantitative problem solving. In response, a growing
+              number of universities have introduced STEM designated MBA pathways that
+              better align with the skills required in today's global economy.
+            </p>
 
-      <div className="mt-8">
-  <img
-    src="/images/mbaSTEM.webp"
-    alt="International students studying in a modern STEM MBA classroom"
-    className="block h-[320px] w-full rounded-2xl object-cover shadow-sm md:h-[420px]"
-  />
-</div></div>
+            <SectionAd />
 
-    {/* RIGHT SIDEBAR */}
-<aside className="hidden xl:block">
-  <div className="sticky top-24 space-y-5">
-    <ResponsiveAd />
+            <p className="mt-7 text-lg leading-8 text-slate-600">
+              For international students, a STEM designated MBA can provide additional
+              practical advantages beyond the classroom. Depending on the university,
+              program structure, and U.S. immigration regulations in effect at the time of
+              graduation, eligible graduates may qualify for an extended period of Optional
+              Practical Training (OPT), allowing them to gain more professional experience
+              in the United States after completing their degree. Because STEM designation
+              is assigned to individual academic programs rather than entire universities,
+              applicants should always verify the current CIP code and STEM classification
+              directly with each business school before submitting an application.
+            </p>
 
-    <div className="rounded-lg bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div className="mt-9">
+              <img
+                src="/images/mbaSTEM.webp"
+                alt="International students studying in a modern STEM MBA classroom"
+                className="block h-[320px] w-full object-cover md:h-[420px]"
+              />
+            </div>
 
-  <div className="-mx-5 -mt-5 mb-5 rounded-t-lg bg-emerald-700 px-5 py-4 border-b border-emerald-800">
-    <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-white">
-      In This Guide
-    </h3>
-  </div>
+            <SectionAd />
+          </div>
 
-  <div className="space-y-3 text-sm font-semibold text-slate-700">
+          {/* RIGHT SIDEBAR. IN THIS GUIDE REMAINS AS IS. */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-24 space-y-5">
+              <ResponsiveAd />
 
-  <a href="#quick-answer" className="block hover:text-[#163A70]">
-    Quick answer
-  </a>
+              <div className="rounded-lg bg-white p-5 shadow-sm ring-1 ring-slate-200">
 
-  <a href="#how-it-works" className="block hover:text-[#163A70]">
-    How STEM designation works
-  </a>
+                <div className="-mx-5 -mt-5 mb-5 rounded-t-lg bg-emerald-700 px-5 py-4 border-b border-emerald-800">
+                  <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-white">
+                    In This Guide
+                  </h3>
+                </div>
 
-  <a href="#why-stem-mba" className="block hover:text-[#163A70]">
-    Why universities offer STEM MBAs
-  </a>
+                <div className="space-y-3 text-sm font-semibold text-slate-700">
 
-  <a href="#benefits" className="block hover:text-[#163A70]">
-    Benefits of a STEM MBA
-  </a>
+                  <a href="#quick-answer" className="block hover:text-[#163A70]">
+                    Quick answer
+                  </a>
 
-  <a href="#specializations" className="block hover:text-[#163A70]">
-    STEM MBA specializations
-  </a>
+                  <a href="#how-it-works" className="block hover:text-[#163A70]">
+                    How STEM designation works
+                  </a>
 
-  <a href="#comparison" className="block hover:text-[#163A70]">
-    STEM MBA vs Traditional MBA
-  </a>
+                  <a href="#why-stem-mba" className="block hover:text-[#163A70]">
+                    Why universities offer STEM MBAs
+                  </a>
 
-  <a href="#universities" className="block hover:text-[#163A70]">
-    Universities offering STEM MBA programs
-  </a>
+                  <a href="#benefits" className="block hover:text-[#163A70]">
+                    Benefits of a STEM MBA
+                  </a>
 
-  <a href="#check-before-applying" className="block hover:text-[#163A70]">
-    What international students should check
-  </a>
+                  <a href="#specializations" className="block hover:text-[#163A70]">
+                    STEM MBA specializations
+                  </a>
 
-  <a href="#mistakes" className="block hover:text-[#163A70]">
-    Common mistakes
-  </a>
+                  <a href="#comparison" className="block hover:text-[#163A70]">
+                    STEM MBA vs Traditional MBA
+                  </a>
 
-  <a href="#faq" className="block hover:text-[#163A70]">
-    Frequently Asked Questions
-  </a>
+                  <a href="#universities" className="block hover:text-[#163A70]">
+                    Universities offering STEM MBA programs
+                  </a>
 
-  <a href="#disclaimer" className="block hover:text-[#163A70]">
-    Disclaimer
-  </a>
+                  <a href="#check-before-applying" className="block hover:text-[#163A70]">
+                    What international students should check
+                  </a>
 
-</div>
-    </div>
+                  <a href="#mistakes" className="block hover:text-[#163A70]">
+                    Common mistakes
+                  </a>
 
-    <ResponsiveAd />
-  </div>
-</aside>
+                  <a href="#faq" className="block hover:text-[#163A70]">
+                    Frequently Asked Questions
+                  </a>
 
-  </div>
-</section>
+                  <a href="#disclaimer" className="block hover:text-[#163A70]">
+                    Disclaimer
+                  </a>
 
-      {/*<section className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6 lg:px-8">*/}
-        <section className="mx-auto max-w-[1400px] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
+                </div>
+              </div>
+
+              <ResponsiveAd />
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {/* ARTICLE, SAME COLUMN MEASURES */}
+      <section className="mx-auto max-w-[1400px] px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
           <article className="min-w-0">
-            <section id="quick-answer" className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
+            <section id="quick-answer" className="scroll-mt-24 border-b border-slate-300 py-12 first:pt-0">
               <SectionTitle eyebrow="Quick answer" title="MBA STEM status depends on the exact program">
-                Students should not assume that every MBA is STEM-designated. The official
+                Students should not assume that every MBA is STEM designated. The official
                 answer depends on the university’s program classification, CIP code, and
                 curriculum structure.
               </SectionTitle>
 
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                {quickCards.map((card) => (
-                  <ToneCard key={card.title} card={card} />
+              <div className="mt-8 border-y border-slate-200">
+                {quickCards.map((card, index) => (
+                  <QuickAnswerItem key={card.title} card={card} index={index} />
                 ))}
               </div>
             </section>
 
-            <section id="how-it-works"
-                className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              
+            <SectionAd />
+
+            <section id="how-it-works" className="scroll-mt-24 border-b border-slate-300 py-12">
               <SectionTitle eyebrow="How it works" title="How STEM MBA designation works">
-                A STEM-designated MBA is not created by the title alone. It is usually tied
+                A STEM designated MBA is not created by the title alone. It is usually tied
                 to the official program classification used by the university and the
                 curriculum behind the degree.
               </SectionTitle>
 
-              <div className="mt-6 space-y-5 text-base leading-8 text-slate-700 sm:text-lg">
+              <div className="mt-7 space-y-5 text-base leading-8 text-slate-600 sm:text-lg">
                 <p>
                   In the United States, the STEM label is connected to the academic
                   classification assigned to a degree program, not simply to whether the
@@ -847,54 +898,59 @@ export default function STEMMBA() {
                 </p>
                 <p>
                   Program structures also vary. At some universities, the entire MBA is
-                  STEM-designated. At others, only students in an approved concentration or
-                  pathway receive the STEM-classified degree. Applicants should ask which
+                  STEM designated. At others, only students in an approved concentration or
+                  pathway receive the STEM classified degree. Applicants should ask which
                   arrangement applies to their own cohort.
                 </p>
               </div>
 
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                  <h3 className="text-lg font-bold text-slate-950">Whole-program designation</h3>
-                  <p className="mt-3 leading-7 text-slate-700">
-                    Some universities classify the entire MBA as STEM-designated because the
+              <div className="mt-9 grid gap-9 md:grid-cols-2">
+                <div className="border-t-4 border-[#2E6E63] pt-5">
+                  <h3 className="text-xl font-semibold text-[#153D49]">
+                    Whole program designation
+                  </h3>
+                  <p className="mt-3 leading-8 text-slate-600">
+                    Some universities classify the entire MBA as STEM designated because the
                     program includes substantial quantitative, analytics, operations,
-                    technology, or data-driven management coursework.
+                    technology, or data driven management coursework.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                  <h3 className="text-lg font-bold text-slate-950">Track or concentration designation</h3>
-                  <p className="mt-3 leading-7 text-slate-700">
+                <div className="border-t-4 border-[#D4AF37] pt-5">
+                  <h3 className="text-xl font-semibold text-[#153D49]">
+                    Track or concentration designation
+                  </h3>
+                  <p className="mt-3 leading-8 text-slate-600">
                     Other universities may connect STEM eligibility to a concentration such
                     as Business Analytics, Information Systems, Supply Chain Analytics, or
                     Technology Management.
                   </p>
                 </div>
+              </div>
 
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 md:col-span-2">
-                  <h3 className="font-bold text-amber-900">Important distinction</h3>
-                  <p className="mt-3 leading-7 text-slate-800">
-                    A program name alone does not determine STEM eligibility. The strongest
-                    evidence is the university-assigned CIP code and written confirmation
-                    from the admissions or international student office.
-                  </p>
-                </div>
+              <div className="mt-9 border-l-4 border-[#D4AF37] bg-[#F2EEE2] px-6 py-5">
+                <h3 className="font-bold text-[#7A5B13]">Important distinction</h3>
+                <p className="mt-3 leading-8 text-slate-700">
+                  A program name alone does not determine STEM eligibility. The strongest
+                  evidence is the university assigned CIP code and written confirmation
+                  from the admissions or international student office.
+                </p>
               </div>
             </section>
 
-            <section id="why-stem-mba"
-                 className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
+            <SectionAd />
+
+            <section id="why-stem-mba" className="scroll-mt-24 border-b border-slate-300 py-12">
               <SectionTitle eyebrow="Why programs are changing" title="Why universities are creating STEM MBAs">
                 Business decisions increasingly depend on data, digital systems, artificial
-                intelligence, modelling, and technology-enabled operations.
+                intelligence, modelling, and technology enabled operations.
               </SectionTitle>
 
-              <div className="mt-6 space-y-5 text-base leading-8 text-slate-700 sm:text-lg">
+              <div className="mt-7 space-y-5 text-base leading-8 text-slate-600 sm:text-lg">
                 <p>
                   Employers increasingly expect managers to interpret dashboards, understand
                   data quality, evaluate technology investments, work with analytical teams,
-                  and make evidence-based decisions. A manager may not need to become a
+                  and make evidence based decisions. A manager may not need to become a
                   software engineer, but they often need enough technical fluency to lead
                   teams that use analytics, cloud systems, automation, cybersecurity, and AI.
                 </p>
@@ -913,225 +969,223 @@ export default function STEMMBA() {
               </div>
             </section>
 
-            <section id="benefits"
-              className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <SectionTitle eyebrow="Student value" title="Potential benefits of a STEM-designated MBA">
+            <SectionAd />
+
+            <section id="benefits" className="scroll-mt-24 border-b border-slate-300 py-12">
+              <SectionTitle eyebrow="Student value" title="Potential benefits of a STEM designated MBA">
                 The strongest reason to choose a STEM MBA is that the curriculum supports
-                your academic and career goals. Immigration-related benefits should be one
+                your academic and career goals. Immigration related benefits should be one
                 part of a broader decision.
               </SectionTitle>
 
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
+              <div className="mt-9 grid gap-x-10 md:grid-cols-2">
                 {[
                   ["Stronger analytical confidence", "Learn to interpret models, question assumptions, and communicate quantitative findings."],
-                  ["Technology-driven career preparation", "Build skills relevant to analytics, product, consulting, operations, and digital strategy."],
+                  ["Technology driven career preparation", "Build skills relevant to analytics, product, consulting, operations, and digital strategy."],
                   ["A broader management toolkit", "Combine leadership and commercial judgment with data, systems, and modelling skills."],
-                  ["Possible STEM OPT advantages", "Eligible F-1 students may qualify for the 24-month STEM OPT extension after standard OPT."],
-                ].map(([title, body]) => (
-                  <div key={title} className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
-                    <h3 className="text-lg font-bold text-slate-950">{title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-700">{body}</p>
+                  ["Possible STEM OPT advantages", "Eligible F 1 students may qualify for the 24 month STEM OPT extension after standard OPT."],
+                ].map(([title, body], index) => (
+                  <div key={title} className="border-t border-slate-300 py-6">
+                    <p className="font-serif text-sm font-semibold text-[#B28625]">
+                      0{index + 1}
+                    </p>
+                    <h3 className="mt-3 text-lg font-semibold text-[#153D49]">{title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">{body}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <ResponsiveAd
-  slotId="8562818627"
-  className="my-8"
-/>
+            <SectionAd />
 
-            <section id="specializations"
-               className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <SectionTitle eyebrow="Specializations" title="Common STEM-designated MBA areas">
-                These areas are commonly associated with STEM-designated MBA programs, but
+            <section id="specializations" className="scroll-mt-24 border-b border-slate-300 py-12">
+              <SectionTitle eyebrow="Specializations" title="Common STEM designated MBA areas">
+                These areas are commonly associated with STEM designated MBA programs, but
                 students should still confirm the exact program classification at each
                 university.
               </SectionTitle>
 
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
-                {specializations.map((item) => (
+              <div className="mt-9 divide-y divide-slate-200 border-y border-slate-200">
+                {specializations.map((item, index) => (
                   <div
                     key={item.title}
-                    className="rounded-2xl border border-blue-100 bg-blue-50/70 p-5"
+                    className="grid gap-4 py-6 md:grid-cols-[52px_220px_minmax(0,1fr)]"
                   >
-                    <h3 className="text-lg font-bold text-[#163A70]">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-700">{item.body}</p>
+                    <span className="font-serif text-sm font-semibold text-[#B28625]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="font-semibold text-[#153D49]">{item.title}</h3>
+                    <p className="text-sm leading-7 text-slate-600">{item.body}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section id="comparison"
-                 className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <SectionTitle eyebrow="Comparison" title="STEM MBA vs. non-STEM MBA">
+            <SectionAd />
+
+            <section id="comparison" className="scroll-mt-24 border-b border-slate-300 py-12">
+              <SectionTitle eyebrow="Comparison" title="STEM MBA vs. non STEM MBA">
                 The academic experience may look similar in some courses, but the immigration
-                and post-graduation work planning implications can be different for eligible
-                F-1 students.
+                and post graduation work planning implications can be different for eligible
+                F 1 students.
               </SectionTitle>
 
-              <div className="mt-6 space-y-5 text-base leading-8 text-slate-700 sm:text-lg">
+              <div className="mt-7 space-y-5 text-base leading-8 text-slate-600 sm:text-lg">
                 <p>
-                  A non-STEM MBA can still be academically rigorous and professionally
+                  A non STEM MBA can still be academically rigorous and professionally
                   valuable. The usual difference is the amount and centrality of
                   quantitative, technological, and analytical coursework.
                 </p>
                 <p>
                   Someone seeking broad management preparation may prefer a traditional MBA.
                   Someone targeting analytics, fintech, technology consulting, product,
-                  operations, or supply chain may benefit more from a STEM-focused curriculum.
+                  operations, or supply chain may benefit more from a STEM focused curriculum.
                 </p>
               </div>
 
-              <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-200">
+              <div className="mt-9 overflow-x-auto border-y border-slate-300">
                 <div className="min-w-[720px]">
-                  <div className="grid grid-cols-[1.1fr_1fr_1fr] bg-[#163A70] text-sm font-bold text-white">
+                  <div className="grid grid-cols-[1.1fr_1fr_1fr] bg-[#153D49] text-sm font-bold text-white">
                     <div className="p-4">Topic</div>
                     <div className="p-4">Traditional MBA</div>
-                    <div className="p-4">STEM-designated MBA</div>
+                    <div className="p-4">STEM designated MBA</div>
                   </div>
 
                   {[
-                    ["Program focus", "General management", "Management plus analytics, technology, quantitative, or data-heavy coursework"],
+                    ["Program focus", "General management", "Management plus analytics, technology, quantitative, or data heavy coursework"],
                     ["STEM status", "Usually not STEM", "May be STEM if officially classified by the university"],
                     ["OPT planning", "Usually standard OPT only", "May support STEM OPT extension if all requirements are met"],
                     ["What to verify", "Degree requirements and career fit", "CIP code, STEM status, employer rules, and international office guidance"],
                   ].map(([topic, traditional, stem]) => (
-                    <div key={topic} className="grid grid-cols-[1.1fr_1fr_1fr] border-t border-slate-200 odd:bg-slate-50">
+                    <div key={topic} className="grid grid-cols-[1.1fr_1fr_1fr] border-t border-slate-200 odd:bg-white/60">
                       <div className="p-4 font-bold text-slate-950">{topic}</div>
-                      <div className="p-4 text-slate-700">{traditional}</div>
-                      <div className="p-4 text-slate-700">{stem}</div>
+                      <div className="p-4 text-slate-600">{traditional}</div>
+                      <div className="p-4 text-slate-600">{stem}</div>
                     </div>
                   ))}
                 </div>
               </div>
             </section>
 
-            <ResponsiveAd
-  slotId="8562818627"
-  className="my-8"
-/>
+            <SectionAd />
 
-            <section id="universities"
-            className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <SectionTitle eyebrow="Universities" title="Universities with STEM-designated MBA options">
+            <section id="universities" className="scroll-mt-24 border-b border-slate-300 py-12">
+              <SectionTitle eyebrow="Universities" title="Universities with STEM designated MBA options">
                 Many U.S. business schools offer MBA programs or MBA pathways with STEM
                 designation. Always verify the current status directly with the school.
               </SectionTitle>
 
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
-  {(showAllUniversities
-    ? universities
-    : universities.slice(0, 12)
-  ).map((school) => (
-    <div
-  key={school.name}
-  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-blue-300 hover:shadow-md"
->
-  <h3 className="font-bold text-slate-900">
-    {school.name}
-  </h3>
+              <div className="mt-9 divide-y divide-slate-200 border-y border-slate-200">
+                {visibleUniversities.map((school, index) => (
+                  <div
+                    key={school.name}
+                    className="grid gap-4 py-6 md:grid-cols-[52px_250px_minmax(0,1fr)_150px]"
+                  >
+                    <span className="font-serif text-sm font-semibold text-[#B28625]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
 
-  <p className="mt-3 text-sm leading-7 text-slate-700">
-    {school.note}
-  </p>
+                    <h3 className="font-semibold leading-7 text-[#153D49]">
+                      {school.name}
+                    </h3>
 
-  <a
-    href={school.url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-4 inline-flex items-center text-sm font-semibold text-[#163A70] hover:underline"
-  >
-    Visit official MBA page →
-  </a>
-</div>
-                ))}
-              </div>
-              {universities.length > 12 && (
-  <div className="mt-8 text-center">
-    <button
-      type="button"
-      onClick={() => setShowAllUniversities((v) => !v)}
-      className="inline-flex items-center rounded-full border border-[#163A70] px-6 py-3 font-semibold text-[#163A70] transition hover:bg-[#163A70] hover:text-white"
-    >
-      {showAllUniversities
-        ? "Show fewer universities"
-        : `View all STEM MBA universities (${universities.length})`}
-    </button>
-  </div>
-)}
-            </section>
+                    <p className="text-sm leading-7 text-slate-600">
+                      {school.note}
+                    </p>
 
-            <section id="check-before-applying" className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
-              <SectionTitle eyebrow="Before applying" title="What international students should check">
-                Before choosing a STEM MBA, verify the details that affect academic planning,
-                OPT planning, employer eligibility, and long-term career strategy.
-              </SectionTitle>
-
-              <div className="mt-8 grid gap-5 md:grid-cols-2">
-                {checks.map((item, index) => (
-                  <div key={item.title} className="rounded-2xl border border-blue-100 bg-blue-50/70 p-5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#163A70] text-sm font-bold text-white">
-                      {index + 1}
-                    </div>
-                    <h3 className="mt-4 text-lg font-bold text-slate-950">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-700">{item.body}</p>
+                    <a
+                      href={school.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-fit border-b-2 border-[#D4AF37] pb-1 text-sm font-semibold text-[#1F6670] transition hover:text-[#153D49]"
+                    >
+                      Visit official MBA page
+                    </a>
                   </div>
                 ))}
               </div>
+
+              {universities.length > 12 ? (
+                <div className="mt-8 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllUniversities((value) => !value)}
+                    className="border-b-2 border-[#153D49] pb-1 font-semibold text-[#153D49] transition hover:border-[#D4AF37] hover:text-[#2E6E63]"
+                  >
+                    {showAllUniversities
+                      ? "Show fewer universities"
+                      : `View all STEM MBA universities (${universities.length})`}
+                  </button>
+                </div>
+              ) : null}
             </section>
 
-            <ResponsiveAd
-  slotId="8562818627"
-  className="my-8"
-/>
+            <SectionAd />
 
-            <section id="mistakes"
-                 className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
+            <section id="check-before-applying" className="scroll-mt-24 border-b border-slate-300 py-12">
+              <SectionTitle eyebrow="Before applying" title="What international students should check">
+                Before choosing a STEM MBA, verify the details that affect academic planning,
+                OPT planning, employer eligibility, and long term career strategy.
+              </SectionTitle>
+
+              <div className="mt-8 border-y border-slate-200">
+                {checks.map((item, index) => (
+                  <NumberedTextItem
+                    key={item.title}
+                    number={index + 1}
+                    title={item.title}
+                    body={item.body}
+                  />
+                ))}
+              </div>
+            </section>
+
+            <SectionAd />
+
+            <section id="mistakes" className="scroll-mt-24 border-b border-slate-300 py-12">
               <SectionTitle eyebrow="Avoid these errors" title="Common mistakes when evaluating a STEM MBA">
                 Careful applicants verify details instead of relying on labels, rankings, or assumptions.
               </SectionTitle>
 
-              <div className="mt-8 space-y-6">
+              <div className="mt-8 border-y border-slate-200">
                 {[
                   ["Assuming the phrase “STEM MBA” is enough", "Ask for the exact CIP code and written confirmation from the school."],
                   ["Relying only on rankings", "Rankings do not explain STEM status, curriculum depth, employer rules, or student support."],
-                  ["Ignoring the MBA format", "Full-time, part-time, executive, and online versions may have different classifications."],
+                  ["Ignoring the MBA format", "Full time, part time, executive, and online versions may have different classifications."],
                   ["Choosing STEM only for OPT", "The degree must also make sense academically, professionally, and financially."],
-                  ["Failing to check employer rules", "STEM OPT involves E-Verify, training-plan, reporting, and qualifying-employment requirements."],
+                  ["Failing to check employer rules", "STEM OPT involves E Verify, training plan, reporting, and qualifying employment requirements."],
                   ["Assuming the designation never changes", "Confirm the current status for your own cohort before paying a deposit."],
                 ].map(([title, body], index) => (
-                  <div key={title} className="grid gap-4 sm:grid-cols-[42px_minmax(0,1fr)]">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#163A70] font-bold text-white">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-950">{title}</h3>
-                      <p className="mt-2 leading-7 text-slate-700">{body}</p>
-                    </div>
-                  </div>
+                  <NumberedTextItem
+                    key={title}
+                    number={index + 1}
+                    title={title}
+                    body={body}
+                  />
                 ))}
               </div>
             </section>
 
-            <section id="faq"
-                  className="mt-8 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-8">
+            <SectionAd />
+
+            <section id="faq" className="scroll-mt-24 border-b border-slate-300 py-12">
               <SectionTitle eyebrow="FAQ" title="Common questions about STEM MBA programs" />
 
-              <div className="mt-8 divide-y divide-slate-200">
+              <div className="mt-8 divide-y divide-slate-200 border-y border-slate-200">
                 {faqs.map((faq) => (
-                  <div key={faq.q} className="py-5">
-                    <h3 className="text-lg font-bold text-slate-950">{faq.q}</h3>
-                    <p className="mt-3 leading-7 text-slate-700">{faq.a}</p>
+                  <div key={faq.q} className="py-6">
+                    <h3 className="text-lg font-semibold text-[#153D49]">{faq.q}</h3>
+                    <p className="mt-3 leading-8 text-slate-600">{faq.a}</p>
                   </div>
                 ))}
               </div>
             </section>
 
-            <section id="disclaimer"
-                className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-amber-900">Disclaimer</h2>
-              <p className="mt-3 leading-7 text-slate-800">
+            <SectionAd />
+
+            <section id="disclaimer" className="scroll-mt-24 border-l-4 border-[#D4AF37] bg-[#F2EEE2] px-6 py-6">
+              <h2 className="text-lg font-bold text-[#7A5B13]">Disclaimer</h2>
+              <p className="mt-3 leading-8 text-slate-700">
                 This guide is for general educational purposes only. STEM designation, CIP
                 codes, OPT eligibility, and immigration rules can change. Always verify
                 information directly with the university, your international student office,
@@ -1139,53 +1193,50 @@ export default function STEMMBA() {
                 decisions.
               </p>
             </section>
+
+            <SectionAd />
           </article>
-<aside className="hidden xl:block">
+
+          <aside className="hidden xl:block">
             <div className="sticky top-24 space-y-5">
               <ResponsiveAd />
-
-              
-
-               <ResponsiveAd
-      slotId="8562818627"
-      className="w-full"
-    />
-
+              <ResponsiveAd slotId="8562818627" className="w-full" />
               <ResponsiveAd />
             </div>
           </aside>
         </div>
       </section>
 
-      <section className="w-full bg-[#163A70] text-white">
+      {/* CTA */}
+      <section className="w-full bg-gradient-to-r from-[#153D49] via-[#1F5963] to-[#2E6E63] text-white">
         <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
-          <h3 className="font-serif text-3xl font-bold leading-tight sm:text-4xl">
+          <h3 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
             Explore scholarships for MBA and STEM students
           </h3>
 
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/85">
-            Find scholarships, fellowships, and university-funded graduate opportunities
-            that can support your business, analytics, and STEM-focused study plans.
+            Find scholarships, fellowships, and university funded graduate opportunities
+            that can support your business, analytics, and STEM focused study plans.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/scholarship"
-              className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
+              className="w-full rounded-md bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#153D49] transition hover:bg-[#E2C25C] sm:w-auto"
             >
               Browse Scholarships
             </Link>
 
             <Link
               to="/funded-graduate-admission"
-              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+              className="rounded-md bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#153D49] transition hover:bg-[#E2C25C]"
             >
-              University-Funded Programs
+              University Funded Programs
             </Link>
 
             <Link
               to="/stem-programs"
-              className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              className="rounded-md border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
             >
               View STEM Programs
             </Link>
@@ -1193,21 +1244,23 @@ export default function STEMMBA() {
         </div>
       </section>
 
-      <footer className="w-full border-t border-slate-200 bg-slate-50">
+      {/* FOOTER */}
+      <footer className="w-full border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 lg:px-8">
           <div className="grid gap-12 md:grid-cols-3">
             <div>
               <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-                MBA & STEM Guide
+                MBA and STEM Guide
               </h3>
+
               <div className="mt-5 space-y-4">
-                <a href="#quick-answer" className="block hover:text-[#163A70]">
+                <a href="#quick-answer" className="block hover:text-[#153D49]">
                   Quick Answer
                 </a>
-                <a href="#check-before-applying" className="block hover:text-[#163A70]">
+                <a href="#check-before-applying" className="block hover:text-[#153D49]">
                   What to Check Before Applying
                 </a>
-                <Link to="/stem-programs" className="block hover:text-[#163A70]">
+                <Link to="/stem-programs" className="block hover:text-[#153D49]">
                   STEM Programs
                 </Link>
               </div>
@@ -1217,37 +1270,45 @@ export default function STEMMBA() {
               <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
                 Related Resources
               </h3>
+
               <div className="mt-5 space-y-4">
-                <Link to="/study-in-us" className="block hover:text-[#163A70]">
+                <Link to="/study-in-us" className="block hover:text-[#153D49]">
                   Study in The U.S
                 </Link>
-                <Link to="/scholarship" className="block hover:text-[#163A70]">
+                <Link to="/scholarship" className="block hover:text-[#153D49]">
                   Scholarships Directory
                 </Link>
-                <Link to="/funded-graduate-admission" className="block hover:text-[#163A70]">
+                <Link to="/funded-graduate-admission" className="block hover:text-[#153D49]">
                   Funded Graduate Admission
                 </Link>
-                <Link to="/fellowship" className="block hover:text-[#163A70]">
+                <Link to="/fellowship" className="block hover:text-[#153D49]">
                   Fellowships
                 </Link>
               </div>
             </div>
 
             <div className="md:text-right">
-              <h2 className="font-serif text-3xl font-bold text-[#163A70]">
-                Scholars<span className="text-amber-500">Knowledge</span>
+              <h2 className="font-serif text-3xl font-semibold text-[#153D49]">
+                Scholars<span className="text-[#B28625]">Knowledge</span>
               </h2>
+
               <p className="mt-4 leading-8 text-slate-600">
                 Helping students discover verified scholarships, fellowships, funded
                 graduate opportunities, STEM programs, and practical application guidance.
               </p>
+
               <div className="mt-6 flex flex-wrap justify-start gap-5 text-sm text-slate-500 md:justify-end">
-                <Link to="/privacy-policy" className="hover:underline">
-              Privacy Policy
-            </Link>
-          <Link to="/terms-of-use" className="hover:underline">Terms of Use</Link>
-                <Link to="/contact">Contact</Link>
+                <Link to="/privacy-policy" className="hover:text-[#153D49]">
+                  Privacy Policy
+                </Link>
+                <Link to="/terms-of-use" className="hover:text-[#153D49]">
+                  Terms of Use
+                </Link>
+                <Link to="/contact" className="hover:text-[#153D49]">
+                  Contact
+                </Link>
               </div>
+
               <p className="mt-8 text-sm text-slate-500">
                 © 2026 ScholarsKnowledge. All rights reserved.
               </p>

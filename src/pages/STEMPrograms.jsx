@@ -19,7 +19,7 @@ const stemCards = [
     title: "Environmental, Natural Resources, and Conservation Studies",
     image: "/images/stem/environmental-natural-resources.jpg",
     description:
-      "This group includes environmental studies, environmental science, natural resources and conservation, water and marine resources management, forest sciences, urban forestry, wildlife and fisheries science, and other conservation-focused scientific fields.",
+      "This group includes environmental studies, environmental science, natural resources and conservation, water and marine resources management, forest sciences, urban forestry, wildlife and fisheries science, and other conservation focused scientific fields.",
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ const stemCards = [
     title: "Engineering Technologies and Applied Technical Fields",
     image: "/images/stem/engineering-technologies.jpg",
     description:
-      "These programs are more application-oriented and include architectural engineering technology, civil engineering technology, electronics technology, laser and optical technology, telecommunications technology, biomedical technology, robotics technology, automation technology, environmental engineering technology, manufacturing engineering technology, chemical engineering technology, semiconductor manufacturing technology, quality control technology, safety technology, mechanical engineering technology, petroleum technology, construction engineering technology, computer engineering technology, drafting and design technology, nanotechnology, and energy systems technology.",
+      "These programs are more application oriented and include architectural engineering technology, civil engineering technology, electronics technology, laser and optical technology, telecommunications technology, biomedical technology, robotics technology, automation technology, environmental engineering technology, manufacturing engineering technology, chemical engineering technology, semiconductor manufacturing technology, quality control technology, safety technology, mechanical engineering technology, petroleum technology, construction engineering technology, computer engineering technology, drafting and design technology, nanotechnology, and energy systems technology.",
   },
   {
     id: 6,
@@ -68,21 +68,21 @@ const stemCards = [
     title: "Interdisciplinary STEM and Computational Programs",
     image: "/images/stem/interdisciplinary-stem.jpg",
     description:
-      "Some interdisciplinary programs are also included, such as biological and physical sciences, systems science, mathematics and computer science, cognitive science, human biology, computational science, human-computer interaction, marine sciences, sustainability studies, and nutrition sciences.",
+      "Some interdisciplinary programs are also included, such as biological and physical sciences, systems science, mathematics and computer science, cognitive science, human biology, computational science, human computer interaction, marine sciences, sustainability studies, and nutrition sciences.",
   },
   {
     id: 10,
     title: "Psychology and Behavioral Research with Strong Quantitative/Scientific Focus",
     image: "/images/stem/behavioral-cognitive-sciences.jpg",
     description:
-      "Certain research-oriented psychology fields may qualify, including cognitive psychology, psycholinguistics, comparative psychology, developmental psychology, experimental psychology, behavioral neuroscience, psychometrics, quantitative psychology, and psychopharmacology.",
+      "Certain research oriented psychology fields may qualify, including cognitive psychology, psycholinguistics, comparative psychology, developmental psychology, experimental psychology, behavioral neuroscience, psychometrics, quantitative psychology, and psychopharmacology.",
   },
   {
     id: 11,
     title: "Data, Geographic, and Quantitative Social Science Fields",
     image: "/images/stem/data-quantitative-social-sciences.jpg",
     description:
-      "Some highly quantitative social science and applied data fields may be STEM-designated, including econometrics, quantitative economics, geographic information science and cartography, business statistics, actuarial science, management science, and other management sciences and quantitative methods programs.",
+      "Some highly quantitative social science and applied data fields may be STEM designated, including econometrics, quantitative economics, geographic information science and cartography, business statistics, actuarial science, management science, and other management sciences and quantitative methods programs.",
   },
   {
     id: 12,
@@ -141,223 +141,236 @@ function scrollToCategory(id) {
   if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+
 export default function STEMPrograms() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "STEM Programs for International Students | ScholarsKnowledge";
+  }, []);
+
   return (
-    <div className="bg-slate-50 min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden text-white">
-        {/* Background image */}
+    <div className="min-h-screen bg-[#F6F7F3] text-slate-900">
+      {/* HERO */}
+      <header className="relative overflow-hidden text-white">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/images/stem/stem-hero-bg.jpg')" }}
         />
 
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-[#0A4595]/70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#102E3B]/95 via-[#174A56]/78 to-[#285F67]/48" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(228,187,93,0.22),transparent_34%)]" />
 
-        {/* Optional soft light effect */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.12),transparent_30%)]" />
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-24 lg:px-8 lg:py-28">
+          <div className="max-w-4xl">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#E7C76F]">
+              DHS CIP code categories
+            </p>
 
-        <div className="relative mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-16 md:pb-16 lg:pt-20 lg:pb-20">
-          <div className="mx-auto max-w-5xl text-center">
-            <div className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white/95 shadow-sm backdrop-blur">
-              STEM-Eligible Fields of Study (DHS CIP Code Categories)
-            </div>
-
-            <h1 className="mt-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
+            <h1 className="mt-5 font-serif text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               STEM Programs for International Students
             </h1>
 
-            <p className="mt-5 max-w-5xl mx-auto text-sm sm:text-base lg:text-lg leading-7 text-white/90">
+            <div className="mt-5 h-1 w-24 bg-[#D4AF37]" />
+
+            <p className="mt-7 max-w-4xl text-base leading-8 text-white/90 md:text-lg md:leading-9">
               For international students exploring U.S. study opportunities, some academic
               programs may fall under the U.S. Department of Homeland Security (DHS) STEM
-              Designated Degree Program List. In general, STEM-designated programs are in
+              Designated Degree Program List. In general, STEM designated programs are in
               science, technology, engineering, mathematics, and related quantitative or
-              research-based fields.
+              research based fields.
             </p>
 
-            <div className="mt-6 mx-auto max-w-5xl rounded-2xl border border-white/20 bg-white/10 px-4 py-4 text-left shadow-sm backdrop-blur sm:px-5">
-              <p className="text-sm sm:text-base lg:text-lg leading-7 text-white/90">
-                Students enrolled in eligible programs may qualify for additional practical
-                training benefits after graduation, depending on their visa category, school
-                reporting, and the exact CIP code assigned by the university.
+            <p className="mt-5 max-w-4xl border-l-4 border-[#D4AF37] pl-5 text-base leading-8 text-white/85">
+              Students enrolled in eligible programs may qualify for additional practical
+              training benefits after graduation, depending on their visa category, school
+              reporting, and the exact CIP code assigned by the university.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* INTRODUCTION */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2E6E63]">
+                Understanding STEM designation
               </p>
+
+              <h2 className="mt-3 font-serif text-3xl font-semibold text-[#143D49]">
+                Confirm the classification before you enroll
+              </h2>
+            </div>
+
+            <div>
+              <p className="max-w-4xl text-base leading-8 text-slate-600">
+                Because STEM eligibility is determined by the official CIP code attached to
+                the specific academic program, students should always confirm the exact
+                program classification directly with the university before making a final
+                decision.
+              </p>
+
+              <div className="mt-10 divide-y divide-slate-200 border-y border-slate-200">
+                <InfoRow
+                  number="01"
+                  title="What to verify"
+                  text="Confirm the exact degree title, official CIP code, and whether the university classifies the program as STEM designated."
+                />
+
+                <InfoRow
+                  number="02"
+                  title="Why it matters"
+                  text="STEM classification can affect academic planning, options after graduation, and how international students evaluate long term study opportunities."
+                />
+
+                <InfoRow
+                  number="03"
+                  title="Best practice"
+                  text="Ask the university admissions office or international office to confirm the program classification in writing before enrollment."
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Intro strip */}
-      <section className="bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-[1500px] px-6 sm:px-8 lg:px-10 xl:px-12 py-7">
-          <SectionTitle>Understanding STEM Designation</SectionTitle>
-
-          <p className="mt-4 text-sm sm:text-base text-slate-700 leading-7 max-w-5xl">
-            Because STEM eligibility is determined by the official CIP code attached to
-            the specific academic program, students should always confirm the exact
-            program classification directly with the university before making a final
-            decision.
-          </p>
-
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 shadow-sm">
-              <div className="text-sm font-semibold text-[#0A4595]">What to verify</div>
-              <p className="mt-2 text-sm text-slate-700 leading-6">
-                Confirm the exact degree title, official CIP code, and whether the
-                university classifies the program as STEM-designated.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 shadow-sm">
-              <div className="text-sm font-semibold text-[#0A4595]">Why it matters</div>
-              <p className="mt-2 text-sm text-slate-700 leading-6">
-                STEM classification can affect academic planning, post-graduation options,
-                and how international students evaluate long-term study opportunities.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 shadow-sm">
-              <div className="text-sm font-semibold text-[#0A4595]">Best practice</div>
-              <p className="mt-2 text-sm text-slate-700 leading-6">
-                Ask the university’s admissions or international office to confirm the
-                program classification in writing before enrollment.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main layout */}
-      <div className="mx-auto max-w-[1500px] px-6 sm:px-8 lg:px-10 xl:px-12 py-8 md:py-10">
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6 lg:gap-8 xl:gap-10 items-start">
-          <main className="min-w-0 w-full">
-            {/* Program groupings */}
+      {/* MAIN CONTENT */}
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-14 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-16">
+          <main className="min-w-0">
             <section>
-              <div className="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 md:p-8">
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <SectionTitle>Main STEM Program Groupings</SectionTitle>
-                    <p className="mt-2 text-sm sm:text-base text-slate-600 leading-7 max-w-4xl">
-                      The DHS STEM list covers a broad range of disciplines. The categories
-                      below help international students understand the main academic areas
-                      commonly associated with STEM-designated study in the United States.
+              <div className="border-b border-slate-300 pb-10">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2E6E63]">
+                  Program categories
+                </p>
+
+                <h2 className="mt-3 font-serif text-3xl font-semibold text-[#143D49] md:text-4xl">
+                  Main STEM Program Groupings
+                </h2>
+
+                <p className="mt-5 max-w-4xl text-base leading-8 text-slate-600">
+                  The DHS STEM list covers a broad range of disciplines. The categories
+                  below help international students understand the main academic areas
+                  commonly associated with STEM designated study in the United States.
+                </p>
+
+                <div className="mt-7 flex flex-wrap gap-x-5 gap-y-3">
+                  {stemCards.map((card) => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      onClick={() => scrollToCategory(card.id)}
+                      className="border-b-2 border-transparent pb-1 text-sm font-semibold text-[#1F6670] transition hover:border-[#D4AF37] hover:text-[#143D49]"
+                    >
+                      Category {card.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="my-8 min-h-0">
+                <ResponsiveSidebarAd slotId="8562818627" />
+              </div>
+
+              <div>
+                {stemCards.map((card, index) => (
+                  <Fragment key={card.id}>
+                    <article
+                      id={`stem-category-${card.id}`}
+                      className="scroll-mt-24 border-b border-slate-300 py-12 first:pt-0"
+                    >
+                      <div className="grid gap-8 md:grid-cols-[280px_minmax(0,1fr)] lg:grid-cols-[330px_minmax(0,1fr)]">
+                        <div className="relative min-h-[220px] overflow-hidden bg-slate-200">
+                          <img
+                            src={card.image}
+                            alt={card.title}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#102E3B]/70 via-transparent to-transparent" />
+                          <span className="absolute bottom-4 left-4 text-xs font-bold uppercase tracking-[0.14em] text-white">
+                            Category {card.id}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col justify-center">
+                          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#B28625]">
+                            STEM category {card.id}
+                          </p>
+
+                          <h3 className="mt-3 font-serif text-2xl font-semibold leading-snug text-[#143D49]">
+                            {card.title}
+                          </h3>
+
+                          <p className="mt-5 text-base leading-8 text-slate-600">
+                            {card.description}
+                          </p>
+
+                          <p className="mt-6 border-l-2 border-[#D4AF37] pl-4 text-sm leading-7 text-slate-500">
+                            Review the exact CIP code with the university before enrollment.
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+
+                    {(index + 1) % 2 === 0 && index !== stemCards.length - 1 ? (
+                      <div className="my-8 min-h-0">
+                        <ResponsiveSidebarAd slotId="8562818627" />
+                      </div>
+                    ) : null}
+                  </Fragment>
+                ))}
+              </div>
+            </section>
+
+            {/* GUIDANCE */}
+            <section className="py-16">
+              <div className="grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-16">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#2E6E63]">
+                    Student guidance
+                  </p>
+
+                  <h2 className="mt-3 font-serif text-3xl font-semibold text-[#143D49]">
+                    How International Students Should Use This Information
+                  </h2>
+                </div>
+
+                <div>
+                  <div className="grid gap-10 md:grid-cols-2">
+                    <GuidanceList
+                      title="Before applying"
+                      items={[
+                        "Review whether your intended field fits a STEM designated area.",
+                        "Check the program structure, research focus, and quantitative content.",
+                        "Compare how universities classify similar programs.",
+                      ]}
+                    />
+
+                    <GuidanceList
+                      title="Before enrollment"
+                      items={[
+                        "Ask for the exact CIP code assigned to the degree program.",
+                        "Confirm current STEM status with the international office.",
+                        "Do not rely only on the program title or department name.",
+                      ]}
+                    />
+                  </div>
+
+                  <div className="mt-10 border-l-4 border-[#D4AF37] bg-[#F4F0E5] px-6 py-5">
+                    <p className="text-base leading-8 text-slate-700">
+                      <span className="font-semibold text-[#143D49]">Important note:</span>{" "}
+                      A program name alone does not determine STEM eligibility. Two
+                      universities may offer similar degree titles but assign different CIP
+                      codes. The final reference point is the official university assigned
+                      CIP code for the specific program.
                     </p>
                   </div>
-
-                  <div className="flex flex-wrap gap-2">
-                   {stemCards.map((card) => (
-  <button
-    key={card.id}
-    type="button"
-    onClick={() => scrollToCategory(card.id)}
-    className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0A4595] hover:bg-blue-100 transition"
-  >
-    Category {card.id}
-  </button>
-))}
-                  </div>
-                  </div>
-                  </div>
-                
-          
-              <div className="my-0 min-h-0">
-  <ResponsiveSidebarAd slotId="8562818627" />
-</div>
-
-              <div className="mt-6 space-y-5">
-  {stemCards.map((card, index) => (
-    <Fragment key={card.id}>
-      <article
-        id={`stem-category-${card.id}`}
-        className="group scroll-mt-24 overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-lg hover:border-blue-200 transition"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-[360px_minmax(0,1fr)] lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[430px_minmax(0,1fr)]">
-          <div className="relative h-56 sm:h-64 md:h-full min-h-[260px] overflow-hidden bg-slate-100">
-            <img
-              src={card.image}
-              alt={card.title}
-              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.035]"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/35 md:via-black/10 md:to-transparent" />
-            <div className="absolute left-4 top-4">
-              <div className="inline-flex items-center rounded-full bg-white/15 backdrop-blur-sm px-3 py-1 text-xs font-semibold text-white/95 border border-white/20">
-                Category {card.id}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-center p-5 sm:p-6 lg:p-8 xl:p-9">
-            <div className="mb-3 inline-flex w-fit items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0A4595]">
-              STEM category {card.id}
-            </div>
-
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 leading-snug">
-              {card.title}
-            </h3>
-
-            <p className="mt-3 text-sm sm:text-base text-slate-700 leading-7">
-              {card.description}
-            </p>
-
-            <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-[#0A4595]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0A4595]" />
-              <span>Review the exact CIP code with the university before enrollment.</span>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      {(index + 1) % 2 === 0 && index !== stemCards.length - 1 ? (
-        <div className="my-0 min-h-0">
-  <ResponsiveSidebarAd slotId="8562818627" />
-</div>
-      ) : null}
-    </Fragment>
-  ))}
-</div>
-            </section>
-
-            {/* Guidance card */}
-            <section className="mt-8 rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 md:p-8">
-              <SectionTitle>How International Students Should Use This Information</SectionTitle>
-
-              <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                    Before applying
-                  </h3>
-                  <ul className="mt-3 space-y-2 text-sm sm:text-base text-slate-700 leading-7 list-disc pl-5">
-                    <li>Review whether your intended field fits a STEM-designated area.</li>
-                    <li>Check the program structure, research focus, and quantitative content.</li>
-                    <li>Compare how universities classify similar programs.</li>
-                  </ul>
                 </div>
-
-                <div className="rounded-2xl bg-slate-50 border border-slate-200 p-5">
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900">
-                    Before enrollment
-                  </h3>
-                  <ul className="mt-3 space-y-2 text-sm sm:text-base text-slate-700 leading-7 list-disc pl-5">
-                    <li>Ask for the exact CIP code assigned to the degree program.</li>
-                    <li>Confirm current STEM status with the international office.</li>
-                    <li>Do not rely only on the program title or department name.</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
-                <p className="text-sm sm:text-base text-slate-800 leading-7">
-                  <span className="font-semibold">Important note:</span> A program name alone
-                  does not determine STEM eligibility. Two universities may offer similar
-                  degree titles but assign different CIP codes. The final reference point is
-                  the official university-assigned CIP code for the specific program.
-                </p>
               </div>
             </section>
 
-           
-            {/* Invisible in-content ad container for future placement if needed */}
             <div
               id="stem-inline-ad"
               className="w-full min-h-0"
@@ -366,83 +379,73 @@ export default function STEMPrograms() {
             />
           </main>
 
+          {/* SIDEBAR */}
           <aside className="hidden xl:block">
-            <div className="sticky top-24 space-y-5">
+            <div className="sticky top-24 space-y-8">
               <ResponsiveSidebarAd slotId="8562818627" />
 
-              <div className="rounded-3xl bg-[#0A4595] text-white shadow-sm p-5">
-                <h3 className="text-sm font-bold">Explore Related Opportunities</h3>
+              <nav className="border-y border-slate-300 py-6">
+                <p className="text-center text-xs font-bold uppercase tracking-[0.16em] text-[#2E6E63]">
+                  Explore related opportunities
+                </p>
 
-                <div className="mt-4 space-y-2">
-                  <Link
-  to="/stem-mba-guide#universities"
-  className="block rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-[#0A4595] hover:bg-blue-50"
->
-  STEM MBA Universities
-</Link>
-                  <Link
-                    to="/study-in-us"
-                    className="block rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/15"
-                  >
-                    Study in The U.S
-                  </Link>
-                  <Link
-                    to="/funded-graduate-admission"
-                    className="block rounded-2xl border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold hover:bg-white/15"
-                  >
+                <div className="mt-5 divide-y divide-slate-200">
+                  <SidebarLink to="/stem-mba-guide#universities">
+                    STEM MBA Universities
+                  </SidebarLink>
+                  <SidebarLink to="/study-in-us">Study in The U.S</SidebarLink>
+                  <SidebarLink to="/funded-graduate-admission">
                     Funded Graduate Admission
-                  </Link>
-                  <Link
-                    to="/scholarship"
-                    className="block rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-[#0A4595] hover:bg-blue-50"
-                  >
+                  </SidebarLink>
+                  <SidebarLink to="/scholarship">
                     Scholarships Directory
-                  </Link>
+                  </SidebarLink>
                 </div>
-              </div>
-               
-      <ResponsiveSidebarAd slotId="8562818627" />
+              </nav>
+
+              <ResponsiveSidebarAd slotId="8562818627" />
             </div>
           </aside>
         </div>
       </div>
 
-     <section className="w-full bg-[#163A70] text-white">
-        <div className="mx-auto max-w-6xl px-4 py-14 text-center lg:px-8">
-          <h3 className="font-serif text-3xl font-bold leading-tight sm:text-4xl">
+      {/* CTA */}
+      <section className="w-full bg-gradient-to-r from-[#143D49] via-[#1F5963] to-[#2E6E63] text-white">
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center lg:px-8">
+          <h3 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
             Explore STEM study and funding opportunities
           </h3>
 
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-white/85">
             Use STEM field information together with scholarships, fellowships,
-            and university-funded graduate programs when planning your next step.
+            and university funded graduate programs when planning your next step.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/scholarship"
-              className="w-full rounded-full bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#163A70] transition hover:bg-amber-300 sm:w-auto"
+              className="w-full rounded-md bg-[#D4AF37] px-6 py-3 text-center text-sm font-bold text-[#143D49] transition hover:bg-[#E2C25C] sm:w-auto"
             >
               Browse Scholarships
             </Link>
 
             <Link
               to="/fellowship"
-              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+              className="rounded-md bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#143D49] transition hover:bg-[#E2C25C]"
             >
               Browse Fellowships
             </Link>
 
             <Link
               to="/funded-graduate-admission"
-              className="rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#163A70] transition hover:bg-amber-300"
+              className="rounded-md bg-[#D4AF37] px-6 py-3 text-sm font-bold text-[#143D49] transition hover:bg-[#E2C25C]"
             >
-              University-Funded Programs
+              University Funded Programs
             </Link>
 
             <Link
               to="/student-sign-up"
-              className="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10"
+              className="rounded-md border border-white/50 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
             >
               Join Free
             </Link>
@@ -450,86 +453,57 @@ export default function STEMPrograms() {
         </div>
       </section>
 
-      <footer className="w-full border-t border-slate-200 bg-slate-50">
+      {/* FOOTER */}
+      <footer className="w-full border-t border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-14 lg:px-8">
           <div className="grid gap-12 md:grid-cols-3">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-                STEM Programs
-              </h3>
-              <div className="mt-5 space-y-4">
-                <a href="#stem-category-1" className="block hover:text-[#163A70]">
-                  Agriculture and Food Sciences
-                </a>
-                <a href="#stem-category-3" className="block hover:text-[#163A70]">
-                  Computer Science and AI
-                </a>
-                <a href="#stem-category-4" className="block hover:text-[#163A70]">
-                  Engineering
-                </a>
-                <a href="#stem-category-7" className="block hover:text-[#163A70]">
-                  Mathematics and Statistics
-                </a>
-                <a href="#stem-category-12" className="block hover:text-[#163A70]">
-      Health & Pharmaceutical Sciences
-    </a>
+            <FooterColumn
+              title="STEM Programs"
+              links={[
+                ["#stem-category-1", "Agriculture and Food Sciences"],
+                ["#stem-category-3", "Computer Science and AI"],
+                ["#stem-category-4", "Engineering"],
+                ["#stem-category-7", "Mathematics and Statistics"],
+                ["#stem-category-12", "Health and Pharmaceutical Sciences"],
+                ["#stem-category-13", "Forensics and Security Sciences"],
+              ]}
+            />
 
-    <a href="#stem-category-13" className="block hover:text-[#163A70]">
-      Forensics & Security Sciences
-    </a>
-              </div>
-            </div>
-
-            <div>
-  <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-    More STEM Categories
-  </h3>
-
-  <div className="mt-5 space-y-4">
-    <a href="#stem-category-5" className="block hover:text-[#163A70]">
-      Engineering Technologies
-    </a>
-
-    <a href="#stem-category-6" className="block hover:text-[#163A70]">
-      Biological & Biomedical Sciences
-    </a>
-
-    <a href="#stem-category-8" className="block hover:text-[#163A70]">
-      Physical Sciences
-    </a>
-
-    <a href="#stem-category-9" className="block hover:text-[#163A70]">
-      Interdisciplinary STEM
-    </a>
-
-    <a href="#stem-category-10" className="block hover:text-[#163A70]">
-      Psychology & Behavioral Research
-    </a>
-
-    <a href="#stem-category-11" className="block hover:text-[#163A70]">
-      Data & Quantitative Social Sciences
-    </a>
-
-    
-  </div>
-</div>
+            <FooterColumn
+              title="More STEM Categories"
+              links={[
+                ["#stem-category-5", "Engineering Technologies"],
+                ["#stem-category-6", "Biological and Biomedical Sciences"],
+                ["#stem-category-8", "Physical Sciences"],
+                ["#stem-category-9", "Interdisciplinary STEM"],
+                ["#stem-category-10", "Psychology and Behavioral Research"],
+                ["#stem-category-11", "Data and Quantitative Social Sciences"],
+              ]}
+            />
 
             <div className="md:text-right">
-              <h2 className="font-serif text-3xl font-bold text-[#163A70]">
-                Scholars<span className="text-amber-500">Knowledge</span>
+              <h2 className="font-serif text-3xl font-semibold text-[#143D49]">
+                Scholars<span className="text-[#B28625]">Knowledge</span>
               </h2>
+
               <p className="mt-4 leading-8 text-slate-600">
                 Helping students discover verified scholarships, fellowships,
                 funded graduate opportunities, STEM programs, and expert
                 application guidance.
               </p>
+
               <div className="mt-6 flex flex-wrap justify-start gap-5 text-sm text-slate-500 md:justify-end">
-                 <Link to="/privacy-policy" className="hover:underline">
-              Privacy Policy
-            </Link>
-          <Link to="/terms-of-use" className="hover:underline">Terms of Use</Link>
-                <Link to="/contact">Contact</Link>
+                <Link to="/privacy-policy" className="hover:text-[#143D49]">
+                  Privacy Policy
+                </Link>
+                <Link to="/terms-of-use" className="hover:text-[#143D49]">
+                  Terms of Use
+                </Link>
+                <Link to="/contact" className="hover:text-[#143D49]">
+                  Contact
+                </Link>
               </div>
+
               <p className="mt-8 text-sm text-slate-500">
                 © 2026 ScholarsKnowledge. All rights reserved.
               </p>
@@ -537,6 +511,66 @@ export default function STEMPrograms() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function InfoRow({ number, title, text }) {
+  return (
+    <div className="grid gap-3 py-6 sm:grid-cols-[70px_190px_minmax(0,1fr)] sm:items-start">
+      <span className="font-serif text-sm font-semibold text-[#B28625]">
+        {number}
+      </span>
+      <h3 className="font-semibold text-[#143D49]">{title}</h3>
+      <p className="text-sm leading-7 text-slate-600">{text}</p>
+    </div>
+  );
+}
+
+function GuidanceList({ title, items }) {
+  return (
+    <div>
+      <h3 className="font-serif text-2xl font-semibold text-[#143D49]">
+        {title}
+      </h3>
+
+      <ul className="mt-5 divide-y divide-slate-200 border-y border-slate-200">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 py-4 text-sm leading-7 text-slate-600">
+            <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#D4AF37]" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SidebarLink({ to, children }) {
+  return (
+    <Link
+      to={to}
+      className="block py-4 text-sm font-semibold leading-6 text-[#143D49] transition hover:text-[#2E6E63]"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function FooterColumn({ title, links }) {
+  return (
+    <div>
+      <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+        {title}
+      </h3>
+
+      <div className="mt-5 space-y-4 text-slate-700">
+        {links.map(([href, label]) => (
+          <a key={href} href={href} className="block hover:text-[#143D49]">
+            {label}
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
