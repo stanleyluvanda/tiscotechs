@@ -6,6 +6,16 @@ import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // ⬅️ loc
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { Link } from "react-router-dom";
+const SizeStyle = Quill.import("attributors/style/size");
+
+SizeStyle.whitelist = [
+  "14px",
+  "18px",
+  "24px",
+  "32px",
+];
+
+Quill.register(SizeStyle, true);
 
 // Normalize API base (empty string if not set) and strip trailing slashes
 // IMPORTANT: Partner scholarship submission must hit the Scholarships API.
@@ -138,6 +148,7 @@ const FUNDING_OPTIONS = [
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
+    [{ size: ["14px", "18px", "24px", "32px"] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link"],

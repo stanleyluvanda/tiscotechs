@@ -5,6 +5,16 @@ import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // reuse local fallback helper
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+const SizeStyle = Quill.import("attributors/style/size");
+
+SizeStyle.whitelist = [
+  "14px",
+  "18px",
+  "24px",
+  "32px",
+];
+
+Quill.register(SizeStyle, true);
 
 const API_BASE = (
   import.meta.env.VITE_SCHOLARSHIPS_API_BASE ||
@@ -120,6 +130,7 @@ const FUNDING_OPTIONS = [
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
+    [{ size: ["14px", "18px", "24px", "32px"] }],
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }],
     ["link"],
