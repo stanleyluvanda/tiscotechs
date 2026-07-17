@@ -26,7 +26,8 @@ function RichHtml({ html }) {
     <div
       //className="rich-html prose-sm max-w-none text-justify"
       //className="rich-html max-w-none text-justify"
-      className="rich-html max-w-none text-justify"
+      //className="rich-html max-w-none text-justify"
+      className="rich-html max-w-none text-left"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -638,6 +639,15 @@ const res = await fetch(
     <div className="bg-slate-50 min-h-screen flex flex-col">
      
       <style>{` 
+      .rich-html {
+  text-align: left;
+}
+
+.rich-html p {
+  margin: 0.75rem 0;
+  line-height: 1.85;
+
+}
   .rich-html ul,
   .rich-html ol {
     padding-left: 1.65rem;
