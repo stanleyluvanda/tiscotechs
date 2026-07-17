@@ -972,7 +972,7 @@ return (
     onMouseEnter={() => prefetchDetail(s.id)}
     onMouseDown={() => prefetchDetail(s.id)}
     onClick={() => trackItem(s.id, "view")}
-    className="mb-4 block text-xl font-extrabold leading-tight text-slate-900 hover:text-blue-700 hover:underline sm:text-2xl"
+    className="mb-4 block text-xl font-semibold leading-tight text-slate-900 hover:text-blue-700 hover:underline sm:text-2xl"
   >
     {s.title}
   </Link>
