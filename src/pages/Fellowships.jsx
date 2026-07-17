@@ -878,11 +878,21 @@ const popularDestinations = [
           <ul className="mt-3 grid gap-3">
             {items.map((s, index) => {
               /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
-              const fullDescription = stripHtml(s.description || "");
+              /*const fullDescription = stripHtml(s.description || "");
               const snippet = truncate(fullDescription, 170);
+              const fullDescription =
+              s.descriptionText || stripHtml(s.description
               const fundingStr = Array.isArray(s.fundingType)
                 ? s.fundingType.join(", ")
-                : s.fundingType || "";
+                : s.fundingType || "";*/
+                const fullDescription =
+  s.descriptionText || stripHtml(s.description || "");
+
+const snippet = truncate(fullDescription, 170);
+
+const fundingStr = Array.isArray(s.fundingType)
+  ? s.fundingType.join(", ")
+  : s.fundingType || "";
               const logo = s.providerLogoUrl || s.providerLogoData || "";
               const cardImage = s.imageUrl || s.imageData || logo || "";
 
@@ -943,14 +953,32 @@ const popularDestinations = [
         )}
       </div>
 
-      {snippet && (
+      {/*{snippet && (
         <div className="mt-4 border-t border-slate-200 pt-4">
           <p className="text-base leading-7 text-slate-700">
             {snippet}
             {fullDescription.length > 170 && "..."}
           </p>
         </div>
-      )}
+      )}*/}
+      {snippet && (
+  <div className="mt-4 border-t border-slate-200 pt-4">
+    <p className="text-base leading-7 text-slate-700">
+      {snippet}
+      {fullDescription.length > 170 && "... "}
+      <Link
+        to={`/fellowship/${s.id}`}
+        onClick={() => trackFellowship(s.id, "view")}
+        className="font-semibold text-blue-700 hover:underline"
+      >
+        Read more
+      </Link>
+    </p>
+  </div>
+)}
+
+
+
     </div>
   </div>
 
