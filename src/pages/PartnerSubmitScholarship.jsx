@@ -135,15 +135,6 @@ const FUNDING_OPTIONS = [
   "Grant",
 ];
 
-/** Quill toolbar/modules (shared) */
-/*const quillModules = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    ["bold", "italic", "underline"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link", "clean"],
-  ],
-};*/
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
@@ -259,58 +250,6 @@ function formatDateForDisplay(value) {
   });
 }
 
-/*async function optimizeImageFile(file, { maxWidth = 1600, maxHeight = 1600, quality = 0.8 } = {}) {
-  if (!file || !file.type.startsWith("image/")) return file;
-
-  // Keep SVG unchanged
-  if (file.type === "image/svg+xml") return file;
-
-  const dataUrl = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
-  const img = await new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = dataUrl;
-  });
-
-  const width = img.width || 0;
-  const height = img.height || 0;
-  if (!width || !height) return file;
-
-  const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
-  const targetWidth = Math.round(width * ratio);
-  const targetHeight = Math.round(height * ratio);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return file;
-
-  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-  const blob = await new Promise((resolve) => {
-    canvas.toBlob((b) => resolve(b), "image/webp", quality);
-  });
-
-  if (!blob) return file;
-
-  const baseName = String(file.name || "image")
-    .replace(/\.[^.]+$/, "")
-    .replace(/[^\w.\-]+/g, "_");
-
-  return new File([blob], `${baseName}.webp`, {
-    type: "image/webp",
-    lastModified: Date.now(),
-  });
-}*/
 async function optimizeImageFile(
   file,
   { maxWidth = 1280, maxHeight = 1280, quality = 0.58 } = {}
