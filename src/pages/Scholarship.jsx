@@ -183,6 +183,20 @@ function filterSortPaginate({
 
 const guides = [
   {
+  title: "Fellowships & Funding Opportunities for International Students",
+  category: "Fellowships",
+  emoji: "🏆",
+  time: "Browse",
+  link: "/fellowships",
+},
+{
+  title: "University-Funded Admission Opportunities for International Students",
+  category: "University Funding",
+  emoji: "🏫",
+  time: "Browse",
+  link: "/funded-graduate-admission",
+},
+  {
     title: "How to Write and Structure a Winning Statement of Purpose",
     category: "Application Documents",
     emoji: "📝",
@@ -1029,22 +1043,25 @@ const trackScholarship = (id, type) => {
 </Link>
       {/*<div className="grid gap-5 lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1fr)] lg:items-start">*/}
       <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
-        <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">
+        {/*<div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">*/}
+          <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-none sm:border">
           {cardImage ? (
+            
+
             <img
-              src={cardImage}
-              alt={`${s.title || "Scholarship"} image`}
-              /*className="h-56 w-full object-cover sm:h-64 lg:h-72"*/
-              className="h-52 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"
-              loading="lazy"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
+  src={cardImage}
+  alt={`${s.title || "Scholarship"} image`}
+  className="block h-52 w-full rounded-none object-cover sm:h-48 lg:h-52"
+  loading="lazy"
+  decoding="async"
+  onError={(e) => {
+    e.currentTarget.style.display = "none";
+  }}
+/>
+
+
           ) : (
-            /*<div className="flex h-56 w-full items-center justify-center bg-blue-50 text-2xl font-bold text-blue-700 sm:h-64 lg:h-72">*/
-              <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">
+                <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
               SK
             </div>
           )}

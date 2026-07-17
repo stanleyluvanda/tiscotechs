@@ -154,6 +154,20 @@ function filterSortPaginate({
 
 const guides = [
   {
+  title: "Scholarships & Funding Opportunities for International Students",
+  category: "Scholarships",
+  emoji: "🎓",
+  time: "Browse",
+  link: "/scholarships",
+},
+{
+  title: "University-Funded Admission Opportunities for International Students",
+  category: "University Funding",
+  emoji: "🏫",
+  time: "Browse",
+  link: "/funded-graduate-admission",
+},
+  {
     title: "How to Write and structure a Winning Statement of Purpose",
     category: "Application Documents",
     emoji: "📝",
@@ -221,9 +235,9 @@ const guides = [
 function RelatedGuideLinks() {
   return (
     <div className="pt-2">
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766F60]">
+      <p className="text-center font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[#766F60]">
         Related guides
-      </p>
+     </p>
 
       <div className="mt-4 space-y-4">
         {guides.map((guide) => (
@@ -910,12 +924,14 @@ const fundingStr = Array.isArray(s.fundingType)
   </Link>
 
   <div className="grid gap-4 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:gap-6 lg:items-start">
-    <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">
+    {/*</div><div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">*/}
+      <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-none sm:border">
       {cardImage ? (
         <img
           src={cardImage}
           alt={`${s.title || "Fellowship"} image`}
-          className="h-56 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"
+          /*className="h-56 w-full rounded-none object-cover sm:h-48 sm:rounded-lg lg:h-52"*/
+          className="block h-56 w-full rounded-none object-cover sm:h-48 lg:h-52"
           loading="lazy"
           decoding="async"
           onError={(e) => {
@@ -923,7 +939,8 @@ const fundingStr = Array.isArray(s.fundingType)
           }}
         />
       ) : (
-        <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">
+        /*<div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 sm:rounded-lg lg:h-52">*/
+          <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
           SK
         </div>
       )}
@@ -952,15 +969,6 @@ const fundingStr = Array.isArray(s.fundingType)
           </div>
         )}
       </div>
-
-      {/*{snippet && (
-        <div className="mt-4 border-t border-slate-200 pt-4">
-          <p className="text-base leading-7 text-slate-700">
-            {snippet}
-            {fullDescription.length > 170 && "..."}
-          </p>
-        </div>
-      )}*/}
       {snippet && (
   <div className="mt-4 border-t border-slate-200 pt-4">
     <p className="text-base leading-7 text-slate-700">
