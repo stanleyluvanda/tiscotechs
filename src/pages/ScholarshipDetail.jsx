@@ -18,6 +18,66 @@ const AI_API_BASE = (
   import.meta.env.VITE_SCHOLARSHIP_AI_API_BASE || ""
 ).replace(/\/+$/, "");
 
+const AI_SUMMARY_CACHE_PREFIX = "scholarship_ai_summary_v1";
+const AI_SUMMARY_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+function getAiSummaryCacheKey(item) {
+  const id = String(item?.id || "").trim();
+  if (!id) return "";
+
+  const version =
+    item?.updatedAt ||
+    item?.publishedAt ||
+    item?.createdAt ||
+    item?.deadline ||
+    "";
+
+  return `${AI_SUMMARY_CACHE_PREFIX}:${id}:${String(version)}`;
+}
+
+function readAiSummaryCache(key) {
+  if (!key) return "";
+
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return "";
+
+    const parsed = JSON.parse(raw);
+    const savedAt = Number(parsed?.savedAt || 0);
+    const result = String(parsed?.result || "");
+
+    if (!result || !savedAt) {
+      localStorage.removeItem(key);
+      return "";
+    }
+
+    if (Date.now() - savedAt > AI_SUMMARY_CACHE_TTL_MS) {
+      localStorage.removeItem(key);
+      return "";
+    }
+
+    return result;
+  } catch {
+    return "";
+  }
+}
+
+function writeAiSummaryCache(key, result) {
+  if (!key || !result) return;
+
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        savedAt: Date.now(),
+        result,
+      })
+    );
+  } catch {
+    // Cache failure must never affect page rendering.
+  }
+}
+
 /* Render server-provided HTML (or partner HTML).
    If you later accept untrusted HTML, sanitize it first. */
 function RichHtml({ html }) {
@@ -613,11 +673,29 @@ const res = await fetch(
     };
   }, [item]);
 
+  const aiSummaryCacheKey = useMemo(
+    () => getAiSummaryCacheKey(item),
+    [item]
+  );
+
   useEffect(() => {
     let cancelled = false;
 
     async function loadAiSummary() {
-      if (!AI_API_BASE || !scholarshipPayload?.id) return;
+      if (!scholarshipPayload?.id) return;
+
+      const cached = readAiSummaryCache(aiSummaryCacheKey);
+      if (cached) {
+        setAiSummary(cached);
+        setAiSummaryLoading(false);
+        return;
+      }
+
+      if (!AI_API_BASE) {
+        setAiSummary("");
+        setAiSummaryLoading(false);
+        return;
+      }
 
       try {
         setAiSummaryLoading(true);
@@ -646,9 +724,11 @@ const res = await fetch(
         }
 
         const data = await res.json();
+        const result = String(data?.result || "");
 
         if (!cancelled) {
-          setAiSummary(data?.result || "");
+          setAiSummary(result);
+          writeAiSummaryCache(aiSummaryCacheKey, result);
         }
       } catch (err) {
         console.error("AI summary failed:", err);
@@ -667,7 +747,7 @@ const res = await fetch(
     return () => {
       cancelled = true;
     };
-  }, [scholarshipPayload]);
+  }, [aiSummaryCacheKey, scholarshipPayload]);
 
   async function handleSimplifySteps() {
     if (!AI_API_BASE || !scholarshipPayload?.id) return;
@@ -763,96 +843,101 @@ const res = await fetch(
   const detailBasePath = isFellowship ? "/fellowship" : "/scholarship";
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#f7f9fc]">
      
-      <style>{` 
-      .rich-html {
-  text-align: left;
-}
+      <style>{`
+        .rich-html {
+          color: #334155;
+          text-align: left;
+          overflow-wrap: anywhere;
+        }
 
-.rich-html p {
-  margin: 0.75rem 0;
-  line-height: 1.85;
+        .rich-html p {
+          margin: 0.7rem 0;
+          line-height: 1.8;
+        }
 
-}
-  .rich-html ul,
-  .rich-html ol {
-    padding-left: 1.65rem;
-    margin: 0.5rem 0 0.75rem;
-  }
+        .rich-html h1,
+        .rich-html h2,
+        .rich-html h3 {
+          color: #1e293b;
+          font-weight: 700;
+          line-height: 1.3;
+          margin: 1.25rem 0 0.6rem;
+        }
 
-  .rich-html ul {
-    list-style-type: disc;
-  }
+        .rich-html ul,
+        .rich-html ol {
+          padding-left: 1.65rem;
+          margin: 0.65rem 0 0.9rem;
+        }
 
-  .rich-html ol {
-    list-style-type: decimal;
-    counter-reset: quill-ordered;
-  }
+        .rich-html ul {
+          list-style-type: disc;
+        }
 
-  .rich-html li {
-    margin: 0.25rem 0;
-    padding-left: 0.15rem;
-  }
+        .rich-html ol {
+          list-style-type: decimal;
+          counter-reset: quill-ordered;
+        }
 
-  .rich-html p {
-    margin: 0.5rem 0;
-  }
+        .rich-html li {
+          margin: 0.4rem 0;
+          padding-left: 0.15rem;
+          line-height: 1.7;
+        }
 
-  .rich-html a {
-    text-decoration: underline;
-  }
+        .rich-html a {
+          color: #0a4595;
+          font-weight: 600;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+        }
 
-  /* Standard HTML pasted as <ul>/<ol>. */
-  .rich-html ul > li {
-    display: list-item;
-    list-style-type: disc;
-  }
+        .rich-html ul > li {
+          display: list-item;
+          list-style-type: disc;
+        }
 
-  .rich-html ol > li:not([data-list]) {
-    display: list-item;
-    list-style-type: decimal;
-  }
+        .rich-html ol > li:not([data-list]) {
+          display: list-item;
+          list-style-type: decimal;
+        }
 
-  /*
-   * Quill 2 stores both bullet and numbered rows inside <ol>,
-   * then distinguishes them with data-list.
-   */
-  .rich-html li[data-list="bullet"],
-  .rich-html li[data-list="ordered"] {
-    display: block;
-    list-style: none !important;
-    position: relative;
-  }
+        .rich-html li[data-list="bullet"],
+        .rich-html li[data-list="ordered"] {
+          display: block;
+          list-style: none !important;
+          position: relative;
+        }
 
-  /* Prevent Quill's invisible UI span from producing its own marker. */
-  .rich-html .ql-ui {
-    display: none !important;
-  }
+        .rich-html .ql-ui {
+          display: none !important;
+        }
 
-  .rich-html li[data-list="bullet"]::before {
-  content: "•";
-  position: absolute;
-  left: -1.2rem;
-  top: -0.02rem;
-  font-size: 1.5em;
-  font-weight: 700;
-  line-height: 1;
-}
+        .rich-html li[data-list="bullet"]::before {
+          content: "•";
+          position: absolute;
+          left: -1.2rem;
+          top: -0.02rem;
+          font-size: 1.5em;
+          font-weight: 700;
+          line-height: 1;
+        }
 
-  .rich-html li[data-list="ordered"] {
-    counter-increment: quill-ordered;
-  }
+        .rich-html li[data-list="ordered"] {
+          counter-increment: quill-ordered;
+        }
 
-  .rich-html li[data-list="ordered"]::before {
-    content: counter(quill-ordered) ".";
-    position: absolute;
-    left: -1.65rem;
-    top: 0;
-    width: 1.35rem;
-    text-align: right;
-  }
-    `}</style>
+        .rich-html li[data-list="ordered"]::before {
+          content: counter(quill-ordered) ".";
+          position: absolute;
+          left: -1.65rem;
+          top: 0;
+          width: 1.35rem;
+          text-align: right;
+        }
+      `}</style>
 
       <div className="flex-1">
   {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">*/}
@@ -862,22 +947,20 @@ const res = await fetch(
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
                 {/*<Link
                   to="/scholarship"
-                  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
                 >
                   ← Back to Scholarships
                 </Link>*/}
                 <Link
   to={backPath}
-  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
+  className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
 >
   ← Back to {itemLabelPlural}
 </Link>
               </div>
 
-              {/*<div className="max-w-5xl mx-auto px-3 sm:px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-4 pt-6 sm:pt-10 pb-4 sm:pb-6">
-                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4 sm:p-6">*/}
-                <div className="rounded-none sm:rounded-2xl bg-slate-50 border-y border-x-0 sm:border border-slate-200/40 shadow-none p-3 sm:p-6">
+              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-10 pb-5 sm:pb-7">
+                <div className="px-0 py-1 sm:py-2">
                  
                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
   {/* MOBILE ONLY */}
@@ -897,15 +980,15 @@ const res = await fetch(
       ) : null}
 
       <div className="min-w-0">
-        <div className="text-base font-semibold text-[#46166B] leading-6 break-words">
+        <div className="text-base font-semibold leading-6 text-[#4B1F6F] break-words">
           {provider}
           {country ? ` • ${country}` : ""}
         </div>
       </div>
     </div>
 
-    <h1 className="mt-3 text-xl font-bold leading-snug break-words">
-      {title}
+    <h1 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-slate-950 break-words">
+  {title}
     </h1>
 
     {(level || field) && (
@@ -918,26 +1001,15 @@ const res = await fetch(
 
   {/* DESKTOP EXACTLY AS BEFORE */}
   <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 min-w-0 flex-1">
-    {/*{logo ? (
-      <img
-        src={logo}
-        alt={`${provider || "Provider"} logo`}
-        className="h-16 w-16 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1"
-        loading="lazy"
-        decoding="async"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    ) : null}*/}
+   
 
     <div className="min-w-0 flex-1">
-      <h1 className="text-2xl font-bold leading-snug break-words">
-        {title}
+      <h1 className="text-2xl sm:text-3xl font-semibold leading-snug tracking-tight text-slate-950 break-words">
+          {title}
       </h1>
 
       <div className="mt-1">
-        <div className="text-lg font-semibold text-[#46166B] leading-6">
+        <div className="text-lg font-semibold leading-6 text-[#4B1F6F]">
           {provider}
           {country ? ` • ${country}` : ""}
         </div>
@@ -961,7 +1033,7 @@ const res = await fetch(
                           {fundingType.map((f) => (
                             <span
                               key={f}
-                              className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5"
+                              className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800"
                             >
                               {f}
                             </span>
@@ -992,7 +1064,7 @@ const res = await fetch(
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackScholarship(id, "apply")}
-                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+                        className="inline-flex items-center justify-center rounded-lg bg-[#0A4595] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#083a7d] focus:outline-none focus:ring-2 focus:ring-blue-300"
                       >
                         Apply Now
                       </a>
@@ -1004,7 +1076,7 @@ const res = await fetch(
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackScholarship(id, "website")}
-                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+                        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                       >
                         Visit website
                       </a>
@@ -1020,7 +1092,7 @@ const res = await fetch(
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackScholarship(id, "apply")}
-        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
+        className="inline-flex items-center justify-center rounded-lg bg-[#0A4595] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#083a7d] focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
         Apply Now
       </a>
@@ -1032,7 +1104,7 @@ const res = await fetch(
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackScholarship(id, "website")}
-        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
+        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
       >
         Visit website
       </a>
@@ -1068,14 +1140,14 @@ const res = await fetch(
               </div>
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
-  <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-6">
-    <div className="min-w-0 space-y-6">
-      <section className="rounded-2xl bg-blue-50 border border-blue-100 p-4 sm:p-5">
-        <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+  <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+    <div className="min-w-0 space-y-7">
+      <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm sm:p-6">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
           Quick {itemLabel} Summary
         </h2>
 
-        <div className="mt-3 text-sm sm:text-base leading-7">
+        <div className="mt-3 text-sm sm:text-base leading-7 text-slate-700">
           {aiSummaryLoading ? (
             <p className="text-slate-600">Generating summary...</p>
           ) : aiSummary ? (
@@ -1094,22 +1166,21 @@ const res = await fetch(
         </section>
       )}
 
-      {bannerSrc && (
-  <section className="rounded-none bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
-  {/*<section className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">*/}
-  
+     {bannerSrc && (
+  <section className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:border">
     <button
       type="button"
       onClick={() => setShowBanner(true)}
       className="block w-full text-left"
+      title="Click to enlarge"
     >
-      <img
-        src={bannerSrc}
-        alt={`${provider || title} banner`}
-        className="w-full h-auto object-cover"
-        loading="lazy"
-        decoding="async"
-      />
+     <img
+  src={bannerSrc}
+  alt={`${provider || title} banner`}
+  className="block w-full max-w-full h-auto"
+  loading="lazy"
+  decoding="async"
+/>
     </button>
   </section>
 )}
@@ -1117,12 +1188,9 @@ const res = await fetch(
 
 
 
-
-
-
       {description && (
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             {itemLabel} Description
           </h2>
           <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
@@ -1132,8 +1200,8 @@ const res = await fetch(
       )}
 
       {eligibility && (
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             Eligibility & Requirements
           </h2>
           <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
@@ -1145,7 +1213,7 @@ const res = await fetch(
       {youtubeVideoId && (
   <section
     aria-label={`${itemLabel} video`}
-    className="overflow-hidden border-y border-slate-200 bg-black sm:rounded-2xl sm:border"
+    className="overflow-hidden border-y border-slate-200 bg-black shadow-sm sm:rounded-2xl sm:border"
   >
     <YouTubeLiteEmbed
       videoId={youtubeVideoId}
@@ -1157,8 +1225,8 @@ const res = await fetch(
 
 
       {benefits && (
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             Funding and Benefits
           </h2>
           <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
@@ -1168,8 +1236,8 @@ const res = await fetch(
       )}
 
       {howToApply && (
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             How to submit Application
           </h2>
 
@@ -1177,7 +1245,7 @@ const res = await fetch(
             <RichHtml html={howToApply} />
           </div>
 
-          <div className="mt-5 rounded-2xl bg-emerald-100 border border-emerald-300 p-3 sm:p-4">
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
@@ -1212,8 +1280,8 @@ const res = await fetch(
       )}
 
       {additionalInformation && (
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-[#4B1F6F]">
+        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             Additional Information
           </h2>
           <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
@@ -1223,9 +1291,9 @@ const res = await fetch(
       )}
     </div>
 
-    {/*<aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
+    {/*<aside className="space-y-6 self-start lg:sticky lg:top-24 lg:pl-2">
       {bannerSrc && (
-        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <button
             type="button"
             onClick={() => setShowBanner(true)}
@@ -1245,10 +1313,10 @@ const res = await fetch(
           </div>
         </div>
       )}*/}
-      <aside className="space-y-6 lg:pl-2 lg:sticky lg:top-24 self-start">
+      <aside className="space-y-6 self-start lg:sticky lg:top-24 lg:pl-2">
   {logo && (
-    /*<div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">*/
-    <div className="rounded-none sm:rounded-2xl bg-white border-y border-x-0 sm:border border-slate-200 overflow-hidden">
+    /*<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">*/
+    <div className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:rounded-2xl sm:border">
       <img
         src={logo}
         alt={`${provider || title} logo`}
@@ -1260,33 +1328,33 @@ const res = await fetch(
     </div>
   )}
 
-      <div className="rounded-2xl bg-white border border-slate-200 p-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h3 className="text-base font-semibold -mx-5 -mt-5 mb-4">
-          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl text-center">
+          <span className="block w-full rounded-t-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-2.5 text-center text-white">
             At a glance
           </span>
         </h3>
 
-        <dl className="mt-3 text-sm text-slate-700">
-          <dt className="font-bold">Provider/University</dt>
-          <dd className="mb-3">{provider || "-"}</dd>
+        <dl className="mt-3 divide-y divide-slate-100 text-sm text-slate-700">
+          <dt className="pt-3 font-semibold text-slate-900">Provider/University</dt>
+          <dd className="pb-3 text-slate-600">{provider || "-"}</dd>
 
-          <dt className="font-bold">Country</dt>
-          <dd className="mb-3">{country || "-"}</dd>
+          <dt className="pt-3 font-semibold text-slate-900">Country</dt>
+          <dd className="pb-3 text-slate-600">{country || "-"}</dd>
 
-          <dt className="font-bold">Level</dt>
-          <dd className="mb-3">{level || "-"}</dd>
+          <dt className="pt-3 font-semibold text-slate-900">Level</dt>
+          <dd className="pb-3 text-slate-600">{level || "-"}</dd>
 
-          <dt className="font-bold">Field</dt>
-          <dd className="mb-3">{field || "-"}</dd>
+          <dt className="pt-3 font-semibold text-slate-900">Field</dt>
+          <dd className="pb-3 text-slate-600">{field || "-"}</dd>
 
-          <dt className="font-bold">Deadline</dt>
-          <dd className="mb-3">{deadline || "-"}</dd>
+          <dt className="pt-3 font-semibold text-slate-900">Deadline</dt>
+          <dd className="pb-3 text-slate-600">{deadline || "-"}</dd>
 
           {amount && (
             <>
-              <dt className="font-bold">Max Amount</dt>
-              <dd className="mb-3">{amount}</dd>
+              <dt className="pt-3 font-semibold text-slate-900">Max Amount</dt>
+              <dd className="pb-3 text-slate-600">{amount}</dd>
             </>
           )}
         </dl>
@@ -1309,8 +1377,8 @@ const res = await fetch(
   minHeight={600}
 />
 
-      <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
-        <div className="bg-slate-100 px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
           <h4 className="text-lg font-bold text-slate-900 text-center">
             {itemLabel} Tips for International Students
           </h4>
@@ -1375,7 +1443,7 @@ const res = await fetch(
             .map((tip, idx) => (
               <div
                 key={idx}
-                className="rounded-xl bg-white border border-slate-200 px-4 py-3"
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
               >
                 <p className="font-semibold text-slate-900 text-sm sm:text-base">
                   {tip.heading}
@@ -1400,7 +1468,7 @@ const res = await fetch(
 
   {/*{recs.length > 0 && (
     <section className="mt-10 rounded-2xl bg-white border border-slate-200 overflow-hidden">
-      <div className="bg-slate-100 px-5 py-4">
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
         <h4 className="text-lg font-bold text-slate-900">
           You may also like the following programs
         </h4>
@@ -1482,7 +1550,7 @@ const res = await fetch(
           <Link
             key={sid}
             to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-            className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
           >
             {recImage && (
               <img

@@ -12,33 +12,33 @@ export default function Home() {
     backgroundImage: "url('/images/welcome.webp')",
   }}
 >
-  <div className="absolute inset-0 bg-black/55" />
+  <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/20" />
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <p className="text-[#FFAF0F] text-xl md:text-2xl font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+            <p className="max-w-2xl text-sm sm:text-base md:text-lg font-semibold leading-relaxed text-[#FFBF32] drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
               Empowering global academic collaboration and making educational resources accessible to students and faculty worldwide.
             </p>
 
-            <h1 className="mt-2 text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
+            <h1 className="mt-4 max-w-3xl text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
               Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
             </h1>
 
-            <p className="mt-4 text-white/95 text-lg md:text-xl max-w-xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+            <p className="mt-5 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
               One platform to organize, manage and share academic materials, and boost your learning experience—so students, lecturers, and partners move forward together.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to="/edufinancing"
-                className="rounded-full bg-[#1a73e8] text-white px-5 py-3 font-semibold hover:opacity-90"
+                className="inline-flex items-center justify-center rounded-full bg-[#1a73e8] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#155fc0] focus:outline-none focus:ring-2 focus:ring-white/70"
               >
                 Explore Education-Funding opportunities
               </Link>
 
               <Link
                 to="/about"
-                className="rounded-full bg-white/20 backdrop-blur border border-white/40 px-5 py-3 font-semibold text-white hover:bg-white/30"
+                className="inline-flex items-center justify-center rounded-full border border-white/50 bg-white/15 px-5 py-3 font-semibold text-white backdrop-blur-sm transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70"
               >
                 Why ScholarsKnowledge
               </Link>
@@ -48,20 +48,30 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Platform highlights */}
+      <section className="relative z-10 -mt-1 border-b border-slate-200 bg-white">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-y divide-slate-200 px-4 sm:grid-cols-4 sm:divide-y-0 lg:px-8">
+          <StatItem value="150+" label="Countries reached" />
+          <StatItem value="Global" label="Academic community" />
+          <StatItem value="Verified" label="Funding opportunities" />
+          <StatItem value="One Hub" label="Students, lecturers & partners" />
+        </div>
+      </section>
+
       {/* Social links just below hero content */}
-      <div className="relative max-w-7xl mx-auto px-4 lg:px-8 pb-8 pt-1">
+      <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-5">
         <SocialIcons className="flex flex-wrap items-center justify-center gap-3 sm:gap-4" />
       </div>
 
       {/* Trusted by Universities Worldwide */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 pb-12">
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 pb-16 pt-4">
         <div className="text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
             Trusted by Universities Worldwide
           </h2>
         </div>
 
-        <div className="mt-6 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+        <div className="mt-8 relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden border-y border-slate-200 bg-slate-50">
           <img
             src="/images/world-map-network.png"
             alt="Global university network connecting universities worldwide"
@@ -72,7 +82,7 @@ export default function Home() {
           />
         </div>
 
-        <p className="mt-6 text-center text-lg text-slate-600 max-w-4xl mx-auto">
+        <p className="mt-7 max-w-4xl mx-auto text-center text-base sm:text-lg leading-relaxed text-slate-600">
           Thousands of lecturers and students across 150+ countries use our platform
           to share knowledge and collaborate on research that shapes the future of
           education.
@@ -80,14 +90,14 @@ export default function Home() {
       </section>
 
       {/* Fixed social icons on right margin */}
-      <SocialIcons className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-2" />
+      <SocialIcons className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col gap-2" />
 
       {/* 2) TABS + CARDS */}
       <SectionTabs />
 
       {/* 3) MPOWER section */}
-      <section className="w-full" style={{ backgroundColor: "#FFFAEE" }}>
-        <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
+      <section className="w-full border-y border-amber-100" style={{ backgroundColor: "#FFFAEE" }}>
+        <div className="max-w-5xl mx-auto px-4 lg:px-8 py-16">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-extrabold text-[#2f4ea2]">
               Funding for international students in Canada & US
@@ -96,7 +106,7 @@ export default function Home() {
 
           <Link
             to="/eduinfo"
-            className="mt-6 block rounded-2xl border border-slate-200 hover:shadow-sm transition p-0 bg-white/80"
+            className="mt-8 block rounded-2xl border border-slate-200 bg-white/90 p-0 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             title="Learn more in EduInfo"
           >
             <div className="p-6 md:p-10 grid md:grid-cols-[120px_1fr] gap-6 items-center">
@@ -116,12 +126,12 @@ export default function Home() {
       </section>
 
       {/* 4) Three pillars */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
-        <h2 className="text-3xl font-bold text-slate-900 text-center">
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 text-center">
           How we move learning forward.
         </h2>
 
-        <div className="mt-8 grid md:grid-cols-3 gap-6">
+        <div className="mt-10 grid md:grid-cols-3 gap-6">
           <Pillar
             image="/images/Empoering learners.webp"
             imageAlt="Students learning together"
@@ -157,16 +167,16 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-slate-950/55" />
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white text-center">
             Funded graduate programs opportunities for international students
           </h2>
-          <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
+          <p className="mt-3 max-w-3xl mx-auto text-center text-base sm:text-lg leading-relaxed text-white/90">
             Access a curated selection of verified, university-funded graduate admission opportunities
             sourced directly from accredited institutions worldwide.
           </p>
 
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StoryCard
               image="/images/USfundedprogram.webp"
               title="University-Funded graduate programs in the U.S."
@@ -196,16 +206,16 @@ export default function Home() {
       </section>
 
       {/* 5) Customer stories teaser */}
-      <section className="bg-[#f6f9ff]">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-12">
-          <h2 className="text-2xl font-bold text-slate-900 text-center">
+      <section className="border-y border-slate-200 bg-[#f6f9ff]">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 text-center">
             Transforming Education. Academic innovation. Real-world impact. Inspiring Success.
           </h2>
-          <p className="mt-2 text-slate-600 text-center">
+          <p className="mt-3 max-w-3xl mx-auto text-center text-base sm:text-lg leading-relaxed text-slate-600">
             Explore how universities and learning communities leverage ScholarsKnowledge to achieve their goals.
           </p>
 
-          <div className="mt-6 grid md:grid-cols-3 gap-6">
+          <div className="mt-10 grid md:grid-cols-3 gap-6">
             <StoryCard
               image="/images/Submit scholarships.webp"
               title="Scholarships Providers"
@@ -239,16 +249,16 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-slate-950/55" />
 
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-14">
-          <h2 className="text-2xl md:text-3xl font-extrabold text-white text-center">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-16">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white text-center">
             Scholarships by Study Destination
           </h2>
-          <p className="mt-2 text-white/90 text-center max-w-3xl mx-auto">
+          <p className="mt-3 max-w-3xl mx-auto text-center text-base sm:text-lg leading-relaxed text-white/90">
             Browse curated and verified scholarship opportunities carefully organized by major study destinations
             — the United States, Canada, the United Kingdom, and Europe.
           </p>
 
-          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StoryCard
               image="/images/scholarships-us.png"
               title="Scholarships in the U.S."
@@ -278,15 +288,15 @@ export default function Home() {
       </section>
 
       {/* 6) Ready to talk? */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16 text-center">
-        <h3 className="text-3xl font-bold text-slate-900">Ready to talk?</h3>
-        <p className="mt-2 text-slate-600">
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 py-20 text-center">
+        <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">Ready to talk?</h3>
+        <p className="mt-3 max-w-3xl mx-auto text-base sm:text-lg leading-relaxed text-slate-600">
           Send us a message using the contact form — share your question, partnership idea, or support request, and we’ll respond as soon as possible.
         </p>
         <div className="mt-6 flex gap-3 justify-center">
           <Link
             to="/contact"
-            className="rounded-full bg-[#1a73e8] text-white px-5 py-3 font-semibold hover:opacity-90"
+            className="inline-flex items-center justify-center rounded-full bg-[#1a73e8] px-5 py-3 font-semibold text-white shadow-sm transition hover:bg-[#155fc0] focus:outline-none focus:ring-2 focus:ring-white/70"
           >
             Contact Us
           </Link>
@@ -295,7 +305,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="w-full mt-0">
-        <div className="text-center bg-gradient-to-r from-[#0A4595] to-[#1a73e8] text-white p-10 shadow-md rounded-none">
+        <div className="text-center bg-gradient-to-r from-[#083b82] via-[#0A4595] to-[#1a73e8] text-white px-4 py-14 sm:px-8 shadow-md rounded-none">
           <h2 className="text-3xl font-extrabold">Join the Global Learning Community</h2>
           <p className="mt-3 text-white/90 max-w-2xl mx-auto">
             Whether you are a student striving for academic success, a lecturer shaping future leaders,
@@ -338,14 +348,35 @@ export default function Home() {
       </section>
 
       {/* 7) Footer */}
-      <footer className="bg-blue-900 text-white py-6 text-center text-sm">
-        © {new Date().getFullYear()} ScholarsKnowledge
+      <footer className="bg-slate-950 text-slate-300">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-7 text-sm sm:flex-row lg:px-8">
+          <div>© {new Date().getFullYear()} ScholarsKnowledge</div>
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Footer">
+            <Link to="/about" className="transition hover:text-white">About</Link>
+            <Link to="/contact" className="transition hover:text-white">Contact</Link>
+            <Link to="/privacy-policy" className="transition hover:text-white">Privacy</Link>
+            <Link to="/terms-of-use" className="transition hover:text-white">Terms</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   );
 }
 
 /* ---------- Subcomponents ---------- */
+
+function StatItem({ value, label }) {
+  return (
+    <div className="flex min-h-24 flex-col items-center justify-center px-3 py-5 text-center">
+      <div className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0A4595]">
+        {value}
+      </div>
+      <div className="mt-1 text-xs sm:text-sm font-medium text-slate-600">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 function SocialIcons({ className = "" }) {
   return (
@@ -356,7 +387,7 @@ function SocialIcons({ className = "" }) {
         rel="noopener noreferrer"
         aria-label="Facebook"
         title="Facebook"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-white text-base font-bold shadow-md hover:scale-105 transition"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1877F2] text-base font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-300"
       >
         f
       </a>
@@ -367,7 +398,7 @@ function SocialIcons({ className = "" }) {
         rel="noopener noreferrer"
         aria-label="YouTube"
         title="YouTube"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-md hover:scale-105 transition"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#FF0000] text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-300"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -496,13 +527,13 @@ function SectionTabs() {
   const cards = byTab[active] ?? cardsAll;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 lg:px-8 py-14">
-      <div className="flex flex-wrap items-center gap-2">
+    <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setActive(t)}
-            className={`px-3 py-2 rounded-full text-sm border ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
               active === t
                 ? "bg-slate-900 text-white border-slate-900"
                 : "bg-white text-slate-700 hover:bg-slate-50"
@@ -513,16 +544,16 @@ function SectionTabs() {
         ))}
       </div>
 
-      <div className="mt-6 grid md:grid-cols-3 gap-6">
+      <div className="mt-10 grid md:grid-cols-3 gap-6">
         {cards.map((c) => (
           <article
             key={`${c.tag}-${c.title}`}
-            className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-sm transition"
+            className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
           >
             <img
               src={c.image}
               alt=""
-              className="w-full h-40 object-cover"
+              className="w-full h-40 object-cover transition duration-300 group-hover:scale-[1.02]"
               loading="lazy"
             />
             <div className="p-5 text-center">
@@ -541,13 +572,13 @@ function SectionTabs() {
 
 function Pillar({ image, imageAlt, title, text, centered = false }) {
   return (
-    <div className="p-6 rounded-2xl border border-slate-200 bg-white">
+    <div className="group p-6 rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
       {image ? (
         <div className="w-full h-44 mb-5 overflow-hidden rounded-xl">
           <img
             src={image}
             alt={imageAlt || title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition duration-300 group-hover:scale-[1.02]"
             loading="lazy"
           />
         </div>
@@ -566,20 +597,20 @@ function Pillar({ image, imageAlt, title, text, centered = false }) {
 
 function StoryCard({ image, title, linkTo, linkText }) {
   return (
-    <div className="rounded-2xl bg-white overflow-hidden">
+    <div className="group h-full overflow-hidden rounded-2xl border border-white/20 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
       <img
         src={image}
         alt=""
-        className="w-full h-40 object-cover"
+        className="w-full h-40 object-cover transition duration-300 group-hover:scale-[1.02]"
         loading="lazy"
       />
 
-      <div className="p-4 text-center">
+      <div className="flex min-h-[142px] flex-col items-center justify-between p-4 text-center">
         <div className="font-semibold">{title}</div>
         {linkTo && linkText && (
           <Link
             to={linkTo}
-            className="mt-2 inline-block font-semibold text-[#1a73e8] hover:underline"
+            className="mt-3 inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-[#1a73e8] transition hover:border-blue-300 hover:bg-blue-100"
           >
             {linkText}
           </Link>

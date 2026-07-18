@@ -283,6 +283,101 @@ function scoreAndGate(candidate, current, taste) {
   return { ok: true, score };
 }
 
+
+
+
+
+
+
+
+function getYouTubeVideoId(url = "") {
+  const value = String(url || "").trim();
+  if (!value) return "";
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "music.youtube.com"
+    ) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v") || "";
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      if (
+        ["embed", "shorts", "live"].includes(parts[0]) &&
+        parts[1]
+      ) {
+        return parts[1];
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+function YouTubeLiteEmbed({ videoId, title }) {
+  const [activated, setActivated] = useState(false);
+
+  if (!videoId) return null;
+
+  if (activated) {
+    return (
+      <div className="aspect-video w-full overflow-hidden bg-black">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`}
+          title={title || "YouTube video"}
+          loading="lazy"
+          className="h-full w-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setActivated(true)}
+      className="group relative block aspect-video w-full overflow-hidden bg-slate-100 text-left"
+      aria-label={`Play ${title || "YouTube video"}`}
+    >
+      <img
+        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-cover"
+      />
+
+      <span className="absolute inset-0 bg-black/10 transition group-hover:bg-black/20" />
+
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/75 text-white shadow-lg transition group-hover:scale-105">
+          <span className="ml-1 text-2xl">▶</span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+
+
+
+
+
 export default function FundedGraduateAdmissionDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
@@ -468,6 +563,7 @@ export default function FundedGraduateAdmissionDetail() {
     description,
     eligibility,
     benefits,
+    youtubeUrl,
     howToApply,
     additionalInformation,
     imageUrl,
@@ -478,6 +574,7 @@ export default function FundedGraduateAdmissionDetail() {
 
   const bannerSrc = imageUrl || imageData || "";
   const logo = providerLogoUrl || providerLogoData || "";
+  const youtubeVideoId = getYouTubeVideoId(youtubeUrl);
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
@@ -824,6 +921,15 @@ export default function FundedGraduateAdmissionDetail() {
                         </div>
                       </section>
                     )}
+
+                    {youtubeVideoId && (
+                    <section className="overflow-hidden bg-slate-50 px-3 py-2 sm:px-5 lg:px-6">
+                       <YouTubeLiteEmbed
+                       videoId={youtubeVideoId}
+                       title={`${title || "Funded graduate admission"} video`}
+                       />
+                    </section>
+                      )}
 
                     {howToApply && (
                       <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">

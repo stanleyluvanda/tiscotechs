@@ -326,6 +326,45 @@ async function optimizeImageFile(
 
 
 
+function getYouTubeVideoId(url = "") {
+  const value = String(url || "").trim();
+  if (!value) return "";
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "music.youtube.com"
+    ) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v") || "";
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      if (
+        ["embed", "shorts", "live"].includes(parts[0]) &&
+        parts[1]
+      ) {
+        return parts[1];
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+
+
 
 
 
@@ -353,6 +392,7 @@ export default function PartnerSubmitFundedGraduateAdmission() {
 
     description: "",
     eligibility: "",
+    youtubeUrl: "",
     benefits: "",
     howToApply: "",
     additionalInformation: "",
@@ -382,6 +422,10 @@ export default function PartnerSubmitFundedGraduateAdmission() {
   const [showFieldMenu, setShowFieldMenu] = useState(false);
   const partnerEmail = getPartnerEmail();
   const publisherName = getPublisherName();
+  const youtubeVideoId = useMemo(
+  () => getYouTubeVideoId(form.youtubeUrl),
+  [form.youtubeUrl]
+   );
 
   const [importingHosted, setImportingHosted] = useState(false);
   const pendingHostedRef = useRef("");
@@ -876,6 +920,7 @@ let finalDeadline = "";
 
       description: form.description,
       eligibility: form.eligibility,
+      youtubeUrl: String(form.youtubeUrl || "").trim(),
       benefits: form.benefits,
       howToApply: form.howToApply,
       additionalInformation: form.additionalInformation,
@@ -960,6 +1005,7 @@ updatedAt: null,
       partnerApplyUrl: "",
       description: "",
       eligibility: "",
+      youtubeUrl: "",
       benefits: "",
       howToApply: "",
       additionalInformation: "",
@@ -1206,33 +1252,6 @@ updatedAt: null,
                     </div>
                   )}
                 </label>
-
-                {/*<label className="block">
-                  <div className="text-sm font-medium">Deadline</div>
-                  <input
-                    type="date"
-                    name="deadline"
-                    value={form.deadline}
-                    onChange={onChange}
-                    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-                  />
-                </label>*/}
-
-                {/*<label className="block">
-  <div className="text-sm font-medium">Deadline</div>
-  <input
-    type="text"
-    name="deadline"
-    value={form.deadline}
-    onChange={onChange}
-    placeholder="e.g. December 1, 2026 – January 15, 2027"
-    className="mt-1 w-full border border-slate-300 rounded px-3 py-2 text-sm"
-  />
-  <p className="mt-1 text-xs text-slate-500">
-    You may enter a single deadline or an application window.
-  </p>
-</label>*/}
-
 <div className="block md:col-span-2">
   <div className="text-sm font-medium">Deadline</div>
 
@@ -1491,45 +1510,6 @@ updatedAt: null,
                 </div>
               </div>
 
-              {/* Editors */}
-              {/*<div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
-                <div>
-                  <div className="text-sm font-medium">Gradute Program Description</div>
-                  <div
-                    ref={descHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 180 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">Admission Eligibility</div>
-                  <div
-                    ref={eligHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">Benefits / Funding Details</div>
-                  <div
-                    ref={beneHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-
-                <div>
-                  <div className="text-sm font-medium">How to Apply</div>
-                  <div
-                    ref={howHostRef}
-                    className="mt-2 bg-white border border-slate-300 rounded"
-                    style={{ minHeight: 160 }}
-                  />
-                </div>
-              </div>*/}
-
               <div className="space-y-6 bg-slate-50/60 p-4 rounded-lg border border-slate-200">
   <div>
     <div className="text-sm font-medium">Gradute Program Description</div>
@@ -1548,6 +1528,59 @@ updatedAt: null,
       style={{ minHeight: 160 }}
     />
   </div>
+
+
+  <div>
+  <label className="block">
+    <div className="text-sm font-medium">
+      YouTube Video Link (Optional)
+    </div>
+
+    <input
+      type="url"
+      name="youtubeUrl"
+      value={form.youtubeUrl}
+      onChange={onChange}
+      placeholder="https://www.youtube.com/watch?v=..."
+      className="mt-2 w-full rounded border border-slate-300 px-3 py-2 text-sm"
+    />
+
+    <p className="mt-1 text-xs text-slate-500">
+      Add a university campus tour, funded graduate program explanation,
+      department overview, research opportunity, or application guidance video.
+    </p>
+  </label>
+
+  {form.youtubeUrl && !youtubeVideoId && (
+    <p className="mt-2 text-xs text-red-600">
+      Enter a valid YouTube video URL.
+    </p>
+  )}
+
+  {youtubeVideoId && (
+    <div className="mt-3 max-w-sm">
+      <div className="mb-1 text-xs font-medium text-slate-600">
+        Video preview
+      </div>
+
+      <div className="relative aspect-video overflow-hidden rounded-md border border-slate-200 bg-slate-100">
+        <img
+          src={`https://i.ytimg.com/vi/${youtubeVideoId}/hqdefault.jpg`}
+          alt="YouTube video preview"
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
+
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow">
+            <span className="ml-0.5 text-lg">▶</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
   <div>
     <div className="text-sm font-medium">Benefits / Funding Details</div>
@@ -1593,10 +1626,6 @@ updatedAt: null,
                   Submit Funded Graduate Admission
                 </button>
               </div>
-
-              {/*<div className="text-[11px] text-slate-500">
-                API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
-              </div>*/}
             </form>
           </div>
         </div>

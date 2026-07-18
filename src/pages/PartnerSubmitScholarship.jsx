@@ -1700,32 +1700,6 @@ link: "",
     </div>
   )}
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <div>
     <div className="text-sm font-medium">Benefits (HTML ok)</div>
     <div
@@ -1763,11 +1737,6 @@ link: "",
   {form.contentType === "FELLOWSHIP" ? "Submit Fellowship" : "Submit Scholarship"}
 </button>
               </div>
-
-              {/* Helpful footer for debugging */}
-              {/*<div className="text-[11px] text-slate-500">
-                API Base: <span className="font-mono">{API_BASE || "(missing)"}</span>
-              </div>*/}
             </form>
           </div>
         </div>
