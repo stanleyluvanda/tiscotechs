@@ -308,6 +308,48 @@ async function optimizeImageFile(
   });
 }
 
+function getYouTubeVideoId(url = "") {
+  const value = String(url || "").trim();
+  if (!value) return "";
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+
+    if (host === "youtu.be") {
+      return parsed.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (
+      host === "youtube.com" ||
+      host === "m.youtube.com" ||
+      host === "music.youtube.com"
+    ) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v") || "";
+      }
+
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      if (
+        ["embed", "shorts", "live"].includes(parts[0]) &&
+        parts[1]
+      ) {
+        return parts[1];
+      }
+    }
+  } catch {
+    return "";
+  }
+
+  return "";
+}
+
+
+
+
+
+
 export default function PartnerSubmitScholarship() {
   const [form, setForm] = useState({
   contentType: "SCHOLARSHIP",
@@ -319,9 +361,6 @@ export default function PartnerSubmitScholarship() {
   country: "Multiple",
   level: "",
   field: "",
-  /*fundingType: [],
-  deadline: "",
-  link: "",*/
   fundingType: [],
 deadlineMode: "single",
 deadline: "",
@@ -332,6 +371,7 @@ link: "",
   partnerApplyUrl: "",
   description: "",
   eligibility: "",
+  youtubeUrl: "",
   benefits: "",
   howToApply: "",
   additionalInformation: "",
@@ -360,6 +400,10 @@ link: "",
 
   const partnerEmail = getPartnerEmail();
   const publisherName = getPublisherName();
+  const youtubeVideoId = useMemo(
+  () => getYouTubeVideoId(form.youtubeUrl),
+  [form.youtubeUrl]
+);
 
   // ✅ NEW: filtered field-of-study options
 const filteredFields = useMemo(() => {
@@ -683,20 +727,6 @@ const onChange = (e) => {
 
       // Preserve plain-text bullets such as:
       // • Item, - Item, * Item, 1. Item, or 1) Item.
-      /*q.root.addEventListener("paste", (event) => {
-        const clipboard = event.clipboardData;
-        if (!clipboard) return;
-
-        const html = clipboard.getData("text/html");
-        const text = clipboard.getData("text/plain");
-
-        // Let Quill handle genuine HTML lists from Word, Google Docs, websites, etc.
-        if (/<\s*(ul|ol|li)\b/i.test(html)) return;
-
-        if (pastePlainTextLists(q, text)) {
-          event.preventDefault();
-        }
-      });*/
       q.root.addEventListener("paste", (event) => {
   const clipboard = event.clipboardData;
   if (!clipboard) return;
@@ -947,6 +977,7 @@ if (form.deadlineMode === "single") {
   partnerApplyUrl: form.partnerApplyUrl,
   description: form.description,
   eligibility: form.eligibility,
+  youtubeUrl: String(form.youtubeUrl || "").trim(),
   benefits: form.benefits,
   howToApply: form.howToApply,
   additionalInformation: form.additionalInformation,
@@ -1025,9 +1056,6 @@ updatedAt: null,
   country: "Multiple",
   level: "",
   field: "",
-  /*fundingType: [],
-  deadline: "",
-  link: "",*/
   fundingType: [],
 deadlineMode: "single",
 deadline: "",
@@ -1038,6 +1066,7 @@ link: "",
   partnerApplyUrl: "",
   description: "",
   eligibility: "",
+  youtubeUrl: "",
   benefits: "",
   howToApply: "",
   additionalInformation: "",
@@ -1620,6 +1649,82 @@ link: "",
       style={{ minHeight: 160 }}
     />
   </div>
+
+<div>
+  <label className="block">
+    <div className="text-sm font-medium">
+      YouTube Video Link (Optional)
+    </div>
+
+    <input
+      type="url"
+      name="youtubeUrl"
+      value={form.youtubeUrl}
+      onChange={onChange}
+      placeholder="https://www.youtube.com/watch?v=..."
+      className="mt-2 w-full rounded border border-slate-300 px-3 py-2 text-sm"
+    />
+
+    <p className="mt-1 text-xs text-slate-500">
+      Add a campus tour, scholarship explanation, academic program,
+      fellowship, or research opportunity video.
+    </p>
+  </label>
+
+  {form.youtubeUrl && !youtubeVideoId && (
+    <p className="mt-2 text-xs text-red-600">
+      Enter a valid YouTube video URL.
+    </p>
+  )}
+
+  {youtubeVideoId && (
+    <div className="mt-3 max-w-sm">
+      <div className="mb-1 text-xs font-medium text-slate-600">
+        Video preview
+      </div>
+
+      <div className="relative aspect-video overflow-hidden rounded-md border border-slate-200 bg-slate-100">
+        <img
+          src={`https://i.ytimg.com/vi/${youtubeVideoId}/hqdefault.jpg`}
+          alt="YouTube video preview"
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-black/70 text-white shadow">
+            <span className="ml-0.5 text-lg">▶</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   <div>
     <div className="text-sm font-medium">Benefits (HTML ok)</div>

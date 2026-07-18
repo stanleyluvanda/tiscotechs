@@ -44,6 +44,131 @@ function HtmlResult({ html }) {
   );
 }
 
+
+
+
+
+
+
+
+function getYouTubeVideoId(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const url = new URL(raw);
+    const hostname = url.hostname
+      .toLowerCase()
+      .replace(/^www\./, "");
+
+    let videoId = "";
+
+    if (hostname === "youtu.be") {
+      videoId = url.pathname.split("/").filter(Boolean)[0] || "";
+    } else if (
+      hostname === "youtube.com" ||
+      hostname === "m.youtube.com" ||
+      hostname === "music.youtube.com"
+    ) {
+      if (url.pathname === "/watch") {
+        videoId = url.searchParams.get("v") || "";
+      } else if (
+        url.pathname.startsWith("/embed/") ||
+        url.pathname.startsWith("/shorts/") ||
+        url.pathname.startsWith("/live/")
+      ) {
+        videoId = url.pathname.split("/")[2] || "";
+      }
+    }
+
+    videoId = videoId.split("?")[0].split("&")[0];
+
+    return /^[A-Za-z0-9_-]{11}$/.test(videoId)
+      ? videoId
+      : "";
+  } catch {
+    return "";
+  }
+}
+
+function YouTubeLiteEmbed({ videoId, title }) {
+  const [activated, setActivated] = useState(false);
+
+  if (!videoId) return null;
+
+  const safeTitle = title
+    ? `${title} video`
+    : "Opportunity video";
+
+  if (activated) {
+    return (
+      <div className="aspect-video w-full overflow-hidden bg-black">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`}
+          title={safeTitle}
+          className="h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setActivated(true)}
+      className="group relative block aspect-video w-full overflow-hidden bg-slate-900 text-left"
+      aria-label={`Play ${safeTitle}`}
+    >
+      <img
+        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        alt=""
+        className="h-full w-full object-cover transition duration-200 group-hover:scale-[1.01]"
+        loading="lazy"
+        decoding="async"
+      />
+
+      <span className="absolute inset-0 bg-black/20 transition group-hover:bg-black/30" />
+
+      <span className="absolute inset-0 flex items-center justify-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-md transition group-hover:scale-105">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="ml-1 h-8 w-8 fill-current"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </span>
+      </span>
+
+      <span className="sr-only">
+        YouTube player loads only after this button is selected.
+      </span>
+    </button>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ---- Local fallback helpers ---- */
 const LOCAL_KEYS = ["partnerScholarships", "scholarships", "postedScholarships"];
 const CATALOG_CACHE_KEY = "scholarship_catalog_cache";
@@ -616,6 +741,7 @@ const res = await fetch(
     amount,
     description,
     eligibility,
+    youtubeUrl,
     benefits,
     howToApply,
     additionalInformation,
@@ -627,6 +753,7 @@ const res = await fetch(
 
   const bannerSrc = imageUrl || imageData || "";
   const logo = providerLogoUrl || providerLogoData || "";
+  const youtubeVideoId = getYouTubeVideoId(youtubeUrl);
   const contentType = String(item?.contentType || "SCHOLARSHIP").toUpperCase();
   const isFellowship = contentType === "FELLOWSHIP";
 
@@ -1014,6 +1141,20 @@ const res = await fetch(
           </div>
         </section>
       )}
+
+      {youtubeVideoId && (
+  <section
+    aria-label={`${itemLabel} video`}
+    className="overflow-hidden border-y border-slate-200 bg-black sm:rounded-2xl sm:border"
+  >
+    <YouTubeLiteEmbed
+      videoId={youtubeVideoId}
+      title={title}
+    />
+  </section>
+      )}
+
+
 
       {benefits && (
         <section>

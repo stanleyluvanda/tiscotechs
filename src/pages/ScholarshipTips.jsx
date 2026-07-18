@@ -5,6 +5,27 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
 const guides = [
   {
+  title: "Scholarships & Funding Opportunities for International Students",
+  category: "Scholarships",
+  emoji: "🎓",
+  time: "Browse",
+  link: "/scholarships",
+},
+   {
+  title: "Fellowships & Funding Opportunities for International Students",
+  category: "Fellowships",
+  emoji: "🏆",
+  time: "Browse",
+  link: "/fellowships",
+},
+{
+  title: "University-Funded Admission Opportunities for International Students",
+  category: "University Funding",
+  emoji: "🏫",
+  time: "Browse",
+  link: "/funded-graduate-admission",
+},
+  {
     title: "How to Write and structurer a Winning Statement of Purpose",
     category: "Application Documents",
     emoji: "📝",
