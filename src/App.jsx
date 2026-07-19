@@ -70,7 +70,6 @@ const GlobalAcademicPlatform = lazy(() =>
 const StudentMarketplace = lazy(() => import("./pages/StudentMarketplace.jsx"));
 const ContactLecturer = lazy(() => import("./pages/ContactLecturer.jsx"));
 const LecturerMessages = lazy(() => import("./pages/LecturerMessages.jsx"));
-
 const Scholarship = lazy(() => import("./pages/Scholarship.jsx"));
 const ScholarshipDetail = lazy(() => import("./pages/ScholarshipDetail.jsx"));
 const Fellowships = lazy(() => import("./pages/Fellowships.jsx"));

@@ -1161,7 +1161,7 @@ const trackScholarship = (id, type) => {
     )}
 
               <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-bold text-slate-900">Popular Study Destinations</h3>
+                <h3 className="text-sm font-bold text-slate-900">Popular scholarship Destinations</h3>
                 <div className="mt-3 space-y-2">
                   {popularDestinations.map((item) => (
   <button
