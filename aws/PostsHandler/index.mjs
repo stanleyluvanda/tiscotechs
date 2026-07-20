@@ -709,27 +709,32 @@ export const handler = async (event) => {
         // Existing callers that omit "view" keep the current behavior.
         const view = String(qs.view || "").trim().toLowerCase();
         const isRecentView = view === "recent";
+        const isOlderView = view === "older";
 
         // The GSI sort key begins with the padded createdAt timestamp.
         const recentCutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
         const recentCutoffKey = `${pad13(recentCutoffMs)}#`;
 
-        const keyConditionExpression = isRecentView
-          ? "#gpk = :gpk AND #gsk >= :cutoff"
-          : "#gpk = :gpk";
+        const isDateFilteredView = isRecentView || isOlderView;
 
-        const expressionAttributeNames = isRecentView
-          ? { "#gpk": "gsi1pk", "#gsk": "gsi1sk" }
-          : { "#gpk": "gsi1pk" };
+const keyConditionExpression = isRecentView
+  ? "#gpk = :gpk AND #gsk >= :cutoff"
+  : isOlderView
+  ? "#gpk = :gpk AND #gsk < :cutoff"
+  : "#gpk = :gpk";
 
-        const expressionAttributeValues = isRecentView
-          ? {
-              ":gpk": gsi1pk(sc),
-              ":cutoff": recentCutoffKey,
-            }
-          : {
-              ":gpk": gsi1pk(sc),
-            };
+const expressionAttributeNames = isDateFilteredView
+  ? { "#gpk": "gsi1pk", "#gsk": "gsi1sk" }
+  : { "#gpk": "gsi1pk" };
+
+const expressionAttributeValues = isDateFilteredView
+  ? {
+      ":gpk": gsi1pk(sc),
+      ":cutoff": recentCutoffKey,
+    }
+  : {
+      ":gpk": gsi1pk(sc),
+    };
 
         // Keep compatibility by default (withThread=1)
         const withThread =

@@ -2386,6 +2386,9 @@ function normalizeCommentFromBackend(c) {
   return { ...base, replies };
 }
 
+const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "Answered"
+  const feedView = showingTab === "Older Posts" ? "older" : "recent";
+
   // 🔄 Load posts from backend API (global feed for student dashboard)
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
@@ -2409,7 +2412,8 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
         const remote = await fetchPosts({
           scope: "student-dashboard",
           role: "student",
-          view: "recent",
+          /*view: "recent",*/
+          view: feedView,
         });
 
         if (cancelled) return;
@@ -2660,7 +2664,8 @@ const latestSeenCommonTs = Number(
       cancelled = true;
       if (pollTimer) clearInterval(pollTimer);
     };
-  }, []); // run once on mount
+  /*}, []); // run once on mount*/
+  }, [feedView]);
 
 
 
@@ -3839,7 +3844,7 @@ updatePostById(postId, (x) => {
   };
 
   /* ===== Showing bar + Search ===== */
-  const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "Answered"
+  
   const [search, setSearch] = useState("");
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
 
@@ -4684,9 +4689,11 @@ if (showingTab === "Top") {
           <Card className="py-3">
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">Showing:</span>
+                {/*<span className="text-sm text-slate-600">Showing:</span>*/}
                 {/*{["Top","Newest","Answered"].map(tab => (*/}
-                {["Top","Newest","Answered","Saved Posts"].map(tab => (
+                {/*{["Top","Newest","Answered","Saved Posts"].map(tab => (*/}
+                {["Top", "Newest", "Answered", "Saved Posts", "Older Posts"].map(tab => (
+                  
                   <button
                     key={tab}
                     onClick={()=>setShowingTab(tab)}
@@ -4697,9 +4704,14 @@ if (showingTab === "Top") {
       ? "bg-blue-600 text-white"
       : tab === "Newest"
       ? "bg-emerald-600 text-white"
-      : tab === "Answered"
+      /*: tab === "Answered"
       ? "bg-purple-600 text-white"
-      : "bg-amber-500 text-white"
+      : "bg-amber-500 text-white"*/
+      : tab === "Answered"
+? "bg-purple-600 text-white"
+: tab === "Saved Posts"
+? "bg-amber-500 text-white"
+: "bg-slate-700 text-white"
     : "border border-slate-200 hover:bg-slate-50"
 }`}
                   /*>
@@ -4707,7 +4719,12 @@ if (showingTab === "Top") {
                   </button>*/
                   >
   <span className="sm:hidden">
-    {tab === "Saved Posts" ? "Saved" : tab}
+    {/*{tab === "Saved Posts" ? "Saved" : tab}*/}
+    {tab === "Saved Posts"
+  ? "Saved"
+  : tab === "Older Posts"
+  ? "Older"
+  : tab}
   </span>
 
   <span className="hidden sm:inline">
