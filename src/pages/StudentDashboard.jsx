@@ -2409,6 +2409,7 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
         const remote = await fetchPosts({
           scope: "student-dashboard",
           role: "student",
+          view: "recent",
         });
 
         if (cancelled) return;

@@ -632,12 +632,14 @@ export async function fetchPostsPage({
   limit = 30,
   cursor = null,
   withThread = true,
+  view = null,
 } = {}) {
   const url = buildPostsUrl("/api/posts", {
     scope,
     limit,
     cursor: cursor || undefined,
     withThread: withThread ? 1 : 0,
+    view: view || undefined,
   });
 
   const data = await doJsonFetch(url, { method: "GET" });
@@ -676,12 +678,14 @@ export async function fetchPosts({
   limit = 10,
   cursor = null,
   withThread = true,
+  view = null,
 } = {}) {
   const { posts } = await fetchPostsPage({
     scope,
     limit,
     cursor,
     withThread,
+    view,
   });
 
   return posts;
