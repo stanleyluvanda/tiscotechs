@@ -2651,7 +2651,7 @@ const latestSeenCommonTs = Number(
     }
 
     // Initial load with spinner
-    loadFromApi({ silent: false });
+    {/*loadFromApi({ silent: false });
 
     // Poll every 30 seconds in the background
     pollTimer = setInterval(() => {
@@ -2664,8 +2664,29 @@ const latestSeenCommonTs = Number(
       cancelled = true;
       if (pollTimer) clearInterval(pollTimer);
     };
-  /*}, []); // run once on mount*/
-  }, [feedView]);
+  }, [feedView]);*/}
+  // Initial load with spinner.
+// This still runs whenever the user switches between recent and older posts.
+loadFromApi({ silent: false });
+
+// Poll recent posts every 30 seconds.
+// Older posts load when the tab opens but do not keep polling.
+if (feedView !== "older") {
+  pollTimer = setInterval(() => {
+    if (!cancelled) {
+      loadFromApi({ silent: true });
+    }
+  }, 30000);
+}
+
+return () => {
+  cancelled = true;
+
+  if (pollTimer) {
+    clearInterval(pollTimer);
+  }
+};
+}, [feedView]);
 
 
 
