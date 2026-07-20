@@ -705,6 +705,32 @@ export const handler = async (event) => {
       try {
         const sc = scope || "student-dashboard";
 
+        // Optional feed view.
+        // Existing callers that omit "view" keep the current behavior.
+        const view = String(qs.view || "").trim().toLowerCase();
+        const isRecentView = view === "recent";
+
+        // The GSI sort key begins with the padded createdAt timestamp.
+        const recentCutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const recentCutoffKey = `${pad13(recentCutoffMs)}#`;
+
+        const keyConditionExpression = isRecentView
+          ? "#gpk = :gpk AND #gsk >= :cutoff"
+          : "#gpk = :gpk";
+
+        const expressionAttributeNames = isRecentView
+          ? { "#gpk": "gsi1pk", "#gsk": "gsi1sk" }
+          : { "#gpk": "gsi1pk" };
+
+        const expressionAttributeValues = isRecentView
+          ? {
+              ":gpk": gsi1pk(sc),
+              ":cutoff": recentCutoffKey,
+            }
+          : {
+              ":gpk": gsi1pk(sc),
+            };
+
         // Keep compatibility by default (withThread=1)
         const withThread =
           qs.withThread == null ? "1" : String(qs.withThread).trim();
@@ -729,9 +755,9 @@ export const handler = async (event) => {
             new QueryCommand({
               TableName: TABLE,
               IndexName: GSI_FEED,
-              KeyConditionExpression: "#gpk = :gpk",
-              ExpressionAttributeNames: { "#gpk": "gsi1pk" },
-              ExpressionAttributeValues: { ":gpk": gsi1pk(sc) },
+              KeyConditionExpression: keyConditionExpression,
+              ExpressionAttributeNames: expressionAttributeNames,
+              ExpressionAttributeValues: expressionAttributeValues,
               ScanIndexForward: false,
               // fetch a bit more to reduce extra round-trips when many are hidden
               Limit: Math.min(200, Math.max(30, limit * 2)),
