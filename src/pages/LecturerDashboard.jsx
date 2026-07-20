@@ -3444,7 +3444,7 @@ async function clearNotificationsServerBacked() {
           </Card>
 
           {/* Faculty-only filter */}
-          <SidebarCard title={`View ${facultyLabel} posts`}>
+          {/*<SidebarCard title={`View ${facultyLabel} posts`}>
             <div className="mt-2 flex justify-center">
               <button
                 onClick={() => setShowFacultyOnly((v) => !v)}
@@ -3458,10 +3458,32 @@ async function clearNotificationsServerBacked() {
             <p className="mt-2 text-xs text-slate-600 text-center">
               When on, you’ll only see {facultyLabel.toLowerCase()} posts you created (including year-specific).
             </p>
-          </SidebarCard>
+          </SidebarCard>*/}
+          {/* Faculty-only filter */}
+<SidebarCard title={`View ${facultyLabel} posts`}>
+  {/*<div className="mt-2 flex items-start justify-between gap-3">*/}
+    <div className="flex items-start justify-between gap-3">
+    <p className="flex-1 text-xs text-slate-600">
+      When on, you’ll only see{" "}
+      {facultyLabel.toLowerCase()} posts you created
+      (including year-specific).
+    </p>
+
+    <button
+      onClick={() => setShowFacultyOnly((v) => !v)}
+      className={`shrink-0 px-4 py-1 rounded-full text-sm ${
+        showFacultyOnly
+          ? "bg-blue-600 text-white"
+          : "border border-slate-200 text-slate-700 hover:bg-slate-50"
+      }`}
+    >
+      {showFacultyOnly ? "On" : "Off"}
+    </button>
+  </div>
+</SidebarCard>
 
           {/* Academic posts filter */}
-          <SidebarCard title="Academic posts">
+          <SidebarCard title="Academic post types">
             <div className="mt-2 space-y-2 text-sm">
               <FilterPill label="All" active={filterType === "All"} onClick={() => setFilterType("All")} />
               {POST_TYPES.map((t) => (
@@ -4467,7 +4489,8 @@ function Card({ className = "", children }) {
 function SidebarCard({ title, children }) {
   return (
     <div className="w-full max-w-full box-border border border-slate-200 bg-white rounded-none shadow-sm overflow-hidden">
-      <div className="w-full bg-indigo-50 text-slate-800 font-semibold px-3 py-2 border-b border-slate-200 text-center">
+      {/*<div className="w-full bg-indigo-50 text-slate-800 font-semibold px-3 py-2 border-b border-slate-200 text-center">*/}
+      <div className="w-full bg-[#0F7B5A] text-white font-semibold px-3 py-2 border-b border-[#0C664A] text-center">
         {title}
       </div>
       <div className="p-4">{children}</div>
