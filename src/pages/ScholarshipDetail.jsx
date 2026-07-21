@@ -105,12 +105,6 @@ function HtmlResult({ html }) {
 }
 
 
-
-
-
-
-
-
 function getYouTubeVideoId(value) {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -957,7 +951,15 @@ const res = await fetch(
 >
   ← Back to {itemLabelPlural}
 </Link>
-              </div>
+  </div>
+
+              {/* Banner ad before the scholarship title */}
+<div className="mx-auto w-full max-w-5xl px-3 pt-5 sm:px-4">
+  <GoogleBannerAd className="mx-auto w-full max-w-[970px]" />
+</div>
+
+
+
 
               <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-10 pb-5 sm:pb-7">
                 <div className="px-0 py-1 sm:py-2">
@@ -1057,32 +1059,7 @@ const res = await fetch(
                     )}
                   </div>
 
-                  {/*<div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-3">
-                    {partnerApplyUrl && (
-                      <a
-                        href={partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackScholarship(id, "apply")}
-                        className="inline-flex items-center justify-center rounded-lg bg-[#0A4595] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#083a7d] focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      >
-                        Apply Now
-                      </a>
-                    )}
-
-                    {link && (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackScholarship(id, "website")}
-                        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                      >
-                        Visit website
-                      </a>
-                    )}
-                  </div>*/}
-
+                 
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
   <div className="flex flex-wrap gap-3">
@@ -1199,7 +1176,7 @@ const res = await fetch(
         </section>
       )}
 
-      {eligibility && (
+      {/*{eligibility && (
         <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
             Eligibility & Requirements
@@ -1208,7 +1185,25 @@ const res = await fetch(
             <RichHtml html={eligibility} />
           </div>
         </section>
-      )}
+      )}*/}
+
+      {eligibility && (
+  <>
+    <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
+        Eligibility & Requirements
+      </h2>
+
+      <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+        <RichHtml html={eligibility} />
+      </div>
+    </section>
+
+    <div className="w-full">
+      <GoogleBannerAd className="mx-auto w-full" />
+    </div>
+  </>
+)}
 
       {youtubeVideoId && (
   <section
@@ -1236,48 +1231,55 @@ const res = await fetch(
       )}
 
       {howToApply && (
-        <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
-            How to submit Application
-          </h2>
+  <>
+    <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
+      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
+        How to submit Application
+      </h2>
 
-          <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
-            <RichHtml html={howToApply} />
+      <div className="mt-2 sm:mt-3 text-sm sm:text-base leading-7">
+        <RichHtml html={howToApply} />
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
+              Summarized & Simplified Application Steps
+            </h3>
+
+            <p className="mt-0.5 text-sm text-slate-600">
+              Turn the application instructions into a shorter checklist.
+            </p>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h3 className="text-base sm:text-lg font-semibold text-[#4B1F6F]">
-                  Summarized & Simplified Application Steps
-                </h3>
-                <p className="mt-0.5 text-sm text-slate-600">
-                  Turn the application instructions into a shorter checklist.
-                </p>
-              </div>
+          <button
+            type="button"
+            onClick={handleSimplifySteps}
+            disabled={aiStepsLoading}
+            className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
+          >
+            {aiStepsLoading
+              ? "Working..."
+              : aiSteps && showAiSteps
+              ? "Hide Steps"
+              : aiSteps && !showAiSteps
+              ? "Show Steps"
+              : "Simplify Steps"}
+          </button>
+        </div>
 
-              <button
-                type="button"
-                onClick={handleSimplifySteps}
-                disabled={aiStepsLoading}
-                className="inline-flex items-center justify-center rounded-xl bg-[#0A4595] text-white px-4 py-2.5 text-sm font-semibold hover:bg-[#083a7d] disabled:opacity-60"
-              >
-                {aiStepsLoading
-                  ? "Working..."
-                  : aiSteps && showAiSteps
-                  ? "Hide Steps"
-                  : aiSteps && !showAiSteps
-                  ? "Show Steps"
-                  : "Simplify Steps"}
-              </button>
-            </div>
+        <div className="mt-3 text-sm sm:text-base leading-6">
+          {showAiSteps && aiSteps ? <HtmlResult html={aiSteps} /> : null}
+        </div>
+      </div>
+    </section>
 
-            <div className="mt-3 text-sm sm:text-base leading-6">
-              {showAiSteps && aiSteps ? <HtmlResult html={aiSteps} /> : null}
-            </div>
-          </div>
-        </section>
-      )}
+    <div className="w-full">
+      <GoogleBannerAd className="mx-auto w-full" />
+    </div>
+  </>
+)}
 
       {additionalInformation && (
         <section className="border-t border-slate-200 pt-6 first:border-t-0 first:pt-0">
@@ -1290,29 +1292,7 @@ const res = await fetch(
         </section>
       )}
     </div>
-
-    {/*<aside className="space-y-6 self-start lg:sticky lg:top-24 lg:pl-2">
-      {bannerSrc && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <button
-            type="button"
-            onClick={() => setShowBanner(true)}
-            className="block w-full text-left"
-            title="Click to enlarge"
-          >
-            <img
-              src={bannerSrc}
-              alt={`${provider || title} banner`}
-              className="w-full h-auto object-contain bg-white"
-              loading="lazy"
-              decoding="async"
-            />
-          </button>
-          <div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-            Click image to enlarge
-          </div>
-        </div>
-      )}*/}
+     
       <aside className="space-y-6 self-start lg:sticky lg:top-24 lg:pl-2">
   {logo && (
     /*<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">*/
