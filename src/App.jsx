@@ -158,6 +158,38 @@ function RequireRole({ role, redirectTo = "/login" }) {
 }
 
 
+function RedirectAuthenticatedSignup({ children }) {
+  const u = getLoggedInUser();
+  const role = String(u?.role || "").toLowerCase();
+
+  // Redirect only authenticated students and lecturers.
+  // Partner and admin behavior remains unchanged.
+  if (role === "student") {
+    return <Navigate to="/student/dashboard" replace />;
+  }
+
+  if (role === "lecturer") {
+    return <Navigate to="/lecturer/dashboard" replace />;
+  }
+
+  return children;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function NotFound() {
   const u = getLoggedInUser();
@@ -259,10 +291,45 @@ export default function App() {
             <Route path="/upload-test" element={<UploadTest />} />
           </Route>
 
-          <Route path="/signup/student" element={<StudentSignUp />} />
+          {/*<Route path="/signup/student" element={<StudentSignUp />} />
           <Route path="/signup/lecturer" element={<LecturerSignUp />} />
           <Route path="/student-sign-up" element={<StudentSignUp />} />
-          <Route path="/lecturer-sign-up" element={<LecturerSignUp />} />
+          <Route path="/lecturer-sign-up" element={<LecturerSignUp />} />*/}
+          <Route
+  path="/signup/student"
+  element={
+    <RedirectAuthenticatedSignup>
+      <StudentSignUp />
+    </RedirectAuthenticatedSignup>
+  }
+/>
+
+<Route
+  path="/signup/lecturer"
+  element={
+    <RedirectAuthenticatedSignup>
+      <LecturerSignUp />
+    </RedirectAuthenticatedSignup>
+  }
+/>
+
+<Route
+  path="/student-sign-up"
+  element={
+    <RedirectAuthenticatedSignup>
+      <StudentSignUp />
+    </RedirectAuthenticatedSignup>
+  }
+/>
+
+<Route
+  path="/lecturer-sign-up"
+  element={
+    <RedirectAuthenticatedSignup>
+      <LecturerSignUp />
+    </RedirectAuthenticatedSignup>
+  }
+/>
 
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />

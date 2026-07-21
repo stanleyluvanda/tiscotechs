@@ -635,7 +635,8 @@ const newUser = {
       } catch {}
     }
 
-    navigate("/student-dashboard");
+    /*navigate("/student-dashboard");*/
+    navigate("/student/dashboard", { replace: true });
   };
 
   /* ----------------- OPTIONS ----------------- */

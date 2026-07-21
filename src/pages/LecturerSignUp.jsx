@@ -622,7 +622,8 @@ if (oauthMode && googleSignup && googleSignupSig) {
       } catch {}
     }
 
-    navigate("/lecturer-dashboard");
+    /*navigate("/lecturer-dashboard");*/
+    navigate("/lecturer/dashboard", { replace: true });
   };
 
   /* ------------------ Options ------------------ */

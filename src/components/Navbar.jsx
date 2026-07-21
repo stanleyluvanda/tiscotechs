@@ -218,6 +218,12 @@ export default function Navbar() {
   }, [open]);
 
   const role = (user?.role || "").toLowerCase();
+
+  const isStudentOrLecturer =
+  Boolean(user) &&
+  (role === "student" || role === "lecturer");
+
+
   const dashboardPath =
     role === "partner"
       ? "/partner/welcome"
@@ -303,7 +309,15 @@ export default function Navbar() {
           <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
           <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
         </nav>*/}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1">
+        {/*<nav className="hidden md:flex flex-1 items-center justify-center gap-0 md:gap-0.5 lg:gap-1">*/}
+          <nav
+  className={[
+    "hidden md:flex flex-1 items-center",
+    isStudentOrLecturer
+      ? "justify-evenly gap-0"
+      : "justify-center gap-0 md:gap-0.5 lg:gap-1",
+  ].join(" ")}
+>
   <NavLink to="/home" className={link}>Home</NavLink>
   <NavLink to="/about" className={link}>About</NavLink>
   <NavLink to="/partner" className={link}>Partner</NavLink>
@@ -345,9 +359,23 @@ export default function Navbar() {
   </div>
 </div>
 
-  <NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
+  {/*<NavLink to="/student-sign-up" className={link}>Student Sign Up</NavLink>
   <NavLink to="/lecturer-sign-up" className={link}>Lecturer Sign Up</NavLink>
+</nav>*/}
+{!isStudentOrLecturer && (
+  <>
+    <NavLink to="/student-sign-up" className={link}>
+      Student Sign Up
+    </NavLink>
+
+    <NavLink to="/lecturer-sign-up" className={link}>
+      Lecturer Sign Up
+    </NavLink>
+  </>
+)}
 </nav>
+
+
 
         {/* RIGHT: globe + auth (single Log in) */}
         <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
@@ -448,8 +476,27 @@ export default function Navbar() {
               <NavLink to="/scholarship-tips"className={link}onClick={() => setMobileNavOpen(false)}>Students' Resources Hub</NavLink>
               <NavLink to="/scholarships" className={link} onClick={() => setMobileNavOpen(false)}>Scholarships Directory</NavLink>
               <NavLink to="/fellowships" className={link} onClick={() => setMobileNavOpen(false)}>Fellowships</NavLink>
-              <NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>
-              <NavLink to="/lecturer-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Lecturer Sign Up</NavLink>
+              {/*<NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>
+              <NavLink to="/lecturer-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Lecturer Sign Up</NavLink>*/}
+              {!isStudentOrLecturer && (
+  <>
+    <NavLink
+      to="/student-sign-up"
+      className={link}
+      onClick={() => setMobileNavOpen(false)}
+    >
+      Student Sign Up
+    </NavLink>
+
+    <NavLink
+      to="/lecturer-sign-up"
+      className={link}
+      onClick={() => setMobileNavOpen(false)}
+    >
+      Lecturer Sign Up
+    </NavLink>
+  </>
+)}
 
               {!user && (
                 <Link
