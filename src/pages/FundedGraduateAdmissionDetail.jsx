@@ -650,27 +650,37 @@ export default function FundedGraduateAdmissionDetail() {
 
       <div className="flex-1">
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
+  {/* Back link uses the full 1600px page container */}
+  <div className="w-full pt-8 sm:pt-10 lg:pt-12">
+    <Link
+      to="/funded-graduate-admission"
+      className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
+    >
+      ←Back
+    </Link>
+  </div>
+
   <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
     <aside className="hidden xl:block">
-      
-        <GoogleSidebarAd className="sticky top-24 w-full" minHeight={700} />
+      <GoogleSidebarAd
+        className="sticky top-24 w-full"
+        minHeight={700}
+      />
     </aside>
 
-    <main className="min-w-0 w-full">
-              
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 pt-8 sm:pt-10 lg:pt-12 pb-2">
-                <Link
-                  to="/funded-graduate-admission"
-                  className="inline-flex items-center text-blue-700 hover:text-blue-800 hover:underline text-sm font-medium"
-                >
-                  ← Back to Funded Graduate Admission
-                </Link>
-              </div>
+    {/*<main className="min-w-0 w-full">
+<div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">*/}
+  <main className="min-w-0 w-full">
 
-              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 py-4 sm:py-5 lg:py-6">*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
+{/* Banner above the funded opportunity title */}
+<div className="mx-auto w-full max-w-5xl px-0 sm:px-2 pt-4 pb-2">
+  <GoogleBannerAd className="mx-auto w-full max-w-[970px]" />
+</div>
+
+<div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
                 {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">*/}
-                <div className="rounded-none sm:rounded-2xl bg-slate-50 border-x-0 sm:border border-slate-200/60 shadow-none p-3 sm:p-5 lg:p-6">
+                {/*</div><div className="rounded-none sm:rounded-2xl bg-slate-50 border-x-0 sm:border border-slate-200/60 shadow-none p-3 sm:p-5 lg:p-6">*/}
+                <div className="px-3 sm:px-5 lg:px-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Mobile only: logo + university name */}
                     <div className="flex items-center gap-3 sm:hidden">
@@ -693,20 +703,6 @@ export default function FundedGraduateAdmissionDetail() {
                         </div>
                       ) : null}
                     </div>
-
-                    {/* Desktop / tablet existing layout */}
-                    {/*{logo ? (
-                      <img
-                        src={logo}
-                        alt={`${provider || "University"} logo`}
-                        className="hidden sm:block h-16 w-16 sm:h-18 sm:w-18 shrink-0 rounded bg-white border border-slate-200 object-contain p-1 mt-1 sm:mt-2"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
-                      />
-                    ) : null}*/}
 
                     <div className="min-w-0">
                       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
