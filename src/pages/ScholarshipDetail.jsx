@@ -936,22 +936,18 @@ const res = await fetch(
       <div className="flex-1">
   {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">*/}
   <div className="mx-auto w-full max-w-[1400px] px-0 sm:px-4">
-    <div className="mx-auto w-full max-w-[1024px]">
-      <main className="min-w-0">
-              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-8 lg:pt-10">
-                {/*<Link
-                  to="/scholarship"
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
-                >
-                  ← Back to Scholarships
-                </Link>*/}
-                <Link
-  to={backPath}
-  className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
->
-  ← Back to {itemLabelPlural}
-</Link>
+  {/* Back link uses the wider page container */}
+  <div className="w-full px-3 pt-6 sm:px-4 sm:pt-8 lg:px-0 lg:pt-10">
+    <Link
+      to={backPath}
+      className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
+    >
+      ← Back to {itemLabelPlural}
+    </Link>
   </div>
+
+  <div className="mx-auto w-full max-w-[1024px]">
+    <main className="min-w-0">
 
               {/* Banner ad before the scholarship title */}
 <div className="mx-auto w-full max-w-5xl px-3 pt-5 sm:px-4">

@@ -545,7 +545,137 @@ const popularDestinations = [
     </p>
   </div>
 
-       {/* Hero search bar */}
+      </div>
+    </section>
+
+    {/*</div><div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">*/}
+      <div className="mx-auto max-w-[1400px] px-0 sm:px-4 pt-6">
+      {usedFallback && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Showing cached fellowships for faster loading.
+        </div>
+      )}
+
+      {/* FEATURED FELLOWSHIPS */}
+      {featuredItems.length > 0 && (
+        /*<section className="mb-5">*/
+          <section className="mb-5 px-3 sm:px-0">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-amber-500">★</span>
+            <h2 className="text-lg font-bold text-slate-900">Featured & Sponsored Fellowships</h2>
+            <span className="hidden text-sm text-slate-500 sm:inline">
+              Hand-picked opportunities from global providers
+            </span>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+                {featuredItems.map((s) => {
+  const logo = s.providerLogoUrl || s.providerLogoData || "";
+  const bannerImage = s.imageUrl || s.imageData || "";
+  const fundingStr = Array.isArray(s.fundingType)
+    ? s.fundingType.join(", ")
+    : s.fundingType || s.funding || "";
+
+  const isPremium = s.featuredLevel === "PREMIUM_FEATURED";
+
+  return (
+                
+
+                <article
+  key={`featured-${s.id}`}
+  className="w-[24.25%] min-w-[310px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+>
+  <div className="px-4 pt-3">
+    <span
+      className={[
+        "rounded-full px-2 py-1 text-[11px] font-semibold",
+        isPremium
+          ? "bg-amber-50 text-amber-700"
+          : "bg-blue-50 text-blue-700",
+      ].join(" ")}
+    >
+      {isPremium ? "Sponsored" : "Featured"}
+    </span>
+  </div>
+
+  <div className="p-4">
+    <div className="flex items-start gap-3">
+      {logo ? (
+        <img
+          src={logo}
+          alt={`${s.provider || "Provider"} logo`}
+          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
+          SK
+        </div>
+      )}
+
+      <div className="min-w-0">
+        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
+          {s.title}
+        </h3>
+
+        {s.provider && (
+          <p className="mt-1 truncate text-xs font-semibold text-slate-700">
+            {s.provider}
+          </p>
+        )}
+
+        {s.country && (
+          <p className="mt-1 text-xs text-slate-600">{s.country}</p>
+        )}
+      </div>
+    </div>
+  </div>
+
+  {bannerImage && (
+    <div className="h-48 w-full border-y border-slate-200 bg-slate-100">
+      <img
+        src={bannerImage}
+        alt={`${s.provider || "Provider"} banner`}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+        }}
+      />
+    </div>
+  )}
+
+  <div className="p-4">
+    {fundingStr && (
+      <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+        {fundingStr}
+      </div>
+    )}
+
+    <Link
+      to={`/fellowship/${s.id}`}
+      onClick={() => trackFellowship(s.id, "view")}
+      className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
+    >
+      View details →
+    </Link>
+  </div>
+</article>
+
+
+
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Hero search bar */}
 <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
   {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
     <button
@@ -557,12 +687,6 @@ const popularDestinations = [
   <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
 </button>
 
-{/*<div
-  className={[
-    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
-    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
-  ].join(" ")}
-></div>*/}
 <div
   className={[
     "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
@@ -704,142 +828,8 @@ const popularDestinations = [
     </button>
   </div>
 </div>
-      </div>
-    </section>
-
-    {/*</div><div className="mx-auto max-w-[1400px] px-3 sm:px-4 pt-6">*/}
-      <div className="mx-auto max-w-[1400px] px-0 sm:px-4 pt-6">
-      {usedFallback && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          Showing cached fellowships for faster loading.
-        </div>
-      )}
-
-      {/* FEATURED FELLOWSHIPS */}
-      {featuredItems.length > 0 && (
-        /*<section className="mb-5">*/
-          <section className="mb-5 px-3 sm:px-0">
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-amber-500">★</span>
-            <h2 className="text-lg font-bold text-slate-900">Featured & Sponsored Fellowships</h2>
-            <span className="hidden text-sm text-slate-500 sm:inline">
-              Hand-picked opportunities from global providers
-            </span>
-          </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {/*{featuredItems.map((s) => {
-              const logo = s.providerLogoUrl || s.providerLogoData || "";
-              const fundingStr = Array.isArray(s.fundingType)
-                ? s.fundingType.join(", ")
-                : s.fundingType || s.funding || "";
-
-              return (*/}
-                {featuredItems.map((s) => {
-  const logo = s.providerLogoUrl || s.providerLogoData || "";
-  const bannerImage = s.imageUrl || s.imageData || "";
-  const fundingStr = Array.isArray(s.fundingType)
-    ? s.fundingType.join(", ")
-    : s.fundingType || s.funding || "";
-
-  const isPremium = s.featuredLevel === "PREMIUM_FEATURED";
-
-  return (
-                
-
-                <article
-  key={`featured-${s.id}`}
-  className="w-[24.25%] min-w-[310px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
->
-  <div className="px-4 pt-3">
-    <span
-      className={[
-        "rounded-full px-2 py-1 text-[11px] font-semibold",
-        isPremium
-          ? "bg-amber-50 text-amber-700"
-          : "bg-blue-50 text-blue-700",
-      ].join(" ")}
-    >
-      {isPremium ? "Sponsored" : "Featured"}
-    </span>
-  </div>
-
-  <div className="p-4">
-    <div className="flex items-start gap-3">
-      {logo ? (
-        <img
-          src={logo}
-          alt={`${s.provider || "Provider"} logo`}
-          className="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1"
-          loading="lazy"
-          decoding="async"
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
-      ) : (
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-blue-50 text-lg font-bold text-blue-700">
-          SK
-        </div>
-      )}
-
-      <div className="min-w-0">
-        <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
-          {s.title}
-        </h3>
-
-        {s.provider && (
-          <p className="mt-1 truncate text-xs font-semibold text-slate-700">
-            {s.provider}
-          </p>
-        )}
-
-        {s.country && (
-          <p className="mt-1 text-xs text-slate-600">{s.country}</p>
-        )}
-      </div>
-    </div>
-  </div>
-
-  {bannerImage && (
-    <div className="h-48 w-full border-y border-slate-200 bg-slate-100">
-      <img
-        src={bannerImage}
-        alt={`${s.provider || "Provider"} banner`}
-        className="h-full w-full object-cover"
-        loading="lazy"
-        decoding="async"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
-      />
-    </div>
-  )}
-
-  <div className="p-4">
-    {fundingStr && (
-      <div className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-        {fundingStr}
-      </div>
-    )}
-
-    <Link
-      to={`/fellowship/${s.id}`}
-      onClick={() => trackFellowship(s.id, "view")}
-      className="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900"
-    >
-      View details →
-    </Link>
-  </div>
-</article>
 
 
-
-              );
-            })}
-          </div>
-        </section>
-      )}
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
         <aside className="hidden xl:block">
@@ -856,12 +846,6 @@ const popularDestinations = [
       {/* Google AdSense responsive banner */}
     </section>
   )}
-
-          {/*<div className="mt-4">
-            <h2 className="text-base font-bold text-slate-900">All Fellowships</h2>
-            <p className="text-xs text-slate-500">{total} opportunities found</p>
-          </div>*/}
-          {/*<div className="mt-4">*/}
         <div className="mt-4 px-3 sm:px-0">
   <h2 className="text-base font-bold text-slate-900">
     Explore all fellowship programs for your academic and career development:
@@ -891,14 +875,7 @@ const popularDestinations = [
 
           <ul className="mt-3 grid gap-3">
             {items.map((s, index) => {
-              /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
-              /*const fullDescription = stripHtml(s.description || "");
-              const snippet = truncate(fullDescription, 170);
-              const fullDescription =
-              s.descriptionText || stripHtml(s.description
-              const fundingStr = Array.isArray(s.fundingType)
-                ? s.fundingType.join(", ")
-                : s.fundingType || "";*/
+             
                 const fullDescription =
   s.descriptionText || stripHtml(s.description || "");
 
@@ -1026,7 +1003,8 @@ const fundingStr = Array.isArray(s.fundingType)
         </main>
 
         <aside className="hidden xl:block">
-          <div className="space-y-4">
+          {/*<div className="space-y-4">*/}
+             <div className="mt-12 space-y-4">
            
 
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -1056,21 +1034,6 @@ const fundingStr = Array.isArray(s.fundingType)
                 ))}
               </div>
             </div>
-
-            {/*<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900">Fellowship Tips</h3>
-              <div className="mt-3 space-y-3 text-sm">
-                <div className="font-semibold text-blue-800">
-                  Prepare a clear research or leadership statement
-                </div>
-                <div className="font-semibold text-blue-800">
-                  Check eligibility and nomination requirements early
-                </div>
-                <div className="font-semibold text-blue-800">
-                  Collect strong recommendation letters
-                </div>
-              </div>
-            </div>*/}
             <RelatedGuideLinks />
             <GoogleSidebarAd className="w-full" minHeight={600} />
           </div>
@@ -1111,19 +1074,7 @@ const fundingStr = Array.isArray(s.fundingType)
   </p>
 
   <div className="mt-8 flex flex-wrap justify-center gap-4">
-    {/*<Link
-      to="/fellowships"
-      className="rounded-full bg-white px-7 py-3 font-bold text-blue-800 hover:bg-blue-50"
-    >
-      Browse Fellowships
-    </Link>*/}
-
-    {/*<Link
-      to="/partner-submit-scholarship"
-      className="rounded-full border border-white px-7 py-3 font-bold hover:bg-white/10"
-    >
-      Submit a Fellowship
-    </Link>*/}
+   
   </div>
 </section>
 
@@ -1195,8 +1146,5 @@ const fundingStr = Array.isArray(s.fundingType)
     </p>
   </div>
 </div>
-
-
-
   </div>
 )};

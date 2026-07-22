@@ -509,19 +509,6 @@ export default function FundedGraduateAdmission() {
       // ignore
     }
   };
-
-  /*const featuredItems = useMemo(() => {
-  const list = Array.isArray(baseItems) ? baseItems : [];
-
-  return list
-    .filter(
-      (s) =>
-        s.featured === true ||
-        s.featuredLevel === "FEATURED" ||
-        s.featuredLevel === "PREMIUM_FEATURED"
-    )
-    .slice(0, 8);
-}, [baseItems]);*/
 const featuredItems = useMemo(() => {
   const list = Array.isArray(baseItems) ? baseItems : [];
 
@@ -589,159 +576,6 @@ const popularDestinations = [
             Find universities and academic programs where admitted students may be automatically considered for University grants, assistantships, tuition waivers, scholarships,and financial aid.
           </p>
         </div>
-
-        <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
-  {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
-    <button
-  type="button"
-  onClick={() => setMobileFiltersOpen((v) => !v)}
-  className="flex w-full items-center justify-between rounded-lg bg-blue-700 px-4 py-3 text-sm font-bold text-white lg:hidden"
->
-  <span>Search & Filter Opportunities</span>
-  <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
-</button>
-
-<div
-  className={[
-    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
-    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
-  ].join(" ")}
->
-    <input
-      value={q}
-      onChange={(e) => {
-        setQ(e.target.value);
-        setPage(1);
-      }}
-      placeholder="Search university, program, country..."
-      className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-    />
-
-    <select
-      value={continent}
-      onChange={(e) => {
-        setContinent(e.target.value);
-        setCountry("All");
-        setPage(1);
-      }}
-      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-    >
-      {["All", ...CONTINENT_NAMES].map((c) => (
-        <option key={c} value={c}>
-          {c === "All" ? "All Continents" : c}
-        </option>
-      ))}
-    </select>
-
-    <select
-      value={country}
-      onChange={(e) => {
-        setCountry(e.target.value);
-        setPage(1);
-      }}
-      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-    >
-      {countryOptions.map((c) => (
-        <option key={c} value={c}>
-          {c === "All" ? "All Countries" : c}
-        </option>
-      ))}
-    </select>
-
-    <div className="relative" data-level-popover>
-      <button
-        type="button"
-        onClick={() => setLevelOpen((o) => !o)}
-        className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
-      >
-        <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
-        <span className="text-slate-500">▾</span>
-      </button>
-
-      {levelOpen && (
-        <div
-          className="absolute z-30 mt-1 w-full sm:w-64 rounded-lg border border-slate-200 bg-white shadow"
-          role="menu"
-          data-level-popover
-        >
-          <div className="max-h-64 overflow-auto p-2 space-y-1">
-            {LEVEL_OPTIONS.map((opt) => {
-              const checked = levels.includes(opt);
-              return (
-                <label
-                  key={opt}
-                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                >
-                  <input
-                    type="checkbox"
-                    className="accent-blue-600"
-                    checked={checked}
-                    onChange={() => toggleLevel(opt)}
-                  />
-                  <span className="text-sm text-slate-700">{opt}</span>
-                </label>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
-            <button
-              type="button"
-              onClick={() => setLevels([])}
-              className="text-xs text-slate-600 underline"
-            >
-              Clear
-            </button>
-            <button
-              type="button"
-              onClick={() => setLevelOpen(false)}
-              className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-
-    <select
-      value={funding}
-      onChange={(e) => {
-        setFunding(e.target.value);
-        setPage(1);
-      }}
-      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-    >
-      {fundingOptions.map((f) => (
-        <option key={f} value={f}>
-          {f === "All" ? "All Funding Types" : f}
-        </option>
-      ))}
-    </select>
-
-    <select
-      value={sort}
-      onChange={(e) => {
-        setSort(e.target.value);
-        setPage(1);
-      }}
-      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-    >
-      <option value="newest">Sort by Newest</option>
-      <option value="deadlineAsc">Deadline (soonest)</option>
-      <option value="deadlineDesc">Deadline (latest)</option>
-      <option value="title">Title (A–Z)</option>
-    </select>
-
-    <button
-      type="button"
-      onClick={resetFilters}
-      className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
-    >
-      Reset
-    </button>
-  </div>
-</div>
       </div>
     </section>
 
@@ -925,6 +759,159 @@ const popularDestinations = [
 
         </section>
       )}
+
+      <div className="mt-4 rounded-xl border border-white/20 bg-white p-1.5 shadow-lg">
+  {/*<div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]">*/}
+    <button
+  type="button"
+  onClick={() => setMobileFiltersOpen((v) => !v)}
+  className="flex w-full items-center justify-between rounded-lg bg-blue-700 px-4 py-3 text-sm font-bold text-white lg:hidden"
+>
+  <span>Search & Filter Opportunities</span>
+  <span>{mobileFiltersOpen ? "▲" : "▼"}</span>
+</button>
+
+<div
+  className={[
+    "grid-cols-1 gap-2 lg:grid lg:grid-cols-[minmax(220px,1.4fr)_minmax(130px,0.8fr)_minmax(130px,0.8fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_minmax(140px,0.9fr)_100px]",
+    mobileFiltersOpen ? "mt-2 grid" : "hidden lg:grid",
+  ].join(" ")}
+>
+    <input
+      value={q}
+      onChange={(e) => {
+        setQ(e.target.value);
+        setPage(1);
+      }}
+      placeholder="Search university, program, country..."
+      className="w-full min-w-0 rounded-lg border border-slate-300 px-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    />
+
+    <select
+      value={continent}
+      onChange={(e) => {
+        setContinent(e.target.value);
+        setCountry("All");
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {["All", ...CONTINENT_NAMES].map((c) => (
+        <option key={c} value={c}>
+          {c === "All" ? "All Continents" : c}
+        </option>
+      ))}
+    </select>
+
+    <select
+      value={country}
+      onChange={(e) => {
+        setCountry(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {countryOptions.map((c) => (
+        <option key={c} value={c}>
+          {c === "All" ? "All Countries" : c}
+        </option>
+      ))}
+    </select>
+
+    <div className="relative" data-level-popover>
+      <button
+        type="button"
+        onClick={() => setLevelOpen((o) => !o)}
+        className="flex w-full items-center justify-between rounded-lg border border-slate-300 px-3 py-1.5 text-left text-sm outline-none hover:bg-slate-50"
+      >
+        <span>{levels.length ? `Study Level (${levels.length})` : "All Study Levels"}</span>
+        <span className="text-slate-500">▾</span>
+      </button>
+
+      {levelOpen && (
+        <div
+          className="absolute z-30 mt-1 w-full sm:w-64 rounded-lg border border-slate-200 bg-white shadow"
+          role="menu"
+          data-level-popover
+        >
+          <div className="max-h-64 overflow-auto p-2 space-y-1">
+            {LEVEL_OPTIONS.map((opt) => {
+              const checked = levels.includes(opt);
+              return (
+                <label
+                  key={opt}
+                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                >
+                  <input
+                    type="checkbox"
+                    className="accent-blue-600"
+                    checked={checked}
+                    onChange={() => toggleLevel(opt)}
+                  />
+                  <span className="text-sm text-slate-700">{opt}</span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between border-t border-slate-100 px-2 py-2">
+            <button
+              type="button"
+              onClick={() => setLevels([])}
+              className="text-xs text-slate-600 underline"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setLevelOpen(false)}
+              className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <select
+      value={funding}
+      onChange={(e) => {
+        setFunding(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {fundingOptions.map((f) => (
+        <option key={f} value={f}>
+          {f === "All" ? "All Funding Types" : f}
+        </option>
+      ))}
+    </select>
+
+    <select
+      value={sort}
+      onChange={(e) => {
+        setSort(e.target.value);
+        setPage(1);
+      }}
+      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      <option value="newest">Sort by Newest</option>
+      <option value="deadlineAsc">Deadline (soonest)</option>
+      <option value="deadlineDesc">Deadline (latest)</option>
+      <option value="title">Title (A–Z)</option>
+    </select>
+
+    <button
+      type="button"
+      onClick={resetFilters}
+      className="rounded-lg bg-blue-700 px-5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
+    >
+      Reset
+    </button>
+  </div>
+</div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[220px_minmax(0,1fr)_300px]">
         <aside className="hidden xl:block">
@@ -1201,19 +1188,6 @@ return (
   </p>
 
   <div className="mt-8 flex flex-wrap justify-center gap-4">
-    {/*<Link
-      to="/funded-graduate-admission"
-      className="rounded-full bg-white px-7 py-3 font-bold text-emerald-800 hover:bg-emerald-50"
-    >
-      Browse Opportunities
-    </Link>
-
-    <Link
-      to="/partner-submit-scholarship"
-      className="rounded-full border border-white px-7 py-3 font-bold hover:bg-white/10"
-    >
-      Submit an Opportunity
-    </Link>*/}
   </div>
 </section>
 
