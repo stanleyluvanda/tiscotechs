@@ -95,6 +95,131 @@ export default function Home() {
       {/* 2) TABS + CARDS */}
       <SectionTabs />
 
+
+     {/* International Education Consulting */}
+<section className="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] border-y border-slate-200 bg-white">
+  <div className="grid w-full items-stretch overflow-hidden bg-gradient-to-r from-white to-[#FFF8EF] lg:grid-cols-[48%_52%]">
+   {/* Left image */}
+<div className="relative min-h-[420px] lg:min-h-[500px] overflow-hidden">
+  <img
+    src="/images/OneOnOne Funding consultation.png"
+    alt="One-on-one international education consultation"
+    className="absolute inset-0 h-full w-full object-cover object-left-center"
+    loading="lazy"
+  />
+</div>
+
+    {/* Right content */}
+    <div className="flex items-center px-8 py-6 sm:px-10 lg:px-16 lg:py-6 xl:px-20">
+      <div className="w-full max-w-3xl">
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#F47C2C]">
+          Expert guidance. Personalized support.
+        </p>
+
+        <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-[#0A4595] sm:text-4xl">
+          International Education Consulting
+        </h2>
+
+        <p className="mt-5 text-base leading-8 text-slate-600 sm:text-lg">
+          Make informed decisions at every stage of your study abroad journey
+          with personalized guidance from experienced education consultants.
+        </p>
+
+        <div className="mt-6 grid gap-x-10 gap-y-5 sm:grid-cols-2">
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              University &amp; Institution Search
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Identify universities that match your academic goals and career
+              aspirations.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              Academic Program Selection
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Compare programs and choose the best fit for your future.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              Admission Consultation
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Receive guidance on application preparation and admission
+              strategy.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              Financial Planning
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Plan tuition, living costs, scholarships, and funding options.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              Scholarship Strategy
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Discover scholarships and build a competitive funding plan.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-slate-900">
+              Pre-arrival Support
+            </h3>
+            <p className="mt-1 leading-7 text-slate-600">
+              Prepare for studying abroad with confidence before departure.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-center gap-4">
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center rounded-full bg-[#F47C2C] px-6 py-3 font-semibold text-white transition hover:bg-[#E46E20]"
+          >
+            Request a Consultation
+          </Link>
+
+          <Link
+            to="/about"
+            className="inline-flex items-center font-semibold text-[#0A4595] hover:underline"
+          >
+            Learn more
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       {/* 3) MPOWER section */}
       <section className="w-full border-y border-amber-100" style={{ backgroundColor: "#FFFAEE" }}>
         <div className="max-w-5xl mx-auto px-4 lg:px-8 py-16">
