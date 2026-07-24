@@ -15,6 +15,7 @@ import {
 } from "../utils/scholarshipsApi";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
+import GoogleScholarshipInFeedAd from "../components/GoogleScholarshipInFeedAd";
 // ✅ Google Ads (same component you used in dashboards)
 //import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 
@@ -616,15 +617,11 @@ const trackScholarship = (id, type) => {
         {/*<div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-8 lg:py-10">*/}
           <div className="relative mx-auto max-w-[1400px] px-3 sm:px-4 py-5 lg:py-6">
 
-
-            {/*<div className="pointer-events-none absolute right-4 top-4 hidden h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden lg:block">
-  <GoogleBannerAd reserveSpace={false} />
-</div>*/}
-{isLargeScreen && (
+{/*{isLargeScreen && (
   <div className="pointer-events-none absolute right-4 top-4 h-[150px] w-[520px] max-h-[150px] max-w-[520px] overflow-hidden">
     <GoogleBannerAd reserveSpace={false} />
   </div>
-)}
+)}*/}
 
 
 
@@ -1113,10 +1110,11 @@ const trackScholarship = (id, type) => {
   </li>
 )}*/}
 
-{(index === 3 || index === 11) && (
-  <li className="overflow-hidden">
-    <GoogleBannerAd reserveSpace={false} />
-  </li>
+{canShowAds &&
+  (index === 3 || (index > 3 && (index - 3) % 6 === 0)) && (
+    <li className="overflow-hidden bg-white">
+      <GoogleScholarshipInFeedAd />
+    </li>
 )}
 
 
