@@ -39,14 +39,6 @@ const AUTH_BASE = (
   import.meta.env.VITE_API_URL ||
   "http://localhost:5001"
 ).replace(/\/+$/, "");
-
-/*const USE_SUPERTOKENS_TEST = true;*/
-/*const USE_SUPERTOKENS_TEST =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";*/
-
-  /* === SuperTokens controlled switch ======================= */
-/*const USE_SUPERTOKENS_PROD = false;*/
 const USE_SUPERTOKENS_PROD = true;
 
 const USE_SUPERTOKENS_TEST =
@@ -1210,7 +1202,8 @@ if (!user) {
             <main className="col-span-12 md:col-span-1">
               <div className="rounded-2xl bg-white shadow-sm border border-slate-200 flex flex-col h-full">
                 <div className="px-4 lg:px-5 py-3 border-b border-slate-200 flex items-center justify-center">
-                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                  {/*</div><div className="flex items-center gap-2 flex-wrap justify-center">*/}
+                    <div className="flex items-center justify-center gap-2 whitespace-nowrap">
                     <Link
                       to="/partner/submit-scholarship"
                       className="inline-flex items-center rounded-full bg-green-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-green-700"
@@ -1231,6 +1224,13 @@ if (!user) {
                     >
                       Post Funded Admission
                     </Link>
+
+                    <Link
+                        to="/partner/submit-international-student-news"
+                         className="inline-flex items-center rounded-full bg-blue-600 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white hover:bg-blue-700"
+                         >
+                          Post Student News
+                      </Link>
                   </div>
                 </div>
 

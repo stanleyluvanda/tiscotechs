@@ -356,6 +356,13 @@ export default function Navbar() {
 >
   Students' Resources Hub
 </Link>
+
+<Link
+  to="/international-student-news"
+  className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]"
+>
+  International Student News
+</Link>
   </div>
 </div>
 
@@ -474,6 +481,7 @@ export default function Navbar() {
               <NavLink to="/funded-graduate-admission" className={link} onClick={() => setMobileNavOpen(false)}>Funded Graduate Admission</NavLink>
               <NavLink to="/funding-programs" className={link} onClick={() => setMobileNavOpen(false)}>Funding Programs</NavLink>
               <NavLink to="/scholarship-tips"className={link}onClick={() => setMobileNavOpen(false)}>Students' Resources Hub</NavLink>
+              <NavLink to="/international-student-news"className={link}onClick={() => setMobileNavOpen(false)}>International Student News</NavLink>
               <NavLink to="/scholarships" className={link} onClick={() => setMobileNavOpen(false)}>Scholarships Directory</NavLink>
               <NavLink to="/fellowships" className={link} onClick={() => setMobileNavOpen(false)}>Fellowships</NavLink>
               {/*<NavLink to="/student-sign-up" className={link} onClick={() => setMobileNavOpen(false)}>Student Sign Up</NavLink>

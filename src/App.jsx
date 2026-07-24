@@ -54,6 +54,9 @@ const PartnerSubmitScholarship = lazy(() =>
 const PartnerSubmitFundedGraduateAdmission = lazy(() =>
   import("./pages/PartnerSubmitFundedGraduateAdmission.jsx")
 );
+const InternationalStudentNewsForm = lazy(() =>
+  import("./pages/InternationalStudentNewsForm.jsx")
+);
 
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.jsx"));
@@ -99,7 +102,9 @@ const AdminModeration = lazy(() => import("./pages/AdminModeration.jsx"));
 const AdminFundedGraduateAdmissionList = lazy(() =>
   import("./pages/AdminFundedGraduateAdmissionList.jsx")
 );
-
+const AdminInternationalStudentNews = lazy(() =>
+  import("./pages/AdminInternationalStudentNews.jsx")
+);
 const StudyInUS = lazy(() => import("./pages/StudyInUS.jsx"));
 const VideoTips = lazy(() => import("./pages/VideoTips.jsx"));
 const UploadTest = lazy(() => import("./pages/UploadTest.jsx"));
@@ -118,6 +123,13 @@ const FundingPrograms = lazy(() =>
 );
 const FundingProgramDetail = lazy(() =>
   import("./pages/FundingProgramDetail.jsx")
+);
+const InternationalStudentNews = lazy(() =>
+  import("./pages/InternationalStudentNews.jsx")
+);
+
+const InternationalStudentNewsDetail = lazy(() =>
+  import("./pages/InternationalStudentNewsDetail.jsx")
 );
 
 function PageWrap({ title, children }) {
@@ -247,6 +259,15 @@ export default function App() {
             path="/funded-graduate-admission/:id"
             element={<FundedGraduateAdmissionDetail />}
           />
+          <Route
+  path="/international-student-news"
+  element={<InternationalStudentNews />}
+/>
+
+<Route
+  path="/international-student-news/:slug"
+  element={<InternationalStudentNewsDetail />}
+/>
 
           <Route path="/funding-programs" element={<FundingPrograms />} />
           <Route path="/funding-programs/:id" element={<FundingProgramDetail />} />
@@ -265,6 +286,10 @@ export default function App() {
               path="/partner/submit-funded-graduate-admission"
               element={<PartnerSubmitFundedGraduateAdmission />}
             />
+            <Route
+                path="/partner/submit-international-student-news"
+                element={<InternationalStudentNewsForm />}
+              />
           </Route>
 
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -287,6 +312,10 @@ export default function App() {
               path="/admin/funded-graduate-admissions"
               element={<AdminFundedGraduateAdmissionList />}
             />
+            <Route
+                   path="/admin/international-student-news"
+                    element={<AdminInternationalStudentNews />}
+                />
 
             <Route path="/upload-test" element={<UploadTest />} />
           </Route>
@@ -412,7 +441,6 @@ export default function App() {
   element={<ScholarshipTipsStayingOnTrackAbroad />}
 />
 <Route path="/fellowship-guide" element={<FellowshipGuide />} />
-
 <Route path="*" element={<NotFound />} />
 </Routes>
       </Suspense>

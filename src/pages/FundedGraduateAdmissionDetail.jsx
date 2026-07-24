@@ -1355,10 +1355,6 @@ export default function FundedGraduateAdmissionDetail() {
 
   </div>
 </section>
-
-
-
-
       <Footer />
     </div>
   );

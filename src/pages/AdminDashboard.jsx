@@ -40,6 +40,12 @@ export default function AdminDashboard() {
           to="/admin/funded-graduate-admissions"
           cta="Open Funded Admissions"
         />
+        <AdminCard
+              title="International Student News"
+             body="Review, approve, publish, edit, and reject international student news submitted by partners or created by administrators."
+             to="/admin/international-student-news"
+               cta="Open Student News"
+             />
 
         <AdminCard
           title="Posts & Media"
@@ -77,6 +83,7 @@ export default function AdminDashboard() {
           <Link className="text-blue-600 hover:underline" to="/admin/funded-graduate-admissions">
             Funded Graduate Admission
           </Link>
+          <Link className="text-blue-600 hover:underline"to="/admin/international-student-news">International Student News</Link>
 
           <Link className="text-blue-600 hover:underline" to="/admin/posts/video-new">
             New Video Post

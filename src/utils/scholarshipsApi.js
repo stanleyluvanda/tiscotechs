@@ -309,16 +309,6 @@ export async function listAllScholarships({
 }
 
 
-
-
-
-
-
-
-
-
-
-
 /* ================= INSERT NEW FUNCTION BELOW THIS LINE ================= */
 
 export async function listFundedGraduateAdmissions({
