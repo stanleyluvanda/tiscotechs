@@ -5,6 +5,7 @@ import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
+import GoogleInArticleAd from "../components/GoogleInArticleAd";
 
 // ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
@@ -1195,9 +1196,9 @@ const res = await fetch(
       </div>
     </section>
 
-    <div className="w-full">
-      <GoogleBannerAd className="mx-auto w-full" />
-    </div>
+    <div className="my-8">
+  <GoogleInArticleAd />
+</div>
   </>
 )}
 
@@ -1271,9 +1272,9 @@ const res = await fetch(
       </div>
     </section>
 
-    <div className="w-full">
-      <GoogleBannerAd className="mx-auto w-full" />
-    </div>
+    <div className="my-8">
+  <GoogleInArticleAd />
+</div>
   </>
 )}
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getInternationalStudentNewsBySlug } from "../utils/internationalStudentNewsApi";
 import Footer from "../components/Footer";
+import GoogleInArticleAd from "../components/GoogleInArticleAd";
 
 const relatedGuides = [
   {
@@ -136,6 +137,47 @@ function getYouTubeEmbedUrl(value = "") {
   }
 }
 
+function splitArticleIntoBlocks(articleHtml = "") {
+  if (!articleHtml || typeof window === "undefined") {
+    return [];
+  }
+
+  const parser = new DOMParser();
+  const documentNode = parser.parseFromString(
+    `<div id="article-root">${articleHtml}</div>`,
+    "text/html"
+  );
+
+  const root = documentNode.getElementById("article-root");
+
+  if (!root) {
+    return [];
+  }
+
+  return Array.from(root.children)
+    .map((element) => {
+      const text = element.textContent?.trim() || "";
+
+      if (text === "[[YOUTUBE]]") {
+        return {
+          type: "youtube",
+        };
+      }
+
+      return {
+        type: "html",
+        html: element.outerHTML,
+      };
+    })
+    .filter((block) => {
+      if (block.type === "youtube") {
+        return true;
+      }
+
+      return Boolean(block.html?.trim());
+    });
+}
+
 
 function RelatedGuideLinks() {
   return (
@@ -261,7 +303,7 @@ export default function InternationalStudentNewsDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const articleSections = useMemo(() => {
+  /*const articleSections = useMemo(() => {
     if (!article?.articleHtml) {
       return [];
     }
@@ -270,6 +312,52 @@ export default function InternationalStudentNewsDetail() {
       /<p[^>]*>\s*\[\[YOUTUBE\]\]\s*<\/p>|\[\[YOUTUBE\]\]/i
     );
   }, [article?.articleHtml]);
+
+  const articleBlocks = useMemo(
+  () => splitArticleIntoBlocks(article?.articleHtml),
+  [article?.articleHtml]
+);*/
+
+const inArticleAdPositions = useMemo(() => {
+  const htmlBlockIndexes = articleBlocks
+    .map((block, index) =>
+      block.type === "html" ? index : null
+    )
+    .filter((index) => index !== null);
+
+  if (htmlBlockIndexes.length === 0) {
+    return new Set();
+  }
+
+  const firstPosition =
+    htmlBlockIndexes[
+      Math.max(
+        0,
+        Math.ceil(htmlBlockIndexes.length * 0.25) - 1
+      )
+    ];
+
+  const secondPosition =
+    htmlBlockIndexes[
+      Math.max(
+        0,
+        Math.ceil(htmlBlockIndexes.length * 0.65) - 1
+      )
+    ];
+
+  return new Set(
+    [firstPosition, secondPosition].filter(
+      (position, index, positions) =>
+        Number.isInteger(position) &&
+        positions.indexOf(position) === index
+    )
+  );
+}, [articleBlocks]);
+
+
+
+
+
 
   const youtubeEmbedUrl = useMemo(
     () => getYouTubeEmbedUrl(article?.youtubeUrl),
@@ -429,7 +517,11 @@ export default function InternationalStudentNewsDetail() {
               </div>
             )}
 
-            {article.articleHtml ? (
+            <div className="my-8">
+  <GoogleInArticleAd />
+</div>
+
+            {/*{article.articleHtml ? (
               <div className="mt-10">
                 {articleSections.map((sectionHtml, index) => (
                   <div key={`article-section-${index}`}>
@@ -466,7 +558,66 @@ export default function InternationalStudentNewsDetail() {
                 The full article content has not yet been
                 added to this test record.
               </div>
-            )}
+            )}*/}
+
+            {article.articleHtml ? (
+  <div className="mt-10">
+    {articleBlocks.map((block, index) => {
+      if (block.type === "youtube") {
+        if (!youtubeEmbedUrl) {
+          return null;
+        }
+
+        return (
+          <div
+            key={`article-video-${index}`}
+            className="my-10"
+          >
+            <div className="overflow-hidden bg-black">
+              <iframe
+                src={youtubeEmbedUrl}
+                title={`Related video: ${article.title}`}
+                className="aspect-video w-full"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={`article-block-${index}`}>
+          <div
+            className="rich-html text-base leading-8 text-slate-700"
+            dangerouslySetInnerHTML={{
+              __html: block.html,
+            }}
+          />
+
+          {inArticleAdPositions.has(index) ? (
+            <div className="my-10">
+              <GoogleInArticleAd />
+            </div>
+          ) : null}
+        </div>
+      );
+    })}
+
+    {/* In-article ad #3: after the conclusion,
+        before the official source and tags */}
+    <div className="my-10">
+      <GoogleInArticleAd />
+    </div>
+  </div>
+) : (
+  <div className="mt-10 rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+    The full article content has not yet been
+    added to this test record.
+  </div>
+)}
 
             {article.officialSourceUrl ? (
               <section className="mt-10 border-t border-slate-200 pt-8">

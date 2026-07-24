@@ -5,6 +5,7 @@ import { shouldSendTrackOnce } from "../lib/trackGate";
 import Footer from "../components/Footer";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
+import GoogleInArticleAd from "../components/GoogleInArticleAd";
 
 // ✅ Same API base as scholarships (same Lambda)
 const API_BASE = (
@@ -386,7 +387,7 @@ export default function FundedGraduateAdmissionDetail() {
   const [showBanner, setShowBanner] = useState(false);
   const [recs, setRecs] = useState([]);
   const [showAllProgramTips, setShowAllProgramTips] = useState(false);
-  const canShowAds = true;
+  //const canShowAds = true;
 
   // Track interactions (same endpoint, separate gate key namespace)
   const trackItem = (sid, type) => {
@@ -891,18 +892,25 @@ export default function FundedGraduateAdmissionDetail() {
                     )}
 
                     {eligibility && (
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-                        <h2
-                          className="text-2xl font-semibold text-[#4B1F6F]"
-                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
-                        >
-                          Program Eligibility & Requirements
-                        </h2>
-                        <div className="mt-2">
-                          <RichHtml html={eligibility} />
-                        </div>
-                      </section>
-                    )}
+  <>
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        Program Eligibility & Requirements
+      </h2>
+
+      <div className="mt-2">
+        <RichHtml html={eligibility} />
+      </div>
+    </section>
+
+    <div className="my-6 px-3 sm:px-5 lg:px-6">
+      <GoogleInArticleAd />
+    </div>
+  </>
+)}
 
                     {benefits && (
                       <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
@@ -928,18 +936,25 @@ export default function FundedGraduateAdmissionDetail() {
                       )}
 
                     {howToApply && (
-                      <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
-                        <h2
-                          className="text-2xl font-semibold text-[#4B1F6F]"
-                          style={{ fontFamily: '"Times New Roman", Times, serif' }}
-                        >
-                          How to Apply
-                        </h2>
-                        <div className="mt-2">
-                          <RichHtml html={howToApply} />
-                        </div>
-                      </section>
-                    )}
+  <>
+    <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
+      <h2
+        className="text-2xl font-semibold text-[#4B1F6F]"
+        style={{ fontFamily: '"Times New Roman", Times, serif' }}
+      >
+        How to Apply
+      </h2>
+
+      <div className="mt-2">
+        <RichHtml html={howToApply} />
+      </div>
+    </section>
+
+    <div className="my-6 px-3 sm:px-5 lg:px-6">
+      <GoogleInArticleAd />
+    </div>
+  </>
+)}
 
                     {additionalInformation && (
                       <section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">
