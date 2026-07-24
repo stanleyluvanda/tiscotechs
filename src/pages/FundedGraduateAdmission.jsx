@@ -11,6 +11,7 @@ import {
 } from "../utils/scholarshipsApi";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
+import GoogleScholarshipInFeedAd from "../components/GoogleScholarshipInFeedAd";
 
 const CONTINENT_NAMES = Object.keys(REGIONS);
 
@@ -1047,8 +1048,10 @@ return (
       {snippet}
       {fullDescription.length > 170 && "... "}
       <Link
-        to={`/fellowship/${s.id}`}
-        onClick={() => trackFellowship(s.id, "view")}
+        /*to={`/fellowship/${s.id}`}
+        onClick={() => trackFellowship(s.id, "view")}*/
+        to={`/funded-graduate-admission/${s.id}`}
+        onClick={() => trackItem(s.id, "view")}
         className="font-semibold text-blue-700 hover:underline"
       >
         Read more
@@ -1061,11 +1064,13 @@ return (
 
 </li>
 
-{(index + 1) % 4 === 0 && (
-  <li className="overflow-hidden">
-    <GoogleBannerAd reserveSpace={false} />
+{(index === 2 || (index > 2 && (index - 2) % 4 === 0)) && (
+  <li className="overflow-hidden bg-white">
+    <GoogleScholarshipInFeedAd />
   </li>
 )}
+
+
 
 </>
 );

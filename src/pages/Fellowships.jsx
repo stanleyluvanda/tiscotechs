@@ -10,6 +10,7 @@ import {
 } from "../utils/scholarshipsApi";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
+import GoogleScholarshipInFeedAd from "../components/GoogleScholarshipInFeedAd";
 
 const CONTENT_TYPE = "FELLOWSHIP";
 const CONTINENT_NAMES = Object.keys(REGIONS);
@@ -969,9 +970,10 @@ const fundingStr = Array.isArray(s.fundingType)
 
  </li>,
 
-(index + 1) % 2 === 0 ? (
-  <li key={`ad-${index}`} className="overflow-hidden">
-    <GoogleBannerAd reserveSpace={false} />
+canShowAds &&
+(index === 3 || (index > 3 && (index - 3) % 6 === 0)) ? (
+  <li key={`ad-${index}`} className="overflow-hidden bg-white">
+    <GoogleScholarshipInFeedAd />
   </li>
 ) : null,
 ];
