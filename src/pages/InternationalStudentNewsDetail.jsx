@@ -346,21 +346,9 @@ export default function InternationalStudentNewsDetail() {
   return (
     <main className="min-h-screen bg-white">
       <article>
-        {/* Advertisement above headline */}
-        <section className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 lg:px-8">
-          <div className="text-center text-xs text-slate-400">
-            Advertisement
-          </div>
-
-          <div className="mt-3 flex min-h-[220px] items-center justify-center bg-slate-50 sm:min-h-[290px]">
-            <span className="text-sm text-slate-300">
-              Advertisement
-            </span>
-          </div>
-        </section>
-
         {/* Headline area */}
         <header className="mx-auto max-w-6xl px-4 pb-8 pt-8 sm:px-6 lg:px-8 lg:pb-10">
+          {/*<header className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">*/}
           <Link
             to="/international-student-news"
             className="inline-flex items-center text-sm font-semibold text-blue-700 hover:text-blue-900"
@@ -523,7 +511,7 @@ export default function InternationalStudentNewsDetail() {
           </div>
 
           <aside className="space-y-8">
-            <div>
+            {/*<div>
               <div className="text-center text-xs text-slate-400">
                 Advertisement
               </div>
@@ -533,7 +521,7 @@ export default function InternationalStudentNewsDetail() {
                   Advertisement
                 </span>
               </div>
-            </div>
+            </div>*/}
 
             <section className="rounded-md border border-[#DCD4C2] bg-[#FDFBF7] p-5">
   <div className="-mx-5 -mt-5 mb-5 rounded-t-md bg-[#D8CBB3] px-5 py-3">
@@ -592,7 +580,143 @@ export default function InternationalStudentNewsDetail() {
             <RelatedGuideLinks />
           </aside>
         </div>
-      </article>
+     </article>
+
+      {/* Pre-footer editorial section */}
+      <section className="border-t-2 border-slate-800 bg-slate-50">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 py-14 md:grid-cols-3 lg:px-8 lg:py-16">
+          {/* Browse news */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.28em] text-slate-600">
+              Browse News and Articles
+            </h2>
+
+            <nav
+              className="mt-7 space-y-5"
+              aria-label="News categories"
+            >
+              <Link
+                to="/international-student-news"
+                className="block text-base text-slate-900 hover:text-blue-700"
+              >
+                Visa &amp; Immigration
+              </Link>
+
+              <Link
+                to="/international-student-news"
+                className="block text-base text-slate-900 hover:text-blue-700"
+              >
+                University Admissions
+              </Link>
+
+              <Link
+                to="/international-student-news"
+                className="block text-base text-slate-900 hover:text-blue-700"
+              >
+                Scholarships &amp; Funding
+              </Link>
+
+              <Link
+                to="/international-student-news"
+                className="block text-base text-slate-900 hover:text-blue-700"
+              >
+                Work Rights
+              </Link>
+
+              <Link
+                to="/international-student-news"
+                className="block text-base text-slate-900 hover:text-blue-700"
+              >
+                Post-study Work
+              </Link>
+            </nav>
+          </div>
+
+          {/* Share article */}
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.28em] text-slate-600">
+              Share This Article
+            </h2>
+
+            <div className="mt-7 flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard
+                    ?.writeText(window.location.href)
+                    .catch(() => {});
+                }}
+                aria-label="Copy article link"
+                title="Copy article link"
+                className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-300 text-xl text-slate-700 transition hover:border-blue-700 hover:text-blue-700"
+              >
+                🔗
+              </button>
+
+              <a
+                href={`mailto:?subject=${encodeURIComponent(
+                  article.title
+                )}&body=${encodeURIComponent(
+                  `Read this international student news article: ${window.location.href}`
+                )}`}
+                aria-label="Share article by email"
+                title="Share article by email"
+                className="flex h-14 w-14 items-center justify-center rounded-full border border-slate-300 text-xl text-slate-700 transition hover:border-blue-700 hover:text-blue-700"
+              >
+                ✉
+              </a>
+            </div>
+          </div>
+
+          {/* ScholarsKnowledge information */}
+          <div className="md:text-center">
+            <Link
+              to="/"
+              className="inline-block font-serif text-3xl font-bold tracking-tight text-blue-950 sm:text-4xl"
+            >
+              Scholars
+              <span className="text-orange-500">
+                Knowledge
+              </span>
+            </Link>
+
+            <p className="mx-auto mt-6 max-w-md text-base leading-8 text-slate-600">
+              Helping international students discover verified
+              news, scholarships, fellowships, funded graduate
+              opportunities, and expert application guidance.
+            </p>
+
+            <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 md:justify-center">
+              <Link
+                to="/privacy-policy"
+                className="text-sm text-slate-600 hover:text-blue-700"
+              >
+                Privacy Policy
+              </Link>
+
+              <Link
+                to="/terms-of-use"
+                className="text-sm text-slate-600 hover:text-blue-700"
+              >
+                Terms of Use
+              </Link>
+
+              <Link
+                to="/contact"
+                className="text-sm text-slate-600 hover:text-blue-700"
+              >
+                Contact
+              </Link>
+            </div>
+
+            <p className="mt-9 text-sm text-slate-500">
+              © {new Date().getFullYear()} ScholarsKnowledge. All
+              rights reserved.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );

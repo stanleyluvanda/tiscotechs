@@ -275,7 +275,7 @@ export default function InternationalStudentNews() {
   <div className="mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-8 lg:px-12">
 
     {/* Advertisement */}
-    <div className="mx-auto max-w-5xl">
+    {/*<div className="mx-auto max-w-5xl">
       <p className="text-center text-xs text-slate-400">
         Advertisement
       </p>
@@ -285,11 +285,12 @@ export default function InternationalStudentNews() {
           Advertisement
         </span>
       </div>
-    </div>
+    </div>*/}
 
           {/* News heading */}
           {/* News heading */}
-<div className="mt-10">
+{/*<div className="mt-10">*/}
+  <div className="mt-2">
   <h1 className="text-4xl font-bold tracking-tight text-center text-slate-900 sm:text-5xl">
     News & Updates for International Students
   </h1>
