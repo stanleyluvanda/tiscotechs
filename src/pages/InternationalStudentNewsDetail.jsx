@@ -303,20 +303,10 @@ export default function InternationalStudentNewsDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /*const articleSections = useMemo(() => {
-    if (!article?.articleHtml) {
-      return [];
-    }
-
-    return article.articleHtml.split(
-      /<p[^>]*>\s*\[\[YOUTUBE\]\]\s*<\/p>|\[\[YOUTUBE\]\]/i
-    );
-  }, [article?.articleHtml]);
-
   const articleBlocks = useMemo(
   () => splitArticleIntoBlocks(article?.articleHtml),
   [article?.articleHtml]
-);*/
+);
 
 const inArticleAdPositions = useMemo(() => {
   const htmlBlockIndexes = articleBlocks

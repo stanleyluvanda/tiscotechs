@@ -35,6 +35,10 @@ const CATEGORY_OPTIONS = [
   "Student Safety",
   "Education Policy",
   "International Education",
+  "Scholarship",
+  "Fellowship",
+  "Grants",
+  "Internship opportunities"
 ];
 
 const IMPORTANCE_OPTIONS = [
