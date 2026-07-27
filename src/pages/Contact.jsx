@@ -376,7 +376,7 @@ export default function Contact() {
         <section
           className="relative overflow-hidden bg-cover bg-center"
           style={{
-            backgroundImage: "url('/public/images/contact.webp')",
+            backgroundImage: "url('/images/contact.webp')",
           }}
         >
           <div className="absolute inset-0 bg-black/30" />
