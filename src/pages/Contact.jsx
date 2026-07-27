@@ -177,7 +177,7 @@ function ContactMethodCard({ item }) {
   const card = (
     <div className="group h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-none bg-blue-50 text-blue-700">
           <Icon size={21} strokeWidth={2} />
         </div>
 
@@ -210,7 +210,7 @@ function SupportAreaCard({ item }) {
 
   return (
     <article className="group flex h-full flex-col rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-sm transition hover:-translate-y-1 hover:bg-white/15">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-blue-800 shadow-sm">
+      <div className="flex h-12 w-12 items-center justify-center rounded-none bg-white text-blue-800 shadow-sm">
         <Icon size={23} />
       </div>
 
@@ -422,13 +422,19 @@ export default function Contact() {
 
         {/* Main contact area */}
         <section className="relative z-10 mx-auto -mt-10 max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70">
+          <div className="overflow-hidden border border-slate-200 bg-white shadow-xl shadow-slate-200/70">
             <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
               {/* Left information panel */}
-              <aside className="relative overflow-hidden bg-gradient-to-br from-[#083b7a] via-[#0a4f9d] to-[#0873c4] p-7 text-white sm:p-10 lg:p-12">
-                <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full border border-white/10" />
-                <div className="absolute -right-8 -top-12 h-52 w-52 rounded-full border border-white/10" />
-                <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-white/5" />
+              <aside
+  className="relative overflow-hidden p-7 text-white sm:p-10 lg:p-12"
+  style={{
+    backgroundImage: "url('/images/contact-support.webp')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  }}
+>
+              
 
                 <div className="relative">
                   <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-100">
@@ -447,7 +453,7 @@ export default function Contact() {
 
                   <div className="mt-8 space-y-5">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-white/15">
                         <Mail size={19} />
                       </div>
 
@@ -464,7 +470,7 @@ export default function Contact() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-white/15">
                         <Globe2 size={19} />
                       </div>
 
@@ -481,7 +487,7 @@ export default function Contact() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-white/15">
                         <Clock3 size={19} />
                       </div>
 
@@ -499,7 +505,7 @@ export default function Contact() {
                     </div>
 
                     <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-none bg-white/15">
                         <Users size={19} />
                       </div>
 
@@ -555,7 +561,7 @@ export default function Contact() {
                           onChange={updateField}
                           autoComplete="name"
                           placeholder="Enter your full name"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         />
                       </Field>
 
@@ -567,7 +573,7 @@ export default function Contact() {
                           onChange={updateField}
                           autoComplete="email"
                           placeholder="you@example.com"
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         />
                       </Field>
                     </div>
@@ -578,7 +584,7 @@ export default function Contact() {
                           name="country"
                           value={form.country}
                           onChange={updateField}
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         >
                           {COUNTRY_OPTIONS.map((country) => (
                             <option key={country} value={country}>
@@ -593,7 +599,7 @@ export default function Contact() {
                           name="topic"
                           value={form.topic}
                           onChange={updateField}
-                          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                          className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                         >
                           {TOPIC_OPTIONS.map((topic) => (
                             <option key={topic} value={topic}>
@@ -611,7 +617,7 @@ export default function Contact() {
                         value={form.subject}
                         onChange={updateField}
                         placeholder="Briefly describe your request"
-                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="w-full rounded-none border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       />
                     </Field>
 
@@ -626,7 +632,7 @@ export default function Contact() {
                         onChange={updateField}
                         rows={8}
                         placeholder="Write your message here..."
-                        className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        className="w-full resize-y rounded-none border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                       />
                     </Field>
 
@@ -775,7 +781,7 @@ export default function Contact() {
               <div className="flex lg:justify-end">
                 <a
                   href="mailto:support@scholarsknowledge.com"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
+                  className="inline-flex items-center gap-2 rounded-none bg-white px-5 py-3 text-sm font-bold text-blue-800 shadow-sm transition hover:bg-blue-50"
                 >
                   Email the support team
                   <ExternalLink size={16} />
@@ -801,7 +807,7 @@ export default function Contact() {
                 to="/"
                 className="inline-flex items-center gap-3 text-white"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
+                <div className="flex h-11 w-11 items-center justify-center rounded-none bg-blue-600">
                   <GraduationCap size={24} />
                 </div>
 
