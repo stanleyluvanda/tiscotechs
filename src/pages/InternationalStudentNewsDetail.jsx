@@ -453,9 +453,13 @@ const inArticleAdPositions = useMemo(() => {
             />
           </div>
 
-          <h1 className="mt-7 max-w-5xl text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            {article.title}
-          </h1>
+         {/* Ad above the article headline */}
+<div className="news-ad-slot mt-6">
+  <GoogleInArticleAd />
+</div>
+          <h1 className="mt-7 max-w-5xl text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+  {article.title}
+</h1>
 
           {article.excerpt ? (
             <p className="mt-5 max-w-4xl text-lg leading-8 text-slate-600">
@@ -507,49 +511,6 @@ const inArticleAdPositions = useMemo(() => {
               </div>
             )}
 
-            <div className="my-8">
-  <GoogleInArticleAd />
-</div>
-
-            {/*{article.articleHtml ? (
-              <div className="mt-10">
-                {articleSections.map((sectionHtml, index) => (
-                  <div key={`article-section-${index}`}>
-                    {sectionHtml.trim() ? (
-                      <div
-                        className="rich-html text-base leading-8 text-slate-700"
-                        dangerouslySetInnerHTML={{
-                          __html: sectionHtml,
-                        }}
-                      />
-                    ) : null}
-
-                    {index < articleSections.length - 1 &&
-                    youtubeEmbedUrl ? (
-                      <div className="my-10">
-                        <div className="overflow-hidden bg-black">
-                          <iframe
-                            src={youtubeEmbedUrl}
-                            title={`Related video: ${article.title}`}
-                            className="aspect-video w-full"
-                            loading="lazy"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                          />
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-10 rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
-                The full article content has not yet been
-                added to this test record.
-              </div>
-            )}*/}
-
             {article.articleHtml ? (
   <div className="mt-10">
     {articleBlocks.map((block, index) => {
@@ -587,20 +548,20 @@ const inArticleAdPositions = useMemo(() => {
             }}
           />
 
-          {inArticleAdPositions.has(index) ? (
-            <div className="my-10">
-              <GoogleInArticleAd />
-            </div>
-          ) : null}
+         {inArticleAdPositions.has(index) ? (
+  <div className="news-ad-slot my-8">
+    <GoogleInArticleAd />
+  </div>
+) : null}
         </div>
       );
     })}
 
-    {/* In-article ad #3: after the conclusion,
-        before the official source and tags */}
-    <div className="my-10">
-      <GoogleInArticleAd />
-    </div>
+   
+    {/* Bottom article ad: before official source and tags */}
+<div className="news-ad-slot my-8">
+  <GoogleInArticleAd />
+</div>
   </div>
 ) : (
   <div className="mt-10 rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
@@ -858,6 +819,170 @@ const inArticleAdPositions = useMemo(() => {
         </div>
       </section>
 
+      <style>{`
+  .rich-html {
+    overflow-wrap: anywhere;
+  }
+
+  .rich-html p {
+    margin: 0 0 1rem;
+  }
+
+  .rich-html p:last-child {
+    margin-bottom: 0;
+  }
+
+  .rich-html ul,
+.rich-html ol {
+  margin: 1rem 0;
+  padding-left: 1.75rem;
+}
+
+.rich-html ul {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.rich-html ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.rich-html li {
+  margin: 0.35rem 0;
+  padding-left: 0.25rem;
+}
+
+/* Quill bullet lists */
+.rich-html ol > li[data-list="bullet"] {
+  list-style-type: disc;
+}
+
+/* Quill numbered lists */
+.rich-html ol > li[data-list="ordered"] {
+  list-style-type: decimal;
+}
+
+/* Standard unordered lists */
+.rich-html ul > li {
+  list-style-type: disc;
+}
+
+/* Nested bullets */
+.rich-html ul ul > li,
+.rich-html ol ol > li[data-list="bullet"] {
+  list-style-type: circle;
+}
+
+.rich-html ul ul ul > li,
+.rich-html ol ol ol > li[data-list="bullet"] {
+  list-style-type: square;
+}
+
+.rich-html li[data-list] {
+  display: list-item;
+}
+
+.rich-html li > p {
+  margin: 0;
+}
+
+  .rich-html h2 {
+    margin: 2rem 0 0.85rem;
+    font-size: 1.75rem;
+    line-height: 1.3;
+    font-weight: 700;
+    color: rgb(15 23 42);
+  }
+
+  .rich-html h3 {
+    margin: 1.75rem 0 0.75rem;
+    font-size: 1.4rem;
+    line-height: 1.35;
+    font-weight: 700;
+    color: rgb(15 23 42);
+  }
+
+  .rich-html h4 {
+    margin: 1.5rem 0 0.65rem;
+    font-size: 1.15rem;
+    line-height: 1.4;
+    font-weight: 700;
+    color: rgb(15 23 42);
+  }
+
+  .rich-html blockquote {
+    margin: 1.5rem 0;
+    border-left: 4px solid rgb(148 163 184);
+    padding-left: 1rem;
+    color: rgb(71 85 105);
+    font-style: italic;
+  }
+
+  .rich-html a {
+    color: rgb(29 78 216);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .rich-html img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    margin: 1.5rem auto;
+  }
+
+  .rich-html .ql-align-center {
+    text-align: center;
+  }
+
+  .rich-html .ql-align-right {
+    text-align: right;
+  }
+
+  .rich-html .ql-align-justify {
+    text-align: justify;
+  }
+
+  .rich-html .ql-indent-1 {
+    padding-left: 3rem;
+  }
+
+  .rich-html .ql-indent-2 {
+    padding-left: 6rem;
+  }
+
+  .rich-html .ql-indent-3 {
+    padding-left: 9rem;
+  }
+
+  .news-ad-slot {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .news-ad-slot:has(
+    ins.adsbygoogle[data-ad-status="unfilled"]
+  ) {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    .rich-html h2 {
+      font-size: 1.5rem;
+    }
+
+    .rich-html h3 {
+      font-size: 1.25rem;
+    }
+
+    .rich-html ul,
+    .rich-html ol {
+      padding-left: 1.4rem;
+    }
+  }
+`}</style>
       <Footer />
     </main>
   );

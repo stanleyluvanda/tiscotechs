@@ -70,6 +70,7 @@ const quillModules = {
   toolbar: [
     [{ header: [2, 3, 4, false] }],
     ["bold", "italic", "underline", "strike"],
+    [{ color: [] }],
     [{ list: "ordered" }, { list: "bullet" }],
     [{ align: [] }],
     ["blockquote", "link"],
