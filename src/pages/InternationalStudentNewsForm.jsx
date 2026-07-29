@@ -341,6 +341,7 @@ export default function InternationalStudentNewsForm() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [importingImage, setImportingImage] = useState(false);
+  const [inlineImageUploads, setInlineImageUploads] = useState(0);
   const [imagePreview, setImagePreview] = useState("");
 
   const [error, setError] = useState("");
@@ -378,13 +379,97 @@ export default function InternationalStudentNewsForm() {
       setSuccess("");
     };
 
-    quill.on("text-change", handleTextChange);
+    /*quill.on("text-change", handleTextChange);
 
     // Synchronize any content already present in the editor.
     handleTextChange();
 
     return () => {
-      quill.off("text-change", handleTextChange);
+      quill.off("text-change", handleTextChange);*/
+
+      quill.on("text-change", handleTextChange);
+
+const handleEditorPaste = async (event) => {
+  const clipboardItems = Array.from(
+    event.clipboardData?.items || []
+  );
+
+  const pastedImageItem = clipboardItems.find(
+    (item) =>
+      item.kind === "file" &&
+      item.type.startsWith("image/")
+  );
+
+  if (!pastedImageItem) {
+    return;
+  }
+
+  /*
+   * Prevent Quill from inserting the screenshot as a large
+   * Base64 data URL inside articleHtml.
+   */
+  event.preventDefault();
+  event.stopPropagation();
+
+  const pastedFile = pastedImageItem.getAsFile();
+
+  if (!pastedFile) {
+    setError(
+      "The pasted screenshot could not be read."
+    );
+    return;
+  }
+
+  const range = quill.getSelection(true);
+
+  const insertIndex =
+    range?.index ??
+    Math.max(0, quill.getLength() - 1);
+
+  try {
+    await uploadInlineArticleImage(
+      pastedFile,
+      quill,
+      insertIndex
+    );
+  } catch (pasteError) {
+    setError(
+      pasteError?.message ||
+        "The pasted screenshot could not be uploaded."
+    );
+
+    setSuccess("");
+  }
+};
+
+quill.root.addEventListener(
+  "paste",
+  handleEditorPaste,
+  true
+);
+
+// Synchronize any content already present in the editor.
+handleTextChange();
+
+return () => {
+  quill.off("text-change", handleTextChange);
+
+  quill.root.removeEventListener(
+    "paste",
+    handleEditorPaste,
+    true
+  );
+
+
+
+
+
+
+
+
+
+
+
 
       if (contentQuillRef.current === quill) {
         contentQuillRef.current = null;
@@ -464,6 +549,142 @@ export default function InternationalStudentNewsForm() {
     setError("");
     setSuccess("");
   }
+
+
+  async function uploadInlineArticleImage(file, quill, insertIndex) {
+  if (!file?.type?.startsWith("image/")) {
+    throw new Error("The pasted item is not a valid image.");
+  }
+
+  const maximumFileSize = 10 * 1024 * 1024;
+
+  if (file.size > maximumFileSize) {
+    throw new Error(
+      "The pasted screenshot must be smaller than 10 MB."
+    );
+  }
+
+  const uploadMarker = `Uploading screenshot ${Date.now()}...`;
+
+  quill.insertText(
+    insertIndex,
+    uploadMarker,
+    {
+      italic: true,
+      color: "#64748b",
+    },
+    "silent"
+  );
+
+  quill.setSelection(
+    insertIndex + uploadMarker.length,
+    0,
+    "silent"
+  );
+
+  setInlineImageUploads((current) => current + 1);
+  setError("");
+  setSuccess("");
+
+  try {
+    const optimizedFile = await optimizeNewsImage(file, {
+      maxWidth: 1600,
+      maxHeight: 1200,
+      quality: 0.72,
+    });
+
+    const extension =
+      optimizedFile.type === "image/webp"
+        ? "webp"
+        : String(optimizedFile.name || "")
+            .split(".")
+            .pop() || "png";
+
+    const safeName = `article-screenshot-${Date.now()}.${extension}`
+      .replace(/[^\w.-]+/g, "_");
+
+    const { uploadUrl, publicUrl } =
+      await getNewsImageUploadUrl({
+        fileName: safeName,
+        contentType:
+          optimizedFile.type || "image/webp",
+      });
+
+    await uploadFileToS3(uploadUrl, optimizedFile);
+
+    if (!isCloudFrontUrl(publicUrl)) {
+      throw new Error(
+        "The screenshot upload succeeded, but no valid CloudFront URL was returned."
+      );
+    }
+
+    /*
+     * Find the marker again because the user may have typed
+     * elsewhere while the screenshot was uploading.
+     */
+    const currentText = quill.getText();
+    const markerIndex = currentText.indexOf(uploadMarker);
+
+    const finalInsertIndex =
+      markerIndex >= 0
+        ? markerIndex
+        : Math.max(0, quill.getLength() - 1);
+
+    if (markerIndex >= 0) {
+      quill.deleteText(
+        markerIndex,
+        uploadMarker.length,
+        "silent"
+      );
+    }
+
+    quill.insertEmbed(
+      finalInsertIndex,
+      "image",
+      publicUrl,
+      "user"
+    );
+
+    quill.insertText(
+      finalInsertIndex + 1,
+      "\n",
+      "user"
+    );
+
+    quill.setSelection(
+      finalInsertIndex + 2,
+      0,
+      "silent"
+    );
+
+    quill.focus();
+
+    setSuccess(
+      "The pasted screenshot was uploaded and inserted into the article."
+    );
+  } catch (uploadError) {
+    const currentText = quill.getText();
+    const markerIndex = currentText.indexOf(uploadMarker);
+
+    if (markerIndex >= 0) {
+      quill.deleteText(
+        markerIndex,
+        uploadMarker.length,
+        "silent"
+      );
+    }
+
+    throw uploadError;
+  } finally {
+    setInlineImageUploads((current) =>
+      Math.max(0, current - 1)
+    );
+  }
+}
+
+
+
+
 
   async function handleImageFileChange(event) {
     const file = event.target.files?.[0];
@@ -613,9 +834,18 @@ export default function InternationalStudentNewsForm() {
   }
 
   function validateForm() {
-    if (uploadingImage || importingImage) {
+    /*if (uploadingImage || importingImage) {
       return "Wait for the featured image processing to finish.";
-    }
+    }*/
+    if (
+  uploadingImage ||
+  importingImage ||
+  inlineImageUploads > 0
+) {
+  return inlineImageUploads > 0
+    ? "Wait for the pasted screenshot upload to finish."
+    : "Wait for the featured image processing to finish.";
+}
 
     if (!form.title.trim()) {
       return "Enter the article title.";
@@ -635,6 +865,27 @@ export default function InternationalStudentNewsForm() {
     if (!articleContentText) {
       return "Enter the article content.";
     }
+    if (
+  /<img[^>]+src=["']data:image\//i.test(
+    articleContent
+  )
+) {
+  return (
+    "One or more pasted images have not been uploaded. " +
+    "Remove the affected image and paste it again."
+  );
+}
+
+if (
+  /<img[^>]+src=["']blob:/i.test(
+    articleContent
+  )
+) {
+  return (
+    "One or more pasted images are still temporary. " +
+    "Wait for the upload to finish before submitting."
+  );
+}
 
     if (!form.country) {
       return "Select a country.";
@@ -720,7 +971,15 @@ export default function InternationalStudentNewsForm() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (saving || uploadingImage || importingImage) return;
+    /*if (saving || uploadingImage || importingImage) return;*/
+    if (
+  saving ||
+  uploadingImage ||
+  importingImage ||
+  inlineImageUploads > 0
+) {
+  return;
+}
 
     const validationError = validateForm();
 
@@ -980,12 +1239,31 @@ export default function InternationalStudentNewsForm() {
                 />
               </div>
 
-              <p className="mt-3 text-xs leading-5 text-slate-500">
+              {/*<p className="mt-3 text-xs leading-5 text-slate-500">
                 Use headings, paragraphs, lists, quotations, and
                 links within this editor. If you added a YouTube
                 URL, place the cursor where you want the video to
                 appear and click "Insert YouTube Video."
-              </p>
+              </p>*/}
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+  Use headings, paragraphs, lists, quotations, links,
+  and font colors. You may paste screenshots directly
+  at the cursor position. Pasted screenshots are
+  optimized and uploaded to ScholarsKnowledge storage
+  before submission. If you added a YouTube URL, place
+  the cursor where you want the video to appear and
+  click "Insert YouTube Video."
+</p>
+
+{inlineImageUploads > 0 ? (
+  <p className="mt-2 text-xs font-semibold text-purple-700">
+    Uploading{" "}
+    {inlineImageUploads === 1
+      ? "pasted screenshot"
+      : `${inlineImageUploads} pasted screenshots`}
+    ...
+  </p>
+) : null}
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
@@ -1414,12 +1692,18 @@ export default function InternationalStudentNewsForm() {
               <div className="space-y-3">
                 <button
                   type="submit"
-                  disabled={
+                  /*disabled={
                     saving || uploadingImage || importingImage
-                  }
+                  }*/
+                  disabled={
+  saving ||
+  uploadingImage ||
+  importingImage ||
+  inlineImageUploads > 0
+}
                   className="w-full rounded-lg bg-purple-700 px-5 py-3 text-sm font-bold text-white hover:bg-purple-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {saving
+                  {/*{saving
                     ? "Saving..."
                     : uploadingImage
                       ? "Uploading image..."
@@ -1427,15 +1711,37 @@ export default function InternationalStudentNewsForm() {
                         ? "Importing image..."
                         : form.status === "pending"
                           ? "Submit article"
-                          : "Save draft"}
+                          : "Save draft"}*/}
+
+                          {saving
+  ? "Saving..."
+  : inlineImageUploads > 0
+    ? `Uploading ${
+        inlineImageUploads === 1
+          ? "screenshot"
+          : `${inlineImageUploads} screenshots`
+      }...`
+    : uploadingImage
+      ? "Uploading image..."
+      : importingImage
+        ? "Importing image..."
+        : form.status === "pending"
+          ? "Submit article"
+          : "Save draft"}
                 </button>
 
                 <button
                   type="button"
                   onClick={handleReset}
-                  disabled={
+                  /*disabled={
                     saving || uploadingImage || importingImage
-                  }
+                  }*/
+                  disabled={
+  saving ||
+  uploadingImage ||
+  importingImage ||
+  inlineImageUploads > 0
+}
                   className="w-full rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                 >
                   Clear form
