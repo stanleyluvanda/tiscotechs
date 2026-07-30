@@ -599,6 +599,78 @@ const trackScholarship = (id, type) => {
     name: "Germany",
     flag: "/images/flags/de.webp",
   },
+  {
+    name: "Austria",
+    flag: "/images/flags/at.webp",
+  },
+  {
+    name: "China",
+    flag: "/images/flags/cn.webp",
+  },
+  {
+    name: "Denmark",
+    flag: "/images/flags/dk.webp",
+  },
+  {
+    name: "Finland",
+    flag: "/images/flags/fi.webp",
+  },
+  {
+    name: "France",
+    flag: "/images/flags/fr.webp",
+  },
+  {
+    name: "Hungary",
+    flag: "/images/flags/hu.webp",
+  },
+  {
+    name: "Ireland",
+    flag: "/images/flags/ie.webp",
+  },
+  {
+    name: "Italy",
+    flag: "/images/flags/it.webp",
+  },
+  {
+    name: "Japan",
+    flag: "/images/flags/jp.webp",
+  },
+  {
+    name: "South Korea",
+    flag: "/images/flags/kr.webp",
+  },
+  {
+    name: "Netherlands",
+    flag: "/images/flags/nl.webp",
+  },
+  {
+    name: "New Zealand",
+    flag: "/images/flags/nz.webp",
+  },
+  {
+    name: "Saudi Arabia",
+    flag: "/images/flags/sa.webp",
+  },
+  {
+    name: "Singapore",
+    flag: "/images/flags/sg.webp",
+  },
+  {
+    name: "Sweden",
+    flag: "/images/flags/se.webp",
+  },
+  {
+    name: "Switzerland",
+    flag: "/images/flags/ch.webp",
+  },
+  {
+    name: "Turkey",
+    flag: "/images/flags/tr.webp",
+  },
+  {
+    name: "United Arab Emirates",
+    flag: "/images/flags/ae.webp",
+  },
 ];
 
 
@@ -1146,9 +1218,6 @@ const trackScholarship = (id, type) => {
           </main>
 
           {/* RIGHT SIDEBAR */}
-          {/*<aside className="hidden xl:block">
-            <div className="space-y-4">
-<GoogleSidebarAd className="w-full" minHeight={600} />*/}
 <aside className="hidden xl:block">
   <div className="space-y-4">
     {isExtraLargeScreen && (
@@ -1190,28 +1259,12 @@ const trackScholarship = (id, type) => {
 ))}
                 </div>
               </div>
-
-              {/*<div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-bold text-slate-900">Latest Scholarship Tips</h3>
-                <div className="mt-3 space-y-3 text-sm">
-                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
-                    How to Write a Winning SOP
-                  </Link>
-                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
-                    How to Get Strong Recommendation Letters
-                  </Link>
-                  <Link to="/scholarship-tips" className="block font-semibold text-blue-800 hover:underline">
-                    Top Tips to Apply for Fully Funded Scholarships
-                  </Link>
-                </div>
-              </div>*/}
               <RelatedGuideLinks />
             </div>
           </aside>
         </div>
       </div>
       {/* DISCLAIMER */}
-{/*<section className="mt-10 w-full border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">*/}
 <section className="mt-10 -mx-4 sm:mx-0 border-y border-amber-200 bg-amber-50 px-4 py-6 shadow-sm">
   <div className="mx-auto max-w-[1400px]">
     <h3 className="text-base font-bold text-amber-900">
@@ -1231,8 +1284,6 @@ const trackScholarship = (id, type) => {
 </section>
 
       {/* SCHOLARSHIP CTA */}
-{/*<section className="bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
-{/*<section className="mt-12 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">*/}
 <section className="mt-0 bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 px-4 py-12 text-center text-white">
   <h2 className="text-3xl font-extrabold">
     Your Scholarship Journey Starts Here
@@ -1245,19 +1296,7 @@ const trackScholarship = (id, type) => {
   </p>
 
   <div className="mt-8 flex flex-wrap justify-center gap-4">
-    {/*<Link
-      to="/scholarships"
-      className="rounded-full bg-white px-7 py-3 font-bold text-blue-800 hover:bg-blue-50"
-    >
-      Browse Scholarships
-    </Link>*/}
-
-    {/*<Link
-      to="/partner-submit-scholarship"
-      className="rounded-full border border-white px-7 py-3 font-bold hover:bg-white/10"
-    >
-      Submit a Scholarship
-    </Link>*/}
+   
   </div>
 </section>
 
@@ -1310,13 +1349,6 @@ const trackScholarship = (id, type) => {
     </p>
   </div>
 </div>
-
-
-
-
-
-
-
     </div>
   );
 }
