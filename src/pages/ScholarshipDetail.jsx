@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
 import GoogleInArticleAd from "../components/GoogleInArticleAd";
+import { listInternationalStudentNews } from "../utils/internationalStudentNewsApi";
 
 // ✅ Scholarships Details MUST use the Scholarships API base
 const API_BASE = (
@@ -205,6 +206,71 @@ function YouTubeLiteEmbed({ videoId, title }) {
       </span>
     </button>
   );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function normalizeSidebarNews(item) {
+  return {
+    id:
+      item?.id ||
+      item?.newsId ||
+      String(item?.pk || "").replace(/^NEWS#/, ""),
+
+    slug: item?.slug || "",
+
+    title:
+      item?.title ||
+      item?.headline ||
+      "Untitled news article",
+
+    image:
+      item?.imageUrl ||
+      item?.image ||
+      item?.featuredImage ||
+      "",
+
+    publishedAt:
+      item?.publishedAt ||
+      item?.createdAt ||
+      "",
+  };
+}
+
+function extractNewsItems(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.news)) return response.news;
+  if (Array.isArray(response?.articles)) return response.articles;
+
+  return [];
+}
+
+function formatSidebarNewsDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 
@@ -494,9 +560,15 @@ export default function ScholarshipDetail() {
   const [item, setItem] = useState(null);
   const [err, setErr] = useState("");
 
-  const [showBanner, setShowBanner] = useState(false);
+  /*const [showBanner, setShowBanner] = useState(false);
   const [recs, setRecs] = useState([]);
-  const [showAllTips, setShowAllTips] = useState(false);
+  const [showAllTips, setShowAllTips] = useState(false);*/
+const [showBanner, setShowBanner] = useState(false);
+const [recs, setRecs] = useState([]);
+
+const [studentNews, setStudentNews] = useState([]);
+const [newsLoading, setNewsLoading] = useState(true);
+const [newsError, setNewsError] = useState("");
 
   const [aiSummary, setAiSummary] = useState("");
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
@@ -651,6 +723,85 @@ const res = await fetch(
       alive = false;
     };
   }, [item]);
+
+
+
+
+
+
+
+
+
+
+  // Load only the latest 10 published student-news articles.
+useEffect(() => {
+  let alive = true;
+
+  async function loadLatestStudentNews() {
+    setNewsLoading(true);
+    setNewsError("");
+
+    try {
+      const response = await listInternationalStudentNews({
+        status: "published",
+        limit: 10,
+      });
+
+      if (!alive) return;
+
+      const latestItems = extractNewsItems(response)
+        .map(normalizeSidebarNews)
+        .filter((news) => news.slug)
+        .sort((a, b) => {
+          const aTime = new Date(a.publishedAt || 0).getTime();
+          const bTime = new Date(b.publishedAt || 0).getTime();
+
+          return bTime - aTime;
+        })
+        .slice(0, 10);
+
+      setStudentNews(latestItems);
+    } catch (requestError) {
+      if (!alive) return;
+
+      setStudentNews([]);
+      setNewsError(
+        requestError?.message ||
+          "Latest student news could not be loaded."
+      );
+    } finally {
+      if (alive) {
+        setNewsLoading(false);
+      }
+    }
+  }
+
+  loadLatestStudentNews();
+
+  return () => {
+    alive = false;
+  };
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const scholarshipPayload = useMemo(() => {
     if (!item?.id) return null;
@@ -1354,156 +1505,107 @@ const res = await fetch(
   minHeight={600}
 />
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-          <h4 className="text-lg font-bold text-slate-900 text-center">
-            {itemLabel} Tips for International Students
-          </h4>
-        </div>
-
-        <div className="p-4 space-y-3">
-          {[
-            {
-              heading: "📝 Start Early and Stay Organized",
-              text: "Begin 6–12 months early. Track deadlines, documents, and submissions to allow time for strong essays and recommendations.",
-            },
-            {
-              heading: "🌍 Understand Eligibility Requirements",
-              text: "Carefully check nationality, level, field, and language criteria. Apply only where you qualify and confirm unclear details.",
-            },
-            {
-              heading: "🧾 Prepare Strong Documents",
-              text: "Keep updated transcripts, CV, passport, and test scores. Ensure accuracy and prepare certified translations if required.",
-            },
-            {
-              heading: "✍️ Write a Compelling Personal Statement",
-              text: "Clearly present your background, goals, and impact. Tailor each essay to the scholarship and avoid generic content.",
-            },
-            {
-              heading: "🧑‍🏫 Secure Strong Recommendations",
-              text: "Choose referees who know you well. Give them time and details so they can provide specific and meaningful recommendations.",
-            },
-            {
-              heading: "🎯 Tailor Every Application",
-              text: "Customize each application to reflect the scholarship’s mission and clearly show your alignment with its goals.",
-            },
-            {
-              heading: "💬 Show Leadership and Impact",
-              text: "Highlight leadership, community work, and measurable results that demonstrate your contribution to society.",
-            },
-            {
-              heading: "💡 Be Clear About Your Goals",
-              text: "Explain your academic path and how it connects to long-term impact and career objectives.",
-            },
-            {
-              heading: "🔍 Proofread Carefully",
-              text: "Review your application for clarity and errors. Ask others to check your work before submission.",
-            },
-            {
-              heading: "📤 Submit Before the Deadline",
-              text: "Avoid last-minute issues. Confirm all documents are uploaded correctly and keep submission proof.",
-            },
-            {
-              heading: "📚 Apply to Multiple Scholarships",
-              text: "Increase your chances by applying to several opportunities across governments, universities, and organizations.",
-            },
-            {
-              heading: "🤝 Stay Professional",
-              text: "Communicate clearly and respectfully. Use a formal tone and professional email address.",
-            },
-            {
-              heading: "🔄 Keep Trying",
-              text: "Rejections are common. Learn from feedback and continue applying with improved applications.",
-            },
-          ]
-            .slice(0, showAllTips ? 13 : 5)
-            .map((tip, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-              >
-                <p className="font-semibold text-slate-900 text-sm sm:text-base">
-                  {tip.heading}
-                </p>
-                <p className="text-sm text-slate-700 mt-1 leading-6">
-                  {tip.text}
-                </p>
-              </div>
-            ))}
-
-          <button
-            type="button"
-            onClick={() => setShowAllTips((v) => !v)}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            {showAllTips ? "Show fewer tips" : "Show more tips"}
-          </button>
-        </div>
-      </div>
-    </aside>
+      {/* Latest Student News */}
+<div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
+  <div className="border-b border-slate-200/60 bg-[#4B1F6F] px-5 py-2.5">
+    <h4 className="text-center text-[15px] font-semibold text-white">
+      Latest Student News & Updates
+    </h4>
   </div>
 
-  {/*{recs.length > 0 && (
-    <section className="mt-10 rounded-2xl bg-white border border-slate-200 overflow-hidden">
-      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-        <h4 className="text-lg font-bold text-slate-900">
-          You may also like the following programs
-        </h4>
-      </div>
-
-      <div className="flex gap-3 overflow-x-auto p-4">
-        {recs.map((s, idx) => {
-          const sid = getAnyId(s) || String(idx);
-          const label = s?.title || `Untitled ${itemLabel.toLowerCase()}`;
+  {newsLoading ? (
+    <div className="px-5 py-6 text-center text-sm text-slate-500">
+      Loading latest news...
+    </div>
+  ) : studentNews.length > 0 ? (
+    <>
+      <div className="divide-y divide-slate-200/60">
+        {studentNews.map((news, index) => {
+          const newsKey =
+            news.id ||
+            news.slug ||
+            String(index);
 
           return (
             <Link
-  key={sid}
-  to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-  className="w-[340px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white hover:shadow-md transition"
->
-  {(s.imageUrl || s.imageData) && (
-    <img
-      src={s.imageUrl || s.imageData}
-      alt={label}
-      className="h-40 w-full object-cover"
-      loading="lazy"
-    />
-  )}
-
-  <div className="p-4">
-    <h5 className="font-semibold text-slate-900 line-clamp-3 leading-6">
-      {label}
-    </h5>
-
-    {s.country && (
-      <p className="mt-2 text-sm text-slate-500">
-        {s.country}
-      </p>
-    )}
-
-    {Array.isArray(s.fundingType) &&
-      s.fundingType.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1">
-          {s.fundingType.slice(0, 2).map((f) => (
-            <span
-              key={f}
-              className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-xs"
+              key={newsKey}
+              to={`/international-student-news/${encodeURIComponent(
+                news.slug
+              )}`}
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }, 0);
+              }}
+              className="group flex items-start gap-3 px-4 py-4 transition hover:bg-slate-50 sm:px-5"
             >
-              {f}
-            </span>
-          ))}
-        </div>
-      )}
-  </div>
-</Link>
+              {news.image ? (
+                <img
+                  src={news.image}
+                  alt=""
+                  className="h-16 w-24 shrink-0 border border-slate-200/60 bg-slate-100 object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-16 w-24 shrink-0 items-center justify-center border border-slate-200/60 bg-slate-100 text-xs font-bold text-slate-500">
+                  NEWS
+                </div>
+              )}
 
+              <div className="min-w-0">
+                <p className="line-clamp-3 text-sm font-semibold leading-5 text-slate-900 group-hover:text-blue-700">
+                  {news.title}
+                </p>
 
+                {news.publishedAt ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    {formatSidebarNewsDate(
+                      news.publishedAt
+                    )}
+                  </p>
+                ) : null}
+              </div>
+            </Link>
           );
         })}
       </div>
-    </section>
-  )}*/}
+
+      <div className="border-t border-slate-200/60 px-4 py-4 sm:px-5">
+        <Link
+          to="/international-student-news"
+          className="block w-full rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-blue-700 transition hover:bg-slate-50"
+        >
+          View all student news
+        </Link>
+      </div>
+    </>
+  ) : (
+    <div className="px-5 py-6 text-center">
+      <p className="text-sm text-slate-500">
+        {newsError ||
+          "Student news is not available right now."}
+      </p>
+
+      <Link
+        to="/international-student-news"
+        className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+      >
+        Visit International Student News
+      </Link>
+    </div>
+  )}
+</div>
+</aside>
+</div>
+
+ 
   {recs.length > 0 && (
   <section className="mt-12 border-t border-slate-200 pt-8 w-full">
     <div className="mb-6 text-center">

@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import GoogleSidebarAd from "../components/GoogleSidebarAd";
 import GoogleBannerAd from "../components/GoogleBannerAd";
 import GoogleInArticleAd from "../components/GoogleInArticleAd";
+import { listInternationalStudentNews } from "../utils/internationalStudentNewsApi";
 
 // ✅ Same API base as scholarships (same Lambda)
 const API_BASE = (
@@ -379,6 +380,88 @@ function YouTubeLiteEmbed({ videoId, title }) {
 
 
 
+
+
+
+
+function normalizeSidebarNews(item) {
+  return {
+    id:
+      item?.id ||
+      item?.newsId ||
+      String(item?.pk || "").replace(/^NEWS#/, ""),
+
+    slug: item?.slug || "",
+
+    title:
+      item?.title ||
+      item?.headline ||
+      "Untitled news article",
+
+    image:
+      item?.imageUrl ||
+      item?.image ||
+      item?.featuredImage ||
+      "",
+
+    publishedAt:
+      item?.publishedAt ||
+      item?.createdAt ||
+      "",
+  };
+}
+
+function extractNewsItems(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.items)) return response.items;
+  if (Array.isArray(response?.news)) return response.news;
+  if (Array.isArray(response?.articles)) return response.articles;
+
+  return [];
+}
+
+function formatSidebarNewsDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export default function FundedGraduateAdmissionDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
@@ -388,6 +471,9 @@ export default function FundedGraduateAdmissionDetail() {
   const [recs, setRecs] = useState([]);
   const [showAllProgramTips, setShowAllProgramTips] = useState(false);
   //const canShowAds = true;
+  const [studentNews, setStudentNews] = useState([]);
+const [newsLoading, setNewsLoading] = useState(true);
+const [newsError, setNewsError] = useState("");
 
   // Track interactions (same endpoint, separate gate key namespace)
   const trackItem = (sid, type) => {
@@ -533,6 +619,97 @@ export default function FundedGraduateAdmissionDetail() {
       alive = false;
     };
   }, [item]);
+
+
+
+
+
+
+
+
+
+//Added for Latest Student News
+  useEffect(() => {
+  let alive = true;
+
+  async function loadLatestStudentNews() {
+    setNewsLoading(true);
+    setNewsError("");
+
+    try {
+      const response = await listInternationalStudentNews({
+        status: "published",
+        limit: 10,
+      });
+
+      if (!alive) return;
+
+      const latestItems = extractNewsItems(response)
+        .map(normalizeSidebarNews)
+        .filter((news) => news.slug)
+        .sort((a, b) => {
+          const aTime = new Date(a.publishedAt || 0).getTime();
+          const bTime = new Date(b.publishedAt || 0).getTime();
+
+          return bTime - aTime;
+        })
+        .slice(0, 10);
+
+      setStudentNews(latestItems);
+    } catch (requestError) {
+      if (!alive) return;
+
+      setStudentNews([]);
+      setNewsError(
+        requestError?.message ||
+          "Latest student news could not be loaded."
+      );
+    } finally {
+      if (alive) {
+        setNewsLoading(false);
+      }
+    }
+  }
+
+  loadLatestStudentNews();
+
+  return () => {
+    alive = false;
+  };
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   if (err) {
     return (
@@ -1114,15 +1291,25 @@ export default function FundedGraduateAdmissionDetail() {
     s.featured === true ||
     s.featuredLevel === "FEATURED" ||
     s.featuredLevel === "PREMIUM_FEATURED"
-).length > 0 && (
-  <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+/*).length > 0 && (
+  <div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
     <div className="bg-slate-100 px-5 py-4">
       <h4 className="text-base font-bold text-slate-900 text-center">
         Featured Funded Opportunities
       </h4>
     </div>
 
-    <div className="divide-y divide-slate-200">
+    <div className="divide-y divide-slate-200">*/
+
+      ).length > 0 && (
+  <div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
+    <div className="border-b border-slate-200/60 bg-[#8E24AA] px-5 py-2.5">
+      <h4 className="text-center text-[15px] font-semibold text-white">
+        Featured Funded Opportunities
+      </h4>
+    </div>
+
+    <div className="divide-y divide-slate-200/60">
       {recs
         .filter(
           (s) =>
@@ -1156,12 +1343,14 @@ export default function FundedGraduateAdmissionDetail() {
                 <img
                   src={logoSrc}
                   alt={s.provider || label}
-                  className="h-10 w-10 shrink-0 rounded border border-slate-200 bg-white object-contain p-1"
+                  /*className="h-10 w-10 shrink-0 rounded border border-slate-200 bg-white object-contain p-1"*/
+                  className="h-10 w-10 shrink-0 rounded-sm border border-slate-200/60 bg-white object-contain p-1"
                   loading="lazy"
                   decoding="async"
                 />
               ) : (
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-200 bg-emerald-50 text-xs font-bold text-emerald-700">
+                /*<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-200 bg-emerald-50 text-xs font-bold text-emerald-700">*/
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-slate-200/60 bg-emerald-50 text-xs font-bold text-emerald-700">
                   SK
                 </div>
               )}
@@ -1175,10 +1364,111 @@ export default function FundedGraduateAdmissionDetail() {
     </div>
   </div>
 )}
+
 <GoogleSidebarAd
   className="w-full"
   minHeight={600}
 />
+
+
+{/* Latest Student News */}
+<div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
+    <div className="border-b border-slate-200/60 bg-[#4B1F6F] px-5 py-2.5">
+    <h4 className="text-center text-[15px] font-semibold text-white">
+      Latest Student News & Updates
+    </h4>
+  </div>
+
+  {newsLoading ? (
+    <div className="px-5 py-6 text-center text-sm text-slate-500">
+      Loading latest news...
+    </div>
+  ) : studentNews.length > 0 ? (
+    <>
+      <div className="divide-y divide-slate-200/60">
+        {studentNews.map((news, index) => {
+          const newsKey =
+            news.id ||
+            news.slug ||
+            String(index);
+
+          return (
+            <Link
+              key={newsKey}
+              to={`/international-student-news/${encodeURIComponent(
+                news.slug
+              )}`}
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }, 0);
+              }}
+              className="group flex items-start gap-3 px-4 py-4 transition hover:bg-slate-50 sm:px-5"
+            >
+              {news.image ? (
+                <img
+                  src={news.image}
+                  alt=""
+                  className="h-16 w-24 shrink-0 border border-slate-200/60 bg-slate-100 object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-16 w-24 shrink-0 items-center justify-center border border-slate-200 bg-slate-100 text-xs font-bold text-slate-500">
+                  NEWS
+                </div>
+              )}
+
+              <div className="min-w-0">
+                <p className="line-clamp-3 text-sm font-semibold leading-5 text-slate-900 group-hover:text-blue-700">
+                  {news.title}
+                </p>
+
+                {news.publishedAt ? (
+                  <p className="mt-2 text-xs text-slate-500">
+                    {formatSidebarNewsDate(
+                      news.publishedAt
+                    )}
+                  </p>
+                ) : null}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/*</><div className="border-t border-slate-200 px-4 py-4 sm:px-5">*/}
+        <div className="border-t border-slate-200/60 px-4 py-4 sm:px-5">
+        <Link
+          to="/international-student-news"
+          className="block w-full rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm font-semibold text-blue-700 transition hover:bg-slate-50"
+        >
+          View all student news
+        </Link>
+      </div>
+    </>
+  ) : (
+    <div className="px-5 py-6 text-center">
+      <p className="text-sm text-slate-500">
+        {newsError ||
+          "Student news is not available right now."}
+      </p>
+
+      <Link
+        to="/international-student-news"
+        className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+      >
+        Visit International Student News
+      </Link>
+    </div>
+  )}
+</div>
 
                   </aside>
                 </div>
