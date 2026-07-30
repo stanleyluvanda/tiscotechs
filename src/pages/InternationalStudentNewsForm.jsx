@@ -1179,7 +1179,7 @@ if (
                     </span>
 
                     <span className="font-normal text-slate-500">
-                      {form.excerpt.length}/320
+                      {form.excerpt.length}/1000
                     </span>
                   </span>
 
@@ -1188,7 +1188,7 @@ if (
                     onChange={(event) =>
                       updateField(
                         "excerpt",
-                        event.target.value.slice(0, 320)
+                        event.target.value.slice(0, 1000)
                       )
                     }
                     rows={4}
