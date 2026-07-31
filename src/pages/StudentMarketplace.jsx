@@ -3353,7 +3353,7 @@ const filtered =
 
             <div className="min-w-0">
               <div className="text-sm uppercase tracking-wide text-white/85">
-                Welcome to Student Marketplace
+                Welcome to University Students' Marketplace
               </div>
               <div className="text-xl sm:text-2xl font-bold leading-tight">
                 Subscribe to Marketplace Unlimited
@@ -3461,14 +3461,14 @@ const filtered =
               Subscribe with Card (Stripe)
             </button>
 
-            <button
+            {/*<button
               disabled={payBusy}
               onClick={() => beginCheckout("flutterwave")}
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               <span className="text-base">📱</span>
               Subscribe with Mobile Money (Flutterwave)
-            </button>
+            </button>*/}
 
             <button
               disabled={payBusy}
