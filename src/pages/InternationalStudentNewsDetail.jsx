@@ -945,17 +945,41 @@ const inArticleAdPositions = useMemo(() => {
     text-align: justify;
   }
 
-  .rich-html .ql-indent-1 {
-    padding-left: 3rem;
-  }
+  /*
+ * Quill stores nested list depth using ql-indent classes.
+ * Use margin-left on list items so both the marker and text move together.
+ */
+.rich-html li.ql-indent-1 {
+  margin-left: 2rem;
+}
 
-  .rich-html .ql-indent-2 {
-    padding-left: 6rem;
-  }
+.rich-html li.ql-indent-2 {
+  margin-left: 4rem;
+}
 
-  .rich-html .ql-indent-3 {
-    padding-left: 9rem;
-  }
+.rich-html li.ql-indent-3 {
+  margin-left: 6rem;
+}
+
+.rich-html li.ql-indent-4 {
+  margin-left: 8rem;
+}
+
+.rich-html li.ql-indent-5 {
+  margin-left: 10rem;
+}
+
+/* Change markers according to nesting depth */
+.rich-html li[data-list="bullet"].ql-indent-1 {
+  list-style-type: circle;
+}
+
+.rich-html li[data-list="bullet"].ql-indent-2,
+.rich-html li[data-list="bullet"].ql-indent-3,
+.rich-html li[data-list="bullet"].ql-indent-4,
+.rich-html li[data-list="bullet"].ql-indent-5 {
+  list-style-type: square;
+}
 
   .news-ad-slot {
     width: 100%;
@@ -981,6 +1005,25 @@ const inArticleAdPositions = useMemo(() => {
     .rich-html ol {
       padding-left: 1.4rem;
     }
+      .rich-html li.ql-indent-1 {
+  margin-left: 1.4rem;
+}
+
+.rich-html li.ql-indent-2 {
+  margin-left: 2.8rem;
+}
+
+.rich-html li.ql-indent-3 {
+  margin-left: 4.2rem;
+}
+
+.rich-html li.ql-indent-4 {
+  margin-left: 5.6rem;
+}
+
+.rich-html li.ql-indent-5 {
+  margin-left: 7rem;
+}
   }
 `}</style>
       <Footer />
