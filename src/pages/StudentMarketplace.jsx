@@ -2148,49 +2148,49 @@ const filtered =
      
         <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT: Filters */}
-        {/*<aside className="space-y-4 pb-32">*/}
         <aside className="hidden lg:block space-y-4 pb-32">
          
           <Card square>
-  <CardHeader
-    title={
-      <span className="inline-flex items-center gap-2">
+  <div className="border-b border-indigo-200/70 bg-gradient-to-r from-indigo-700 via-violet-700 to-purple-700 px-3 py-2">
+    <div className="grid grid-cols-[30px_1fr_30px] items-center gap-1">
+      <div className="ml-1 flex h-8 w-8 items-center justify-center rounded-md bg-white/15 ring-1 ring-white/25">
         <svg
-  viewBox="0 0 24 24"
-  className="h-7 w-7 shrink-0"
-  aria-hidden="true"
->
-  <path
-    d="M2.75 4.5h2.1l1.05 5.1a1.8 1.8 0 0 0 1.76 1.4h8.2a1.8 1.8 0 0 0 1.74-1.31l1.2-4.19H6.2"
-    fill="none"
-    stroke="#0071CE"
-    strokeWidth="1.9"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  />
-  <circle cx="9.2" cy="17.4" r="1.7" fill="#0071CE" />
-  <circle cx="16.4" cy="17.4" r="1.7" fill="#0071CE" />
-  <path
-    d="M8.1 14.2h8.7"
-    stroke="#0071CE"
-    strokeWidth="1.7"
-    strokeLinecap="round"
-  />
-</svg>
-
-        <span>Student Marketplace</span>
-
-        <span
+          viewBox="0 0 24 24"
+          className="h-5 w-5"
           aria-hidden="true"
-          className="text-2lg font-extrabold leading-none"
-          style={{ color: "#16A34A" }}
         >
-          $
-        </span>
+          <path
+            d="M2.75 4.5h2.1l1.05 5.1a1.8 1.8 0 0 0 1.76 1.4h8.2a1.8 1.8 0 0 0 1.74-1.31l1.2-4.19H6.2"
+            fill="none"
+            stroke="white"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="9.2" cy="17.4" r="1.7" fill="white" />
+          <circle cx="16.4" cy="17.4" r="1.7" fill="white" />
+          <path
+            d="M8.1 14.2h8.7"
+            stroke="white"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
+      {/*<span className="text-center text-sm font-bold text-white">*/}
+        <span className="text-center text-[15px] font-bold leading-none tracking-tight text-white whitespace-nowrap">
+        Student Marketplace
       </span>
-    }
-    square
-  />
+
+      <span
+        aria-hidden="true"
+        className="mr-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-300 text-base font-black leading-none text-slate-950 shadow-sm ring-2 ring-white/40"
+      >
+        $
+      </span>
+    </div>
+  </div>
   <CardBody>
     <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
     {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
@@ -2384,9 +2384,6 @@ const filtered =
         onChange={(e) => setMainCategory(e.target.value)}
         className="border border-slate-200 rounded px-2 py-1 text-sm"
       >
-        {/*{MAIN_CATEGORIES.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}*/}
         {DEFAULT_MAIN_CATEGORIES.map((c) => (
   <option key={c} value={c}>{c}</option>
 ))}
@@ -2541,19 +2538,19 @@ const filtered =
     <input
       value={sellerWhatsapp}
       onChange={(e) => setSellerWhatsapp(e.target.value)}
-      placeholder="WhatsApp number (optional) e.g. +1 202 555 0123"
+      placeholder="WhatsApp number e.g. +1 202 555 0123"
       className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
     />
     <input
       value={sellerMobile}
       onChange={(e) => setSellerMobile(e.target.value)}
-      placeholder="Mobile number (optional) e.g. +1 202 555 0456"
+      placeholder="Mobile number e.g. +1 202 555 0456"
       className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
     />
     <input
       value={sellerLocation}
       onChange={(e) => setSellerLocation(e.target.value)}
-      placeholder="Location of availability (optional) e.g. Campus Gate A, Dorm B, City Center"
+      placeholder="Location of availability e.g. Campus Gate A, Dorm B, City Center"
       className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
     />
   </div>
@@ -3220,55 +3217,48 @@ const filtered =
           <Card square>
              <Card square>
              
-            <CardHeader
-  title={
-    <span className="inline-flex items-center gap-2">
+            <div className="border-b border-rose-200/70 bg-gradient-to-r from-rose-700 via-red-600 to-orange-600 px-3 py-2">
+  <div className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-2">
+    <div className="ml-1 flex h-8 w-8 items-center justify-center rounded-md bg-white/15 ring-1 ring-white/25">
       <img
         src="/images/Start business.webp"
         alt="Business icon"
-        className="h-7 w-7 shrink-0 object-contain"
+        className="h-5 w-5 object-contain"
       />
-      <span>Start your Business Today</span>
+    </div>
+
+    <span className="text-center text-sm font-bold text-white">
+      Start your Business Today
     </span>
-  }
-  square
-/>
-<CardBody>
-  <p
-    className="text-sm text-slate-800 rounded-md px-3 py-2"
-    style={{ backgroundColor: "#F4D000" }}
-  >
+  </div>
+</div>
+
+<div className="bg-amber-300 px-2 py-1">
+  <p className="text-sm font-semibold leading-6 text-amber-950">
     Are you passionate about business? Start listing your business now.
   </p>
-</CardBody>
-            {/*<CardHeader title="Marketplace Safety tips" square />
-            <CardBody>
-              <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
-                <li>Meet on campus in public places.</li>
-                <li>Do not pay or send any money to anybody.</li>
-                <li>Check items before you pay.</li>
-                <li>Avoid scam or suspecious conversation.</li>
-              </ul>
-            </CardBody>*/}
+</div>
 
-            <CardHeader
-  title={
-    <span className="inline-flex items-center gap-2">
-      <img
-        src="/images/Studentmarketsafety.jpg"
-        alt="Warning"
-        className="h-6 w-6 shrink-0 object-contain"
-      />
-      <span>Marketplace Safety tips</span>
-      <img
-        src="/images/Studentmarketsafety1.png"
-        alt="Safety"
-        className="h-6 w-6 shrink-0 object-contain"
-      />
+            <div className="border-b border-sky-200/70 bg-gradient-to-r from-sky-700 via-cyan-700 to-teal-700 px-3 py-2">
+  <div className="grid grid-cols-[30px_1fr_30px] items-center gap-1">
+    <img
+      src="/images/Studentmarketsafety.jpg"
+      alt="Warning"
+      className="ml-1 h-5 w-5 justify-self-start object-contain"
+    />
+
+    {/*<span className="text-center text-sm font-bold text-white">*/}
+      <span className="text-center text-[15px] font-bold leading-none tracking-tight text-white whitespace-nowrap">
+      Marketplace Safety Tips
     </span>
-  }
-  square
-/>
+
+    <img
+      src="/images/Studentmarketsafety1.png"
+      alt="Verification"
+      className="mr-1 h-5 w-5 justify-self-end object-contain"
+    />
+  </div>
+</div>
 <CardBody>
   <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
     <li>Meet on campus in public places.</li>
