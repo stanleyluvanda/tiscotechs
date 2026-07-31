@@ -3581,12 +3581,12 @@ function Comments({ item, onAdd, currentUser, focusThread, onOpen, loading }) {
           }}
           className="text-sm text-slate-600 hover:underline"
         >
-          💬 Comments {visible.length ? `(${visible.length})` : ""}
+          {/*💬 Comments {visible.length ? `(${visible.length})` : ""}*/}
         </button>
 
         {loading && <span className="text-[11px] text-slate-500">Loading…</span>}
 
-        <span className="text-[11px] text-slate-500">{privacyNote}</span>
+        {/*<span className="text-[11px] text-slate-500">{privacyNote}</span>*/}
       </div>
 
       {open && (
