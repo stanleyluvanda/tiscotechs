@@ -1085,116 +1085,120 @@ const trackScholarship = (id, type) => {
     </div>
   )}
 
-  {/* List */}
-  {/*<ul className="mt-3 grid gap-3">*/}
-  <ul className="mt-3 grid gap-3">
-    {items.map((s, index) => {
-      /*const snippet = truncate(stripHtml(s.description || ""), 260);*/
-      /*const snippet = truncate(stripHtml(s.description || ""), 170);*/
-      const descriptionText = s.descriptionText || "";
-      const snippet = truncate(descriptionText, 170);
-      const fundingStr = Array.isArray(s.fundingType)
-        ? s.fundingType.join(", ")
-        : s.fundingType || "";
-      /*const logo = s.providerLogoUrl || s.providerLogoData || "";*/
-      const logo = s.providerLogoUrl || s.providerLogoData || "";
-      const cardImage = s.imageUrl || s.imageData || logo || "";
+  {/* Scholarship list */}
+<ul className="mt-3 overflow-hidden rounded-md border border-slate-200/70 bg-white shadow-sm">
+  {items.map((s, index) => {
+    const fundingStr = Array.isArray(s.fundingType)
+      ? s.fundingType.join(", ")
+      : s.fundingType || s.funding || "";
 
-      return (
-  <Fragment key={s.id}>
-    <li className="rounded-none border-y border-x-0 border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md sm:rounded-xl sm:border sm:p-6">
-      <Link
-  to={`/scholarship/${s.id}`}
-  onClick={() => trackScholarship(s.id, "view")}
-  className="mb-4 block text-xl font-semibold leading-tight text-slate-900 hover:text-blue-700 hover:underline sm:text-2xl"
->
-  {s.title}
-</Link>
-      {/*<div className="grid gap-5 lg:grid-cols-[minmax(280px,0.95fr)_minmax(0,1fr)] lg:items-start">*/}
-      <div className="grid gap-6 lg:grid-cols-[minmax(210px,0.7fr)_minmax(0,1fr)] lg:items-start">
-        {/*<div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-xl sm:border">*/}
-          <div className="-mx-4 overflow-hidden rounded-none border-y border-slate-200 bg-slate-100 sm:mx-0 sm:rounded-none sm:border">
-          {cardImage ? (
-            
+    const logo =
+      s.providerLogoUrl ||
+      s.providerLogoData ||
+      "";
 
-            <img
-  src={cardImage}
-  alt={`${s.title || "Scholarship"} image`}
-  className="block h-52 w-full rounded-none object-cover sm:h-48 lg:h-52"
-  loading="lazy"
-  decoding="async"
-  onError={(e) => {
-    e.currentTarget.style.display = "none";
-  }}
-/>
+    const cardImage =
+      s.imageUrl ||
+      s.imageData ||
+      logo ||
+      "";
 
-
-          ) : (
-                <div className="flex h-52 w-full items-center justify-center rounded-none bg-blue-50 text-2xl font-bold text-blue-700 sm:h-48 lg:h-52">
-              SK
+    return (
+      <Fragment key={s.id}>
+        <li className="border-b border-slate-200/70 last:border-b-0">
+          <Link
+            to={`/scholarship/${s.id}`}
+            onClick={() =>
+              trackScholarship(s.id, "view")
+            }
+            className="group flex items-start gap-4 px-4 py-5 transition hover:bg-slate-50 sm:px-5"
+          >
+            {/* Scholarship image */}
+            <div className="h-24 w-32 shrink-0 overflow-hidden border border-slate-200/70 bg-slate-100 sm:h-40 sm:w-60">
+              {cardImage ? (
+                <img
+                  src={cardImage}
+                  alt={`${s.title || "Scholarship"} image`}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.style.display =
+                      "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-blue-50 text-lg font-bold text-blue-700">
+                  SK
+                </div>
+              )}
             </div>
+
+            {/* Scholarship information */}
+            <div className="min-w-0 flex-1">
+              <h3 className="line-clamp-3 text-base font-bold leading-6 text-slate-950 group-hover:text-blue-700 sm:text-lg">
+                {s.title}
+              </h3>
+
+              {s.provider ? (
+                <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
+                  {s.provider}
+                </p>
+              ) : null}
+
+              {s.deadline ? (
+                <p className="mt-2 text-sm text-slate-500">
+                  Deadline:{" "}
+                  <span className="font-semibold text-orange-700">
+                    {s.deadline}
+                  </span>
+                </p>
+              ) : (
+                <p className="mt-2 text-sm text-slate-500">
+                  Deadline not specified
+                </p>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {s.country ? (
+                  <span className="text-xs font-medium text-slate-600">
+                    {s.country}
+                  </span>
+                ) : null}
+
+                {fundingStr ? (
+                  <>
+                    {s.country ? (
+                      <span
+                        className="text-slate-300"
+                        aria-hidden="true"
+                      >
+                        •
+                      </span>
+                    ) : null}
+
+                    <span className="text-xs font-semibold text-emerald-700">
+                      {fundingStr}
+                    </span>
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </Link>
+        </li>
+
+        {canShowAds &&
+          (index === 3 ||
+            (index > 3 &&
+              (index - 3) % 6 === 0)) && (
+            <li className="border-b border-slate-200/70 bg-white px-3 py-3 last:border-b-0">
+              <GoogleScholarshipInFeedAd />
+            </li>
           )}
-        </div>
-
-        {/*</div><div className="min-w-0">*/}
-        <div className="flex min-h-full flex-col">
-          <div className="space-y-3 text-base font-bold text-slate-900">
-            {s.provider && (
-              <div className="flex items-start gap-3">
-                <span className="text-purple-700">🎓</span>
-                <span>{s.provider}</span>
-              </div>
-            )}
-
-            {s.country && (
-              <div className="flex items-start gap-3">
-                <span className="text-blue-700">📍</span>
-                <span>{s.country}</span>
-              </div>
-            )}
-
-            {s.deadline && (
-              <div className="flex items-start gap-3 text-orange-700">
-                <span>📅</span>
-                <span>Deadline: {s.deadline}</span>
-              </div>
-            )}
-          </div>
-
-          {snippet && (
-  <div className="mt-4 border-t border-slate-200 pt-4">
-    {/*<p className="text-base leading-7 text-slate-700">
-      {snippet}
-      {stripHtml(s.description || "").length > 170 && "..."}
-    </p>*/}
-    <p className="text-base leading-7 text-slate-700">
-  {snippet}
-</p>
-  </div>
-)}
-        </div>
-      </div>
-    </li>
-
-    {/*{(index + 1) % 4 === 0 && (
-  <li className="overflow-hidden">
-    <GoogleBannerAd reserveSpace={false} />
-  </li>
-)}*/}
-
-{canShowAds &&
-  (index === 3 || (index > 3 && (index - 3) % 6 === 0)) && (
-    <li className="overflow-hidden bg-white">
-      <GoogleScholarshipInFeedAd />
-    </li>
-)}
-
-
-  </Fragment>
-);
-    })}
-  </ul>
-
+      </Fragment>
+    );
+  })}
+</ul>
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-center gap-2">
