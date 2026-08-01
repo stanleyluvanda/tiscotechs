@@ -975,84 +975,93 @@ const popularDestinations = [
       <Fragment key={s.id}>
         <li className="border-b border-slate-200/70 last:border-b-0">
           <Link
-            to={`/funded-graduate-admission/${s.id}`}
-            onMouseEnter={() => prefetchDetail(s.id)}
-            onFocus={() => prefetchDetail(s.id)}
-            onMouseDown={() => prefetchDetail(s.id)}
-            onClick={() => trackItem(s.id, "view")}
-            className="group flex items-start gap-4 px-4 py-5 transition hover:bg-slate-50 sm:px-5"
-          >
-            {/* Opportunity image */}
-            <div className="h-24 w-32 shrink-0 overflow-hidden border border-slate-200/70 bg-slate-100 sm:h-40 sm:w-60">
-              {cardImage ? (
-                <img
-                  src={cardImage}
-                  alt={`${s.title || "University-funded opportunity"} image`}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-blue-50 text-lg font-bold text-blue-700">
-                  SK
-                </div>
-              )}
-            </div>
+  to={`/funded-graduate-admission/${s.id}`}
+  onMouseEnter={() => prefetchDetail(s.id)}
+  onFocus={() => prefetchDetail(s.id)}
+  onMouseDown={() => prefetchDetail(s.id)}
+  onClick={() => trackItem(s.id, "view")}
+  className="group block px-4 py-5 transition hover:bg-slate-50 sm:px-5"
+>
+  {/* Mobile-only opportunity title */}
+  <h3 className="mb-4 text-lg font-bold leading-6 text-slate-950 group-hover:text-blue-700 md:hidden">
+    {s.title}
+  </h3>
 
-            {/* Opportunity information */}
-            <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-3 text-base font-bold leading-6 text-slate-950 group-hover:text-blue-700 sm:text-lg">
-                {s.title}
-              </h3>
+  {/* Image and opportunity information */}
+  <div className="flex flex-col gap-4 md:flex-row md:items-start">
+    {/* Opportunity image */}
+    <div className="h-52 w-full shrink-0 overflow-hidden border border-slate-200/70 bg-slate-100 md:h-40 md:w-60">
+      {cardImage ? (
+        <img
+          src={cardImage}
+          alt={`${s.title || "University-funded opportunity"} image`}
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          loading="lazy"
+          decoding="async"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-blue-50 text-lg font-bold text-blue-700">
+          SK
+        </div>
+      )}
+    </div>
 
-              {s.provider ? (
-                <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
-                  {s.provider}
-                </p>
-              ) : null}
+    {/* Opportunity information */}
+    <div className="min-w-0 flex-1">
+      {/* Desktop and tablet title */}
+      <h3 className="hidden line-clamp-3 text-base font-bold leading-6 text-slate-950 group-hover:text-blue-700 md:block lg:text-lg">
+        {s.title}
+      </h3>
 
-              {s.deadline ? (
-                <p className="mt-2 text-sm text-slate-500">
-                  Deadline:{" "}
-                  <span className="font-semibold text-orange-700">
-                    {s.deadline}
-                  </span>
-                </p>
-              ) : (
-                <p className="mt-2 text-sm text-slate-500">
-                  Deadline not specified
-                </p>
-              )}
+      {s.provider ? (
+        <p className="line-clamp-2 text-sm font-semibold text-slate-700 md:mt-2">
+          {s.provider}
+        </p>
+      ) : null}
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {s.country ? (
-                  <span className="text-xs font-medium text-slate-600">
-                    {s.country}
-                  </span>
-                ) : null}
+      {s.deadline ? (
+        <p className="mt-2 text-sm text-slate-500">
+          Deadline:{" "}
+          <span className="font-semibold text-orange-700">
+            {s.deadline}
+          </span>
+        </p>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">
+          Deadline not specified
+        </p>
+      )}
 
-                {fundingStr ? (
-                  <>
-                    {s.country ? (
-                      <span
-                        className="text-slate-300"
-                        aria-hidden="true"
-                      >
-                        •
-                      </span>
-                    ) : null}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {s.country ? (
+          <span className="text-xs font-medium text-slate-600">
+            {s.country}
+          </span>
+        ) : null}
 
-                    <span className="text-xs font-semibold text-emerald-700">
-                      {fundingStr}
-                    </span>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          </Link>
+        {fundingStr ? (
+          <>
+            {s.country ? (
+              <span
+                className="text-slate-300"
+                aria-hidden="true"
+              >
+                •
+              </span>
+            ) : null}
+
+            <span className="text-xs font-semibold text-emerald-700">
+              {fundingStr}
+            </span>
+          </>
+        ) : null}
+      </div>
+    </div>
+  </div>
+</Link>
         </li>
 
         {(index === 2 ||
