@@ -1117,14 +1117,16 @@ const trackScholarship = (id, type) => {
             </h3>
 
             {/* Image and scholarship information */}
-            <div className="flex items-start gap-4">
+            {/*<div className="flex items-start gap-4">*/}
+            <div className="flex flex-col gap-4 md:flex-row md:items-start">
               {/* Scholarship image */}
-              <div className="h-24 w-32 shrink-0 overflow-hidden border border-slate-200/70 bg-slate-100 sm:h-40 sm:w-60">
+              <div className="h-52 w-full shrink-0 overflow-hidden border border-slate-200/70 bg-slate-100 md:h-40 md:w-60">
                 {cardImage ? (
                   <img
                     src={cardImage}
                     alt={`${s.title || "Scholarship"} image`}
-                    className="h-full w-full object-cover"
+                    /*className="h-full w-full object-cover"*/
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     loading="lazy"
                     decoding="async"
                     onError={(event) => {
