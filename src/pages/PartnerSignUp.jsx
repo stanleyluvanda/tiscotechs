@@ -1,5 +1,6 @@
 // src/pages/PartnerSignUp.jsx
-import { useEffect, useState } from "react";
+//import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 // Upload to S3 (your existing component)
@@ -30,6 +31,68 @@ async function sha256Hex(str) {
   const buf = await window.crypto.subtle.digest("SHA-256", enc);
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+
+
+
+
+
+
+
+
+/* Turnstile helpers */
+const TURNSTILE_KEY = (import.meta.env?.VITE_TURNSTILE_SITE_KEY ?? "").trim();
+
+function loadTurnstileScript() {
+  return new Promise((resolve, reject) => {
+    if (window.turnstile) {
+      resolve(window.turnstile);
+      return;
+    }
+
+    const existing = document.querySelector('script[data-turnstile="1"]');
+
+    if (existing) {
+      existing.addEventListener("load", () => resolve(window.turnstile));
+      existing.addEventListener("error", reject);
+      return;
+    }
+
+    const script = document.createElement("script");
+
+    script.src =
+      "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    script.async = true;
+    script.defer = true;
+    script.setAttribute("data-turnstile", "1");
+
+    script.onload = () => resolve(window.turnstile);
+    script.onerror = reject;
+
+    document.head.appendChild(script);
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* API base (Partner-specific)
    NOTE:
@@ -66,6 +129,10 @@ export default function PartnerSignUp() {
   const [showPw2, setShowPw2] = useState(false);
   const [err, setErr] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Turnstile state
+const [turnstileToken, setTurnstileToken] = useState("");
+const turnstileRef = useRef(null);
+const turnstileWidgetIdRef = useRef(null);
 
   // ✅ Start afresh: remove legacy local “partners DB” so signup/login is truly API-first
   useEffect(() => {
@@ -76,6 +143,89 @@ export default function PartnerSignUp() {
       localStorage.removeItem("partnersById");
     } catch {}
   }, []);
+
+
+
+
+
+  // Load and render Cloudflare Turnstile
+useEffect(() => {
+  let destroyed = false;
+
+  (async () => {
+    try {
+      const turnstile = await loadTurnstileScript();
+
+      if (
+        destroyed ||
+        !turnstileRef.current ||
+        !turnstile ||
+        !TURNSTILE_KEY
+      ) {
+        return;
+      }
+
+      if (turnstileWidgetIdRef.current !== null) {
+        try {
+          turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {}
+
+        turnstileWidgetIdRef.current = null;
+      }
+
+      turnstileWidgetIdRef.current = turnstile.render(
+        turnstileRef.current,
+        {
+          sitekey: TURNSTILE_KEY,
+          theme: "light",
+          size: "normal",
+          appearance: "always",
+          callback: (token) => setTurnstileToken(token),
+          "error-callback": () => setTurnstileToken(""),
+          "expired-callback": () => setTurnstileToken(""),
+          "timeout-callback": () => setTurnstileToken(""),
+        }
+      );
+    } catch (error) {
+      console.warn("[partner-signup] Turnstile failed:", error);
+    }
+  })();
+
+  return () => {
+    destroyed = true;
+
+    if (
+      window.turnstile &&
+      turnstileWidgetIdRef.current !== null
+    ) {
+      try {
+        window.turnstile.remove(turnstileWidgetIdRef.current);
+      } catch {}
+
+      turnstileWidgetIdRef.current = null;
+    }
+  };
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const onChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -107,7 +257,7 @@ export default function PartnerSignUp() {
     return "";
   };
 
-  const submit = async (e) => {
+  /*const submit = async (e) => {
     e.preventDefault();
     setErr("");
 
@@ -118,9 +268,32 @@ export default function PartnerSignUp() {
     }
 
     setSubmitting(true);
+    
     try {
       const email = form.email.trim().toLowerCase();
-      const passwordHash = await sha256Hex(form.password);
+      const passwordHash = await sha256Hex(form.password);*/
+
+  const submit = async (e) => {
+  e.preventDefault();
+  setErr("");
+
+  const v = validate();
+
+  if (v) {
+    setErr(v);
+    return;
+  }
+
+  if (!turnstileToken) {
+    setErr("Please complete the verification.");
+    return;
+  }
+
+  setSubmitting(true);
+
+  try {
+    const email = form.email.trim().toLowerCase();
+    const passwordHash = await sha256Hex(form.password);
 
       // S3 URLs take priority over text field
       const logoUrl = (logo || form.logoUrl || "").trim();
@@ -138,6 +311,7 @@ const payload = {
   contactName: form.contactName.trim(),
   logoUrl,
   bannerUrl,
+  turnstileToken,
 };
 
       const base = String(API_BASE || "").replace(/\/+$/, "");
@@ -237,13 +411,19 @@ sessionStorage.setItem("currentUser", JSON.stringify(user));
 window.dispatchEvent(new Event("storage"));
 window.dispatchEvent(new Event("auth:changed"));
 
+if (
+  window.turnstile &&
+  turnstileWidgetIdRef.current !== null
+) {
+  try {
+    window.turnstile.reset(turnstileWidgetIdRef.current);
+  } catch {}
+}
+
+setTurnstileToken("");
+
 nav("/partner/welcome", { replace: true });
 
-
-
-
-      localStorage.setItem("partnerAuth", JSON.stringify(user));
-      nav("/partner/welcome", { replace: true });
     } catch (e2) {
       console.error(e2);
       setErr(e2?.message || "Something went wrong. Please try again.");
@@ -429,7 +609,7 @@ nav("/partner/welcome", { replace: true });
             </label>
 
             {/* Terms */}
-            <label className="flex items-start gap-2">
+            {/*<label className="flex items-start gap-2">
               <input
                 type="checkbox"
                 name="agree"
@@ -440,7 +620,48 @@ nav("/partner/welcome", { replace: true });
               <span className="text-sm text-slate-700">
                 I agree to the partnership requirements: no essays, no application fees, and no collection of confidential personal data.
               </span>
-            </label>
+            </label>*/}
+
+            {/* Terms + Turnstile */}
+<div className="grid grid-cols-1 items-start gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+  <label className="flex min-w-0 items-start gap-2">
+    <input
+      type="checkbox"
+      name="agree"
+      checked={form.agree}
+      onChange={onChange}
+      className="mt-1 shrink-0"
+    />
+
+    <span className="text-sm text-slate-700">
+      I agree to the{" "}
+      <Link
+        to="/privacy-policy"
+        className="text-[#1a73e8] underline"
+      >
+        Privacy Policy
+      </Link>{" "}
+      and{" "}
+      <Link
+        to="/terms-of-use"
+        className="text-[#1a73e8] underline"
+      >
+        Terms of Use
+      </Link>
+      .
+    </span>
+  </label>
+
+  {TURNSTILE_KEY ? (
+    <div className="w-full justify-self-start overflow-x-auto md:w-auto md:justify-self-end md:overflow-visible">
+      <div ref={turnstileRef} className="turnstile-wide" />
+    </div>
+  ) : (
+    <div className="text-xs text-red-600 md:justify-self-end">
+      Missing <code>VITE_TURNSTILE_SITE_KEY</code>
+    </div>
+  )}
+</div>
 
             {/* Submit */}
             <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">

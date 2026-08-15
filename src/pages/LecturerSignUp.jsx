@@ -579,6 +579,7 @@ if (oauthMode && googleSignup && googleSignupSig) {
       id,
       uid: id,
       role: "lecturer",
+      authProvider: oauthMode ? "supertokens-google" : "email-password",
       title: form.title,
       name: form.name,
       gender: form.gender,

@@ -3070,63 +3070,6 @@ const byParent = allComments.reduce((acc, c) => {
             </div>
           </Card>
 
-          {/*<Card square>
-            <HeaderBar title="Topics" square />
-            <div className="p-3 space-y-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  const c = e.target.value;
-                  setSelectedCategory(c);
-                  setSelectedTopic("All");
-                }}
-                className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              <div className="max-h-[48vh] overflow-auto pr-1">
-                {(selectedCategory === "All" ? ["All"] : TOPIC_MAP[selectedCategory]).map((t) => {
-                  const topicVal = selectedCategory === "All" ? "All" : t;
-                  const active = topicVal === selectedTopic;
-                  const canFollow = selectedCategory !== "All" && topicVal !== "All";
-                  const f = canFollow ? isFollowed(selectedCategory, topicVal) : false;
-
-                  return (
-                    <div
-                      key={topicVal}
-                      className={`flex items-center gap-2 rounded px-2 py-1 ${
-                        active ? "bg-slate-100" : "hover:bg-slate-50"
-                      }`}
-                    >
-                      <button
-                        className="text-left text-sm flex-1 truncate"
-                        onClick={() => setSelectedTopic(topicVal)}
-                        title={topicVal}
-                      >
-                        {topicVal}
-                      </button>
-                      {canFollow && (
-                        <button
-                          onClick={() => toggleFollow(selectedCategory, topicVal)}
-                          className={`text-xs rounded-full px-2 py-0.5 border ${
-                            f ? "border-blue-600 text-blue-600" : "border-slate-300 text-slate-600"
-                          } hover:bg-slate-50`}
-                        >
-                          {f ? "Following" : "Follow"}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>*/}
-
           <Card square>
   <HeaderBar title="Topics / Fields" square />
 
@@ -3699,17 +3642,12 @@ const byParent = allComments.reduce((acc, c) => {
 />
   </div>
 
-    {/*<div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
-      <span>{post.author?.program || "Program"}</span>
-      <span className="text-slate-300">•</span>
-      <span>
-        {post.category} • {post.topic}
-      </span>
-     
-    </div>*/}
+   
     <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
   <span>{post.author?.program || "Program"}</span>
 </div>
+
+
   </div>
 
   {/* Delete stays on the right */}
@@ -3849,17 +3787,6 @@ const byParent = allComments.reduce((acc, c) => {
   </button>
 
 </div>
-
-
-
-
-
-
-
-
-                {/*<div className="mt-2">
-                  <AnswerThread key={`answers-${post.id}`} post={post} />
-                </div>*/}
               </div>
             </Card>
              {(idx + 1) % 5 === 0 ? (

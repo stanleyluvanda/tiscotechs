@@ -3287,7 +3287,10 @@ async function clearNotificationsServerBacked() {
     
 
     {/* 🔒 Email verification gate — shown on first sign-in or after email change */}
-    <VerifyGate email={current?.email} />
+    {/*<VerifyGate email={current?.email} />*/}
+    {current?.authProvider !== "supertokens-google" && (
+  <VerifyGate email={current?.email} />
+)}
 
       {/* Keep total width tight and ensure equal margins on both sides */}
       {/*<main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}

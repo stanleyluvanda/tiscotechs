@@ -593,6 +593,7 @@ const newUser = {
   id,
   uid: id,
   role: "student",
+  authProvider: oauthMode ? "supertokens-google" : "email-password",
   name: form.name,
   fullName: form.name,
   studentName: form.name,

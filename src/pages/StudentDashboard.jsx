@@ -4138,7 +4138,10 @@ if (showingTab === "Top") {
     <div className="min-h-screen bg-[#f3f6fb]">
       
       {/* ⬇️ Add VerifyGate at the very top-level of the page */}
-    <VerifyGate email={current?.email} />
+    {/*<VerifyGate email={current?.email} />*/}
+    {current?.authProvider !== "supertokens-google" && (
+  <VerifyGate email={current?.email} />
+)}
     
       {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
       {/*<main className="max-w-[1360px] mx-auto px-2 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
