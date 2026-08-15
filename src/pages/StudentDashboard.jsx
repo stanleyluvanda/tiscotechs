@@ -3360,7 +3360,7 @@ async function submitReport() {
     const attachmentList = Array.isArray(attachments) ? attachments : [];
 
     // Academic Books: require at least one image as a cover
-    if (
+    /*if (
       composerType === "Academic Books" &&
       attachmentList.filter((a) => a.type === "image").length === 0
     ) {
@@ -3371,7 +3371,18 @@ async function submitReport() {
     // If no text and no attachments (for non-Book posts), do nothing
     if (!html && attachmentList.length === 0 && composerType !== "Academic Books") {
       return;
-    }
+    }*/
+    // Academic Books do not require a separate cover image.
+// They must still include at least one uploaded book/file.
+if (composerType === "Academic Books" && attachmentList.length === 0) {
+  alert("Please upload the academic book before posting.");
+  return;
+}
+
+// Other post types: do nothing if there is no text and no attachment.
+if (!html && attachmentList.length === 0) {
+  return;
+}
 
     const audience = toFaculty
       ? facultyYearAudienceKey({
@@ -4142,9 +4153,6 @@ if (showingTab === "Top") {
     {current?.authProvider !== "supertokens-google" && (
   <VerifyGate email={current?.email} />
 )}
-    
-      {/*<main className="max-w-[1300px] mx-auto px-3 lg:px-5 py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-5">*/}
-      {/*<main className="max-w-[1360px] mx-auto px-2 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
         <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT */}
         {/* LEFT - DESKTOP ONLY */}
