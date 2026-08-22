@@ -150,12 +150,13 @@ async function updateLecturerProfile(patch, me) {
 
 
 // GET: load posts for this scope (fast feed + pagination)
-async function fetchLecturerPostsFromServer({ limit = 20, cursor = "" } = {}) {
+async function fetchLecturerPostsFromServer({ limit = 20, cursor = "", view = "recent" } = {}) {
   try {
     const qs = new URLSearchParams();
     qs.set("scope", LECTURER_SCOPE);
     qs.set("limit", String(limit));
-    qs.set("withThread", "0"); // ✅ ADD THIS LINE (smaller payload, faster feed)
+    qs.set("withThread", "0"); // keep the feed lightweight; threads still load on demand
+    qs.set("view", view);
     if (cursor) qs.set("cursor", cursor);
 
     const res = await fetch(`${POSTS_PATH}?${qs.toString()}`);
@@ -1426,6 +1427,14 @@ useEffect(() => {
   window.dispatchEvent(new Event("lecturerPosts:updated"));
 }, [posts]);
 
+// Feed controls.
+// Newest/Top/Answered all use the lightweight recent (30-day) backend view.
+// Older Posts is fetched only when the lecturer asks for it.
+const [showingTab, setShowingTab] = useState("Newest");
+const [search, setSearch] = useState("");
+const [feedLoading, setFeedLoading] = useState(false);
+const [feedError, setFeedError] = useState("");
+const feedView = showingTab === "Older Posts" ? "older" : "recent";
 
 
   // ✅ Merge remote posts into local without losing local-only threads (comments/replies)
@@ -1486,40 +1495,74 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
 
 
 
-  // 🔄 Load latest lecturer posts from backend (global store, with polling)
+  // 🔄 Load lecturer posts from backend.
+  // Recent posts stay fresh in the background; older posts load only on demand.
   useEffect(() => {
     let cancelled = false;
+    let id = null;
 
-    async function loadFromServer() {
-      const { posts: remotePosts } = await fetchLecturerPostsFromServer({ limit: 20 });
-if (!remotePosts || cancelled) return;
+    async function loadFromServer({ silent = false } = {}) {
+      if (!silent) {
+        setFeedError("");
+        // Keep the normal dashboard feeling instant. Only show a loading hint
+        // when the lecturer explicitly opens Older Posts.
+        setFeedLoading(feedView === "older");
+      }
 
-if (remotePosts.length) {
-  setPosts((prev) => mergeRemoteIntoLocal(prev, remotePosts));
-}
+      try {
+        const { posts: remotePosts } = await fetchLecturerPostsFromServer({
+          limit: 20,
+          view: feedView,
+        });
+
+        if (cancelled) return;
+
+        const remote = Array.isArray(remotePosts) ? remotePosts : [];
+
+        if (feedView === "older") {
+          // Older is a separate server-backed list. Do not mix recent posts into it.
+          setPosts(remote);
+        } else {
+          // Keep only recent local items before merging so returning from Older Posts
+          // cannot accidentally mix archived rows into the normal feed.
+          const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+          setPosts((prev) => {
+            const recentPrev = (Array.isArray(prev) ? prev : []).filter((p) => {
+              const created = Number(p?.createdAt || 0);
+              return created > 0 && created >= cutoff;
+            });
+
+            return mergeRemoteIntoLocal(recentPrev, remote);
+          });
+        }
+      } catch (err) {
+        console.error("[LecturerDashboard] feed load failed:", err);
+        if (!silent && !cancelled) {
+          setFeedError("Could not load posts. Please try again.");
+        }
+      } finally {
+        if (!silent && !cancelled) {
+          setFeedLoading(false);
+        }
+      }
     }
 
-    // Initial load
-    loadFromServer();
+    loadFromServer({ silent: false });
 
-    // Poll every 30 seconds so posts from other devices show up
-    /*const id = setInterval(loadFromServer, 30000);
+    // Poll only the current/recent feed. Older posts do not need background polling.
+    if (feedView !== "older") {
+      id = setInterval(() => {
+        if (document.visibilityState !== "visible") return;
+        loadFromServer({ silent: true });
+      }, 30000);
+    }
 
     return () => {
       cancelled = true;
-      clearInterval(id);
-    };*/
-    // Poll every 30 seconds so posts from other devices show up
-const id = setInterval(() => {
-  if (document.visibilityState !== "visible") return;
-  loadFromServer();
-}, 30000);
-
-return () => {
-  cancelled = true;
-  clearInterval(id);
-};
-  }, []);
+      if (id) clearInterval(id);
+    };
+  }, [feedView]);
 
 
 // RIGHT-CARD: Admin videos for lecturers (SERVER-backed, cross-browser)
@@ -3071,13 +3114,58 @@ const rep = {
     return result;
   }
 
+  const matchesLecturerSearch = (p) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+
+    const plain = stripHtml(p?.html || p?.text || "").toLowerCase();
+    const title = String(p?.title || "").toLowerCase();
+    const author = String(p?.author || p?.authorName || "").toLowerCase();
+    const type = String(p?.type || "").toLowerCase();
+    const program = String(
+      p?.displayProgramLabel || p?.authorProgram || p?.program || ""
+    ).toLowerCase();
+    const year = String(p?.targetYear || p?.year || "").toLowerCase();
+    const files = [
+      ...(Array.isArray(p?.files) ? p.files : []),
+      ...(Array.isArray(p?.attachments) ? p.attachments : []),
+    ]
+      .map((f) => String(f?.name || f?.fileName || "").toLowerCase())
+      .join(" ");
+
+    return [plain, title, author, type, program, year, files].some((value) =>
+      value.includes(q)
+    );
+  };
+
   const filteredRaw = posts
-  .filter((p) => !["lp1", "lp2"].includes(String(p?.id || ""))) // ✅ hide seeded posts
+    .filter((p) => !["lp1", "lp2"].includes(String(p?.id || ""))) // hide seeded posts
     .filter(isMyPost)
     .filter((p) => (showFacultyOnly ? isFacultyAudienceForMe(p.audience) : true))
-    .filter((p) => (filterType === "All" ? true : p.type === filterType));
+    .filter((p) => (filterType === "All" ? true : p.type === filterType))
+    .filter(matchesLecturerSearch);
 
-  const filtered = mergeForLecturerView(filteredRaw);
+  let filtered = mergeForLecturerView(filteredRaw);
+
+  if (showingTab === "Answered") {
+    filtered = filtered.filter(
+      (p) =>
+        Number(p?.commentCount || p?.commentsCount || 0) > 0 ||
+        (Array.isArray(p?.comments) && p.comments.length > 0)
+    );
+  }
+
+  if (showingTab === "Top") {
+    filtered = filtered.slice().sort((a, b) => {
+      const likeDiff = Number(b?.likes || 0) - Number(a?.likes || 0);
+      if (likeDiff !== 0) return likeDiff;
+      return Number(b?.createdAt || 0) - Number(a?.createdAt || 0);
+    });
+  } else {
+    filtered = filtered
+      .slice()
+      .sort((a, b) => Number(b?.createdAt || 0) - Number(a?.createdAt || 0));
+  }
 
 
   /* UI helpers */
@@ -3307,10 +3395,7 @@ async function clearNotificationsServerBacked() {
               ) : (
                 <div className="h-full w-full bg-gradient-to-r from-indigo-200 to-purple-200" />
               )}
-              {/*<label className="absolute right-2 top-2 text-xs bg-white/80 px-2 py-1 rounded cursor-pointer border border-slate-100">
-                Edit banner
-                <input type="file" accept="image/*" className="hidden" onChange={onPickBanner} />
-              </label>*/}
+              
               <label className="absolute right-2 top-2 text-xs bg-white/80 px-2 py-1 rounded cursor-pointer border border-slate-100">
   Edit banner
   <input
@@ -4053,6 +4138,54 @@ async function clearNotificationsServerBacked() {
               )}
             </Card>
           </ErrorBoundary>
+
+          {/* Feed view + search — mirrors StudentDashboard without touching post logic */}
+          <Card className="mx-0 sm:mx-0">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+                {["Top", "Newest", "Answered", "Older Posts"].map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setShowingTab(tab)}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap ${
+                      showingTab === tab
+                        ? tab === "Top"
+                          ? "bg-blue-600 text-white"
+                          : tab === "Newest"
+                          ? "bg-emerald-600 text-white"
+                          : tab === "Answered"
+                          ? "bg-purple-600 text-white"
+                          : "bg-slate-700 text-white"
+                        : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="sm:hidden">
+                      {tab === "Older Posts" ? "Older" : tab}
+                    </span>
+                    <span className="hidden sm:inline">{tab}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="w-full md:ml-auto md:w-[365px]">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search your posts by title, program, year, type, keywords…"
+                  className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {feedLoading ? (
+              <div className="mt-2 text-xs text-slate-500">Loading older posts…</div>
+            ) : null}
+
+            {feedError ? (
+              <div className="mt-2 text-xs text-red-600">{feedError}</div>
+            ) : null}
+          </Card>
 
 
          {/* MOBILE: Lecturer quick pills */}
