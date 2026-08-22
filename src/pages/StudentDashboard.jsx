@@ -3359,19 +3359,7 @@ async function submitReport() {
 
     const attachmentList = Array.isArray(attachments) ? attachments : [];
 
-    // Academic Books: require at least one image as a cover
-    /*if (
-      composerType === "Academic Books" &&
-      attachmentList.filter((a) => a.type === "image").length === 0
-    ) {
-      alert("Please add at least one image as the book cover.");
-      return;
-    }
-
-    // If no text and no attachments (for non-Book posts), do nothing
-    if (!html && attachmentList.length === 0 && composerType !== "Academic Books") {
-      return;
-    }*/
+    
     // Academic Books do not require a separate cover image.
 // They must still include at least one uploaded book/file.
 if (composerType === "Academic Books" && attachmentList.length === 0) {
@@ -4537,7 +4525,7 @@ if (showingTab === "Top") {
     className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
     disabled={aiBusy}
   >
-    {aiBusy ? "Working..." : "Improve writing"}
+    {aiBusy ? "Working..." : "Ask AI/Improve writing"}
   </button>
 
   <button
@@ -4567,7 +4555,7 @@ if (showingTab === "Top") {
     className="rounded-full border border-slate-300 px-3 py-1 text-sm hover:bg-slate-50"
     disabled={aiBusy}
   >
-    Summarize
+    AI-Summarize
   </button>
 
   <button
