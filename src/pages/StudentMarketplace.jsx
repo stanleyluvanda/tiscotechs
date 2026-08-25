@@ -482,7 +482,7 @@ function NewPostBadge() {
         {/* Starburst + NEW text (looks like your sample image) */}
         <svg
           viewBox="0 0 220 90"
-          className="h-6 w-auto"
+          className="h-4 w-auto"
           aria-hidden="true"
         >
           <path
@@ -1628,6 +1628,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   const [sellerMobile, setSellerMobile] = useState("");
   const [sellerWhatsapp, setSellerWhatsapp] = useState("");
   const [sellerLocation, setSellerLocation] = useState(""); // ✅ NEW
+  const [listingLabel, setListingLabel] = useState("");
 
   useEffect(() => {
     const first = CATEGORY_MAP[mainCategory]?.[0] ?? "";
@@ -1737,6 +1738,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       sellerMobile: sellerMobile.trim(),
       sellerWhatsapp: sellerWhatsapp.trim(),
       sellerLocation: sellerLocation.trim(),
+      listingLabel,
 
       seller: {
         id: userId, // ✅ canonical
@@ -1770,6 +1772,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
     setSellerMobile("");
     setSellerWhatsapp("");
     setSellerLocation("");
+    setListingLabel("");
 
     try {
       const saved = await createMarketplaceItem({
@@ -1787,6 +1790,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
         sellerMobile: baseItem.sellerMobile || "",
         sellerWhatsapp: baseItem.sellerWhatsapp || "",
         sellerLocation: baseItem.sellerLocation || "",
+        listingLabel: baseItem.listingLabel || "",
         location: uni || null,
       });
 
@@ -2553,6 +2557,17 @@ const filtered =
       placeholder="Location of availability e.g. Campus Gate A, Dorm B, City Center"
       className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm"
     />
+
+    <select
+  value={listingLabel}
+  onChange={(e) => setListingLabel(e.target.value)}
+  className="w-full border border-slate-200 rounded-xl sm:rounded px-3 py-3 sm:py-2 text-sm bg-white text-slate-700"
+>
+  <option value="">Listing option (optional)</option>
+  <option value="Price Negotiable">Price Negotiable</option>
+  <option value="Promotion">📣 Promotion</option>
+  <option value="Sales">Sales</option>
+</select>
   </div>
 
   {photos.length > 0 && (
@@ -2984,7 +2999,8 @@ const filtered =
       </div>
 
                       {(mobile || whatsapp || locationText) && (
-                        <div className="flex items-center gap-3 ml-6">
+                        /*<div className="flex items-center gap-3 ml-6">*/
+                        <div className="flex items-center gap-3 ml-1.5">
                           {whatsapp && (
                             <a
                               href={`https://wa.me/${whatsapp.replace(/[^\d]/g, "")}`}
@@ -2993,7 +3009,7 @@ const filtered =
                               className="inline-flex items-center gap-2 text-emerald-600 hover:underline"
                               title="Chat on WhatsApp"
                             >
-                              <WhatsAppIcon className="h-6 w-6" />
+                              <WhatsAppIcon className="h-4 w-4" />
                               <span>{whatsapp}</span>
                             </a>
                           )}
@@ -3004,22 +3020,14 @@ const filtered =
                               className="inline-flex items-center gap-1 text-blue-700 hover:underline"
                               title={`Mobile: ${mobile}`}
                             >
-                              <span className="text-base">📞</span>
+                              <span className="text-sm">📞</span>
                               <span className="text-sm">{mobile}</span>
                             </a>
                           )}
                         </div>
                       )}
 
-                      {/*{locationText && (
-                        <span className="inline-flex items-center gap-1 text-slate-700" title={`Location: ${locationText}`}>
-                          <LocationPinIcon className="h-4 w-4 text-red-600" />
-                          <span className="text-sm">{locationText}</span>
-                        </span>
-                      )}*/}
-
-
-                      {locationText && (
+                     {/* {locationText && (
   <span
     className="inline-flex items-center gap-2 text-slate-700"
     title={`Location: ${locationText}`}
@@ -3027,11 +3035,119 @@ const filtered =
     <span className="inline-flex items-center gap-1">
       <LocationPinIcon className="h-4 w-4 text-red-600" />
       <span className="text-sm">{locationText}</span>
+    </span>*/}
+
+    {/*</div>{locationText && (
+  <span className="inline-flex items-center gap-2 text-slate-700">
+    <span className="relative inline-flex items-center gap-1 group">*/}
+      {locationText && (
+  <>
+    <span className="relative inline-flex items-center gap-1 group whitespace-nowrap text-slate-700">
+      <LocationPinIcon className="h-4 w-4 text-red-600" />
+
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          locationText
+        )}`}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm hover:underline"
+        title={`View ${locationText} on Google Maps`}
+      >
+        {locationText}
+      </a>
+
+      {/* Google Maps preview on hover */}
+      <span
+        className="
+          hidden group-hover:block
+          absolute z-50
+          bottom-full left-1/2 -translate-x-1/2
+          mb-2
+          w-72 h-44
+          bg-white border border-slate-200
+          rounded-lg shadow-lg
+          overflow-hidden
+        "
+      >
+        <iframe
+          title={`Map of ${locationText}`}
+          src={`https://www.google.com/maps?q=${encodeURIComponent(
+            locationText
+          )}&output=embed`}
+          className="w-full h-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </span>
     </span>
+
+
+
+    {item.listingLabel ? (
+  <span
+    /*className={`inline-flex items-center gap-1 text-sm font-semibold ${*/
+      className={`inline-flex items-center gap-1 text-sm font-semibold whitespace-nowrap ${
+      item.listingLabel === "Promotion"
+        ? "text-amber-600"
+        : item.listingLabel === "Sales"
+        ? "text-red-600"
+        : "text-emerald-700"
+    }`}
+  >
+    {item.listingLabel === "Promotion" ? (
+  <span aria-hidden="true" className="inline-flex items-center">
+    <svg
+      viewBox="0 0 32 32"
+      className="h-5 w-5"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Megaphone body */}
+      <g transform="rotate(-18 16 17)">
+        <path
+          d="M6 14.5H11V21H6C4.9 21 4 20.1 4 19V16.5C4 15.4 4.9 14.5 6 14.5Z"
+          fill="#EC4899"
+        />
+        <path
+          d="M11 14.5L22 9.5V26L11 21Z"
+          fill="#F9A8D4"
+        />
+        <path
+          d="M20.5 10C20.5 8.9 21.4 8 22.5 8C23.6 8 24.5 8.9 24.5 10V25.5C24.5 26.6 23.6 27.5 22.5 27.5C21.4 27.5 20.5 26.6 20.5 25.5V10Z"
+          fill="#DB2777"
+        />
+        <path
+          d="M9 21H13L12 26H9.5L9 21Z"
+          fill="#A855F7"
+        />
+      </g>
+
+      {/* Sound waves */}
+      <path
+        d="M24 7C26.3 8 27.8 9.7 28.5 12"
+        stroke="#FBBF24"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M25 3.5C28.7 5 31 7.7 31.5 11"
+        stroke="#FBBF24"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  </span>
+) : null}
+
+    <span>{item.listingLabel}</span>
+  </span>
+) : null}
 
     {/* ✅ NEW badge appears after location and blinks for 7 days */}
     {isNewPost(item.createdAt) && <NewPostBadge />}
-  </span>
+  {/*</span>*/}
+  </>
 )}
 
                     </div>
