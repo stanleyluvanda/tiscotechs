@@ -555,7 +555,6 @@ function HeaderBar({ title }) {
   );
 }
 
-/*function SidebarCard({ title, children, headerOnly = false }) {*/
 function SidebarCard({title,children,headerOnly = false,compact = false,}) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -1218,6 +1217,7 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
   {/*const [showComments,setShowComments]=useState(true);// This hide the comment from loading automatically*/}
   const [showComments,setShowComments]=useState(false);
   const [cmt,setCmt]=useState("");
+  const [postMenuOpen, setPostMenuOpen] = useState(false);
   const [cmtImages,setCmtImages]=useState([]); // [{name,dataUrl}]
   const [cmtFiles,setCmtFiles]=useState([]);   // [{name,mime,dataUrl}]
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
@@ -1338,16 +1338,37 @@ const files = mergedFiles.filter((a) => {
   {post.type}
 </span>
         {/* NEW: delete control (student can delete own posts) */}
+
         {canDelete && (
-          <button
-            onClick={() => onDeletePost?.(post.id)}
-            /*className="ml-2 text-xs rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 hover:bg-red-100"*/
-            className="shrink-0 ml-1 sm:ml-2 text-xs rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 hover:bg-red-100"
-            title="Delete this post"
-          >
-            Delete
-          </button>
-        )}
+  <div className="relative shrink-0 ml-1 sm:ml-2">
+    <button
+      type="button"
+      onClick={() => setPostMenuOpen((v) => !v)}
+      className="h-8 w-8 inline-flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100"
+      aria-label="Post options"
+      aria-expanded={postMenuOpen}
+      title="Post options"
+    >
+      <span className="text-xl leading-none">⋮</span>
+    </button>
+
+    {postMenuOpen && (
+      <div className="absolute right-0 top-full mt-1 z-30 min-w-[120px] rounded-lg border border-slate-200 bg-white shadow-lg overflow-hidden">
+        <button
+          type="button"
+          onClick={() => {
+            setPostMenuOpen(false);
+            onDeletePost?.(post.id);
+          }}
+          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+        >
+          Delete
+        </button>
+      </div>
+    )}
+  </div>
+)}
+
       </div>
 
 
@@ -2652,21 +2673,6 @@ const latestSeenCommonTs = Number(
       }
     }
 
-    // Initial load with spinner
-    {/*loadFromApi({ silent: false });
-
-    // Poll every 30 seconds in the background
-    pollTimer = setInterval(() => {
-      if (!cancelled) {
-        loadFromApi({ silent: true });
-      }
-    }, 30000); // adjust if you want
-
-    return () => {
-      cancelled = true;
-      if (pollTimer) clearInterval(pollTimer);
-    };
-  }, [feedView]);*/}
   // Initial load with spinner.
 // This still runs whenever the user switches between recent and older posts.
 loadFromApi({ silent: false });
@@ -2703,9 +2709,6 @@ return () => {
     const normalizedLect = b.map(p => p.authorType ? p : { ...p, authorType: "lecturer" });
     return [...a, ...normalizedLect].sort((x,y) => (y.createdAt||0) - (x.createdAt||0));
   }, [posts, lecturerPosts]);
-
-  
-
 
   useEffect(() => {
     const sync = () => {
@@ -2882,6 +2885,8 @@ useEffect(() => {
   const [filterType,setFilterType]=useState("All");
   // ✅ NEW: collapse/expand Academic posts type
   const [academicPostsOpen, setAcademicPostsOpen] = useState(true);
+  // Controls expanded view of the admin YouTube video
+const [videoExpanded, setVideoExpanded] = useState(false);
   const [hasNewCommonPosts, setHasNewCommonPosts] = useState(false);
 
   // ====== "New" per type tracking (for left sidebar pills)
@@ -4448,11 +4453,7 @@ if (showingTab === "Top") {
 </aside>
 
         {/* CENTER */}
-        {/*<section className="space-y-4">*/} 
-          {/*<section className="space-y-3 lg:space-y-4 min-w-0 mt-[85px] lg:mt-0">*/}
             <section className="w-full max-w-full overflow-x-hidden space-y-1 lg:space-y-1 min-w-0 mt-[85px] lg:mt-0">
-
-
               {centerMode === "ai" ? (
   <Suspense
     fallback={
@@ -4569,8 +4570,6 @@ if (showingTab === "Top") {
         setAiBusy(true);
         setAiResult("");
         setAiMode("html");
-
-        /*const improved = await callAssistAI("improve-writing", sourceText);*/
         const improved = await callAssistAIChunked("improve-writing", sourceText);
 
         setAiResult(sanitizeSimpleAiHtml(improved));
@@ -4599,7 +4598,6 @@ if (showingTab === "Top") {
         setAiResult("");
         setAiMode("html");
 
-        /*const summary = await callAssistAI("summarize", sourceText);*/
         const summary = await callAssistAIChunked("summarize", sourceText);
 
         /*setAiResult(summary);*/
@@ -4629,7 +4627,6 @@ if (showingTab === "Top") {
         setAiResult("");
         setAiMode("html");
 
-        /*const formatted = await callAssistAI("format-subheadings", sourceText);*/
         const formatted = await callAssistAIChunked("format-subheadings", sourceText);
 
         setAiResult(sanitizeSimpleAiHtml(formatted));
@@ -4938,35 +4935,6 @@ if (showingTab === "Top") {
   </div>
 )}
 
-
-
-
-{/*{filtered.map((p, idx) => (
- <div key={p.id}>
-    <div
-      ref={(el) => {
-        if (el && p?.id) postRefs.current[p.id] = el;
-      }}
-      data-post-id={p.id}
-    >
-      <PostCard
-        post={p}
-        onToggleLike={() => toggleLike(p.id)}
-        onToggleSavePost={() => toggleSavePost(p.id || p.postId)}
-        isSavedPost={savedPostIds.has(String(p.id || p.postId || ""))}
-        onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
-        onAddReply={(commentId, text, images, files) =>
-          addReply(p.id, commentId, text, images, files)
-        }
-        onDeletePost={deletePost}
-        onReport={() => onReport({ itemType: "post", itemId: p.id, postId: p.id })}
-        currentUser={user}
-        isHighlighted={highlightPostId === p.id}
-      />
-    </div>
-  </div>
-))}*/}
-
 {filtered.map((p, idx) => (
   <div key={p.id}>
     <div
@@ -5062,10 +5030,48 @@ if (showingTab === "Top") {
                     Updates from ScholarsKnowledge
                   </div>
                 )}
-                <div className="mt-3 aspect-video w-full overflow-hidden rounded-lg border border-slate-100">
-                  <YouTubeEmbed idOrUrl={latestVideo.videoUrlOrId} title={latestVideo.title || "ScholarsKnowledge Updates"} />
-                </div>
                 
+  <div className={
+    videoExpanded
+      ? "fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
+      : "relative mt-3"
+  }
+>
+  <div
+    className={
+      videoExpanded
+        ? "relative aspect-video w-full max-w-6xl overflow-hidden rounded-lg bg-black"
+        : "relative aspect-video w-full overflow-hidden rounded-lg border border-slate-100"
+    }
+  >
+    <YouTubeEmbed
+      idOrUrl={latestVideo.videoUrlOrId}
+      title={latestVideo.title || "ScholarsKnowledge Updates"}
+    />
+
+    {!videoExpanded ? (
+      <button
+        type="button"
+        onClick={() => setVideoExpanded(true)}
+        className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-md bg-black/70 text-white hover:bg-black/90"
+        title="Expand video"
+        aria-label="Expand video"
+      >
+        ⛶
+      </button>
+    ) : (
+      <button
+        type="button"
+        onClick={() => setVideoExpanded(false)}
+        className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/90"
+        title="Close expanded video"
+        aria-label="Close expanded video"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+</div>
 
                 <div className="mt-2 text-xs text-slate-500 text-center">
                      {latestVideo?.createdAt
