@@ -3859,10 +3859,10 @@ const byParent = visibleComments.reduce((acc, c) => {
   onClick={() => toggleLike(post.id)}
   className="min-w-0 rounded px-1 py-1 hover:bg-slate-50"
 >
-  <div className="flex items-center justify-center gap-1">
+  {/*<div className="flex items-center justify-center gap-1">
     <span>👍</span>
     <span>{post.likes || 0}</span>
-  </div>
+  </div>*/}
 </button>
 
   {/*<div className="min-w-0 flex flex-col items-center justify-center">
@@ -3870,10 +3870,10 @@ const byParent = visibleComments.reduce((acc, c) => {
     <div>Comments</div>
   </div>*/}
 
-  <div className="min-w-0 flex flex-col items-center justify-center">
+  {/*<div className="min-w-0 flex flex-col items-center justify-center">
     <div>{post.views || 0}</div>
     <div>Views</div>
-  </div>
+  </div>*/}
 
   <button
     type="button"
@@ -4010,7 +4010,7 @@ const byParent = visibleComments.reduce((acc, c) => {
                       Student Market Place
                     </Link>
                     <Link to="/student-dashboard?tab=profile" className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50">
-                      View My Profile
+                      Back to Dashboard
                     </Link>
                   </>
                 )}

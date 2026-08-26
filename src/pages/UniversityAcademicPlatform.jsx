@@ -3811,7 +3811,7 @@ const byParent = allComments.reduce((acc, c) => {
 
   <span className="hidden sm:inline text-slate-400">•</span>
 
-  <button
+  {/*<button
     onClick={() => toggleLike(post.id)}
     className="rounded px-2 py-1 hover:bg-slate-50"
   >
@@ -3825,7 +3825,7 @@ const byParent = allComments.reduce((acc, c) => {
 
   <span className="text-slate-700">
     {post.views || 0} Views
-  </span>
+  </span>*/}
 
   <button
     type="button"
