@@ -555,10 +555,12 @@ function HeaderBar({ title }) {
   );
 }
 
-function SidebarCard({ title, children, headerOnly = false }) {
+/*function SidebarCard({ title, children, headerOnly = false }) {*/
+function SidebarCard({title,children,headerOnly = false,compact = false,}) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="bg-[#8ad5cf] px-4 py-4 font-semibold text-slate-900">
+      {/*<div className="bg-[#8ad5cf] px-4 py-4 font-semibold text-slate-900">*/}
+        <div className={`bg-[#8ad5cf] px-4 font-semibold text-slate-900 ${compact ? "py-3" : "py-4"}`}>
         {title}
       </div>
 
@@ -2878,6 +2880,8 @@ useEffect(() => {
   const [showFacultyOnly,setShowFacultyOnly]=useState(false);
   const [showMineOnly,setShowMineOnly]=useState(false);
   const [filterType,setFilterType]=useState("All");
+  // ✅ NEW: collapse/expand Academic posts type
+  const [academicPostsOpen, setAcademicPostsOpen] = useState(true);
   const [hasNewCommonPosts, setHasNewCommonPosts] = useState(false);
 
   // ====== "New" per type tracking (for left sidebar pills)
@@ -4242,7 +4246,10 @@ if (showingTab === "Top") {
         
 
           {/* Lecturer posts toggle */}
+          {/* Compact group for academic post sidebar controls */}
+<div className="space-y-0.5">
 <SidebarCard
+  compact
   headerOnly
   title={
     /*<div className="flex items-center justify-between gap-3">*/
@@ -4270,6 +4277,7 @@ if (showingTab === "Top") {
 
 {/* Faculty filter */}
 <SidebarCard
+  compact
   headerOnly
   title={
     /*<div className="flex items-center justify-between gap-3">*/
@@ -4301,6 +4309,7 @@ if (showingTab === "Top") {
 
 {/* My posts */}
 <SidebarCard
+  compact
   headerOnly
   title={
     /*<div className="flex items-center justify-between gap-3">*/
@@ -4351,7 +4360,7 @@ if (showingTab === "Top") {
 
 
           {/* Academic posts filters */}
-          <SidebarCard title="Academic posts">
+          {/*<SidebarCard title="Academic posts type">
             <div className="space-y-2 text-sm">
               <FilterPill label="All" active={filterType==="All"} onClick={()=>setFilterType("All")} activeClassName="bg-[#6B3363] text-white" />
               {POST_TYPES.map(t=> (
@@ -4364,7 +4373,58 @@ if (showingTab === "Top") {
                 />
               ))}
             </div>
-          </SidebarCard>
+          </SidebarCard>*/}
+          {/* Academic posts filters */}
+<SidebarCard
+  compact
+  title={
+    <button
+      type="button"
+      onClick={() => setAcademicPostsOpen((v) => !v)}
+      className="w-full flex items-center justify-between text-left"
+      aria-expanded={academicPostsOpen}
+      aria-controls="academic-post-types-panel"
+    >
+      <span>Academic posts type</span>
+
+      <span
+        className="text-slate-700 text-lg leading-none"
+        aria-hidden="true"
+      >
+        {academicPostsOpen ? "▾" : "▸"}
+      </span>
+    </button>
+  }
+>
+  {academicPostsOpen && (
+    <div
+      id="academic-post-types-panel"
+      className="space-y-2 text-sm"
+    >
+      <FilterPill
+        label="All"
+        active={filterType === "All"}
+        onClick={() => setFilterType("All")}
+        activeClassName="bg-[#6B3363] text-white"
+      />
+
+      {POST_TYPES.map((t) => (
+        <FilterPill
+          key={t}
+          label={t}
+          active={filterType === t}
+          onClick={() => {
+            setFilterType(t);
+            markTypeSeen(t);
+          }}
+          showNew={(latestByType[t] || 0) > (lastSeenByType[t] || 0)}
+        />
+      ))}
+    </div>
+  )}
+</SidebarCard>
+</div>
+
            {/* Normal Google Ad card */}
 {showSidebarAds ? (
   <GoogleSidebarAd
