@@ -29,8 +29,23 @@ export const US_STATE_UNIVERSITIES = {
   "University of Delaware",
   "Delaware State University",
   
+  ],
+
+"Washington D.C": [
+  "American University",
   
   ],
+Florida: [
+  "AdventHealth University",
+  
+  ],
+Georgia : [
+  "Georgia Institute of Technology",
+  
+  ],
+
+
+
 };
 
 export const US_UNIVERSITY_STATE_SEPARATORS = Object.fromEntries(

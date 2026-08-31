@@ -4524,9 +4524,1319 @@ export const NORTH_AMERICA = [
       "Minor in Psychology"
     ]
   }
-}
-  },
 },
+"American University": {
+  "College of Arts & Sciences": {
+    programs: [
+      // Undergraduate Programs
+      "BA in African American & Diaspora Studies",
+      "BA in American Studies",
+      "BA in Anthropology",
+      "BS in Applied Mathematics",
+      "BA in Arab World Studies",
+      "BA in Arabic Studies",
+      "BA in Art History",
+      "BA in Asia, Pacific & Diaspora Studies",
+      "BA in Audio Production",
+      "BS in Audio Technology",
+      "BS in Biochemistry",
+      "BS in Biology",
+      "BS in Chemistry",
+      "BA in Chinese Studies",
+      "BA in Communication, Language, Culture",
+      "BA in Computational Media & Applied Perception",
+      "BS in Computational Science",
+      "BA in Computer Science",
+      "BS in Computer Science",
+      "BA in Dance",
+      "BS in Data Science",
+      "BA in Economics",
+      "BS in Economics",
+      "BS in Engineering Physics",
+      "BS in Environmental Science",
+      "BA in Environmental Studies",
+      "BA in French",
+      "BA in French/Area Studies",
+      "BA in German",
+      "BA in German/Area Studies",
+      "BA in Graphic Design & Visual Communication",
+      "BS in Health Science",
+      "BA in History",
+      "BA in Jewish Studies",
+      "BA in Liberal Studies",
+      "BA in Literature",
+      "BS in Mathematics",
+      "BS in Mathematics & Economics",
+      "BA in Music",
+      "BA in Musical Theatre",
+      "BS in Neuroscience",
+      "BA in Philosophy",
+      "BA in Photography",
+      "BA in Physics",
+      "BS in Physics",
+      "BA in Psychology",
+      "BA in Public Health",
+      "BS in Public Health",
+      "BA in Religious Studies",
+      "BA in Russian",
+      "BA in Russian/Area Studies",
+      "BA in Sociology",
+      "BA in Spanish",
+      "BA in Spanish/Area Studies",
+      "BS in Statistics",
+      "BA in Studio Art",
+      "BA in Theatre",
+      "BA in Women’s, Gender, and Sexuality Studies",
+
+      // Graduate Programs — Art
+      "MA in Art History",
+      "MA in Game Design",
+      "Graduate Certificate in Game Design",
+      "MFA in Studio Art",
+
+      // Graduate Programs — Arts Management
+      "MA in Arts Management",
+      "Graduate Certificate in Arts Management",
+      "Graduate Certificate in International Arts Management",
+
+      // Graduate Programs — Audio Technology
+      "MA in Audio Technology",
+      "Graduate Certificate in Audio Production",
+
+      // Graduate Programs — Critical Race, Gender & Culture Studies
+      "Graduate Certificate in Asian Studies",
+      "Graduate Certificate in Women’s, Gender & Sexuality Studies",
+
+      // Graduate Programs — History
+      "MA in History",
+      "MA in Public History",
+      "PhD in History",
+
+      // Graduate Programs — Literature
+      "MFA in Creative Writing",
+      "MA in Literature, Culture, Technology",
+
+      // Graduate Programs — Philosophy & Religion
+      "MA in Ethics, Peace & Human Rights",
+      "MA in Philosophy",
+      "Graduate Certificate in Artificial Intelligence: Ethics and Society",
+
+      // Graduate Programs — World Languages & Cultures
+      "MA in Teaching English to Speakers of Other Languages (TESOL)",
+      "Graduate Certificate in Teaching English to Speakers of Other Languages (TESOL)",
+      "Graduate Certificate in French Translation",
+      "Graduate Certificate in Russian Translation",
+      "Graduate Certificate in Spanish Translation",
+
+      // Graduate Programs — Artificial Intelligence
+      "MS in Artificial Intelligence",
+      "PhD in Computational Science & AI",
+
+      // Graduate Programs — Anthropology
+      "MA in Public Anthropology",
+      "Graduate Certificate in Public Anthropology",
+      "Graduate Certificate in Global Health & Culture",
+
+      // Graduate Programs — Biology
+      "MS in Biology - Cell & Molecular",
+      "MS in Biology - Ecology & Evolutionary",
+      "PhD in Biomedical & Environmental Health Sciences",
+      "Graduate Certificate in Clinical Biochemistry",
+
+      // Graduate Programs — Computer Science
+      "MS in Computer Science - Applied Computer Science",
+      "MS in Computer Science - Data Science",
+      "MS in Computer Science - Game and Computational",
+      "MS in Computer Science - Cybersecurity",
+
+      // Graduate Programs — Environmental Science
+      "MS in Environmental Science",
+
+      // Graduate Programs — Data Science
+      "MS in Data Science - Applied Public Affairs",
+      "MS in Data Science - Artificial Intelligence",
+      "MS in Data Science - Business Analytics",
+      "MS in Data Science - Computer Science",
+      "MS in Data Science - Cybersecurity",
+      "MS in Data Science - Environmental Science",
+      "MS in Data Science - Finance",
+      "MS in Data Science - International Economic Relations",
+      "MS in Data Science - Investigative Journalism",
+      "MS in Data Science - Microeconomic Analysis",
+      "MS in Data Science - Statistics",
+      "Online MS in Data Science - Artificial Intelligence",
+      "Online MS in Data Science - Business Analytics",
+      "Online MS in Data Science - Microeconomic Analysis",
+      "Graduate Certificate in Data Science",
+
+      // Graduate Programs — Economics
+      "Online MS in Economics - Applied",
+      "Online MS in Economics - Data Science",
+      "MS in Economics - Data Science",
+      "MS in Economics - Development",
+      "MS in Economics - Financial Economic Policy",
+      "MS in Economics - Gender Analysis",
+      "MS in Economics - International",
+      "PhD in Economics",
+      "Graduate Certificate in Applied Microeconomics",
+      "Graduate Certificate in Gender Analysis in Economics",
+      "Graduate Certificate in International Economic Relations",
+
+      // Graduate Programs — Health & Public Health
+      "MS in Health Promotion",
+      "Online MS in Health Promotion",
+      "Online MS in Nutrition Education",
+      "Online Graduate Certificate in Nutrition Education",
+      "MA in Public Health Innovation & Practice",
+      "Postbaccalaureate Certificate in Premedical Studies",
+
+      // Graduate Programs — Mathematics & Statistics
+      "MS in Statistics - Biostatistics",
+      "MS in Statistics - Theory and Methods",
+      "Graduate Certificate in Applied Statistics",
+
+      // Graduate Programs — Neuroscience
+      "PhD in Behavior, Cognition, Neuroscience",
+
+      // Graduate Programs — Psychology
+      "PhD in Clinical Psychology",
+      "MA in Psychology - Clinical Science",
+      "MA in Psychology - Psychological Science",
+
+      // Graduate Programs — Sociology
+      "MA in Sociology Research and Practice",
+      "Graduate Certificate in Public Sociology",
+      "Graduate Certificate in Social Research"
+    ]
+  },
+  "Kogod School of Business": {
+  programs: [
+    // Bachelor's Programs
+    "BS in Accounting",
+    "BS in Business Administration",
+    "BS in Business Analytics & AI",
+    "BS in Business & Entertainment",
+    "BS in Business, Language, & Culture",
+    "BS in Finance",
+    "BS in Marketing",
+
+    // Master's Programs
+    "MS in Accounting",
+    "MS in Business Analytics & AI",
+    "MS in Finance",
+    "MS in Marketing",
+    "MS in Sustainability Management",
+
+    // MBA
+    "MBA"
+  ]
+},
+
+"School of Communication": {
+  programs: [
+    // Bachelor's Programs
+    "BA in Film & Media Arts",
+    "BA in Public Relations & Strategic Communication",
+    "BA in Journalism",
+    "BA in Communication Studies",
+    "BA in Photography",
+    "BA in Communication, Language, and Culture",
+
+    // Master's Programs
+    "MA in Media, Technology & Democracy",
+    "MA in Journalism & Public Affairs",
+    "MA in Film & Media Production",
+    "MA in Strategic Communication",
+    "MA in Global Strategic Communication",
+    "MA in Political Communication",
+    "MA in Producing Film, TV & Video",
+    "MA in Game Design",
+    "MA in Journalism & Digital Storytelling",
+
+    // MFA Programs
+    "MFA in Film & Media Arts",
+    "MFA in Games & Interactive Media",
+
+    // Doctoral Programs
+    "PhD in Communication",
+
+    // Minors
+    "Minor in Communication"
+  ]
+},
+
+"Baker School of Education": {
+  programs: [
+    // Master's Programs
+    "MEd in Education Policy & Leadership",
+    "Master of Arts in Teaching (MAT)",
+
+    // Doctoral Programs
+    "EdD in Education Policy & Leadership",
+
+    // Graduate Certificates
+    "Graduate Certificate in Reading and Language Development"
+  ]
+},
+
+"School of International Service": {
+  programs: [
+    // Master's Programs
+    "MA in Ethics, Peace, and Human Rights",
+    "MA in Global Environmental Policy",
+    "MA in Global Governance, Politics, and Security",
+    "MA in Global Governance, Politics, and Security: Quantitative Economic Methods",
+    "MA in Intercultural and International Communication",
+    "MA in International Affairs Policy and Analysis",
+    "MA in International Affairs: Natural Resources and Sustainable Development",
+    "MA in International Affairs: United States Foreign Policy and National Security",
+    "MA in International Development",
+    "MA in International Peace and Conflict Resolution",
+    "MS in International Relations and Business (Online)",
+    "MA in International Relations (Online)",
+    "Master of International Service (International Studies Track)",
+    "Master of International Service (On-Campus and Online)",
+    "MS in Development Management",
+
+    // Doctoral Programs
+    "PhD in International Relations"
+  ]
+},
+
+"School of Public Affairs": {
+  programs: [
+    // Undergraduate Programs
+    "BA in Applied Public Policy Analysis",
+    "BA in Interdisciplinary Studies: CLEG",
+    "BA in Justice & Law",
+    "BA in Legal Studies",
+    "BA in Political Science",
+    "BS in Data Sciences for Political Science",
+    "BS in Data Sciences for Justice, Law, & Criminology",
+
+    // Undergraduate Certificates
+    "Certificate in Advanced Leadership Studies",
+    "Certificate in Digital Technology Generalist",
+    "Certificate in Civic Dialogue",
+    "Certificate in Key Leadership",
+    "Certificate in Political Thought",
+    "Certificate in Politics, Policy & Law",
+    "Certificate in Women, Policy & Political Leadership",
+
+    // Master's Programs — On Campus
+    "MS in Data Science",
+    "MS in Justice, Law & Criminology",
+    "MA in Political Communication",
+    "MA in Political Science",
+    "MPA in Public Administration",
+    "MPP in Public Policy",
+    "MPP in Public Policy-STEM",
+    "MS in Terrorism & Homeland Security Policy",
+
+    // Master's Programs — Online
+    "MPAP in Public Administration & Policy",
+    "MS in Counter-Terrorism and Homeland Security",
+
+    // Doctoral Programs
+    "PhD in Justice, Law & Criminology",
+    "PhD in Political Science",
+    "PhD in Public Administration & Policy",
+
+    // Graduate Certificates
+    "Graduate Certificate in Analytics and Management",
+    "Graduate Certificate in Nonprofit Management",
+    "Graduate Certificate in Public Financial Management",
+    "Graduate Certificate in Cyber Policy and Management",
+    "Graduate Certificate in Public Management",
+    "Graduate Certificate in Public Policy Analysis",
+    "Graduate Certificate in Women, Policy & Political Leadership"
+  ]
+},
+
+"Washington College of Law": {
+  programs: [
+    "JD in Law",
+    "LLM in Law",
+    "MLS in Legal Studies",
+    "SJD in Juridical Science",
+    "Dual Degree Programs"
+  ]
+}
+
+},
+"Gallaudet University": {
+  "School of Arts and Humanities": {
+    programs: [
+      // Undergraduate Programs
+      "BA in Art + Visual Communication Design",
+      "BA in Deaf Studies",
+      "BA in History",
+      "Bioethics Microcredential",
+      "Interfaith Engagement Microcredential",
+
+      // Graduate Programs
+      "MA in Deaf Studies: Cultural Studies",
+      "MA in Deaf Studies: Language and Human Rights",
+
+      // Online Programs
+      "BA in Deaf Studies for Online Degree Completion Program",
+
+      // Certificates
+      "Certificate in Deaf Cultural Studies"
+    ]
+  },
+
+  "School of Civic Leadership, Business, and Social Change": {
+    programs: [
+      // Undergraduate Programs
+      "BS in Risk Management and Insurance",
+      "BS in Accounting",
+      "BS in Business Administration",
+      "BA in Government",
+      "BA in Government with a Specialization in Law",
+      "Peace Corps Prep Program",
+      "BA in Social Work (BSW)",
+      "BA in Communication Studies",
+
+      // Graduate Programs
+      "Master of Public Administration",
+
+      // Online Programs
+      "BS in Accounting for Online Degree Completion Program",
+      "BS in Business Administration for Online Degree Completion Program",
+      "Master of Social Work (MSW)",
+      "BA in Communication Studies for Online Degree Completion Program",
+
+      // Certificates
+      "Graduate Certificate in Sexuality and Gender Studies",
+      "Undergraduate Certificate in Sexuality and Gender Studies"
+    ]
+  },
+
+  "School of Human Services and Sciences": {
+    programs: [
+      // Undergraduate Programs
+      "BA in Psychology",
+      "BS in Sports, Recreation, and Fitness",
+
+      // Graduate Programs
+      "MA in Early Intervention Studies",
+      "MA in Counseling: Clinical Mental Health Counseling",
+      "MA in Counseling: School Counseling",
+      "PhD in Clinical Psychology",
+      "PsyD in School Psychology",
+      "AuD in Audiology",
+      "Hearing, Speech, and Language Sciences Post-Baccalaureate Courses",
+      "MS in Speech-Language Pathology",
+      "PhD in Hearing, Speech, and Language Sciences",
+
+      // Online Programs
+      "BA in Psychology for Online Degree Completion Program"
+    ]
+  },
+
+  "School of Language, Education, and Culture": {
+    programs: [
+      // Undergraduate Programs
+      "BA in English",
+      "BA in Interpretation",
+      "BA in Sign Language Studies",
+      "BA in Education with a Specialization in Early Childhood Education",
+      "BA in Education with a Specialization in Elementary Education",
+      "BA or BS in Education with a Specialization in Secondary Education: Science, English, Mathematics or Social Studies",
+      "BA in Interdisciplinary Spanish",
+      "BA in International Studies",
+
+      // Graduate Programs
+      "MA in International Development",
+      "MA in Interpretation: Combined Interpreting Practice and Research",
+      "MA in Interpretation: Interpreting Research",
+      "PhD in Translation and Interpreting Studies",
+      "MA in Sign Language Education",
+      "MA in Linguistics",
+      "PhD in Linguistics",
+      "EdD in Transformational Leadership and Administration in Deaf Education",
+      "MA in Deaf Education",
+      "MA in Deaf Education Studies",
+      "MA in Early Childhood Education and Deaf Education",
+      "MA in Elementary Education and Deaf Education",
+      "EdS in Deaf Education",
+
+      // Online Programs
+      "BA in English for Online Degree Completion Program",
+      "AA in Pre-Translation Studies",
+      "MA in Secondary Education and Deaf Education",
+      "PhD in Critical Studies in the Education of Deaf Learners",
+
+      // Certificates
+      "Certificate in Disability Inclusive Disaster Risk Reduction and Emergency Planning",
+      "Post-Graduate Certificate in Transformational Leadership and Administration in Deaf Education"
+    ]
+  },
+
+  "School of Science, Technology, Accessibility, Mathematics, and Public Health": {
+    programs: [
+      // Undergraduate Programs
+      "BS in Data Science",
+      "BA in Biology",
+      "BS in Biology",
+      "BS in Information Technology",
+      "BA in Mathematics",
+      "BS in Mathematics",
+      "BS in Public Health",
+
+      // Graduate Programs
+      "MS in Accessible Human-Centered Computing and Policy",
+      "PhD in Accessible Human-Centered Computing and Policy",
+      "PhD in Educational Neuroscience",
+
+      // Certificates
+      "Certificate in Educational Neuroscience"
+    ]
+  }
+  
+},
+  "George Washington University": {
+  "Columbian College of Arts & Sciences": {
+    programs: [
+      // Undergraduate Programs
+      "BA in Africana Studies",
+      "BA in American Studies",
+      "BA in Anthropology",
+      "BA in Arabic Studies",
+      "BA in Archaeology",
+      "BA in Art History",
+      "BA in Art History and Fine Arts",
+      "BS in Astronomy and Astrophysics",
+      "BS in Biological Anthropology",
+      "BA in Biology",
+      "BS in Biology",
+      "BS in Biophysics",
+      "BA in Chemistry",
+      "BS in Chemistry",
+      "BA in Chinese Language and Literature",
+      "BA in Classical and Ancient Near Eastern Studies",
+      "BS in Cognitive Neuroscience",
+      "BS in Cognitive Science of Language",
+      "BA in Communication",
+      "BA in Creative Writing and English",
+      "BA in Criminal Justice",
+      "BA in Dance",
+      "BS in Data Science",
+      "BA in Economics",
+      "BS in Economics",
+      "BA in English",
+      "BS in Environmental and Sustainability Science",
+      "BA in Environmental Studies",
+      "BFA in Fine Arts",
+      "BA in Fine Arts",
+      "BA in Fine Arts and Art History",
+      "BA in French Language and Literature",
+      "BA in Geography",
+      "BA in Geological Sciences",
+      "BS in Geological Sciences",
+      "BA in German Language and Literature",
+      "BFA in Graphic Design",
+      "BA in History",
+      "BA in Human Services and Social Justice",
+      "BFA in Interaction Design",
+      "BA in Interaction Design",
+      "BFA in Interior Architecture",
+      "BA in Japanese Language and Literature",
+      "BA in Journalism and Mass Communication",
+      "BA in Judaic Studies",
+      "BA in Korean Language and Literature",
+      "BA in Mathematics",
+      "BS in Mathematics",
+      "BA in Music",
+      "BS in Neuroscience",
+      "BA in Organizational Sciences",
+      "BA in Peace Studies",
+      "BA in Philosophy",
+      "BA in Philosophy: Public Affairs Focus",
+      "BFA in Photojournalism",
+      "BA in Physics",
+      "BS in Physics",
+      "BA in Political Communication",
+      "BA in Political Science",
+      "BS in Political Science",
+      "BA in Political Science: Public Policy Focus",
+      "BA in Psychological and Brain Sciences",
+      "BS in Psychological and Brain Sciences",
+      "BA in Religion",
+      "BA in Russian Language and Literature",
+      "BA in Sociology",
+      "BA in Spanish and Latin American Languages, Literatures, and Cultures",
+      "BA in Speech, Language, and Hearing Sciences",
+      "BS in Statistics",
+      "BA in Theatre",
+      "BA in Women's, Gender, and Sexuality Studies",
+
+      // Master's Programs
+      "MA in American Studies",
+      "MS in Anatomical & Translational Sciences",
+      "MA in Anthropology",
+      "MS in Applied Economics",
+      "MS in Applied Mathematics",
+      "MS in Applied Psychology",
+      "MA in Art History",
+      "MA in Art Therapy",
+      "MS in Bioinformatics and Molecular Biochemistry",
+      "MS in Biological Sciences",
+      "MS in Chemistry",
+      "MA in Chinese Language & Culture",
+      "MFA in Classical Acting",
+      "MA in Communication Management",
+      "MFA in Contemporary Art Practices",
+      "MS in Crime Scene Investigation",
+      "MA in Criminology",
+      "MS in Data Science",
+      "MA in English",
+      "MS in Environmental and Green Chemistry",
+      "MA in Environmental & Sustainability Policy",
+      "MFS in Forensic Chemistry",
+      "MFS in Forensic Molecular Biology",
+      "MA in Forensic Psychology",
+      "MFS in Forensic Science",
+      "MS in Geography & Environment",
+      "MA in History",
+      "MS in Human Paleobiology",
+      "MA in Interaction Design",
+      "MA in Interior Architecture",
+      "MFA in Interior Architecture",
+      "MA in Mathematics",
+      "MA in Media & Strategic Communication",
+      "MA in Migration and Diaspora Studies",
+      "MA in Museums, History & Culture",
+      "MA in Museum Studies",
+      "MA in New Media Photojournalism",
+      "MA in Organizational Sciences",
+      "MA in Philosophy & Social Policy",
+      "MS in Physics",
+      "MA in Political Science",
+      "MPA in Public Administration",
+      "MPP in Public Policy",
+      "MA in Sociology",
+      "MA in Speech-Language Pathology",
+      "MS in Statistics",
+      "MA in Women's, Gender, & Sexuality Studies",
+      "MA in Women's, Gender, & Sexuality Studies - Public Policy"
+    ]
+  },
+
+  "Corcoran School of the Arts & Design": {
+    programs: [
+      // Undergraduate Programs
+      "BA in Art History",
+      "Dual BA in Fine Arts and Art History",
+      "BFA in Graphic Design",
+      "BFA in Interaction Design",
+      "BA in Interaction Design",
+      "BFA in Fine Arts",
+      "BA in Fine Arts",
+      "BFA in Photojournalism",
+      "BA in Fine Arts with a Concentration in Photojournalism",
+      "BFA in Interior Architecture",
+      "BA in Theatre",
+      "BA in Music",
+      "BA in Dance",
+
+      // Graduate Programs
+      "MA in Art History",
+      "MA in Interaction Design",
+      "MFA in Classical Acting",
+      "MA in Interior Architecture",
+      "MFA in Interior Architecture",
+      "MFA in Contemporary Art Practices",
+      "MA in Museum Studies",
+      "MA in Exhibition Design",
+      "MA in New Media Photojournalism",
+      "MFA in Fine Arts",
+      "MFA in Social Practice"
+    ]
+  },
+
+  "School of Business": {
+    programs: [
+      // Undergraduate Programs
+      "BS in Accountancy",
+      "BS in Business",
+      "BS in Business Analytics",
+      "BS in Entrepreneurship & Innovation",
+      "BS in Finance",
+      "BS in Information Systems",
+      "BS in International Business",
+      "BS in Marketing",
+      "BS in Strategic Management & Public Policy",
+
+      // MBA Programs
+      "Flex MBA",
+      "Global MBA",
+      "Online MBA",
+      "Online Healthcare MBA",
+
+      // Specialized Master's Programs
+      "MS in Accountancy",
+      "MS in Accounting Analytics",
+      "MS in Applied Finance",
+      "MS in Artificial Intelligence for Business",
+      "MS in Business Analytics",
+      "MS in Finance",
+      "MS in Human Resource Management",
+      "MS in Information Systems Technology",
+      "MS in Interdisciplinary Business Studies",
+      "MS in International Business",
+      "MS in Management",
+      "MS in Marketing",
+      "MS in Project Management",
+      "MS in Sport Management",
+      "MS in Tourism, Hospitality & Event Management",
+
+      // Doctoral Programs
+      "PhD in Accountancy",
+      "PhD in Decision Sciences",
+      "PhD in Finance",
+      "PhD in International Business",
+      "PhD in Information Systems and Technology Management",
+      "PhD in Management and Strategy",
+
+      // Graduate Certificates
+      "Graduate Certificate in Accountancy",
+      "Graduate Certificate in Affordable Housing",
+      "Graduate Certificate in Artificial Intelligence",
+      "Graduate Certificate in Business Analytics",
+      "Graduate Certificate in Business Crisis, Continuity & Recovery Management",
+      "Graduate Certificate in Cloud, Applications & Information Technology",
+      "Graduate Certificate in Creativity, Innovation & Entrepreneurship",
+      "Graduate Certificate in Digital Marketing & Analytics",
+      "Graduate Certificate in Energy Systems Management",
+      "Graduate Certificate in Environmental Systems Management",
+      "Graduate Certificate in Financial Management",
+      "Graduate Certificate in Global Management",
+      "Graduate Certificate in Human Capital",
+      "Graduate Certificate in Management Leadership",
+      "Graduate Certificate in Management of Technology & Innovation",
+      "Graduate Certificate in Marketing & Brand Management",
+      "Graduate Certificate in Project Management",
+      "Graduate Certificate in Quantitative Business Foundations",
+      "Graduate Certificate in Sport Management",
+
+      // Professional Certificates
+      "Certified Youth Sports Administrator Program",
+      "Professional Certificate in Community-Centered Cultural Tourism",
+      "Professional Certificate in Hospitality Management & Leadership",
+      "Professional Certificate in Sustainable Tourism Destination Management",
+      "Sports Philanthropy Executive Certificate",
+      "The Minerva Program"
+    ]
+  },
+
+  "Graduate School of Education & Human Development": {
+    programs: [
+      // Master's Programs
+      "MA in Clinical Mental Health Counseling",
+      "MA in Rehabilitation Counseling",
+      "MA in School Counseling",
+      "MA in Educational Leadership and Administration",
+      "MA in Educational Technology Leadership",
+      "MA in Education Policy Studies",
+      "MA in Experiential Jewish Education",
+      "MA in Higher Education Administration",
+      "MA in International Education",
+      "MA in Israel Education",
+      "MA in Museum Education",
+      "MA in Organizational Leadership and Learning",
+      "MA in Special Education (Non-Licensure)",
+
+      // Doctoral and Specialist Programs
+      "PhD in Counseling",
+      "EdD in Human and Organizational Learning",
+      "PhD in Education: Human and Organizational Learning Concentration",
+      "EdD in Special Education",
+      "EdS in Special Education Leadership",
+
+      // Joint/Dual Programs
+      "JD / Master's in Education Policy",
+      "JD / Master's in Higher Education Administration",
+      "MBA / Master's in Higher Education Administration",
+      "Master's in Educational Technology Leadership + Graduate Certificate",
+
+      // Graduate Certificates
+      "Post-Master's Certificate in Counseling",
+      "Graduate Certificate in Counseling and Life Transitions",
+      "Graduate Certificate in Foundations of Rehabilitation Services",
+      "Graduate Certificate in Assessment, Testing, and Measurement in Education",
+      "Graduate Certificate in Educational Technology Leadership",
+      "Graduate Certificate in Incorporating International Perspectives in Education",
+      "Graduate Certificate in Instructional Design",
+      "Graduate Certificate in Israel Education",
+      "Graduate Certificate in Leadership Development",
+      "Graduate Certificate in Organizational Learning and Change",
+      "Graduate Certificate in Secondary Transition Leadership",
+      "Graduate Certificate in Social, Emotional, and Behavioral Health",
+      "Graduate Certificate in The Science of Reading"
+    ]
+  },
+
+  "School of Engineering & Applied Science": {
+    programs: [
+      // Master's Programs
+      "MS in AI Engineering",
+      "MS in Artificial Intelligence and Machine Learning",
+      "MS in Biomedical Engineering",
+      "MS in Civil & Environmental Engineering",
+      "MS in Computer Engineering",
+      "MS in Computer Science",
+      "MS in Cybersecurity in Computer Science",
+      "MS in Data Analytics",
+      "MS in Electrical Engineering",
+      "MS in Engineering Management",
+      "MS in Mechanical & Aerospace Engineering",
+      "MS in Systems Engineering",
+      "MS in Applied Computer Science",
+
+      // Doctoral Programs
+      "PhD in Biomedical Engineering",
+      "PhD in Civil & Environmental Engineering",
+      "PhD in Computer Engineering",
+      "PhD in Computer Science",
+      "PhD in Electrical Engineering",
+      "PhD in Engineering Management",
+      "PhD in Mechanical & Aerospace Engineering",
+      "PhD in Systems Engineering",
+
+      // Combined Programs
+      "BS/MS in Biomedical Engineering",
+      "BS Biomedical Engineering/MS Computer Engineering",
+      "BS/MS in Civil Engineering",
+      "BS/MS in Computer Engineering",
+      "BS Computer Engineering/MS Electrical Engineering",
+      "BS Computer Engineering/MS Engineering Management",
+      "BA/MS or BS/MS in Computer Science",
+      "BA/BS Computer Science/MS in Cybersecurity in Computer Science",
+      "BS Computer Science/MS Engineering Management",
+      "BS/MS in Electrical Engineering",
+      "BS Electrical Engineering/MS Computer Engineering",
+      "BS Electrical Engineering/MS Engineering Management",
+      "BS Mechanical Engineering/MS Mechanical and Aerospace Engineering",
+      "BS Systems Engineering/MS Engineering Management",
+
+      // Graduate Certificates
+      "Graduate Certificate in Environmental Engineering",
+      "Graduate Certificate in Geoenvironmental Engineering",
+      "Graduate Certificate in Structural Engineering",
+      "Graduate Certificate in Smart Cities and Transportation",
+      "Graduate Certificate in Computer Security and Information Assurance",
+      "Graduate Certificate in 5G and Beyond",
+      "Graduate Certificate in High-Performance Computing",
+      "Graduate Certificate in Machine Intelligence",
+      "Graduate Certificate in Emergency Management and Homeland Security",
+      "Graduate Certificate in Emergency Management and Public Health",
+      "Graduate Certificate in Energy Engineering and Management",
+      "Graduate Certificate in Energy Systems Management",
+      "Graduate Certificate in Engineering and Technology Management",
+      "Graduate Certificate in Environmental Systems Management",
+      "Graduate Certificate in Systems Engineering",
+      "Graduate Certificate in Trustworthy AI for Decision Making Systems",
+      "Graduate Certificate in Computer-Integrated Design in Mechanical and Aerospace Engineering"
+    ]
+  },
+
+  "Elliott School of International Affairs": {
+    programs: [
+      // Undergraduate Programs
+      "BA in International Affairs",
+      "BS in International Affairs",
+      "BA in Asian Studies",
+      "BA in Latin American and Hemispheric Studies",
+      "BA in Middle East Studies",
+
+      // Master's Programs
+      "MA in Asian Studies",
+      "MA in Global Communication",
+      "MA in International Affairs",
+      "MA in International Development Studies",
+      "Master's in International Economic Policy",
+      "MA in International Science and Technology Policy",
+      "MA in Middle East Studies",
+      "MA in Security Policy Studies",
+      "Master of International Policy and Practice",
+      "Master of International Studies",
+
+      // Combined and Joint Programs
+      "Combined Bachelor's/Master's Program",
+      "JD/MA Joint Degree",
+      "MA/MBA Joint Degree"
+    ]
+  },
+
+  "GW Law": {
+    programs: [
+      "Juris Doctor (JD)",
+      "Master of Laws (LLM)",
+      "Doctor of Juridical Science (SJD)",
+      "Master of Studies in Law (MSL)",
+      "Joint Degree Programs"
+    ]
+  },
+
+  "School of Media & Public Affairs": {
+    programs: [
+      "BA in Journalism & Mass Communication",
+      "BA in Political Communication",
+      "MA in Media & Strategic Communication"
+    ]
+  },
+
+  "Graduate School of Political Management": {
+    programs: [
+      // Master's Programs
+      "Master's in Political Management",
+      "Master's in Legislative Affairs",
+      "Master's in Public Relations and Communications",
+
+      // Dual Degree Programs
+      "Political Science and Political Management Dual Degree",
+      "Political Science and Legislative Affairs Dual Degree",
+      "School of Media and Public Affairs and Political Management Dual Degree",
+
+      // Graduate Certificates
+      "Graduate Certificate in Community Advocacy",
+      "Graduate Certificate in Digital Communications",
+      "Graduate Certificate in Digital Politics",
+      "Graduate Certificate in Global Public Relations",
+      "Graduate Certificate in PACs & Political Management",
+      "Graduate Certificate in Public Relations"
+    ]
+  },
+
+  "College of Professional Studies": {
+    programs: [
+      // Bachelor's Degree Completion Programs
+      "BPS in Cybersecurity",
+      "BPS in Information Technology",
+      "BPS in Homeland Security",
+
+      // Master's Programs
+      "Master's in Cybersecurity Strategy & Information Management",
+      "Master's in Homeland Security",
+      "Master's in Paralegal Studies",
+      "Master's in Public Relations and Communications",
+      "Master's in Publishing",
+      "Master's in Sustainable Urban Planning",
+      "Master's in Political Management",
+      "Master's in Legislative Affairs",
+
+      // Graduate Certificates
+      "Graduate Certificate in Critical Infrastructure Security and Resilience",
+      "Graduate Certificate in Paralegal Studies",
+      "Graduate Certificate in Publishing",
+      "Graduate Certificate in Publishing Management",
+      "Graduate Certificate in Sustainable Urban Planning",
+      "Graduate Certificate in Community Advocacy",
+      "Graduate Certificate in Digital Communications",
+      "Graduate Certificate in Digital Politics",
+      "Graduate Certificate in Global Public Relations",
+      "Graduate Certificate in PACs & Political Management",
+      "Graduate Certificate in Public Relations"
+    ]
+  },
+
+  "Milken Institute School of Public Health": {
+    programs: [
+      // Undergraduate Programs
+      "BS in Exercise Science",
+      "BS in Nutrition",
+      "BS in Public Health",
+      "BS in Health Data Science",
+
+      // Master's Programs
+      "MPH in Biostatistics",
+      "MS in Biostatistics",
+      "MPH in Chronic Disease Prevention",
+      "MPH in Community Health and Prevention Science",
+      "MPH in Environmental Health Science and Policy",
+      "MPH in Epidemiology",
+      "MS in Exercise Science",
+      "MPH in Global Environmental Health",
+      "MPH in Global Health",
+      "MPH in Global Health Epidemiology and Disease Control",
+      "MPH in Global Health Policy & Systems",
+      "MPH in Global Health Program Design, Monitoring and Evaluation",
+      "MS in Health Data Science",
+      "Master of Health Administration (MHA)",
+      "Online Master of Health Administration (MHA)",
+      "MPH in Health Communication and Digital Media",
+      "MPH in Health Policy",
+      "MPH in Humanitarian Health and Disaster Response",
+      "Master of Public Health (MPH)",
+      "MPH in Maternal and Child Health",
+      "Online Master of Public Health (MPH)",
+      "MPH in Physical Activity in Public Health",
+      "MPH in Public Health Communication and Marketing",
+      "MS in Public Health Microbiology and Emerging Infectious Diseases",
+      "MPH in Public Health Nutrition",
+
+      // Dual/Joint Programs
+      "MD/MPH Dual Degree",
+      "MPH/MSN Dual Degree",
+      "JD/LLM with MPH Joint Degree",
+      "PA/MPH Joint Degree",
+
+      // Doctoral Programs
+      "Doctor of Public Health (DrPH)",
+      "Online Doctor of Public Health (DrPH)",
+      "PhD in Environmental Health",
+      "PhD in Epidemiology",
+      "PhD in Exercise Physiology and Applied Nutrition",
+      "PhD in Global Public Health Sciences",
+      "PhD in Health Data Science",
+      "PhD in Health Policy",
+      "PhD in Social and Behavioral Sciences",
+
+      // Certificates
+      "Public Health Certificate"
+    ]
+  },
+
+  "Trachtenberg School of Public Policy & Public Administration": {
+    programs: [
+      "Master of Public Administration (MPA)",
+      "Master of Public Policy (MPP)",
+      "MA in Environmental and Sustainability Policy",
+      "PhD in Public Policy & Administration",
+      "Certificate Programs",
+      "Combined Degree Programs"
+    ]
+  }
+},
+"AdventHealth University": {
+  "Department of Biomedical Sciences and Technology": {
+    programs: [
+      "Associate of Science in Science and Technology",
+      "Bachelor of Science in Biomedical Sciences",
+      "Bachelor of Science in Biomedical Sciences to Doctor of Physical Therapy",
+      "Bachelor of Science in Medical Laboratory Sciences",
+      "Minor in Applied Data Analytics",
+      "Online Master of Science in Robotic Surgery"
+    ]
+  },
+
+  "Department of Health Humanities and Social Sciences": {
+    programs: [
+      "Advanced Imaging Certificate in Computed Tomography",
+      "Associate in Health Sciences",
+      "Bachelor of Science in Health Humanities and Social Sciences",
+      "Bachelor of Science in Health Sciences"
+    ]
+  },
+
+  "Department of Healthcare Administration": {
+    programs: [
+      "Online Bachelor of Science in Healthcare Administration",
+      "Online Graduate Certificate in Healthcare Administration",
+      "Online Master of Healthcare Administration",
+      "Online MHA/MBA Dual Degree"
+    ]
+  },
+
+  "Department of Imaging Sciences": {
+    programs: [
+      "Associate of Science in Diagnostic Medical Sonography",
+      "Associate of Science in Radiography",
+      "Bachelor of Science in Nuclear Medicine Technology",
+      "Online Bachelor of Science in Imaging Sciences",
+      "Advanced Imaging Certificate in Magnetic Resonance Imaging",
+      "Advanced Imaging Certificate in Vascular Interventional Radiography"
+    ]
+  },
+
+  "Department of Nurse Anesthesia": {
+    programs: [
+      "Doctor of Nurse Anesthesia Practice"
+    ]
+  },
+
+  "Department of Nursing": {
+    programs: [
+      "Associate of Science in Nursing",
+      "Bachelor of Science in Nursing",
+      "Online RN to BSN Program",
+      "Online Master of Science in Nursing",
+      "Online Doctor of Nursing Practice",
+      "Graduate Certificate in Family Nurse Practitioner",
+      "Online Graduate Certificate in Nursing Administration and Leadership",
+      "Online Graduate Certificate in Nursing Education",
+      "Online MSN-MHA Dual Degree Program"
+    ]
+  },
+
+  "Department of Occupational Therapy": {
+    programs: [
+      "Associate of Science in Occupational Therapy Assistant",
+      "Master of Occupational Therapy"
+    ]
+  },
+
+  "Department of Physical Therapy": {
+    programs: [
+      "Doctor of Physical Therapy"
+    ]
+  },
+
+  "Department of Physician Assistant": {
+    programs: [
+      "Master of Science in Physician Assistant Studies"
+    ]
+  },
+
+  "Department of Religion and Spiritual Care": {
+    programs: [
+      "Online Master of Arts in Clinical Ministry",
+      "Online Master of Science in Spiritual Care"
+    ]
+  }
+},
+"Georgia Institute of Technology": {
+
+  "College of Computing": {
+    programs: [
+      "BS in Computer Science",
+      "BS in Computational Media",
+      "BS in Mathematics and Computing",
+      "BS/MS in Computational Media & Digital Media",
+      "MS in Computer Science",
+      "MS in Computer Science – Online Degree",
+      "MS in Computational Science and Engineering",
+      "MS in Cybersecurity",
+      "MS in Cybersecurity – Online Degree",
+      "MS in Digital Media",
+      "MS in Human-Computer Interaction",
+      "MS in Robotics",
+      "PhD in Computer Science",
+      "PhD in Computational Science and Engineering",
+      "PhD in Digital Media",
+      "PhD in Human-Centered Computing",
+      "PhD in Machine Learning",
+      "PhD in Robotics"
+    ]
+  },
+
+  "College of Design": {
+    programs: [
+      "BS in Architecture",
+      "BS in Industrial Design",
+      "BS in Construction Science and Management",
+      "BS in Urban Planning and Spatial Analytics",
+      "M.Arch in Architecture",
+      "MS in Architecture",
+      "PhD in Architecture",
+      "MCRP in City and Regional Planning",
+      "PhD in City and Regional Planning",
+      "M.Arch/MCRP in City and Regional Planning & Architecture",
+      "MCRP/MSCE in City and Regional Planning & Civil Engineering",
+      "MCRP/JD in City and Regional Planning & Law",
+      "MCRP/MSPP in City and Regional Planning & Public Policy",
+      "MS in Building Construction and Facility Management",
+      "PhD in Building Construction",
+      "M.ID in Industrial Design",
+      "MRED in Real Estate Development",
+      "MS in Urban Analytics",
+      "MS in Urban Design"
+    ]
+  },
+
+  "College of Engineering": {
+    programs: [
+      "BS in Aerospace Engineering",
+      "BS/MS in Aerospace Engineering",
+      "MS in Aerospace Engineering",
+      "MS in Aerospace Engineering – Online Degree",
+      "PhD in Aerospace Engineering",
+
+      "MS in Bioengineering",
+      "PhD in Bioengineering",
+
+      "BS in Biomedical Engineering",
+      "MS in Biomedical Engineering",
+      "PhD in Biomedical Engineering",
+      "MBID in Biomedical Innovation and Development",
+
+      "BS in Chemical and Biomolecular Engineering",
+      "BS/MS in Chemical and Biomolecular Engineering",
+      "BS in Chemical and Biomolecular Engineering – Biotechnology Option",
+      "MS in Chemical Engineering",
+      "PhD in Chemical Engineering",
+
+      "BS in Civil Engineering",
+      "MS in Civil Engineering",
+      "PhD in Civil Engineering",
+
+      "BS in Computer Engineering",
+      "Dual BS in Computer Engineering",
+      "MS in Electrical and Computer Engineering",
+      "MS in Electrical and Computer Engineering – Online Degree",
+      "PhD in Electrical and Computer Engineering",
+      "BS/MS in Electrical and Computer Engineering",
+
+      "BS in Electrical Engineering",
+      "BS/MS in Electrical Engineering",
+
+      "BS in Environmental Engineering",
+      "MS in Environmental Engineering",
+      "PhD in Environmental Engineering",
+
+      "MS in Engineering Science and Mechanics",
+      "PhD in Engineering Science and Mechanics",
+
+      "BS in Industrial Engineering",
+      "MS in Industrial Engineering",
+      "PhD in Industrial Engineering",
+
+      "BS in Materials Science and Engineering",
+      "BS/MS in Materials Science and Engineering",
+      "MS in Materials Science and Engineering",
+      "PhD in Materials Science and Engineering",
+
+      "BS in Mechanical Engineering",
+      "MS in Mechanical Engineering",
+      "PhD in Mechanical Engineering",
+      "MS in Mechanical Engineering Joint Degree with University of Stuttgart",
+
+      "BS in Nuclear and Radiological Engineering",
+      "MS in Nuclear Engineering",
+      "PhD in Nuclear Engineering",
+      "PhD in Nuclear Engineering – Medical Physics Option",
+      "PhD in Nuclear Engineering – Nuclear Enterprise Management Option",
+
+      "MS in Operations Research",
+      "MS in Operations Research – Online Degree",
+      "PhD in Operations Research",
+
+      "MS in Supply Chain Engineering"
+    ]
+  },
+
+  "College of Lifetime Learning": {
+    programs: [
+      "PMASE in Applied Systems Engineering",
+      "PMML in Manufacturing Leadership",
+      "PMOSH in Occupational Safety and Health"
+    ]
+  },
+
+  "College of Sciences": {
+    programs: [
+      "BS in Applied Physics",
+      "PhD in Applied Physiology",
+
+      "BS in Astrophysics",
+      "BS in Atmospheric and Oceanic Sciences",
+
+      "BS in Biochemistry",
+      "MS in Bioinformatics",
+      "PhD in Bioinformatics",
+      "BS in Biology",
+      "MS in Biology",
+      "PhD in Biology",
+
+      "BS in Chemistry",
+      "MS in Chemistry",
+      "PhD in Chemistry",
+
+      "MS in Earth and Atmospheric Sciences",
+      "PhD in Earth and Atmospheric Sciences",
+      "BS in Environmental Science",
+
+      "BS in Mathematics",
+      "MS in Mathematics",
+      "PhD in Mathematics",
+
+      "MS in Medical Physics",
+      "MS in Medical Physics – Online Degree",
+
+      "BS in Neuroscience",
+      "PhD in Neuroscience and Neurotechnology",
+
+      "PhD in Ocean Science and Engineering",
+
+      "BS in Physics",
+      "MS in Physics",
+      "PhD in Physics",
+
+      "BS in Psychology",
+      "MS in Psychology",
+      "PhD in Psychology",
+
+      "PhD in Quantitative Biosciences",
+
+      "BS in Solid Earth and Planetary Sciences",
+      "MS in Statistics"
+    ]
+  },
+
+  "Ivan Allen College of Liberal Arts": {
+    programs: [
+      "BS in Applied Languages and Intercultural Studies",
+      "MS in Applied Languages and Intercultural Studies",
+
+      "BS in Arts, Entertainment, and Creative Technologies",
+
+      "BS in Economics",
+      "MS in Economics",
+      "PhD in Economics",
+      "BS in Economics and International Affairs",
+
+      "MS in Global Development",
+      "BS in Global Economics and Modern Languages",
+      "MS in Global Media and Cultures",
+
+      "MS in History and Sociology of Technology and Science",
+      "PhD in History and Sociology of Technology and Science",
+      "BS in History, Technology, and Society",
+
+      "BS in International Affairs",
+      "BS/MS in International Affairs",
+      "MS in International Affairs",
+      "BS in International Affairs and Modern Languages",
+      "MS in International Affairs, Science, and Technology",
+      "PhD in International Affairs, Science, and Technology",
+      "MS in International Security",
+
+      "BS in Literature, Media, and Communication",
+      "BS/MS in Literature, Media, and Communication & Digital Media",
+
+      "BS in Music Technology",
+      "MS in Music Technology",
+      "PhD in Music Technology",
+
+      "BS in Public Policy",
+      "BS/MS in Public Policy",
+      "MS in Public Policy",
+      "PhD in Public Policy"
+    ]
+  },
+
+  "Scheller College of Business": {
+    programs: [
+      "BS in Business Administration",
+      "MBA in Business Administration",
+      "MBA in Business Administration – Global Business",
+      "MBA in Business Administration – Management of Technology",
+      "MS in Analytics",
+      "MS in Analytics – Online Degree",
+      "MS in Management",
+      "MS in Management – Online Degree",
+      "PhD in Management",
+      "MS in Quantitative and Computational Finance",
+      "MSEEM in Sustainability Energy and Environmental Management"
+    ]
+  }
+
+},
+},
+  },
+
 {
   name: "Canada",
 code: "CA",
@@ -5244,7 +6554,7 @@ universities: {
      ]
         }
       },
-      "University of British Columbia": {
+  "University of British Columbia": {
   "Faculty of Applied Science": {
     programs: [
       "BASc in Civil Engineering",
@@ -6299,6 +7609,7 @@ universities: {
   }
 },
  
+
 }}
 
 

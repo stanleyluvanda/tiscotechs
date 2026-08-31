@@ -4801,8 +4801,347 @@ export const ASIA = [
     programs: [
      "BA in Law", "BA in Psychology"
           ]
-    },
+    }
   },
+  "Anna University": {
+
+  // =========================================================
+  // COLLEGE OF ENGINEERING, GUINDY (CEG)
+  // =========================================================
+
+  "Department of Civil Engineering - CEG": {
+    programs: [
+      "BE in Civil Engineering",
+      "ME in Structural Engineering",
+      "ME in Construction Engineering and Management",
+      "ME in Irrigation Water Management",
+      "ME in Hydrology and Water Resources Engineering",
+      "ME in Environmental Engineering",
+      "ME in Transportation Engineering",
+      "ME in Soil Mechanics and Foundation Engineering",
+      "ME in Environmental Management",
+      "ME in Remote Sensing and Geomatics"
+    ]
+  },
+
+  "Department of Mechanical Engineering - CEG": {
+    programs: [
+      "BE in Mechanical Engineering",
+      "BE in Materials Science and Engineering",
+      "ME in Internal Combustion Engineering",
+      "ME in Energy Engineering",
+      "ME in Thermal Engineering",
+      "ME in Engineering Design",
+      "ME in Manufacturing Systems and Management",
+      "ME in Product Design and Development",
+      "ME in Solar Energy"
+    ]
+  },
+
+  "Department of Industrial Engineering - CEG": {
+    programs: [
+      "BE in Industrial Engineering",
+      "ME in Industrial Engineering",
+      "ME in Quality Engineering and Management"
+    ]
+  },
+
+  "Department of Manufacturing Engineering - CEG": {
+    programs: [
+      "BE in Manufacturing Engineering",
+      "ME in Computer Integrated Manufacturing"
+    ]
+  },
+
+  "Department of Mining Engineering - CEG": {
+    programs: [
+      "BE in Mining Engineering"
+    ]
+  },
+
+  "Department of Printing and Packaging Technology - CEG": {
+    programs: [
+      "BE in Printing and Packaging Technology",
+      "ME in Printing and Packaging Technology"
+    ]
+  },
+
+  "Department of Electrical and Electronics Engineering - CEG": {
+    programs: [
+      "BE in Electrical and Electronics Engineering",
+      "ME in Power Systems Engineering",
+      "ME in Power Electronics and Drives",
+      "ME in Embedded System Technologies",
+      "ME in High Voltage Engineering",
+      "ME in Control and Instrumentation Engineering",
+      "ME in Power Engineering and Management"
+    ]
+  },
+
+  "Department of Electronics and Communication Engineering - CEG": {
+    programs: [
+      "BE in Electronics and Communication Engineering",
+      "ME in Communication Systems",
+      "ME in VLSI Design",
+      "ME in Medical Electronics",
+      "ME in Applied Electronics"
+    ]
+  },
+
+  "Department of Biomedical Engineering - CEG": {
+    programs: [
+      "BE in Biomedical Engineering",
+      "ME in Biomedical Engineering"
+    ]
+  },
+
+  "Department of Computer Science and Engineering - CEG": {
+    programs: [
+      "BE in Computer Science and Engineering",
+      "ME in Computer Science and Engineering",
+      "ME in Software Engineering",
+      "ME in Computer Science and Engineering - Operations Research",
+      "ME in Computer Science and Engineering - Big Data Analytics"
+    ]
+  },
+
+  "Department of Information Science and Technology - CEG": {
+    programs: [
+      "BTech in Information Technology",
+      "MTech in Information Technology",
+      "MTech in Information Technology - Multimedia",
+      "Master of Computer Applications (MCA)"
+    ]
+  },
+
+  "Department of Management Studies - CEG": {
+    programs: [
+      "Master of Business Administration (MBA)",
+      "MBA in Tourism Management"
+    ]
+  },
+
+  "Department of Chemistry - CEG": {
+    programs: [
+      "MSc in Applied Chemistry",
+      "MTech in Polymer Science and Engineering"
+    ]
+  },
+
+  "Department of English - CEG": {
+    programs: [
+      "MPhil in English"
+    ]
+  },
+
+  "Department of Geology - CEG": {
+    programs: [
+      "MSc in Applied Geology"
+    ]
+  },
+
+  "Department of Mathematics - CEG": {
+    programs: [
+      "MSc in Applied Mathematics",
+      "MPhil in Mathematics",
+      "Integrated MSc in Computer Science",
+      "Integrated MSc in Information Technology"
+    ]
+  },
+
+  "Department of Media Sciences - CEG": {
+    programs: [
+      "MSc in Electronic Media",
+      "Integrated MSc in Electronic Media"
+    ]
+  },
+
+  "Department of Medical Physics - CEG": {
+    programs: [
+      "MSc in Medical Physics"
+    ]
+  },
+
+  "Department of Physics - CEG": {
+    programs: [
+      "MSc in Materials Science",
+      "MTech in Laser and Electro Optical Engineering",
+      "MPhil in Physics"
+    ]
+  },
+
+
+  // =========================================================
+  // MADRAS INSTITUTE OF TECHNOLOGY (MIT)
+  // =========================================================
+
+  "Department of Aerospace Engineering - MIT": {
+    programs: [
+      "BE in Aeronautical Engineering",
+      "ME in Aeronautical Engineering",
+      "ME in Aerospace Technology",
+      "ME in Avionics",
+      "PhD in Aerospace Engineering"
+    ]
+  },
+
+  "Department of Automobile Engineering - MIT": {
+    programs: [
+      "BE in Automobile Engineering",
+      "ME in Automobile Engineering",
+      "PhD in Automobile Engineering"
+    ]
+  },
+
+  "Department of Electronics Engineering - MIT": {
+    programs: [
+      "BE in Electronics and Communication Engineering",
+      "BTech in Electronics Engineering - VLSI Design and Technology",
+      "ME in Communication and Networking",
+      "ME in Wireless Technologies",
+      "ME in VLSI Design and Embedded Systems",
+      "PhD in Electronics Engineering"
+    ]
+  },
+
+  "Department of Instrumentation Engineering - MIT": {
+    programs: [
+      "BE in Electronics and Instrumentation Engineering",
+      "ME in Instrumentation Engineering",
+      "PhD in Instrumentation Engineering"
+    ]
+  },
+
+  "Department of Production Technology - MIT": {
+    programs: [
+      "BE in Production Engineering",
+      "BE in Mechanical Engineering",
+      "BE in Robotics and Automation",
+      "ME in Manufacturing Engineering",
+      "ME in Mechatronics",
+      "PhD in Production Technology"
+    ]
+  },
+
+  "Department of Rubber and Plastics Technology - MIT": {
+    programs: [
+      "BTech in Rubber and Plastics Technology",
+      "MTech in Rubber and Plastics Technology",
+      "PhD in Rubber and Plastics Technology"
+    ]
+  },
+
+  "Department of Computer Technology - MIT": {
+    programs: [
+      "BE in Computer Science and Engineering",
+      "ME in Computer Science and Engineering",
+      "PhD in Computer Science and Engineering"
+    ]
+  },
+
+  "Department of Information Technology - MIT": {
+    programs: [
+      "BTech in Information Technology",
+      "BTech in Artificial Intelligence and Data Science",
+      "MTech in Information Technology",
+      "PhD in Information Technology"
+    ]
+  },
+
+  "Department of Applied Science and Humanities - MIT": {
+    programs: [
+      "MSc in Applied Mathematics",
+      "MPhil in Mathematics",
+      "PhD in Applied Science and Humanities"
+    ]
+  },
+
+
+  // =========================================================
+  // ALAGAPPA COLLEGE OF TECHNOLOGY (ACT)
+  // =========================================================
+
+  "Department of Applied Science and Technology - ACT": {
+    programs: [
+      "BTech in Petroleum Engineering and Technology",
+      "MTech in Industrial Safety and Hazards Management",
+      "PhD in Applied Science and Technology"
+    ]
+  },
+
+  "Department of Biotechnology - ACT": {
+    programs: [
+      "BTech in Food Technology",
+      "BTech in Industrial Biotechnology",
+      "BTech in Pharmaceutical Technology",
+      "MTech in Biotechnology",
+      "MTech in Computational Biology",
+      "MTech in Food Technology",
+      "MTech in Nano Science and Technology",
+      "PhD in Biotechnology"
+    ]
+  },
+
+  "Department of Chemical Engineering - ACT": {
+    programs: [
+      "BTech in Chemical Engineering",
+      "MTech in Chemical Engineering",
+      "MTech in Environmental Science and Technology",
+      "MTech in Petroleum Refining and Petrochemicals",
+      "MTech in Chemical Engineering - Pipeline Engineering",
+      "PhD in Chemical Engineering"
+    ]
+  },
+
+  "Department of Ceramic Technology - ACT": {
+    programs: [
+      "BTech in Ceramic Technology",
+      "MTech in Ceramic Technology",
+      "PhD in Ceramic Technology"
+    ]
+  },
+
+  "Department of Leather Technology - ACT": {
+    programs: [
+      "BTech in Leather Technology",
+      "MTech in Leather and Footwear Technology",
+      "PhD in Leather Technology"
+    ]
+  },
+
+  "Department of Textile Technology - ACT": {
+    programs: [
+      "BTech in Textile Technology",
+      "BTech in Apparel Technology",
+      "MTech in Textile Technology",
+      "PhD in Textile Technology"
+    ]
+  },
+
+
+  // =========================================================
+  // SCHOOL OF ARCHITECTURE AND PLANNING (SAP)
+  // =========================================================
+
+  "Department of Architecture - SAP": {
+    programs: [
+      "Bachelor of Architecture (BArch)",
+      "Master of Architecture (MArch)",
+      "MArch in Landscape Architecture",
+      "MS by Research in Architecture",
+      "PhD in Architecture"
+    ]
+  },
+
+  "Department of Planning - SAP": {
+    programs: [
+      "Bachelor of Planning (BPlan)",
+      "Master of Planning (MPlan)",
+      "MS by Research in Planning",
+      "PhD in Planning"
+    ]
+  }
+},
 },
 },
 {
