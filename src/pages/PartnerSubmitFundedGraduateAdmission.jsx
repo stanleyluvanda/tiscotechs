@@ -103,7 +103,7 @@ async function importHostedUrlToCloudfront(url) {
 }
 
 /** Graduate-only levels */
-const LEVEL_OPTIONS = ["Masters","Bachelor/Masters","MSc", "Undergraduate/Postgraduate","PhD", "Masters / PhD"];
+const LEVEL_OPTIONS = ["Masters","Bachelor/Masters","MSc","Undergraduate", "Undergraduate/Postgraduate","PhD", "Masters / PhD"];
 
 const FUNDING_OPTIONS = [
   "Full Funding",
