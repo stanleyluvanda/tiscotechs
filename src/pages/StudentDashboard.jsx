@@ -23,6 +23,7 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 import {callAssistAI,callAssistAIChunked,sanitizeSimpleAiHtml,} from "../utils/aiAssist";
+import LecturerMiniProfile from "../components/LecturerMiniProfile.jsx";
 //import {getConversation,listPeople,listThreads,markRead,sendMessage,} from "../lib/messagingApi";
 import MessagingDock from "../components/MessagingDock";
 const AiStudyAssistantEmbedded = lazy(() =>
@@ -1222,6 +1223,36 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
   const [cmtFiles,setCmtFiles]=useState([]);   // [{name,mime,dataUrl}]
   const [lightbox, setLightbox] = useState({ open:false, items:[], index:0 });
 
+
+
+
+// ============================================================
+  // Lecturer mini-profile — UI only, no API calls
+  // ============================================================
+
+  const [lecturerProfileHover, setLecturerProfileHover] =
+    useState(false);
+
+  const [lecturerProfileOpen, setLecturerProfileOpen] =
+    useState(false);
+
+  const lecturerHasMiniProfile =
+    post?.authorType === "lecturer" &&
+    post?.lecturerMiniProfile &&
+    (
+      post.lecturerMiniProfile.officeBuilding ||
+      post.lecturerMiniProfile.officeRoom ||
+      post.lecturerMiniProfile.consultationHours?.length ||
+      post.lecturerMiniProfile.courses?.length ||
+      post.lecturerMiniProfile.education?.length
+    );
+
+ 
+
+
+
+
+
   const onPickCmtImages = async (e)=>{
     const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
     const dataUrls = await Promise.all(files.map(f=>fileToDownscaledDataURL(f, 1280, 1280, 0.82, 420)));
@@ -1298,12 +1329,105 @@ const files = mergedFiles.filter((a) => {
       <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
       {/*<div className="flex items-center gap-3">*/}
       <div className="flex items-start gap-3">
-        <Avatar size="md" url={post.authorPhoto} name={post.author}/>
+        {/*<Avatar size="md" url={post.authorPhoto} name={post.author}/>*/}
+
+        <div
+  className={`relative shrink-0 ${
+    lecturerHasMiniProfile ? "cursor-pointer" : ""
+  }`}
+  onMouseEnter={() => {
+    if (lecturerHasMiniProfile) {
+      setLecturerProfileHover(true);
+    }
+  }}
+  onMouseLeave={() =>
+    setLecturerProfileHover(false)
+  }
+  onClick={() => {
+    if (lecturerHasMiniProfile) {
+      setLecturerProfileOpen(true);
+    }
+  }}
+>
+  <Avatar
+    size="md"
+    url={post.authorPhoto}
+    name={post.author}
+  />
+
+  {lecturerProfileHover &&
+    lecturerHasMiniProfile && (
+      <div className="absolute left-0 top-full z-50 mt-2 hidden sm:block">
+        <LecturerMiniProfile
+          lecturer={post}
+          compact
+        />
+      </div>
+    )}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/*<div className="min-w-0">*/}
           <div className="min-w-0 flex-1">
           {/*<div className="flex items-center gap-2 min-w-0">*/}
             <div className="flex flex-wrap items-center gap-2 min-w-0">
-            <div className="font-semibold text-slate-900 truncate">{post.author}</div>
+            {/*<div className="font-semibold text-slate-900 truncate">{post.author}</div>*/}
+
+
+            <div
+  className={`font-semibold text-slate-900 truncate ${
+    lecturerHasMiniProfile
+      ? "cursor-pointer hover:underline"
+      : ""
+  }`}
+  onMouseEnter={() => {
+    if (lecturerHasMiniProfile) {
+      setLecturerProfileHover(true);
+    }
+  }}
+  onMouseLeave={() =>
+    setLecturerProfileHover(false)
+  }
+  onClick={() => {
+    if (lecturerHasMiniProfile) {
+      setLecturerProfileOpen(true);
+    }
+  }}
+>
+  {post.author}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
             {post.authorType === "lecturer" && (
               <span
                 className="inline-flex items-center gap-1 text-[11px] font-semibold
@@ -1688,6 +1812,62 @@ const files = mergedFiles.filter((a) => {
           </form>
 </div>
       )}
+
+
+
+
+
+
+
+
+
+
+
+      {/* =========================================================
+          Lecturer full mini-profile modal
+          UI only — no API request
+      ========================================================= */}
+      {lecturerProfileOpen && lecturerHasMiniProfile && (
+       <div
+  className="fixed left-0 right-0 bottom-0 top-[185px] z-[110] flex items-start justify-center bg-black/40 px-4 py-4 overflow-y-auto"
+  onClick={() => setLecturerProfileOpen(false)}
+>
+          <div
+  className="w-full flex justify-center"
+  onClick={(e) => e.stopPropagation()}
+>
+  <LecturerMiniProfile
+    lecturer={post}
+    onClose={() => setLecturerProfileOpen(false)}
+  />
+</div>
+        </div>
+      )}
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </div>
   );
 }

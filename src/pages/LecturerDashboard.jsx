@@ -19,6 +19,7 @@ import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 import { signOut } from "aws-amplify/auth";
 import MessagingDock from "../components/MessagingDock";
+import LecturerMiniProfile from "../components/LecturerMiniProfile.jsx";
 
 // ✅ ADD THIS HERE (top-level helper, before the component)
 
@@ -1076,6 +1077,57 @@ export default function LecturerDashboard() {
   };
   const [me, setMe] = useState(null);
 
+
+
+
+
+/* ------------------------ ADDING MINI-PROFILE ------------------------- */
+const [miniProfileEditorOpen, setMiniProfileEditorOpen] = useState(false);
+const [miniProfilePreviewOpen, setMiniProfilePreviewOpen] = useState(false);
+
+const [miniProfileDraft, setMiniProfileDraft] = useState({
+  officeBuilding: "",
+  officeRoom: "",
+  consultationHours: [],
+  courses: [],
+  education: [],
+});
+
+const [miniCourseInput, setMiniCourseInput] = useState("");
+
+const [miniEducationInput, setMiniEducationInput] = useState({
+  degree: "",
+  institution: "",
+});
+
+const [miniConsultationInput, setMiniConsultationInput] = useState({
+  day: "Monday",
+  from: "",
+  to: "",
+});
+
+const [miniProfileSaving, setMiniProfileSaving] = useState(false);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ✅ ADD THIS BLOCK EXACTLY HERE (notification state)
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -1204,6 +1256,249 @@ const email = (raw.email || auth?.email || "").trim().toLowerCase();
     };
     return merged;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+  // ============================================================
+  // Lecturer mini-profile helpers
+  // ============================================================
+
+  const lecturerMiniProfile = user?.lecturerMiniProfile || null;
+
+  const hasLecturerMiniProfile = Boolean(
+    lecturerMiniProfile &&
+      (
+        lecturerMiniProfile.officeBuilding ||
+        lecturerMiniProfile.officeRoom ||
+        lecturerMiniProfile.consultationHours?.length ||
+        lecturerMiniProfile.courses?.length ||
+        lecturerMiniProfile.education?.length
+      )
+  );
+
+  const openMiniProfileEditor = () => {
+    const existing = user?.lecturerMiniProfile || {};
+
+    setMiniProfileDraft({
+      officeBuilding: existing.officeBuilding || "",
+      officeRoom: existing.officeRoom || "",
+      consultationHours: Array.isArray(existing.consultationHours)
+        ? existing.consultationHours
+        : [],
+      courses: Array.isArray(existing.courses)
+        ? existing.courses
+        : [],
+      education: Array.isArray(existing.education)
+        ? existing.education
+        : [],
+    });
+
+    setMiniCourseInput("");
+
+    setMiniEducationInput({
+      degree: "",
+      institution: "",
+    });
+
+    setMiniConsultationInput({
+      day: "Monday",
+      from: "",
+      to: "",
+    });
+
+    setMiniProfileEditorOpen(true);
+  };
+
+  const addMiniCourse = () => {
+    const course = miniCourseInput.trim();
+
+    if (!course) return;
+
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      courses: [...(prev.courses || []), course],
+    }));
+
+    setMiniCourseInput("");
+  };
+
+  const removeMiniCourse = (index) => {
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      courses: prev.courses.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addMiniEducation = () => {
+    const degree = miniEducationInput.degree.trim();
+    const institution = miniEducationInput.institution.trim();
+
+    if (!degree || !institution) return;
+
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      education: [
+        ...(prev.education || []),
+        {
+          degree,
+          institution,
+        },
+      ],
+    }));
+
+    setMiniEducationInput({
+      degree: "",
+      institution: "",
+    });
+  };
+
+  const removeMiniEducation = (index) => {
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      education: prev.education.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addMiniConsultationTime = () => {
+    const day = miniConsultationInput.day.trim();
+    const from = miniConsultationInput.from.trim();
+    const to = miniConsultationInput.to.trim();
+
+    if (!day || !from || !to) return;
+
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      consultationHours: [
+        ...(prev.consultationHours || []),
+        {
+          day,
+          from,
+          to,
+        },
+      ],
+    }));
+
+    setMiniConsultationInput({
+      day: "Monday",
+      from: "",
+      to: "",
+    });
+  };
+
+  const removeMiniConsultationTime = (index) => {
+    setMiniProfileDraft((prev) => ({
+      ...prev,
+      consultationHours: prev.consultationHours.filter(
+        (_, i) => i !== index
+      ),
+    }));
+  };
+
+  const saveMiniProfile = async () => {
+    if (miniProfileSaving) return;
+
+    const cleanProfile = {
+      officeBuilding: miniProfileDraft.officeBuilding.trim(),
+      officeRoom: miniProfileDraft.officeRoom.trim(),
+
+      consultationHours: (
+        Array.isArray(miniProfileDraft.consultationHours)
+          ? miniProfileDraft.consultationHours
+          : []
+      ).slice(0, 20),
+
+      courses: (
+        Array.isArray(miniProfileDraft.courses)
+          ? miniProfileDraft.courses
+          : []
+      ).slice(0, 30),
+
+      education: (
+        Array.isArray(miniProfileDraft.education)
+          ? miniProfileDraft.education
+          : []
+      ).slice(0, 20),
+    };
+
+    try {
+      setMiniProfileSaving(true);
+
+      const saved = await updateLecturerProfile(
+        {
+          lecturerMiniProfile: cleanProfile,
+        },
+        user
+      );
+
+      const remote =
+        saved?.user ||
+        saved?.me ||
+        null;
+
+      setUser((prev) => ({
+        ...prev,
+        ...(remote || {}),
+        lecturerMiniProfile: cleanProfile,
+      }));
+
+      setMe((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...(remote || {}),
+              lecturerMiniProfile: cleanProfile,
+            }
+          : prev
+      );
+
+      setMiniProfileEditorOpen(false);
+    } catch (err) {
+      console.error(
+        "[LecturerDashboard] mini-profile save failed:",
+        err
+      );
+
+      alert("The lecturer profile could not be saved.");
+    } finally {
+      setMiniProfileSaving(false);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ✅ ADD THIS RIGHT HERE (scopeKey for MessagingDock)
   const scopeKey =
@@ -2371,6 +2666,49 @@ const base = {
       university: user.university,
       faculty: user.faculty,
 
+
+
+
+
+
+
+
+//------------------------------------Attach the profile snapshot to lecturer posts-----------------------//
+      lecturerMiniProfile:
+  user?.lecturerMiniProfile
+    ? {
+        officeBuilding:
+          user.lecturerMiniProfile.officeBuilding || "",
+
+        officeRoom:
+          user.lecturerMiniProfile.officeRoom || "",
+
+        consultationHours: Array.isArray(
+          user.lecturerMiniProfile.consultationHours
+        )
+          ? user.lecturerMiniProfile.consultationHours
+          : [],
+
+        courses: Array.isArray(
+          user.lecturerMiniProfile.courses
+        )
+          ? user.lecturerMiniProfile.courses
+          : [],
+
+        education: Array.isArray(
+          user.lecturerMiniProfile.education
+        )
+          ? user.lecturerMiniProfile.education
+          : [],
+      }
+    : null,
+
+
+
+
+
+
+
       /*time: "Just now",
       createdAt: new Date().toISOString(),*/
       createdAt: Date.now(),          // number timestamp (best for sorting + time ago)
@@ -3438,6 +3776,53 @@ async function clearNotificationsServerBacked() {
                   <span>{user.country}</span>
                 </div>
               </div>
+
+
+
+
+
+
+
+
+              <div className="mt-3 flex flex-wrap gap-2">
+  <button
+    type="button"
+    onClick={openMiniProfileEditor}
+    className="text-sm rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50"
+  >
+    {hasLecturerMiniProfile
+      ? "Edit profile"
+      : "Create profile"}
+  </button>
+
+  {hasLecturerMiniProfile && (
+    <button
+      type="button"
+      onClick={() => setMiniProfilePreviewOpen(true)}
+      className="text-sm rounded-full border border-slate-200 px-3 py-1.5 hover:bg-slate-50"
+    >
+      View profile
+    </button>
+  )}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4588,12 +4973,379 @@ async function clearNotificationsServerBacked() {
 >
   Log out
 </button>
-
-
             </div>
           </div>
         </div>
       )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/------------------------------------------MINI-PROFILE FORM-----------------------------/
+
+      {miniProfileEditorOpen && (
+  /*<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 py-6">*/
+    <div className="fixed left-0 right-0 bottom-0 top-[185px] z-[100] flex items-start justify-center bg-black/40 px-4 py-4 overflow-y-auto">
+    {/*<div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl">*/}
+      <div className="w-full max-w-2xl max-h-[calc(100vh-220px)] overflow-y-auto rounded-2xl bg-white shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <div>
+          <h2 className="font-semibold text-slate-900">
+            {hasLecturerMiniProfile
+              ? "Edit lecturer profile"
+              : "Create lecturer profile"}
+          </h2>
+
+          <p className="mt-0.5 text-xs text-slate-500">
+            Add information students may need when contacting you.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setMiniProfileEditorOpen(false)}
+          className="h-8 w-8 rounded-full hover:bg-slate-100"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="space-y-6 p-5">
+        {/* Office */}
+        <section>
+          <h3 className="text-sm font-semibold text-slate-900">
+            Office
+          </h3>
+
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="text-sm text-slate-700">
+              Building
+              <input
+                type="text"
+                value={miniProfileDraft.officeBuilding}
+                onChange={(e) =>
+                  setMiniProfileDraft((prev) => ({
+                    ...prev,
+                    officeBuilding: e.target.value,
+                  }))
+                }
+                placeholder="e.g. Economics Building"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </label>
+
+            <label className="text-sm text-slate-700">
+              Office/Room number
+              <input
+                type="text"
+                value={miniProfileDraft.officeRoom}
+                onChange={(e) =>
+                  setMiniProfileDraft((prev) => ({
+                    ...prev,
+                    officeRoom: e.target.value,
+                  }))
+                }
+                placeholder="e.g. Room 204"
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2"
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Consultation */}
+        <section className="border-t border-slate-100 pt-5">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Consultation hours
+          </h3>
+
+          {miniProfileDraft.consultationHours.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {miniProfileDraft.consultationHours.map(
+                (slot, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                  >
+                    <span>
+                      {slot.day}: {slot.from} – {slot.to}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeMiniConsultationTime(index)
+                      }
+                      className="text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+            <select
+              value={miniConsultationInput.day}
+              onChange={(e) =>
+                setMiniConsultationInput((prev) => ({
+                  ...prev,
+                  day: e.target.value,
+                }))
+              }
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            >
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+              <option>Saturday</option>
+              <option>Sunday</option>
+            </select>
+
+            <input
+              type="time"
+              value={miniConsultationInput.from}
+              onChange={(e) =>
+                setMiniConsultationInput((prev) => ({
+                  ...prev,
+                  from: e.target.value,
+                }))
+              }
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+
+            <input
+              type="time"
+              value={miniConsultationInput.to}
+              onChange={(e) =>
+                setMiniConsultationInput((prev) => ({
+                  ...prev,
+                  to: e.target.value,
+                }))
+              }
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+
+            <button
+              type="button"
+              onClick={addMiniConsultationTime}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+            >
+              Add
+            </button>
+          </div>
+        </section>
+
+        {/* Courses */}
+        <section className="border-t border-slate-100 pt-5">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Courses taught
+          </h3>
+
+          {miniProfileDraft.courses.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {miniProfileDraft.courses.map(
+                (course, index) => (
+                  <div
+                    key={`${course}-${index}`}
+                    className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                  >
+                    <span>{course}</span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeMiniCourse(index)}
+                      className="text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 flex gap-2">
+            <input
+              type="text"
+              value={miniCourseInput}
+              onChange={(e) =>
+                setMiniCourseInput(e.target.value)
+              }
+              placeholder="e.g. International Economics"
+              className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+
+            <button
+              type="button"
+              onClick={addMiniCourse}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+            >
+              Add
+            </button>
+          </div>
+        </section>
+
+        {/* Education */}
+        <section className="border-t border-slate-100 pt-5">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Education
+          </h3>
+
+          {miniProfileDraft.education.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {miniProfileDraft.education.map(
+                (item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2"
+                  >
+                    <div>
+                      <div className="text-sm font-medium">
+                        {item.degree}
+                      </div>
+
+                      <div className="text-xs text-slate-600">
+                        {item.institution}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeMiniEducation(index)
+                      }
+                      className="text-sm text-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <input
+              type="text"
+              value={miniEducationInput.degree}
+              onChange={(e) =>
+                setMiniEducationInput((prev) => ({
+                  ...prev,
+                  degree: e.target.value,
+                }))
+              }
+              placeholder="e.g. PhD in Economics"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+
+            <input
+              type="text"
+              value={miniEducationInput.institution}
+              onChange={(e) =>
+                setMiniEducationInput((prev) => ({
+                  ...prev,
+                  institution: e.target.value,
+                }))
+              }
+              placeholder="e.g. University of Cambridge"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={addMiniEducation}
+            className="mt-2 rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+          >
+            Add education
+          </button>
+        </section>
+      </div>
+
+      <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+        <button
+          type="button"
+          onClick={() => setMiniProfileEditorOpen(false)}
+          className="rounded-lg border border-slate-200 px-4 py-2 text-sm"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={miniProfileSaving}
+          onClick={saveMiniProfile}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        >
+          {miniProfileSaving ? "Saving..." : "Save profile"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+/-------------------------------------END OF MINI-PROFILE FORM-----------------------------/
+
+
+/---------------------------Add the lecturer's own profile preview------------------------/
+{miniProfilePreviewOpen && hasLecturerMiniProfile && (
+  <div
+    /*className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 py-6"*/
+    className="fixed left-0 right-0 bottom-0 top-[185px] z-[100] flex items-start justify-center bg-black/40 px-4 py-4 overflow-y-auto"
+    onClick={() => setMiniProfilePreviewOpen(false)}
+  >
+    <div onClick={(e) => e.stopPropagation()}>
+      <LecturerMiniProfile
+        lecturer={{
+          ...user,
+          author: `${user.title ? `${user.title} ` : ""}${user.name}`,
+          authorPhoto: user.photoUrl,
+          authorUniversity: user.university,
+          authorFaculty: user.faculty,
+          authorCountry: user.country,
+          authorCountryCode: user.countryCode,
+          lecturerMiniProfile:
+            user.lecturerMiniProfile,
+        }}
+        onClose={() =>
+          setMiniProfilePreviewOpen(false)
+        }
+      />
+    </div>
+  </div>
+)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* ✅ Messaging dock (ADD HERE, inside the page wrapper, at the very bottom) */}
 <MessagingDock

@@ -43,8 +43,15 @@ Georgia : [
   "Georgia Institute of Technology",
   
   ],
-
-
+  Hawaii : [
+  "Brigham Young University–Hawaii",
+  "Chaminade University of Honolulu",
+  "Hawaiʻi Pacific University",
+  "University of Hawaiʻi at Hilo",
+  "University of Hawaiʻi at Mānoa",
+  "University of Hawaiʻi–West Oʻahu",
+  
+  ],
 
 };
 

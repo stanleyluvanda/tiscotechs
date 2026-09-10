@@ -5832,7 +5832,1309 @@ export const NORTH_AMERICA = [
       "MSEEM in Sustainability Energy and Environmental Management"
     ]
   }
+},
+"Brigham Young University–Hawaii": {
+  "Faculty of Arts & Letters": {
+    programs: [
+      "BA in Anthropology and Cultural Sustainability",
+      "BA in Art Education",
+      "BA in Communication, Media and Culture",
+      "BA in English",
+      "BA in English Education",
+      "BA in Hawaiian Studies",
+      "BA in History",
+      "BA in History Education",
+      "BA in Intercultural Peacebuilding",
+      "BA in Music",
+      "BA in Pacific Studies",
+      "BA in TESOL",
+      "BA in Visual Arts",
+      "BFA in Visual Arts"
+    ]
+  },
 
+  "Faculty of Business & Government": {
+    programs: [
+      "BS in Accounting",
+      "BS in Business Education",
+      "BS in Business Management",
+      "BS in Hospitality and Tourism Management",
+      "BA in Political Science"
+    ]
+  },
+
+  "Faculty of Education & Social Work": {
+    programs: [
+      "BS in Elementary Education",
+      "BA in Social Science Education",
+      "BSW in Social Work",
+      "BA in TESOL Education"
+    ]
+  },
+
+  "Faculty of Math & Computing": {
+    programs: [
+      "BS in Computer Science",
+      "BS in Construction and Facilities Management",
+      "BS in Information Technology",
+      "BS in Math Education",
+      "BS in Mathematics"
+    ]
+  },
+
+  "Faculty of Sciences": {
+    programs: [
+      "BS in Biology",
+      "BS in Health and Human Science",
+      "BS in Health and Human Science Education",
+      "BS in Psychology",
+      "BS in Science Education"
+    ]
+  },
+
+  "Interdisciplinary Studies": {
+    programs: [
+      "BA in Interdisciplinary Studies",
+      "BS in Interdisciplinary Studies"
+    ]
+  },
+
+  "Associate Degree Programs": {
+    programs: [
+      "Associate of Arts and Sciences",
+      "Associate of Sciences in Business Management"
+    ]
+  },
+
+  "Certificate Programs": {
+    programs: [
+      "Certificate in Intercultural Peacebuilding",
+      "Certificate in TESOL",
+      "EIL Certificate",
+      "Hawaiian Language Certificate",
+      "Legal Studies Certificate"
+    ]
+  }
+},
+"Chaminade University of Honolulu": {
+  "School of Business and Communication": {
+    programs: [
+      "BA in Communication",
+      "BBA in Business Administration",
+      "BS in Accounting",
+      "BS in Sport and Event Management",
+
+      "AA in Business Administration",
+
+      "MBA",
+      "Professional MBA",
+
+      "Minor in Accounting",
+      "Minor in Business Administration",
+      "Minor in Communication",
+      "Minor in Computer Information Systems",
+      "Minor in Economics",
+      "Minor in Entrepreneurship",
+      "Minor in International Business",
+      "Minor in Marketing",
+      "Minor in Sport and Event Management",
+
+      "Hogan Entrepreneurial Program"
+    ]
+  },
+
+  "School of Education and Behavioral Sciences": {
+    programs: [
+      "BS in Criminology and Criminal Justice",
+      "BS in Elementary Education",
+      "BS in Elementary Education for Oceania",
+      "BS in Psychology",
+
+      "AA in Criminology and Criminal Justice",
+
+      "MA in Curriculum and Instruction Leadership",
+      "MA in Educational Leadership",
+      "MA in Teaching",
+      "Master of Education",
+      "MS in Criminal Justice Studies",
+      "MS in Counseling Psychology",
+      "MS in Marriage and Family Therapy",
+
+      "Education Specialist in School Psychology",
+
+      "EdD in Educational Psychology",
+      "EdD in Organizational Leadership",
+      "Doctor of Marriage and Family Therapy",
+      "PsyD in Clinical Psychology",
+
+      "Minor in Criminology and Criminal Justice",
+      "Minor in Education",
+      "Minor in Psychology",
+      "Minor in Sociology",
+
+      "Montessori Early Childhood Credential",
+      "Montessori Infant Toddler Credential",
+      "K-6 Structured Literacy Certificate"
+    ]
+  },
+
+  "School of Humanities, Arts and Design": {
+    programs: [
+      "BA in Communication",
+      "BA in English",
+      "BA in Ethics and Leadership",
+      "BA in Integrated Marketing Communication",
+      "BA in Interdisciplinary Studies",
+      "BA in International Studies",
+      "BA in Law, History and Culture",
+      "BA in Religious Studies",
+      "BFA in Environmental + Interior Design",
+
+      "AA in Environmental + Interior Design",
+      "AA in Liberal Arts",
+
+      "Master of Pastoral Theology",
+      "Professional MFA in Writing",
+
+      "Minor in Asian and Pacific Studies",
+      "Minor in Christian Studies",
+      "Minor in Digital Humanities",
+      "Minor in English",
+      "Minor in Fine Arts",
+      "Minor in Hawaiian and Pacific Studies",
+      "Minor in History",
+      "Minor in International Studies",
+      "Minor in Performing Arts",
+      "Minor in Philosophy",
+      "Minor in Political Science",
+      "Minor in Surf Studies",
+
+      "Permanent Diaconate Education Certificate"
+    ]
+  },
+
+  "School of Natural Sciences and Mathematics": {
+    programs: [
+      "BS in Biochemistry",
+      "BS in Biology",
+      "BS in Chemistry",
+      "BS in Computer Science",
+      "BS in Data Science, Analytics and Visualization",
+      "BS in Environmental Science",
+      "BS in Environmental Studies",
+      "BS in Forensic Sciences",
+
+      "AS in Natural Sciences",
+
+      "Minor in Biochemistry",
+      "Minor in Biology",
+      "Minor in Chemistry",
+      "Minor in Computer Science",
+      "Minor in Data Science, Analytics and Visualization",
+      "Minor in Environmental Studies",
+      "Minor in Forensic Sciences",
+      "Minor in Mathematics",
+      "Minor in Physics",
+
+      "Certificate in Environmental Pre-Law",
+      "Certificate in Environmental Studies"
+    ]
+  },
+
+  "School of Nursing and Health Professions": {
+    programs: [
+      "BS in Nutrition",
+      "BS in Nursing",
+      "BS in Public Health",
+
+      "MS in Nursing",
+      "Doctor of Nursing Practice",
+
+      "Minor in Nutrition",
+      "Minor in Palliative Care",
+      "Minor in Public Health",
+
+      "Post-Doctor Family Nurse Practitioner Certificate (FNP)",
+      "Post-Doctor Pediatric Nurse Practitioner Certificate (PNP)",
+      "Post-Doctor Psychiatric Mental Health Nurse Certificate (PMHNP)"
+    ]
+  },
+
+  "Flex: Online Undergraduate Programs": {
+    programs: [
+      "Bachelor's in Business Administration",
+      "Bachelor's in Criminology and Criminal Justice",
+      "Bachelor's in Early Childhood Education",
+      "Bachelor's in Early Childhood Education with Montessori Credential (PK-K)",
+      "Bachelor's in Elementary Education (K-6)",
+      "Bachelor's in Interdisciplinary Studies",
+      "Bachelor's in Psychology",
+      "Bachelor's in Public Health",
+      "Bachelor's in Secondary Education (6-12)",
+      "Bachelor's in Special Education (3+1 Leeward CC)",
+
+      "Associate's in Business Administration",
+      "Associate's in Criminology and Criminal Justice",
+      "Associate's in Early Childhood Education",
+      "Associate's in Liberal Arts",
+      "Associate's in Liberal Arts for Oceania",
+
+      "Minor in Business Administration",
+      "Minor in Criminology and Criminal Justice",
+      "Minor in History",
+      "Minor in Psychology"
+    ]
+  }
+},
+"Hawaiʻi Pacific University": {
+  "College of Business": {
+    programs: [
+      "BS in Business Administration",
+      "BS in Global Business",
+
+      "Master of Business Administration (MBA)",
+      "MBA in Business Administration - Mandarin Translation",
+      "MS in Business Analytics",
+      "MS in Business Analytics and Artificial Intelligence",
+      "MS in Construction Management",
+      "MS in Product Management",
+
+      "AS in General Business",
+
+      "Graduate Certificate in Business Analytics",
+      "Graduate Certificate in Business Analytics and Artificial Intelligence"
+    ]
+  },
+
+  "College of Liberal Arts": {
+    programs: [
+      "BA in Arts & Markets",
+      "BA in Cinematic Multimedia Arts",
+      "BA in Communication Studies and Practices",
+      "BA in Creative Writing & Literary Arts",
+      "BS in Diplomacy and Military Studies",
+      "BA in English",
+      "BA in History",
+      "BA in International Studies",
+      "BA in Political Science",
+      "BA in Psychology",
+      "BSW in Social Work",
+      "BA in Teaching English to Speakers of Other Languages",
+
+      "MA in Clinical Psychology",
+      "MA in Diplomacy and Global Security",
+      "MA in Diplomacy and Military Studies",
+      "MA in Psychology - Mandarin Translation",
+      "MA in Psychology - Vietnamese Translation",
+      "Master of Social Work (MSW)",
+      "MA in Strategic Communication",
+      "MA in Sustainability",
+      "MA in Teaching English to Speakers of Other Languages (TESOL)",
+
+      "Doctor of Psychology in Clinical Psychology (PsyD)",
+
+      "Post-Baccalaureate Certificate in Environment, Policy, and Leadership",
+      "Graduate Certificate in Global Leadership and Sustainable Development",
+      "Graduate Certificate in National Security and Strategic Studies",
+      "Graduate Certificate in Sustainability and Security Studies",
+      "Graduate Certificate in Teaching English to Speakers of Other Languages (TESOL)"
+    ]
+  },
+
+  "College of Natural and Computational Sciences": {
+    programs: [
+      "BS in Biochemistry",
+      "BS in Biology",
+      "BA in Biology: Human Health Studies",
+      "BS in Biomedical Engineering",
+      "BS in Biotechnology Engineering",
+      "BS in Chemistry",
+      "BS in Computer Science",
+      "BS in Electrical Engineering",
+      "BS in Environmental Science",
+      "BA in Environmental Studies",
+      "BA in Marine Affairs",
+      "BS in Marine Biology",
+      "BS in Mathematics",
+      "BS in Oceanography",
+
+      "MS in Artificial Intelligence - Mandarin Translation",
+      "MS in Artificial Intelligence - Vietnamese Translation",
+      "MS in Data Science",
+      "MS in Marine Science",
+      "MS in Medical Science"
+    ]
+  },
+
+  "College of Professional Studies": {
+    programs: [
+      "BS in Criminal Justice",
+      "BS in Cybersecurity",
+      "BA in Elementary Education",
+      "BA in Human Resource Development",
+      "BA in Individualized Major",
+      "BS in Individualized Major",
+      "BA in Public Administration",
+
+      "MS in Criminal Justice Administration",
+      "MS in Cybersecurity",
+      "Master of Education in Educational Leadership (MEd)",
+      "Master of Education in Elementary Education (MEd)",
+      "Master of Public Administration (MPA)",
+      "Master of Education in Secondary Education (MEd)",
+
+      "AS in Criminal Justice",
+      "AS in Cybersecurity",
+      "AA in General Studies",
+      "AS in Health Professions",
+      "AS in Homeland Security",
+      "AS in Supervisory Leadership",
+
+      "Graduate Certificate in Criminal Justice",
+      "Graduate Certificate in Ethics in Public Service",
+      "Graduate Certificate in Nonprofit Management",
+      "Graduate Certificate in Public Budgeting and Financial Management",
+      "Graduate Certificate in Public Service Management"
+    ]
+  },
+
+  "College of Health and Society": {
+    programs: [
+      "BS in Public Health",
+      "Master of Public Health (MPH)"
+    ]
+  },
+
+  "School of Nursing": {
+    programs: [
+      "Bachelor of Science in Nursing (BSN)",
+      "Master of Science in Nursing (MSN)",
+      "Doctor of Nursing Practice (DNP)",
+
+      "Post-Master's Certificate in Adult-Gero Acute Care Nurse Practitioner",
+      "Post-Master's Certificate in Family Nurse Practitioner",
+      "Post-Master's Certificate in Psychiatric Mental Health Nurse Practitioner"
+    ]
+  },
+
+  "Graduate College of Health Sciences": {
+    programs: [
+      "Master of Medical Science in Physician Assistant Studies (MMS)",
+      "Doctor of Occupational Therapy (OTD)",
+      "Doctor of Physical Therapy (DPT)"
+    ]
+  }
+},
+"University of Hawaiʻi at Hilo": {
+  "College of Arts and Sciences": {
+    programs: [
+      "BA in Administration of Justice",
+      "BS in Aeronautical Sciences",
+      "BA in Anthropology",
+      "BA in Art",
+      "BS in Astronomy",
+      "BA in Biology",
+      "BS in Biology-Cell, Molecular & Biomedical Sciences Track",
+      "BS in Biology-Ecology, Evolution and Conservation Track",
+      "BS in Chemistry",
+      "BS in Chemistry-Biosciences",
+      "BS in Chemistry-Health Sciences",
+      "BA in Communication",
+      "BS in Computer Science",
+      "BS in Data Science",
+      "BA in Educational Studies",
+      "BA in English",
+      "BS in Environmental Studies/Science",
+      "BA in Geography",
+      "BA in Geology",
+      "BS in Geology",
+      "BA in History",
+      "BA in Japanese Studies",
+      "BA in Kinesiology and Exercise Sciences",
+      "BA in Liberal Studies",
+      "BA in Linguistics",
+      "BA in Marine Science",
+      "BS in Marine Science",
+      "BA in Mathematics",
+      "BA in Natural Science",
+      "BA in Performing Arts",
+      "BA in Philosophy",
+      "BA in Physics",
+      "BA in Political Science",
+      "BA in Psychology",
+      "BA in Sociology",
+
+      "MA in Counseling Psychology",
+      "MA in Heritage Management",
+      "Master of Arts in Teaching (MAT)",
+      "Master of Education (MEd)",
+      "MS in Tropical Conservation Biology and Environmental Science",
+
+      "Minor in Anthropology",
+      "Minor in Art",
+      "Minor in Astronomy",
+      "Minor in Biology",
+      "Minor in Chemistry",
+      "Minor in Communication",
+      "Minor in Computer Science",
+      "Minor in English",
+      "Minor in Gender and Women's Studies",
+      "Minor in Geography",
+      "Minor in Geology",
+      "Minor in History",
+      "Minor in Japanese Studies",
+      "Minor in Linguistics",
+      "Minor in Marine Science",
+      "Minor in Mathematics",
+      "Minor in Performing Arts",
+      "Minor in Dance",
+      "Minor in Philosophy",
+      "Minor in Physics",
+      "Minor in Political Science",
+      "Minor in Sociology",
+      "Minor in Earth and Space Science",
+
+      "Certificate in Alternative Dispute Resolution",
+      "Certificate in Applied Social Research",
+      "Certificate in Calculus and Differential Equations",
+      "Certificate in Computer Application Development Specialization",
+      "Certificate in Criminal Justice",
+      "Certificate in Data Science",
+      "Certificate in Database Management",
+      "Certificate in Digital Media Art",
+      "Certificate in Digital Visualization and Communication",
+      "Certificate in Educational Studies",
+      "Certificate in Creative Writing",
+      "Certificate in Environmental Studies",
+      "Certificate in Filipino Studies",
+      "Certificate in Fitness Trainer Preparation",
+      "Certificate in Global Engagement",
+      "Certificate in International Relations",
+      "Certificate in Japanese Teaching",
+      "Certificate in Marine Option Program",
+      "Certificate in Pacific Islands Studies",
+      "Certificate in Performing Arts",
+      "Certificate in Hawaiʻi Performing Arts",
+      "Certificate in Dance Kinesiology",
+      "Certificate in Planning",
+      "Certificate in Pre-Law",
+      "Certificate in Spanish Language for Careers",
+      "Certificate in STEM Research Honors",
+      "Certificate in Sustainability Issues",
+      "Certificate in Sustainable Tourism",
+      "Certificate in Teaching English to Speakers of Other Languages (TESOL)",
+      "Certificate in Unmanned Aircraft Systems"
+    ]
+  },
+
+  "College of Agriculture, Forestry and Natural Resource Management": {
+    programs: [
+      "BS in Agriculture",
+      "BS in Agriculture-Animal Health and Management Specialization",
+      "BS in Agriculture-Aquaculture Specialty",
+      "BS in Agriculture-Tropical Agroecology Specialty",
+
+      "Minor in Agriculture",
+
+      "Certificate in Aquaculture",
+      "Certificate in Beekeeping",
+      "Certificate in Equine Science",
+      "Certificate in Plant Tissue Culture",
+      "Certificate in Tropical Farming",
+      "Certificate in Wildlife Science"
+    ]
+  },
+
+  "College of Business and Economics": {
+    programs: [
+      "BBA in Accounting",
+      "BBA in Business Administration",
+
+      "Minor in Business Administration",
+      "Minor in Economics",
+
+      "Certificate in Accounting",
+      "Certificate in AI for Business",
+      "Certificate in Business Administration",
+      "Certificate in Business Analytics",
+      "Certificate in Entrepreneurship",
+      "Certificate in Finance"
+    ]
+  },
+
+  "College of Hawaiian Language": {
+    programs: [
+      "BA in Hawaiian Studies",
+
+      "MA in Indigenous Language and Culture Education",
+      "PhD in Hawaiian and Indigenous Language and Culture Revitalization",
+
+      "Minor in Hawaiian Studies",
+
+      "Certificate in Contemporary Indigenous Multilingualism",
+      "Certificate in Hawaiian and Indigenous Language and Culture Revitalization",
+      "Certificate in Hawaiian and Indigenous Language Medium Early Education",
+      "Certificate in Hawaiian Culture",
+      "Certificate in Hawaiian Language",
+      "Certificate in Indigenous Public Health",
+      "Certificate in Kahuawaiola Indigenous Teacher Education Program",
+      "Certificate in Multidisciplinary Hawaiian Studies"
+    ]
+  },
+
+  "School of Nursing": {
+    programs: [
+      "BS in Nursing",
+      "Doctor of Nursing Practice (DNP)",
+
+      "Certificate in Health Care Administration"
+    ]
+  },
+
+  "Daniel K. Inouye College of Pharmacy": {
+    programs: [
+      "BA in Pharmacy Studies",
+      "Doctor of Pharmacy (PharmD)",
+
+      "Certificate in Health Sciences Research",
+      "Certificate in Healthcare Leadership",
+      "Certificate in Pharmaceutical Science Innovation",
+      "Certificate in Pre-Pharmacy",
+      "Graduate Certificate in Rural Health",
+      "Certificate in Veterinary Pharmacy Sciences"
+    ]
+  }
+},
+"University of Hawaiʻi at Mānoa": {
+  "College of Arts, Languages & Letters": {
+    programs: [
+      "BA in American Studies",
+
+      "BA in Art - Art History",
+      "BA in Art - Art Studio",
+      "BFA in Art - Art Studio",
+      "BFA in Art - Graphic Design",
+
+      "BA in Asian Studies",
+
+      "BA in Chinese",
+      "BA in Chinese Language Flagship",
+
+      "BA in Cinematic Arts",
+      "BA in Cinematic Arts - Animation",
+      "BA in Cinematic Arts - Digital Cinema",
+
+      "BA in English",
+
+      "BA in Japanese",
+
+      "BA in Korean",
+      "BA in Korean - Korean for Professionals Specialization",
+
+      "BA in Languages & Literatures of Europe & the Americas - French Studies",
+      "BA in Languages & Literatures of Europe & the Americas - German Studies",
+      "BA in Languages & Literatures of Europe & the Americas - Spanish & Latin American Studies",
+
+      "BA in Linguistics",
+
+      "Bachelor of Music in Music Composition",
+      "BA in Music - General Music Specialization",
+      "BA in Music - Hawaiian Music Specialization",
+      "Bachelor of Music in Instrumental Performance",
+      "BA in Music - Musical Theater Specialization",
+      "Bachelor of Music in Piano Performance",
+      "Bachelor of Music in Voice",
+
+      "BA in Pacific Islands Studies",
+      "BA in Philippine Language and Culture",
+      "BA in Philosophy",
+
+      "BA in Religious Traditions & Ancient Civilizations - Ancient Civilizations Track",
+      "BA in Religious Traditions & Ancient Civilizations - Religious Traditions Track",
+
+      "BA in Second Language Studies",
+
+      "BFA in Theatre and Dance - Acting for Theatre, Screen and New Media",
+      "BA in Theatre and Dance - Dance",
+      "BFA in Theatre and Dance - Dance",
+      "BA in Theatre and Dance - Theatre",
+
+      "BA in Women, Gender, and Sexuality Studies",
+
+      "MA in American Studies",
+      "MA in Anthropology - Applied Archaeology Track",
+      "MA in Anthropology - Applied Cultural Anthropology Track",
+      "MA in Anthropology",
+      "MA in Art History",
+      "MFA in Art",
+      "MA in Asian Studies",
+      "Master of Asian International Affairs (MAIA)",
+      "MA in East Asian Languages and Literatures",
+      "MA in English",
+      "MA in History",
+      "MA in Linguistics",
+      "MA in Music",
+      "Master of Music (MMus)",
+      "MA in Pacific Islands Studies",
+      "MA in Philosophy",
+      "MA in Religious Traditions of Asia and the Pacific",
+      "MA in Second Language Studies",
+      "MA in Spanish",
+      "MA in Theatre and Dance",
+      "MFA in Theatre and Dance",
+
+      "PhD in American Studies",
+      "PhD in Anthropology",
+      "PhD in East Asian Languages and Literatures",
+      "PhD in English",
+      "PhD in History",
+      "PhD in Linguistics",
+      "PhD in Music",
+      "PhD in Philosophy",
+      "PhD in Second Language Studies",
+      "PhD in Theatre and Dance",
+
+      "Minor in American Studies",
+      "Minor in Art and Art History",
+      "Minor in Asian Studies",
+      "Minor in Chinese, Japanese, or Korean",
+      "Minor in English",
+      "Minor in Filipino",
+      "Minor in French, German Studies, Latin American & Iberian Studies, or Spanish",
+      "Minor in History",
+      "Minor in Ilokano",
+      "Minor in Linguistics",
+      "Minor in Music",
+      "Minor in Pacific Islands Studies",
+      "Minor in Philosophy",
+      "Minor in Philosophy for Children Hawaiʻi",
+      "Minor in Second Language Studies",
+      "Minor in Second Language Teaching",
+      "Minor in Theatre and Dance",
+
+      "Undergraduate Certificate in Chinese, Japanese, Korean, or Korean for Professionals",
+      "Undergraduate Certificate in Classics",
+      "Undergraduate Certificate in Indo-Pacific Languages",
+      "Undergraduate Certificate in Islamic Studies",
+      "Undergraduate Certificate in Music",
+      "Undergraduate Certificate in Russian",
+      "Undergraduate Certificate in Women, Gender and Sexuality Studies",
+
+      "Graduate Certificate in Advanced Women, Gender, and Sexuality Studies",
+      "Graduate Certificate in Asian Studies - Chinese Studies, Japanese Studies, Korean Studies, Philippine Studies, South Asian Studies, or Southeast Asian Studies",
+      "Graduate Certificate in Museum Studies",
+      "Graduate Certificate in Pacific Islands Studies",
+      "Graduate Certificate in Philosophy for Children Hawaiʻi",
+      "Advanced Graduate Certificate in Second Language Studies",
+      "Advanced Graduate Certificate in SLS/Spanish Applied Linguistics"
+    ]
+  },
+
+  "College of Natural Sciences": {
+    programs: [
+      "BA in Astronomy",
+      "BS in Astrophysics",
+
+      "BA in Biochemistry",
+      "BS in Biochemistry",
+
+      "BA in Biology",
+      "BS in Biology",
+
+      "BA in Botany",
+      "BS in Botany",
+
+      "BA in Chemistry",
+      "BS in Chemistry",
+
+      "BS in Computer Science-Creative Computational Media",
+      "BS in Computer Science-Data Science Track",
+      "BS in Computer Science-General Track",
+      "BS in Computer Science-Security Science Track",
+
+      "BA in Information and Computer Sciences-Creative Computational Media",
+      "BA in Information and Computer Sciences-General Track",
+      "BA in Information and Computer Sciences-Security Science Concentration",
+
+      "BA in Marine Biology",
+      "BS in Marine Biology",
+
+      "BA in Mathematics",
+      "BS in Mathematics",
+      "BS in Mathematics - Computational Science Track",
+      "BS in Mathematics - Data Science Track",
+
+      "BA in Microbiology",
+      "BS in Microbiology",
+
+      "BS in Molecular Biosciences and Biotechnology",
+      "BS in Molecular Cell Biology",
+
+      "BA in Physics",
+      "BS in Physics",
+
+      "MS in Astronomy",
+      "MS in Botany",
+      "MS in Chemistry",
+      "MS in Computer Science",
+      "Professional Master in Computer Science (PMCS)",
+      "MS in Marine Biology",
+      "MA in Mathematics",
+      "MS in Microbiology",
+      "MS in Physics",
+      "MS in Zoology",
+
+      "PhD in Astronomy",
+      "PhD in Botany",
+      "PhD in Chemistry",
+      "PhD in Computer Science",
+      "PhD in Marine Biology",
+      "PhD in Mathematics",
+      "PhD in Microbiology",
+      "PhD in Physics",
+      "PhD in Zoology",
+
+      "Minor in Astronomy",
+      "Minor in Astrophysics",
+      "Minor in Biology",
+      "Minor in Botany",
+      "Minor in Chemistry",
+      "Minor in Computer Science",
+      "Minor in Mathematics",
+      "Minor in Microbiology",
+      "Minor in Physics",
+
+      "Undergraduate Certificate in Creative Computational Media-Information and Computer Sciences",
+      "Undergraduate Certificate in Data Science",
+      "Undergraduate Certificate in Mathematical Biology",
+
+      "Graduate Certificate in Applied Computing"
+    ]
+  },
+
+  "College of Social Sciences": {
+    programs: [
+      "BA in Anthropology",
+
+      "BA in Communication",
+      "BA in Communicology",
+
+      "BA in Economics",
+      "BA in Economics-Quantitative Economics Concentration",
+
+      "BA in Ethnic Studies",
+
+      "BA in Geography and Environment",
+
+      "BA in Interdisciplinary Studies",
+      "BA in Interdisciplinary Studies-Linguistics",
+      "BA in Interdisciplinary Studies-Social Sciences of Oceans",
+      "BA in Interdisciplinary Studies-Sustainability",
+
+      "BA in Journalism",
+
+      "BA in Political Science",
+
+      "BA in Psychology",
+      "BS in Psychology",
+
+      "BA in Sociology",
+
+      "MA in Anthropology-Applied Archaeology Track",
+      "MA in Anthropology-Applied Cultural Anthropology Track",
+      "MA in Anthropology",
+      "MA in Communication",
+      "MA in Communicology",
+      "MA in Economics",
+      "MA in Geography and Environment",
+      "MA in Political Science",
+      "MA in Psychology",
+      "Master of Public Administration (MPA)",
+      "MA in Sociology",
+      "Master of Urban and Regional Planning (MURP)",
+
+      "PhD in Anthropology",
+      "PhD in Communication & Information Sciences",
+      "PhD in Economics",
+      "PhD in Geography and Environment",
+      "PhD in Political Science",
+      "PhD in Psychology",
+      "PhD in Sociology",
+      "PhD in Urban and Regional Planning",
+
+      "Minor in Anthropology",
+      "Minor in Communicology",
+      "Minor in Economics",
+      "Minor in Geography and Environment",
+      "Minor in Medical Anthropology",
+      "Minor in Political Science",
+      "Minor in Psychology",
+      "Minor in Sociology",
+
+      "Undergraduate Certificate in Ethnic Studies",
+      "Undergraduate Certificate in Geospatial Information Science",
+      "Undergraduate Certificate in Law and Society",
+      "Undergraduate Certificate in Peace Studies",
+      "Undergraduate Certificate in Queer Studies",
+
+      "Graduate Certificate in Conflict Resolution",
+      "Graduate Certificate in Museum Studies",
+      "Graduate Certificate in Nonprofit Management",
+      "Graduate Certificate in Planning Studies",
+      "Graduate Certificate in Program Evaluation",
+      "Graduate Certificate in Public Policy",
+      "Professional Certificate in Urban and Regional Planning"
+    ]
+  },
+
+  "College of Education": {
+    programs: [
+      "Bachelor of Education in Elementary Education",
+      "Bachelor of Education in Elementary Education-Hawaiian Immersion Concentration",
+      "Bachelor of Education in Elementary Education-Multilingual Learning Concentration",
+      "Bachelor of Education in Elementary Education-Special Education Track",
+      "Bachelor of Education in Elementary Education-Early Childhood & Early Childhood Special Education Specialization",
+      "Bachelor of Education in Elementary Education-Early Childhood Care and Education, Birth-Age 8",
+
+      "BS in Kinesiology and Rehabilitation Science-Health and Exercise Science Track",
+      "BS in Kinesiology and Rehabilitation Science-Health and Physical Education Track",
+
+      "Bachelor of Education in Secondary Education-Biology Specialization",
+      "Bachelor of Education in Secondary Education-Chemistry Specialization",
+      "Bachelor of Education in Secondary Education-Chinese Specialization",
+      "Bachelor of Education in Secondary Education-Earth and Space Science Specialization",
+      "Bachelor of Education in Secondary Education-English Specialization",
+      "Bachelor of Education in Secondary Education-French Specialization",
+      "Bachelor of Education in Secondary Education-General Science Specialization",
+      "Bachelor of Education in Secondary Education-German Specialization",
+      "Bachelor of Education in Secondary Education-Hawaiian Specialization",
+      "Bachelor of Education in Secondary Education-Japanese Specialization",
+      "Bachelor of Education in Secondary Education-Latin Specialization",
+      "Bachelor of Education in Secondary Education-Mathematics Specialization",
+      "Bachelor of Education in Secondary Education-Music-General/Choral Specialization",
+      "Bachelor of Education in Secondary Education-Music-Instrumental Specialization",
+      "Bachelor of Education in Secondary Education-Philippine Language-Filipino Specialization",
+      "Bachelor of Education in Secondary Education-Philippine Language-Ilokano Specialization",
+      "Bachelor of Education in Secondary Education-Physical Science Specialization",
+      "Bachelor of Education in Secondary Education-Physics Specialization",
+      "Bachelor of Education in Secondary Education-Russian Specialization",
+      "Bachelor of Education in Secondary Education-Social Studies Specialization",
+      "Bachelor of Education in Secondary Education-Spanish Specialization",
+
+      "Bachelor of Education in Special Education-Secondary Special Education-Mild/Moderate Disabilities",
+      "Bachelor of Education in Special Education-Severe Disabilities/Autism",
+
+      "MS in Athletic Training",
+      "MEd in Counseling-Rehabilitation Counselor Education Concentration",
+      "MEd in Counseling-School Counseling Concentration",
+      "MEd in Curriculum Studies",
+      "Master of Education in Teaching-Dual Secondary/SPED",
+      "MEd in Early Childhood Education",
+      "Master of Education in Teaching",
+      "MEd in Educational Administration",
+      "MEd in Educational Foundations",
+      "MEd in Educational Psychology",
+      "MS in Kinesiology and Rehabilitation Science",
+      "MEd in Learning Design and Technology",
+      "MEd in Special Education",
+
+      "PhD in Education-Curriculum and Instruction Concentration",
+      "PhD in Education-Educational Administration Concentration",
+      "PhD in Education-Educational Foundations Concentration",
+      "PhD in Education-Educational Policy Studies Concentration",
+      "PhD in Education-Exceptionalities Concentration",
+      "PhD in Education-Global and International Education Concentration",
+      "PhD in Education-Kinesiology Concentration",
+      "EdD in Education-Professional Educational Practice",
+      "PhD in Educational Psychology",
+      "PhD in Learning Design and Technology",
+
+      "Minor in Education",
+
+      "Graduate Certificate in Disability and Diversity Studies",
+      "Graduate Certificate in Early Childhood Education",
+      "Graduate Certificate in Ethnomathematics",
+      "Graduate Certificate in Learning Design and Technologies for Teachers (TeachTech)",
+      "Graduate Certificate in Measurement & Statistics",
+      "Graduate Certificate in Online Learning and Teaching (COLT)",
+      "Graduate Certificate in Sustainability and Resilience Education",
+      "Graduate Certificate in Teacher Leader",
+
+      "Post-Baccalaureate Certificate in Elementary Education",
+      "Post-Baccalaureate Certificate in Elementary Education - Multilingual Learner Track",
+      "Post-Baccalaureate Certificate in Health and Physical Education",
+      "Post-Baccalaureate Certificate in Music Education",
+      "Post-Baccalaureate Certificate in Secondary Education",
+      "Post-Baccalaureate Certificate in Special Education - Mild/Moderate or Severe/Autism"
+    ]
+  },
+
+  "College of Engineering": {
+    programs: [
+      "BS in Biological Engineering",
+      "BS in Civil Engineering",
+      "BS in Computer Engineering",
+      "BS in Construction Engineering",
+      "BS in Electrical Engineering",
+      "BS in Engineering Science-Biomedical Engineering",
+      "BS in Mechanical Engineering",
+      "BS in Mechanical Engineering-Aerospace Track",
+
+      "MS in Civil Engineering",
+      "MS in Electrical and Computer Engineering",
+      "MS in Mechanical Engineering",
+      "MS in Molecular Biosciences and Bioengineering",
+      "MS in Ocean and Resources Engineering",
+
+      "PhD in Civil Engineering",
+      "PhD in Electrical and Computer Engineering",
+      "PhD in Mechanical Engineering",
+      "PhD in Molecular Biosciences and Bioengineering",
+      "PhD in Ocean and Resources Engineering",
+
+      "Undergraduate Certificate in Creative Computational Media-Electrical and Computer Engineering"
+    ]
+  },
+
+  "College of Tropical Agriculture & Human Resilience": {
+    programs: [
+      "BS in Animal Sciences",
+
+      "BS in Dietetics",
+
+      "BS in Fashion Design and Merchandising",
+
+      "BS in Food Science and Human Nutrition-Food Science Option-Business Track",
+      "BS in Food Science and Human Nutrition-Food Science Option-Culinology Track",
+      "BS in Food Science and Human Nutrition-Food Science Option-Pre-Professional Track",
+      "BS in Food Science and Human Nutrition-Human Nutrition Option-Pre-Professional Track",
+      "BS in Food Science and Human Nutrition-Human Nutrition Option-Sports Wellness Track",
+
+      "BS in Human Development and Family Science",
+
+      "BS in Natural Resources and Environmental Management - Natural Science Pathway",
+      "BS in Natural Resources and Environmental Management - Social Science Pathway",
+
+      "BS in Tropical Agriculture and the Environment-Molecular Plant Biosystems",
+      "BS in Tropical Agriculture and the Environment-Pest and Invasive Species Management",
+      "BS in Tropical Agriculture and the Environment-Sustainable Crop Production, Soils, & Landscape Management",
+
+      "MS in Animal Sciences",
+      "MS in Entomology",
+      "Master of Environmental Management (MEM)",
+      "MS in Food Science",
+      "MS in Natural Resources and Environmental Management",
+      "MS in Nutritional Sciences",
+      "MS in Tropical Plant and Soil Sciences",
+      "MS in Tropical Plant Pathology",
+
+      "PhD in Entomology",
+      "PhD in Natural Resources and Environmental Management",
+      "PhD in Nutritional Sciences",
+      "PhD in Tropical Plant and Soil Sciences",
+      "PhD in Tropical Plant Pathology",
+
+      "Minor in Fashion Design and Merchandising",
+      "Minor in Plant Production and Management",
+
+      "Certificate in Agribusiness Management",
+      "Graduate Certificate in Resource Management"
+    ]
+  },
+
+  "Shidler College of Business": {
+    programs: [
+      "BBA in Accounting",
+      "BBA in Business Administration",
+      "BBA in Entrepreneurship",
+      "BBA in Finance",
+      "BBA in Human Resource Management",
+      "BBA in International Business-Second Major Only",
+      "BBA in Management",
+      "BBA in Management Information Systems",
+      "BBA in Marketing",
+
+      "BS in Travel Industry Management-Hospitality Management",
+      "BS in Travel Industry Management-Tourism Management",
+      "BS in Travel Industry Management-Transportation Management",
+
+      "Master of Accounting (MAcc)",
+      "Master of Business Administration (MBA)",
+      "Master of Science in Finance (MSF)",
+      "Master of Human Resource Management (MHRM)",
+      "MS in Information Systems",
+      "MS in Marketing Management",
+      "MS in Travel Industry Management",
+
+      "PhD in Business Administration",
+      "PhD in Travel Industry Management Concentration",
+
+      "Minor in Accounting",
+      "Minor in Business Administration",
+
+      "Undergraduate Certificate in Travel Industry Management",
+      "Graduate Certificate in Entrepreneurship"
+    ]
+  },
+
+  "Hawaiʻinuiākea School of Hawaiian Knowledge": {
+    programs: [
+      "BA in Hawaiian",
+      "BA in Hawaiian Studies",
+
+      "MA in Hawaiian",
+      "MA in Hawaiian Studies",
+
+      "Minor in Hawaiian",
+      "Minor in Hawaiian Studies",
+
+      "Undergraduate Certificate in Hawaiian Language",
+
+      "Graduate Certificate in Kūʻokoʻa ʻĀina Based Leadership"
+    ]
+  },
+
+  "John A. Burns School of Medicine": {
+    programs: [
+      "BS in Medical Technology",
+      "BS in Medical Technology-Online",
+      "BS in Medical Technology-Online for Students with an Associate Degree in MLT from KCC",
+
+      "MS in Biomedical Sciences-Tropical Medicine",
+      "MS in Cell and Molecular Biology",
+      "MS in Communication Sciences and Disorders",
+      "MS in Developmental and Reproductive Biology",
+      "MS in Quantitative Health and Clinical Research",
+
+      "Doctor of Medicine (MD)",
+      "PhD in Biomedical Sciences-Tropical Medicine",
+      "PhD in Cell and Molecular Biology",
+      "PhD in Developmental and Reproductive Biology",
+
+      "Graduate Certificate in Biomedical Sciences-Tropical Medicine",
+      "Graduate Certificate in Clinical Research",
+      "Post-Baccalaureate Certificate in Clinical Training"
+    ]
+  },
+
+  "School of Architecture": {
+    programs: [
+      "Bachelor of Environmental Design (BEnvD)",
+      "Master of Architecture (MArch)",
+      "Master of Landscape Architecture (MLA)",
+      "Doctor of Architecture (DArch)",
+
+      "Graduate Certificate in Historic Preservation"
+    ]
+  },
+
+  "School of Nursing and Dental Hygiene": {
+    programs: [
+      "BS in Dental Hygiene",
+
+      "BS in Nursing-Hawaiʻi Statewide Nursing Consortium (HS-DEN)",
+      "BS in Nursing-Hawaiʻi Statewide Nursing Consortium (HSNC)",
+      "BS in Nursing-RN to BS Online",
+
+      "MS in Nursing",
+      "Doctor of Nursing Practice (DNP)",
+      "PhD in Nursing",
+
+      "Advanced Professional Certificate in Expanded Function Dental Hygiene in Pediatrics",
+      "Graduate Certificate in Nursing Education"
+    ]
+  },
+
+  "School of Ocean & Earth Science & Technology": {
+    programs: [
+      "BS in Atmospheric Sciences",
+
+      "BS in Earth Sciences-Basic Sciences and Research Track",
+      "BS in Earth Sciences-Environmental and Hydrology Track",
+      "BS in Earth Sciences-General Track",
+      "BS in Earth Sciences-Geophysics and Tectonics Track",
+      "BS in Earth Sciences-Planetary Science Track",
+      "BS in Earth Sciences-Volcano Science Track",
+
+      "BA in Environmental Earth Sciences-Earth Science Education Track",
+      "BA in Environmental Earth Sciences-General Track",
+
+      "BS in Global Environmental Science-Environmental Health Sciences Track",
+      "BS in Global Environmental Science-Environmental Planning Track",
+      "BS in Global Environmental Science-General Pathway Track",
+      "BS in Global Environmental Science-Sustainability Science Track",
+
+      "MS in Atmospheric Sciences",
+      "MS in Earth and Planetary Sciences",
+      "MS in Marine Biology",
+      "MS in Ocean and Resources Engineering",
+      "MS in Oceanography",
+
+      "PhD in Atmospheric Sciences",
+      "PhD in Earth and Planetary Sciences",
+      "PhD in Marine Biology",
+      "PhD in Ocean and Resources Engineering",
+      "PhD in Oceanography",
+
+      "Minor in Atmospheric Sciences",
+      "Minor in Earth and Planetary Exploration Technology",
+      "Minor in Earth Sciences",
+      "Minor in Human Space Flight Technology",
+
+      "Undergraduate Certificate in Earth and Planetary Exploration Technology",
+      "Undergraduate Certificate in Marine Option",
+
+      "Graduate Certificate in Ocean Policy",
+      "Graduate Certificate in Renewable Energy and Island Sustainability"
+    ]
+  },
+
+  "Thompson School of Social Work & Public Health": {
+    programs: [
+      "BA in Public Health",
+
+      "Bachelor of Social Work - Track A",
+      "Bachelor of Social Work - Track B",
+
+      "Master of Public Health (MPH)",
+      "MS in Public Health",
+      "Master of Social Work (MSW)",
+
+      "PhD in Epidemiology",
+      "PhD in Public Health",
+      "PhD in Social Welfare",
+
+      "Minor in Public Health"
+    ]
+  },
+
+  "William S. Richardson School of Law": {
+    programs: [
+      "Juris Doctor (JD)",
+      "Master of Laws (LLM)"
+    ]
+  }
+},
+"University of Hawaiʻi–West Oʻahu": {
+  "Faculty of Applied Science": {
+    programs: [
+      "Bachelor of Applied Science in Hawaiian and Indigenous Health and Healing",
+      "Bachelor of Applied Science in Health Information Management",
+      "Bachelor of Applied Science in Health Professions-General Health Science",
+      "Bachelor of Applied Science in Sustainable Community Food Systems",
+      "Bachelor of Applied Science in Information Security and Assurance",
+      "Bachelor of Applied Science in Information Technology",
+
+      "Certificate in Hawaiian and Indigenous Health and Healing",
+      "Certificate in Sustainability Issues"
+    ]
+  },
+
+  "Faculty of Business Administration": {
+    programs: [
+      "BA in Business Administration-Accounting",
+      "BA in Business Administration-Data Analytics",
+      "BA in Business Administration-Facilities Management",
+      "BA in Business Administration-Finance",
+      "BA in Business Administration-General Business Administration",
+      "BA in Business Administration-Hospitality and Tourism",
+      "BA in Business Administration-Management",
+      "BA in Business Administration-Marketing",
+
+      "Certificate in Digital Marketing",
+      "Certificate in Risk Management and Insurance"
+    ]
+  },
+
+  "Faculty of Creative Media": {
+    programs: [
+      "BA in Creative Media-Communications and New Media Technologies",
+      "BA in Creative Media-Design and Media",
+      "BA in Creative Media-General Creative Media",
+      "BA in Creative Media-Video Game Design and Development"
+    ]
+  },
+
+  "Faculty of Cybersecurity": {
+    programs: [
+      "BS in Cybersecurity-Cyber Operations"
+    ]
+  },
+
+  "Faculty of Education": {
+    programs: [
+      "Bachelor of Education in Elementary Education",
+      "Bachelor of Education in Middle-Level Education",
+      "Bachelor of Education in Secondary Education",
+      "Bachelor of Education in Middle-Level Education-English Language Arts",
+      "Bachelor of Education in Secondary Education-English Language Arts",
+
+      "BA in Social Sciences - Early Childhood Education"
+    ]
+  },
+
+  "Faculty of Humanities": {
+    programs: [
+      "BA in Humanities-English",
+      "BA in Humanities-Film, Media and Popular Culture",
+      "BA in Humanities-Hawaiian-Pacific Studies",
+      "BA in Humanities-History",
+      "BA in Humanities-Mathematics",
+      "BA in Humanities-Philosophy",
+
+      "Certificate in Hawaiian Language",
+      "Certificate in Hawaiian-Pacific Studies",
+      "Certificate in Music"
+    ]
+  },
+
+  "Faculty of Mathematics, Natural and Health Sciences": {
+    programs: [
+      "BS in Natural Science - Applied Mathematics",
+      "BS in Natural Science - Health Science",
+      "BS in Natural Science - Life Science",
+
+      "Bachelor of Applied Science in Hawaiian and Indigenous Health and Healing",
+      "Bachelor of Applied Science in Health Information Management",
+      "Bachelor of Applied Science in Health Professions - General Health Science"
+    ]
+  },
+
+  "Faculty of Public Administration": {
+    programs: [
+      "BA in Public Administration-Community Health",
+      "BA in Public Administration-Disaster Preparedness and Emergency Management",
+      "BA in Public Administration-General Public Administration",
+      "BA in Public Administration-Health Care Administration",
+      "BA in Public Administration-Justice Administration",
+      "BA in Public Administration-Long-Term Care",
+
+      "Certificate in Disaster Preparedness and Emergency Management",
+      "Certificate in Health Care Administration",
+      "Certificate in Long-Term Care"
+    ]
+  },
+
+  "Faculty of Social Sciences": {
+    programs: [
+      "BA in Social Sciences-Anthropology",
+      "BA in Social Sciences-Early Childhood Education",
+      "BA in Social Sciences-Economics",
+      "BA in Social Sciences-Political Science",
+      "BA in Social Sciences-Psychology",
+      "BA in Social Sciences-Sociology",
+
+      "Certificate in Applied Forensic Anthropology",
+      "Certificate in Social Science Health and Medicine",
+      "Certificate in Substance Abuse and Addictions Studies"
+    ]
+  },
+
+  "Center for Labor Education and Research": {
+    programs: [
+      "Certificate in Labor Studies"
+    ]
+  }
 },
 },
   },
