@@ -88,18 +88,7 @@ function clearAuthStateKeepData() {
   }
 }
 
-/*async function logoutEverywhere() {
-  try { await signOut({ global: true }); } catch {}
-  try {
-    [
-      "currentUser","authUserId","activeUserId","currentUserId","loggedInUserId",
-      "partnerAuth","adminAuth"
-    ].forEach((k) => {
-      sessionStorage.removeItem(k);
-      localStorage.removeItem(k);
-    });
-  } catch {}
-}*/
+
 async function logoutEverywhere() {
   try {
     [
@@ -325,44 +314,76 @@ export default function Navbar() {
   <NavLink to="/study-in-us" className={link}>Study in The U.S</NavLink>
   <NavLink to="/stem-programs" className={link}>STEM Programs</NavLink>
 
-  {/* ✅ Funding Dropdown (NEW) */}
+ {/* ✅ Funding Dropdown */}
 <div className="relative group">
-  <button className="px-1.5 py-1.5 text-[13px] font-semibold text-white/90 hover:bg-white/10 rounded-md whitespace-nowrap">
-    Funding Programs for International Students ▾
+  <button className="px-2 py-1.5 text-[13px] font-semibold text-white/90 hover:bg-white/10 rounded-md whitespace-nowrap transition">
+    Scholarships . Fellowships . University-Funding
   </button>
 
-  {/* hover bridge */}
+  {/* Hover bridge */}
   <div className="absolute left-0 top-full h-2 w-full" />
 
-  <div className="absolute left-0 top-full hidden group-hover:block bg-white text-slate-900 rounded-md shadow-lg min-w-[220px] z-50">
-    <Link to="/scholarship" className="block px-4 py-2 text-sm hover:bg-slate-100">
+  {/* Dropdown menu */}
+  <div
+    className="
+      absolute left-0 top-full mt-2
+      hidden group-hover:block
+      w-[270px]
+      overflow-hidden
+      rounded-none
+      border border-blue-200
+      bg-[#f4f8ff]
+      text-slate-800
+      shadow-[0_12px_30px_rgba(15,23,42,0.22)]
+      z-50
+    "
+  >
+    {/* Small heading */}
+   <div className="bg-[#0F766E] px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide text-white whitespace-nowrap">
+  Funding Opportunities &amp; Resources
+</div>
+
+    <Link
+      to="/scholarship"
+      className="block border-b border-blue-100 px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
       Scholarships
     </Link>
 
-    <Link to="/fellowship" className="block px-4 py-2 text-sm hover:bg-slate-100">
+    <Link
+      to="/fellowship"
+      className="block border-b border-blue-100 px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
       Fellowships
     </Link>
 
-    <Link to="/funded-graduate-admission" className="block px-4 py-2 text-sm hover:bg-slate-100">
+    <Link
+      to="/funded-graduate-admission"
+      className="block border-b border-blue-100 px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
       University-funded Programs
     </Link>
 
-    <Link to="/funding-programs" className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]">
+    <Link
+      to="/funding-programs"
+      className="block border-b border-blue-100 px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
       Funding Programs
     </Link>
-    <Link
-  to="/scholarship-tips"
-  className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]"
->
-  Students' Resources Hub
-</Link>
 
-<Link
-  to="/international-student-news"
-  className="block px-4 py-2 text-sm hover:bg-slate-100 font-semibold text-[#0A4595]"
->
-  International Student News
-</Link>
+    <Link
+      to="/scholarship-tips"
+      className="block border-b border-blue-100 px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
+      Students&apos; Resources Hub
+    </Link>
+
+    <Link
+      to="/international-student-news"
+      className="block px-4 py-2.5 text-sm font-medium hover:bg-[#dbeafe] hover:text-[#0A4595] transition"
+    >
+      International Student News
+    </Link>
   </div>
 </div>
 
