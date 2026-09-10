@@ -4185,7 +4185,7 @@ async function clearNotificationsServerBacked() {
           }}
           className="block w-full px-4 py-2 text-left text-sm hover:bg-slate-50"
         >
-          Improve writing
+          Ask/Improve writing
         </button>
 
         <button
@@ -4995,7 +4995,7 @@ async function clearNotificationsServerBacked() {
 
 
 
-/------------------------------------------MINI-PROFILE FORM-----------------------------/
+{/*------------------------------------------MINI-PROFILE FORM-----------------------------*/}
 
       {miniProfileEditorOpen && (
   /*<div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 py-6">*/
@@ -5302,10 +5302,10 @@ async function clearNotificationsServerBacked() {
   </div>
 )}
 
-/-------------------------------------END OF MINI-PROFILE FORM-----------------------------/
+{/*-------------------------------------END OF MINI-PROFILE FORM-----------------------------/
 
 
-/---------------------------Add the lecturer's own profile preview------------------------/
+/---------------------------Add the lecturer's own profile preview------------------------*/}
 {miniProfilePreviewOpen && hasLecturerMiniProfile && (
   <div
     /*className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 py-6"*/
