@@ -716,8 +716,6 @@ function ImageGrid({
             <div key={`${(img.id || img.dataUrl || img.name || "img")}-${start}-${idx}`} className="relative">
               <AttachmentImage
                 att={img}
-                /*className={`w-full ${tileClass} object-cover rounded cursor-zoom-in`}*/
-                /*className={`w-[calc(100%+24px)] sm:w-full max-w-none -mx-3 sm:mx-0 ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}*/
                 className={`w-full ${tileClass} object-cover rounded-none sm:rounded cursor-zoom-in`}
                 onClick={() => openAt(idx)}
               />
@@ -5365,9 +5363,7 @@ async function clearNotificationsServerBacked() {
 /* ------------------- Reusable UI ---------------------- */
 function Card({ className = "", children }) {
   return (
-    /*<div className={`w-full max-w-full box-border rounded-2xl border border-slate-100 bg-white p-4 shadow-sm overflow-hidden ${className}`}>*/
-    /*<div className={`w-full max-w-full box-border rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>*/
-    <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
+    <div className={`w-full max-w-full box-border rounded-none sm:rounded-lg border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -5599,14 +5595,10 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
 
   const images = post.images || [];
   const programLabel = post.displayProgramLabel || post.authorProgram;
-
-  /*return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4">*/
-
    return (
   <div
     id={`post-${post.id}`}
-    className="rounded-2xl border border-slate-100 bg-white p-4"
+    className="rounded-lg border border-slate-100 bg-white p-4"
   >   
 
 

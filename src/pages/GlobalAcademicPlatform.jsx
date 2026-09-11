@@ -402,7 +402,7 @@ const Card = forwardRef(function Card({ className = "", children, square = false
     <div
       ref={ref}
       /*className={`${square ? "rounded-none" : "rounded-2xl"} border border-slate-200 bg-white shadow-sm ${className}`}*/
-      className={`${square ? "rounded-none" : "rounded-none sm:rounded-2xl"} border border-slate-200 bg-white shadow-sm ${className}`}
+      className={`${square ? "rounded-none" : "rounded-none sm:rounded-lg"} border border-slate-200 bg-white shadow-sm ${className}`}
       {...rest}
     >
       {children}
@@ -3736,7 +3736,7 @@ const byParent = visibleComments.reduce((acc, c) => {
 
 {(
 /*{activeTopicBarLabel && (*/
-  <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
+  <div className="-mt-4 mb-1 rounded-none sm:rounded-lg border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
     <div className="grid grid-cols-[110px_1fr_130px] items-center">
       <div className="text-left text-xs sm:text-sm font-semibold text-slate-600">
         {/*Posts ({activeTopicPostCount})*/}

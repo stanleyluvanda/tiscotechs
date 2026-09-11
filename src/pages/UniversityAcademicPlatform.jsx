@@ -384,7 +384,7 @@ const Card = forwardRef(function Card(
     <div
       ref={ref}
       className={`${
-        square ? "rounded-none" : "rounded-none sm:rounded-2xl"
+        square ? "rounded-none" : "rounded-none sm:rounded-lg"
       } border border-slate-200 bg-white shadow-sm ${className}`}
       {...rest}
     >
@@ -3681,7 +3681,7 @@ const byParent = allComments.reduce((acc, c) => {
 
           
 
-<div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
+<div className="-mt-4 mb-1 rounded-none sm:rounded-lg border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
   {/*<div className="flex items-center justify-between text-sm sm:text-base font-bold text-blue-700">*/}
     <div className="flex items-center justify-between text-[15px] font-semibold text-slate-600">
 

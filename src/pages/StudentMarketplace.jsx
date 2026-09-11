@@ -234,7 +234,7 @@ function Card({ className = "", children, square = false }) {
   return (
     <div
       className={`${
-        square ? "rounded-none" : "rounded-none sm:rounded-2xl"
+        square ? "rounded-none" : "rounded-none sm:rounded-lg"
       } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
     >
       {children}

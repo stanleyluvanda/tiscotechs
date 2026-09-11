@@ -541,7 +541,7 @@ const initialUser = {
 /*function Card({ className="", children }) { return <div className={`rounded-2xl border border-slate-100 bg-white p-4 shadow-sm ${className}`}>{children}</div>; }*/
 function Card({ className="", children }) {
   return (
-    <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
+    <div className={`w-full max-w-full box-border rounded-none sm:rounded-lg border border-slate-100 bg-white p-3 sm:p-4 shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -1326,7 +1326,7 @@ const files = mergedFiles.filter((a) => {
 
   return (
     /*<div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>*/
-      <div className={`w-full max-w-full box-border rounded-none sm:rounded-2xl border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
+      <div className={`w-full max-w-full box-border rounded-none sm:rounded-lg border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
       {/*<div className="flex items-center gap-3">*/}
       <div className="flex items-start gap-3">
         {/*<Avatar size="md" url={post.authorPhoto} name={post.author}/>*/}
