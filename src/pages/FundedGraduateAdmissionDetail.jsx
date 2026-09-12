@@ -856,8 +856,6 @@ const [newsError, setNewsError] = useState("");
 </div>
 
 <div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
-                {/*</div><div className="rounded-2xl bg-slate-50 border border-slate-200/60 shadow-none p-4 sm:p-5 lg:p-6">*/}
-                {/*</div><div className="rounded-none sm:rounded-2xl bg-slate-50 border-x-0 sm:border border-slate-200/60 shadow-none p-3 sm:p-5 lg:p-6">*/}
                 <div className="px-3 sm:px-5 lg:px-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Mobile only: logo + university name */}
@@ -935,32 +933,6 @@ const [newsError, setNewsError] = useState("");
                     )}
                   </div>
 
-                  {/*<div className="mt-4 flex flex-col sm:flex-row gap-3">
-                    {partnerApplyUrl && (
-                      <a
-                        href={partnerApplyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackItem(id, "apply")}
-                        className="rounded bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-700 text-center"
-                      >
-                        Apply Now
-                      </a>
-                    )}
-
-                    {link && (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => trackItem(id, "website")}
-                        className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-50 text-center"
-                      >
-                        Visit website
-                      </a>
-                    )}
-                  </div>*/}
-                  {/*<div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">*/}
                     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
   <div className="flex flex-col sm:flex-row gap-3">
     {partnerApplyUrl && (
@@ -1215,7 +1187,7 @@ const [newsError, setNewsError] = useState("");
 
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
-                         <div className="rounded-none sm:rounded-2xl bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
+                         <div className="rounded-none sm:rounded-lg bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -1237,10 +1209,10 @@ const [newsError, setNewsError] = useState("");
                       </div>
                     )}
 
-                    <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
-                      <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
+                      <div className="rounded-lg bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
                         <h3 className="text-base font-semibold -mx-4 sm:-mx-5 lg:-mx-6 -mt-4 sm:-mt-5 lg:-mt-6 mb-4">
-                          <span className="block w-full bg-orange-500 text-white py-2 rounded-t-2xl">
+                          <span className="block w-full bg-orange-500 text-white py-2 rounded-lg">
                             At a glance
                           </span>
                         </h3>
@@ -1291,16 +1263,6 @@ const [newsError, setNewsError] = useState("");
     s.featured === true ||
     s.featuredLevel === "FEATURED" ||
     s.featuredLevel === "PREMIUM_FEATURED"
-/*).length > 0 && (
-  <div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
-    <div className="bg-slate-100 px-5 py-4">
-      <h4 className="text-base font-bold text-slate-900 text-center">
-        Featured Funded Opportunities
-      </h4>
-    </div>
-
-    <div className="divide-y divide-slate-200">*/
-
       ).length > 0 && (
   <div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
     <div className="border-b border-slate-200/60 bg-[#8E24AA] px-5 py-2.5">
@@ -1343,13 +1305,11 @@ const [newsError, setNewsError] = useState("");
                 <img
                   src={logoSrc}
                   alt={s.provider || label}
-                  /*className="h-10 w-10 shrink-0 rounded border border-slate-200 bg-white object-contain p-1"*/
                   className="h-10 w-10 shrink-0 rounded-sm border border-slate-200/60 bg-white object-contain p-1"
                   loading="lazy"
                   decoding="async"
                 />
               ) : (
-                /*<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-slate-200 bg-emerald-50 text-xs font-bold text-emerald-700">*/
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border border-slate-200/60 bg-emerald-50 text-xs font-bold text-emerald-700">
                   SK
                 </div>
@@ -1495,7 +1455,7 @@ const [newsError, setNewsError] = useState("");
             className="max-w-5xl w-full max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="rounded-2xl bg-white shadow-xl border border-slate-200 overflow-hidden">
+            <div className="rounded-lg bg-white shadow-xl border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <div className="text-sm font-semibold text-slate-700">
                   {provider || title}

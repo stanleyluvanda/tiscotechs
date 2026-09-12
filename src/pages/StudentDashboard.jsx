@@ -1325,9 +1325,8 @@ const files = mergedFiles.filter((a) => {
   const canDelete = post.authorType === "student" && post.author === (currentUser?.name || "");
 
   return (
-    /*<div className={`rounded-2xl border bg-white p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>*/
-      <div className={`w-full max-w-full box-border rounded-none sm:rounded-lg border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
-      {/*<div className="flex items-center gap-3">*/}
+    
+      <div className={`w-full max-w-full box-border overflow-visible rounded-none sm:rounded-lg border bg-white p-3 sm:p-4 ${isHighlighted ? "border-amber-400 ring-2 ring-amber-300" : "border-slate-100"}`}>
       <div className="flex items-start gap-3">
         {/*<Avatar size="md" url={post.authorPhoto} name={post.author}/>*/}
 
@@ -1357,7 +1356,7 @@ const files = mergedFiles.filter((a) => {
 
   {lecturerProfileHover &&
     lecturerHasMiniProfile && (
-      <div className="absolute left-0 top-full z-50 mt-2 hidden sm:block">
+      <div className="absolute left-0 bottom-full z-50 mb-2 hidden sm:block">
         <LecturerMiniProfile
           lecturer={post}
           compact
@@ -4681,12 +4680,11 @@ if (showingTab === "Top") {
           onChange={(e)=>setToFaculty(e.target.checked)}
         />
 
-        {/*<span className="min-w-0 truncate">
-          Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)
-        </span>*/}
         <span className="min-w-0 truncate">
-  Check this to post to <strong>{facultyDisplay(user)}</strong>. (Your <strong>Year</strong> will be used.)
-</span>
+          Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)
+        </span>
+       
+        
       </label>
     </div>
   </div>
