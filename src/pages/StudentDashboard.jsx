@@ -18,7 +18,7 @@ import AttachmentUploader from "../components/upload/AttachmentUploader"; // ⬅
 //import { fetchPosts, createPost, deletePostOnServer } from "../lib/postsApi";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 /*import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";*/
-import {fetchPosts,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";
+import {fetchPosts,fetchPostsPage,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
@@ -735,6 +735,7 @@ function useAttachmentUrl(att, preferFull = true) {
   useEffect(() => {
     let toRevoke = null;
     let cancelled = false;
+    
 
     // If we already have a direct URL or dataUrl, do nothing.
     if (directUrl || att?.dataUrl) {
@@ -2588,18 +2589,24 @@ function normalizeCommentFromBackend(c) {
   return { ...base, replies };
 }
 
+const [showFacultyOnly, setShowFacultyOnly] = useState(false);
 const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "Answered"
   const feedView = showingTab === "Older Posts" ? "older" : "recent";
 
   // 🔄 Load posts from backend API (global feed for student dashboard)
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
+  const [feedCursor, setFeedCursor] = useState(null);
+  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
   // ✅ Show sidebar ads only when the feed has enough real content
 const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
 
   useEffect(() => {
     let cancelled = false;
     let pollTimer = null;
+    // Reset pagination whenever switching between Recent and Older Posts
+  setFeedCursor(null);
+  setLoadingMorePosts(false);
 
     // silent = false → show spinner/error
     // silent = true  → background refresh (no spinner)
@@ -2611,14 +2618,35 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
 
       try {
         // Only posts for this dashboard
-        const remote = await fetchPosts({
+        /*const remote = await fetchPosts({
           scope: "student-dashboard",
-          role: "student",
+          role: "student",*/
           /*view: "recent",*/
-          view: feedView,
+          /*view: feedView,
         });
 
-        if (cancelled) return;
+        if (cancelled) return;*/
+  const { posts: remote, cursor: nextCursor } = await fetchPostsPage({
+  scope: "student-dashboard",
+  limit: 30,
+  withThread: true,
+  view: feedView,
+
+  audienceMode: showFacultyOnly ? "faculty" : "program",
+
+  // Normal student feed:
+  // GLOBAL + exact university/faculty/program/year audience
+  audience: showFacultyOnly ? null : audKey,
+
+  // Faculty feed:
+  // faculty + faculty/year
+  facultyAudience: showFacultyOnly ? baseFac : null,
+  facultyYearAudience: showFacultyOnly ? facYearKey : null,
+});
+
+if (cancelled) return;
+
+setFeedCursor(nextCursor || null);
 
         //const mapped = (remote || []).map((r) => {
           //if (!r || typeof r !== "object") return r;
@@ -2805,13 +2833,18 @@ const latestSeenCommonTs = Number(
   }
 
   // 2) Keep local-only posts AND keep "pending" backend posts that aren't returned yet
-  for (const p of prevArr) {
+  /*for (const p of prevArr) {
     if (!p) continue;
 
     const id = p.id || stableFallbackId(p);
-    if (byId.has(id)) continue; // already have server version
+    if (byId.has(id)) continue; // already have server version*/
 
-    const isBackend = !!p.fromBackend;
+    
+    
+    
+     // THIS IS COMMENTED OUT FOR UPDATING PAGINATION IN THE STUDENT DASHBOARD BY REPLACING IT WITH BELOW CODE,IF SOMETHING WRONG WILL COME BACK TO THIS CODE
+    
+    {/*const isBackend = !!p.fromBackend;
 
     if (!isBackend) {
       // purely local post → keep
@@ -2834,7 +2867,53 @@ const latestSeenCommonTs = Number(
     }
 
     // otherwise, treat as deleted / no longer valid → do not re-add
+
+  }*/}
+  // Keep previously loaded posts that are not in this particular server page.
+// With cursor pagination, absence from page 1 does NOT mean the post was deleted.
+/*byId.set(id, p);
+}*/
+// 2) Decide what to preserve from the existing feed.
+//
+// Fresh load / tab change:
+//   Start again from server page 1.
+//   Do NOT restore old backend pages from localStorage.
+//
+// Silent 30-second refresh:
+//   Preserve pages already loaded with "Load more posts".
+for (const p of prevArr) {
+  if (!p) continue;
+
+  const id = p.id || stableFallbackId(p);
+  if (byId.has(id)) continue; // already have server version
+
+  const isBackend = !!p.fromBackend;
+
+  if (silent) {
+    // Background polling must not remove page 2, page 3, etc.
+    byId.set(id, p);
+    continue;
   }
+
+  // Fresh load / tab change:
+  // preserve only genuinely local posts that have not reached backend yet.
+  if (!isBackend) {
+    byId.set(id, p);
+    continue;
+  }
+
+  // Preserve an explicitly pending backend post for a short time,
+  // if your create flow uses pendingServerUntil.
+  const pendingUntil = Number(p.pendingServerUntil || 0);
+
+  if (pendingUntil > Date.now()) {
+    byId.set(id, p);
+  }
+
+  // Otherwise do NOT re-add it.
+  // If it was an older backend page restored from localStorage,
+  // it should disappear on this fresh page-1 load.
+}
 
   // newest-first
   return Array.from(byId.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -2873,7 +2952,127 @@ return () => {
     clearInterval(pollTimer);
   }
 };
-}, [feedView]);
+/*}, [feedView]);*/
+}, [feedView, showFacultyOnly, audKey, baseFac, facYearKey]);
+
+
+async function loadMorePosts() {
+  if (!feedCursor || loadingMorePosts) return;
+
+  setLoadingMorePosts(true);
+  setFeedError("");
+
+  try {
+    /*const { posts: morePosts, cursor: nextCursor } =
+      await fetchPostsPage({
+        scope: "student-dashboard",
+        limit: 30,
+        cursor: feedCursor,
+        withThread: true,
+        view: feedView,
+      });*/
+  /*const { posts: morePosts, cursor: nextCursor } =
+  await fetchPostsPage({
+    scope: "student-dashboard",
+    limit: 30,
+    cursor: feedCursor,
+    withThread: true,
+    view: feedView,
+
+    audienceMode: "program",
+    audience: audKey,
+  });*/
+  const { posts: morePosts, cursor: nextCursor } =
+  await fetchPostsPage({
+    scope: "student-dashboard",
+    limit: 30,
+    cursor: feedCursor,
+    withThread: true,
+    view: feedView,
+
+    audienceMode: showFacultyOnly ? "faculty" : "program",
+
+    audience: showFacultyOnly ? null : audKey,
+
+    facultyAudience: showFacultyOnly ? baseFac : null,
+    facultyYearAudience: showFacultyOnly ? facYearKey : null,
+  });
+
+    const incoming = (Array.isArray(morePosts) ? morePosts : [])
+      .filter((p) => p && typeof p === "object")
+      .map((p) => ({
+        ...p,
+        fromBackend: true,
+      }));
+
+    setPosts((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const byId = new Map();
+
+      // Keep everything already loaded
+      for (const p of current) {
+        if (!p) continue;
+
+        const id =
+          p.id ||
+          p.postId ||
+          p._id ||
+          p.key ||
+          p.pk ||
+          p.sk;
+
+        if (!id) continue;
+
+        byId.set(id, p);
+      }
+
+      // Add the next server page, without duplicates
+      for (const p of incoming) {
+        const id =
+          p.id ||
+          p.postId ||
+          p._id ||
+          p.key ||
+          p.pk ||
+          p.sk;
+
+        if (!id) continue;
+
+        const existing = byId.get(id);
+
+        byId.set(id, {
+          ...existing,
+          ...p,
+          id,
+          fromBackend: true,
+
+          // Preserve local like state if already available
+          likes:
+            typeof existing?.likes === "number"
+              ? existing.likes
+              : (p.likes || 0),
+
+          liked:
+            typeof existing?.liked === "boolean"
+              ? existing.liked
+              : !!p.liked,
+        });
+      }
+
+      return Array.from(byId.values()).sort(
+        (a, b) => (b.createdAt || 0) - (a.createdAt || 0)
+      );
+    });
+
+    // Save cursor for page 3, page 4, etc.
+    setFeedCursor(nextCursor || null);
+  } catch (err) {
+    console.error("[StudentDashboard] loadMorePosts failed", err);
+    setFeedError("Could not load more posts.");
+  } finally {
+    setLoadingMorePosts(false);
+  }
+}
 
 
 
@@ -3059,7 +3258,7 @@ useEffect(() => {
 
 
   const [showLecturerOnly,setShowLecturerOnly]=useState(false);
-  const [showFacultyOnly,setShowFacultyOnly]=useState(false);
+  /*const [showFacultyOnly,setShowFacultyOnly]=useState(false);*/
   const [showMineOnly,setShowMineOnly]=useState(false);
   const [filterType,setFilterType]=useState("All");
   // ✅ NEW: collapse/expand Academic posts type
@@ -4151,6 +4350,21 @@ const feedCombined = useMemo(() => {
       : (p.audience === "GLOBAL" || p.audience === audKey)
   )
   .filter(matchesSearch);
+
+  // Keep Recent and Older Posts strictly separated in the UI.
+// Pagination preserves previously loaded pages in `posts`, so we must
+// enforce the 30-day boundary when deciding what is displayed.
+const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+
+if (showingTab === "Older Posts") {
+  filtered = filtered.filter(
+    (p) => Number(p?.createdAt || 0) < thirtyDaysAgo
+  );
+} else {
+  filtered = filtered.filter(
+    (p) => Number(p?.createdAt || 0) >= thirtyDaysAgo
+  );
+}
   /*if (showingTab === "Answered") filtered = filtered.filter(p => (p.comments?.length||0) > 0);
   if (showingTab === "Top") filtered = filtered.slice().sort((a,b)=> (b.likes||0) - (a.likes||0));
   else filtered = filtered.slice().sort((a,b)=> ts(b.createdAt||0) - ts(a.createdAt||0));*/
@@ -4680,9 +4894,12 @@ if (showingTab === "Top") {
           onChange={(e)=>setToFaculty(e.target.checked)}
         />
 
-        <span className="min-w-0 truncate">
+        {/*<span className="min-w-0 truncate">
           Check this to post to <strong>College/School/Faculty/Department</strong>. (Your <strong>Year</strong> will be used.)
-        </span>
+        </span>*/}
+        <span className="min-w-0 truncate">
+  Check this to post to <strong>{facultyDisplay(user)}</strong>. (Your <strong>Year</strong> will be used.)
+</span>
        
         
       </label>
@@ -5193,6 +5410,21 @@ if (showingTab === "Top") {
 ))}
  </>
 )}
+
+
+{feedCursor && (
+  <div className="flex justify-center py-4">
+    <button
+      type="button"
+      onClick={loadMorePosts}
+      disabled={loadingMorePosts}
+      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {loadingMorePosts ? "Loading..." : "Load more posts"}
+    </button>
+  </div>
+)}
+
 
   </section>
 

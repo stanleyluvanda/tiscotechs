@@ -627,7 +627,7 @@ threadItemCount: toNumber(raw.threadItemCount, comments.length),
  * ✅ Cursor-ready feed fetch (NEW, non-breaking)
  * Returns: { posts, cursor }
  */
-export async function fetchPostsPage({
+{/*export async function fetchPostsPage({
   scope = "student-dashboard",
   limit = 30,
   cursor = null,
@@ -640,6 +640,32 @@ export async function fetchPostsPage({
     cursor: cursor || undefined,
     withThread: withThread ? 1 : 0,
     view: view || undefined,
+  });*/}
+  export async function fetchPostsPage({
+  scope = "student-dashboard",
+  limit = 30,
+  cursor = null,
+  withThread = true,
+  view = null,
+
+  // Optional audience-aware pagination.
+  // Existing callers that omit these keep the old behavior.
+  audienceMode = null,
+  audience = null,
+  facultyAudience = null,
+  facultyYearAudience = null,
+} = {}) {
+  const url = buildPostsUrl("/api/posts", {
+    scope,
+    limit,
+    cursor: cursor || undefined,
+    withThread: withThread ? 1 : 0,
+    view: view || undefined,
+
+    audienceMode: audienceMode || undefined,
+    audience: audience || undefined,
+    facultyAudience: facultyAudience || undefined,
+    facultyYearAudience: facultyYearAudience || undefined,
   });
 
   const data = await doJsonFetch(url, { method: "GET" });
@@ -675,7 +701,7 @@ export async function fetchPostsPage({
 }*/
 export async function fetchPosts({
   scope = "student-dashboard",
-  limit = 10,
+  limit = 30,
   cursor = null,
   withThread = true,
   view = null,

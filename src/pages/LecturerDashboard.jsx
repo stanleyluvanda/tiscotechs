@@ -151,7 +151,7 @@ async function updateLecturerProfile(patch, me) {
 
 
 // GET: load posts for this scope (fast feed + pagination)
-async function fetchLecturerPostsFromServer({ limit = 20, cursor = "", view = "recent" } = {}) {
+/*async function fetchLecturerPostsFromServer({ limit = 20, cursor = "", view = "recent" } = {}) {
   try {
     const qs = new URLSearchParams();
     qs.set("scope", LECTURER_SCOPE);
@@ -176,6 +176,72 @@ async function fetchLecturerPostsFromServer({ limit = 20, cursor = "", view = "r
   } catch (err) {
     console.warn("[LecturerDashboard] failed to load posts from server", err);
     return { posts: [], cursor: "" };
+  }
+}*/
+
+async function fetchLecturerPostsFromServer({
+  limit = 20,
+  cursor = "",
+  view = "recent",
+  authorId = "",
+  authorName = "",
+} = {}) {
+  try {
+    const qs = new URLSearchParams();
+
+    qs.set("scope", LECTURER_SCOPE);
+    qs.set("limit", String(limit));
+    qs.set("withThread", "0");
+    qs.set("view", view);
+
+    if (cursor) {
+      qs.set("cursor", cursor);
+    }
+
+    // Lecturer-only retrieval.
+    // This affects feed loading only — not posting audiences/levels.
+    if (authorId || authorName) {
+      qs.set("authorMode", "lecturer");
+
+      if (authorId) {
+        qs.set("authorId", String(authorId));
+      }
+
+      if (authorName) {
+        qs.set("authorName", String(authorName));
+      }
+    }
+
+    const res = await fetch(`${POSTS_PATH}?${qs.toString()}`);
+
+    if (!res.ok) {
+      console.warn(
+        "[LecturerDashboard] fetch posts status:",
+        res.status
+      );
+
+      return {
+        posts: [],
+        cursor: "",
+      };
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    return {
+      posts: Array.isArray(data?.posts) ? data.posts : [],
+      cursor: data?.cursor || data?.nextCursor || "",
+    };
+  } catch (err) {
+    console.warn(
+      "[LecturerDashboard] failed to load posts from server",
+      err
+    );
+
+    return {
+      posts: [],
+      cursor: "",
+    };
   }
 }
 
@@ -1723,11 +1789,21 @@ useEffect(() => {
 // Feed controls.
 // Newest/Top/Answered all use the lightweight recent (30-day) backend view.
 // Older Posts is fetched only when the lecturer asks for it.
+/*const [showingTab, setShowingTab] = useState("Newest");
+const [search, setSearch] = useState("");
+const [feedLoading, setFeedLoading] = useState(false);
+const [feedError, setFeedError] = useState("");
+const feedView = showingTab === "Older Posts" ? "older" : "recent";*/
 const [showingTab, setShowingTab] = useState("Newest");
 const [search, setSearch] = useState("");
 const [feedLoading, setFeedLoading] = useState(false);
 const [feedError, setFeedError] = useState("");
-const feedView = showingTab === "Older Posts" ? "older" : "recent";
+
+const [feedCursor, setFeedCursor] = useState("");
+const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+
+const feedView =
+  showingTab === "Older Posts" ? "older" : "recent";
 
 
   // ✅ Merge remote posts into local without losing local-only threads (comments/replies)
@@ -1790,7 +1866,7 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
 
   // 🔄 Load lecturer posts from backend.
   // Recent posts stay fresh in the background; older posts load only on demand.
-  useEffect(() => {
+  /*useEffect(() => {
     let cancelled = false;
     let id = null;
 
@@ -1855,7 +1931,221 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
       cancelled = true;
       if (id) clearInterval(id);
     };
-  }, [feedView]);
+  }, [feedView]);*/
+
+  // 🔄 Load this lecturer's posts from backend.
+// First page = 20 underlying lecturer posts.
+// Additional pages are loaded manually.
+useEffect(() => {
+  let cancelled = false;
+  let id = null;
+
+  // A fresh view begins from page 1.
+  setFeedCursor("");
+  setLoadingMorePosts(false);
+
+  const lecturerAuthorName =
+    `${user.title ? user.title + " " : ""}${user.name}`.trim();
+
+  async function loadFromServer({ silent = false } = {}) {
+    if (!silent) {
+      setFeedError("");
+
+      // Keep normal recent feed instant.
+      // Show loading hint when explicitly opening Older Posts.
+      setFeedLoading(feedView === "older");
+    }
+
+    try {
+      const {
+        posts: remotePosts,
+        cursor: nextCursor,
+      } = await fetchLecturerPostsFromServer({
+        limit: 20,
+        view: feedView,
+        authorId: user.id,
+        authorName: lecturerAuthorName,
+      });
+
+      if (cancelled) return;
+
+      const remote = Array.isArray(remotePosts)
+        ? remotePosts
+        : [];
+
+      if (!silent) {
+        if (feedView === "older") {
+          setPosts(remote);
+        } else {
+          const remoteIds = new Set(
+            remote.map((p) => p?.id).filter(Boolean)
+          );
+
+          setPosts((prev) => {
+            const now = Date.now();
+            const recentCutoff =
+              now - 30 * 24 * 60 * 60 * 1000;
+
+            const optimisticLocal = (
+              Array.isArray(prev) ? prev : []
+            ).filter((p) => {
+              if (!p?.id || remoteIds.has(p.id)) {
+                return false;
+              }
+
+              const created = Number(p?.createdAt || 0);
+
+              return (
+                created >= recentCutoff &&
+                (
+                  p.__pending === true ||
+                  Number(p.pendingServerUntil || 0) > now
+                )
+              );
+            });
+
+            return [
+              ...remote,
+              ...optimisticLocal,
+            ];
+          });
+        }
+
+        setFeedCursor(nextCursor || "");
+      } else {
+        // Background refresh only updates page 1.
+        // Previously loaded pages remain in state.
+        setPosts((prev) =>
+          mergeRemoteIntoLocal(prev, remote)
+        );
+
+        // Do not overwrite feedCursor during silent polling.
+      }
+    } catch (err) {
+      console.error(
+        "[LecturerDashboard] feed load failed:",
+        err
+      );
+
+      if (!silent && !cancelled) {
+        setFeedError(
+          "Could not load posts. Please try again."
+        );
+      }
+    } finally {
+      if (!silent && !cancelled) {
+        setFeedLoading(false);
+      }
+    }
+  }
+
+  loadFromServer({ silent: false });
+
+  if (feedView !== "older") {
+    id = setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      loadFromServer({ silent: true });
+    }, 30000);
+  }
+
+  return () => {
+    cancelled = true;
+
+    if (id) {
+      clearInterval(id);
+    }
+  };
+}, [
+  feedView,
+  user.id,
+  user.name,
+  user.title,
+]);
+
+// ✅ ADD loadMoreLecturerPosts RIGHT HERE
+const loadMoreLecturerPosts = async () => {
+  if (!feedCursor || loadingMorePosts) {
+    return;
+  }
+
+  const lecturerAuthorName =
+    `${user.title ? user.title + " " : ""}${user.name}`.trim();
+
+  try {
+    setLoadingMorePosts(true);
+    setFeedError("");
+
+    const {
+      posts: morePosts,
+      cursor: nextCursor,
+    } = await fetchLecturerPostsFromServer({
+      limit: 20,
+      cursor: feedCursor,
+      view: feedView,
+      authorId: user.id,
+      authorName: lecturerAuthorName,
+    });
+
+    const incoming = Array.isArray(morePosts)
+      ? morePosts
+      : [];
+
+    setPosts((prev) => {
+      const current = Array.isArray(prev)
+        ? prev
+        : [];
+
+      const byId = new Map();
+
+      for (const p of current) {
+        if (p?.id) {
+          byId.set(p.id, p);
+        }
+      }
+
+      for (const p of incoming) {
+        if (!p?.id) continue;
+
+        const existing = byId.get(p.id);
+
+        byId.set(
+          p.id,
+          existing
+            ? {
+                ...existing,
+                ...p,
+                comments:
+                  existing.comments || p.comments || [],
+              }
+            : p
+        );
+      }
+
+      return Array.from(byId.values()).sort(
+        (a, b) =>
+          Number(b?.createdAt || 0) -
+          Number(a?.createdAt || 0)
+      );
+    });
+
+    setFeedCursor(nextCursor || "");
+  } catch (err) {
+    console.error(
+      "[LecturerDashboard] load more posts failed:",
+      err
+    );
+
+    setFeedError(
+      "Could not load more posts. Please try again."
+    );
+  } finally {
+    setLoadingMorePosts(false);
+  }
+};
+
 
 
 // RIGHT-CARD: Admin videos for lecturers (SERVER-backed, cross-browser)
@@ -4713,6 +5003,21 @@ async function clearNotificationsServerBacked() {
     </React.Fragment>
   );
 })}
+
+{feedCursor && (
+  <div className="flex justify-center py-4">
+    <button
+      type="button"
+      onClick={loadMoreLecturerPosts}
+      disabled={loadingMorePosts}
+      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {loadingMorePosts
+        ? "Loading..."
+        : "Load more posts"}
+    </button>
+  </div>
+)}
        
     </section>
 

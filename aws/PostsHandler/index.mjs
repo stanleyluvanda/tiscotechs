@@ -1,5 +1,5 @@
 // aws/PostsHandler/index.mjs
-// Node.js 20 — DynamoDB-backed posts API (uses GSI1 for feed query)
+// Node.js 24 — DynamoDB-backed posts API (uses GSI1 for feed query)
 //
 // ✅ Universal + scalable:
 // - GET /api/posts supports pagination: ?scope=&limit=&cursor=&withThread=1|0
@@ -24,6 +24,8 @@ import {
   GetCommand,
   QueryCommand,
   BatchWriteCommand,
+  UpdateCommand,
+  DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 const REGION = process.env.AWS_REGION || "us-east-1";
@@ -165,6 +167,34 @@ const skComment = (createdAt, commentId) =>
   `CMT#${pad13(createdAt)}#${String(commentId)}`;
 const skReply = (commentId, createdAt, replyId) =>
   `RPL#${String(commentId)}#${pad13(createdAt)}#${String(replyId)}`;
+
+/* ---------------- Notifications data model ----------------
+NOTIF item:
+  pk = NOTIF#{recipientUserId}
+  sk = TS#{createdAt padded}#{notifId}
+---------------------------------------------------------- */
+const pkNotif = (recipientUserId) => `NOTIF#${String(recipientUserId)}`;
+const skNotif = (createdAt, notifId) =>
+  `TS#${pad13(createdAt)}#${String(notifId)}`;
+
+/* ---------------- Notifications meta (per-user) ----------------
+META item:
+  pk = NOTIFMETA#{userId}
+  sk = META
+  clearedReadAt = number (ms)
+--------------------------------------------------------------- */
+const pkNotifMeta = (userId) => `NOTIFMETA#${String(userId)}`;
+const skNotifMeta = () => "META";
+
+/* ---------------- Saved posts data model ----------------
+SAVED item:
+  pk = SAVED#<userId>
+  sk = POST#<postId>
+---------------------------------------------------------- */
+const pkSaved = (userId) => `SAVED#${String(userId)}`;
+const skSavedPost = (postId) => `POST#${String(postId)}`;
+
+
 
 /* ---------------- FAST thread loader (1 query per post) ----------------
    This replaces the old "query comments then query replies per comment".
@@ -371,6 +401,13 @@ export const handler = async (event) => {
 
   const path = rawPath || "";
 
+  /* ---------- Saved posts routes ---------- */
+const isPostSavePath =
+path === "/api/posts/save" || path.endsWith("/posts/save");
+
+const isPostSavedPath =
+path === "/api/posts/saved" || path.endsWith("/posts/saved");
+
   const isCommentPath =
     path === "/api/posts/comment" || path.endsWith("/posts/comment");
   const isReplyPath =
@@ -379,12 +416,20 @@ export const handler = async (event) => {
     path === "/api/posts/thread" || path.endsWith("/posts/thread");
   const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
 
+  const isNotifMinePath =
+    path === "/api/notifications/mine" || path.endsWith("/notifications/mine");
+  const isNotifMarkReadPath =
+    path === "/api/notifications/markRead" ||
+    path.endsWith("/notifications/markRead");
+  const isNotifClearReadPath =
+    path === "/api/notifications/clearRead" ||
+    path.endsWith("/notifications/clearRead");
+
   /* ---------- GET /api/posts/thread?postId=... ---------- */
   if (isThreadPath && method === "GET") {
     try {
       const qs = event.queryStringParameters || {};
 
-      // Canonical threadId (supports postId=..., threadId=..., multiGroupId=...)
       const threadId = normalizeThreadId(qs);
       if (!threadId) {
         return {
@@ -394,7 +439,6 @@ export const handler = async (event) => {
         };
       }
 
-      // ✅ moderation gate for thread
       const postItem = await ensurePostExists(threadId, null);
       if (!postItem) {
         return {
@@ -421,7 +465,7 @@ export const handler = async (event) => {
         headers,
         body: JSON.stringify({
           ok: true,
-          postId: threadId, // keep response field name for compatibility
+          postId: threadId,
           comments: res.comments,
           cursor: res.cursor,
         }),
@@ -459,7 +503,6 @@ export const handler = async (event) => {
         };
       }
 
-      // Canonical thread id, but keep legacyPostId for existence-check fallback
       const legacyPostId = String(payload.postId || "").trim();
       const threadId = normalizeThreadId(payload);
 
@@ -480,7 +523,6 @@ export const handler = async (event) => {
         };
       }
 
-      // Ensure post exists (canonical first, then legacy as fallback)
       const postItem = await ensurePostExists(threadId, legacyPostId);
       if (!postItem) {
         return {
@@ -489,7 +531,6 @@ export const handler = async (event) => {
           body: JSON.stringify({ ok: false, error: "Post not found" }),
         };
       }
-      // ✅ don't allow new comments on hidden/removed posts
       if (isHiddenOrRemovedPost(postItem)) {
         return {
           statusCode: 403,
@@ -499,6 +540,7 @@ export const handler = async (event) => {
       }
 
       const now = Date.now();
+
       const authorPhoto =
         payload.authorPhoto ||
         payload.authorAvatarUrl ||
@@ -507,9 +549,47 @@ export const handler = async (event) => {
         payload.profileImageUrl ||
         "";
 
+      // ✅ FIX: generate commentId BEFORE notification
       const commentId = String(
         payload.id || payload.commentId || payload.clientId || uid("c")
       );
+
+      // ✅ FIX: notification now stores actorAvatarUrl + real commentId
+      try {
+        const recipientUserId = String(
+          postItem.authorId || postItem.authorUserId || ""
+        ).trim();
+        const actorId = String(payload.authorId || "").trim();
+
+        if (recipientUserId && actorId && recipientUserId !== actorId) {
+          const nowNotif = Date.now();
+          const notifId = uid("n");
+
+          const notifItem = {
+            pk: pkNotif(recipientUserId),
+            sk: skNotif(nowNotif, notifId),
+
+            id: notifId,
+            recipientUserId,
+
+            actorId,
+            actorName: payload.authorName || "",
+            actorAvatarUrl: authorPhoto,
+
+            postId: threadId,
+            commentId: commentId,
+            replyId: "",
+
+            type: "comment",
+            createdAt: nowNotif,
+            read: false,
+          };
+
+          await ddb.send(new PutCommand({ TableName: TABLE, Item: notifItem }));
+        }
+      } catch (e) {
+        console.error("[PostsHandlerDDB] notif(comment) failed:", e);
+      }
 
       const item = {
         pk: pkPost(threadId),
@@ -542,6 +622,18 @@ export const handler = async (event) => {
       };
 
       await ddb.send(new PutCommand({ TableName: TABLE, Item: item }));
+      await ddb.send(
+        new UpdateCommand({
+          TableName: TABLE,
+          Key: { pk: pkPost(threadId), sk: skPost() },
+          UpdateExpression:
+            "SET updatedAt = :now ADD commentCount :one, threadItemCount :one",
+          ExpressionAttributeValues: {
+            ":one": 1,
+            ":now": now,
+          },
+        })
+      );
 
       return {
         statusCode: 201,
@@ -566,6 +658,213 @@ export const handler = async (event) => {
       };
     }
   }
+
+  /* ---------- GET /api/notifications/mine?userId=&limit=&cursor= ---------- */
+  if (isNotifMinePath && method === "GET") {
+    try {
+      const qs = event.queryStringParameters || {};
+      const userId = String(qs.userId || "").trim();
+
+      if (!userId) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ ok: false, error: "userId is required" }),
+        };
+      }
+
+      // ✅ ADD THIS RIGHT HERE (after userId validation)
+    let clearedReadAt = 0;
+    try {
+      const metaResp = await ddb.send(
+        new GetCommand({
+          TableName: TABLE,
+          Key: { pk: pkNotifMeta(userId), sk: skNotifMeta() },
+        })
+      );
+      clearedReadAt = Number(metaResp?.Item?.clearedReadAt || 0);
+      if (!Number.isFinite(clearedReadAt)) clearedReadAt = 0;
+    } catch (e) {
+      console.error("[PostsHandlerDDB] notif meta GET failed:", e);
+    }
+
+      const limit = clampInt(qs.limit, 30, 1, 50);
+      const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
+      const resp = await ddb.send(
+        new QueryCommand({
+          TableName: TABLE,
+          KeyConditionExpression: "#pk = :pk",
+          ExpressionAttributeNames: { "#pk": "pk" },
+          ExpressionAttributeValues: { ":pk": pkNotif(userId) },
+          ScanIndexForward: false,
+          Limit: limit,
+          ExclusiveStartKey: decodeCursor(cursor),
+        })
+      );
+
+      const items = Array.isArray(resp.Items) ? resp.Items : [];
+
+      const notifications = items.map((n) => {
+        const out = { ...n };
+        delete out.pk;
+        delete out.sk;
+        return out;
+      });
+
+
+      // ✅ ADD THIS FILTER RIGHT HERE (BEFORE return)
+    const filtered = notifications.filter((n) => {
+      // Hide only READ notifications that were created at/before the cutoff
+      if (clearedReadAt > 0 && n?.read === true) {
+        const t = Number(n?.createdAt || 0);
+        if (Number.isFinite(t) && t > 0 && t <= clearedReadAt) return false;
+      }
+      return true;
+    });
+
+
+      /*return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          ok: true,
+          notifications,
+          cursor: encodeCursor(resp.LastEvaluatedKey),
+        }),
+      };
+    } catch (err) {
+      console.error("[PostsHandlerDDB] notifications mine failed:", err);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Failed to load notifications" }),
+      };
+    }
+  }*/
+
+
+  // ✅ Then return filtered (NOT notifications)
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      ok: true,
+      notifications: filtered,
+      cursor: encodeCursor(resp.LastEvaluatedKey),
+    }),
+  };
+} catch (err) {
+  console.error("[PostsHandlerDDB] notifications mine failed:", err);
+  return {
+    statusCode: 500,
+    headers,
+    body: JSON.stringify({ ok: false, error: "Failed to load notifications" }),
+  };
+}
+}
+
+  /* ---------- POST /api/notifications/markRead ---------- */
+  if (isNotifMarkReadPath && method === "POST") {
+    try {
+      const payload = readJsonBody(event);
+      if (!payload) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+        };
+      }
+
+      const userId = String(payload.userId || "").trim();
+      const id = String(payload.id || "").trim();
+      const createdAt = Number(payload.createdAt || 0);
+
+      if (!userId || !id || !Number.isFinite(createdAt) || createdAt <= 0) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            ok: false,
+            error: "userId, id, createdAt are required",
+          }),
+        };
+      }
+
+      await ddb.send(
+        new UpdateCommand({
+          TableName: TABLE,
+          Key: { pk: pkNotif(userId), sk: skNotif(createdAt, id) },
+          UpdateExpression: "SET #read = :t, readAt = :now",
+          ExpressionAttributeNames: { "#read": "read" },
+          ExpressionAttributeValues: { ":t": true, ":now": Date.now() },
+        })
+      );
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ ok: true }),
+      };
+    } catch (err) {
+      console.error("[PostsHandlerDDB] notifications markRead failed:", err);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Failed to mark read" }),
+      };
+    }
+  }
+
+  /* ---------- POST /api/notifications/clearRead ---------- */
+if (isNotifClearReadPath && method === "POST") {
+  try {
+    const payload = readJsonBody(event);
+    if (!payload) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+      };
+    }
+
+    const userId = String(payload.userId || "").trim();
+    if (!userId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ ok: false, error: "userId is required" }),
+      };
+    }
+
+    const now = Date.now();
+
+    // Upsert per-user cutoff
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLE,
+        Key: { pk: pkNotifMeta(userId), sk: skNotifMeta() },
+        UpdateExpression: "SET clearedReadAt = :t, updatedAt = :now",
+        ExpressionAttributeValues: { ":t": now, ":now": now },
+      })
+    );
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ ok: true, clearedReadAt: now }),
+    };
+  } catch (err) {
+    console.error("[PostsHandlerDDB] notifications clearRead failed:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ ok: false, error: "Failed to clear read notifications" }),
+    };
+  }
+}
+
+
 
   /* ---------- POST /api/posts/reply ---------- */
   if (isReplyPath && method === "POST") {
@@ -611,7 +910,6 @@ export const handler = async (event) => {
         };
       }
 
-      // Ensure post exists (canonical first, then legacy as fallback)
       const postItem = await ensurePostExists(threadId, legacyPostId);
       if (!postItem) {
         return {
@@ -620,7 +918,6 @@ export const handler = async (event) => {
           body: JSON.stringify({ ok: false, error: "Post not found" }),
         };
       }
-      // ✅ don't allow new replies on hidden/removed posts
       if (isHiddenOrRemovedPost(postItem)) {
         return {
           statusCode: 403,
@@ -630,6 +927,7 @@ export const handler = async (event) => {
       }
 
       const now = Date.now();
+
       const authorPhoto =
         payload.authorPhoto ||
         payload.authorAvatarUrl ||
@@ -638,9 +936,48 @@ export const handler = async (event) => {
         payload.profileImageUrl ||
         "";
 
+      // ✅ FIX: generate replyId BEFORE notification
       const replyId = String(
         payload.id || payload.replyId || payload.clientId || uid("r")
       );
+
+      // ✅ FIX: notification now stores actorAvatarUrl + real replyId
+      try {
+        const recipientUserId = String(
+          postItem.authorId || postItem.authorUserId || ""
+        ).trim();
+        const actorId = String(payload.authorId || "").trim();
+
+        if (recipientUserId && actorId && recipientUserId !== actorId) {
+          const nowNotif = Date.now();
+          const notifId = uid("n");
+
+          const notifItem = {
+            pk: pkNotif(recipientUserId),
+            sk: skNotif(nowNotif, notifId),
+
+            id: notifId,
+            recipientUserId,
+
+            actorId,
+            actorName: payload.authorName || "",
+            actorAvatarUrl: authorPhoto,
+
+            postId: threadId,
+            commentId: commentId,
+            replyId: replyId,
+
+            type: "reply",
+            createdAt: nowNotif,
+            read: false,
+          };
+
+          await ddb.send(new PutCommand({ TableName: TABLE, Item: notifItem }));
+          
+        }
+      } catch (e) {
+        console.error("[PostsHandlerDDB] notif(reply) failed:", e);
+      }
 
       const item = {
         pk: pkPost(threadId),
@@ -661,8 +998,7 @@ export const handler = async (event) => {
         authorUniversity: payload.authorUniversity || payload.university || "",
         authorFaculty: payload.authorFaculty || payload.faculty || "",
         authorCountry: payload.authorCountry || payload.country || "",
-        authorCountryCode:
-          payload.authorCountryCode || payload.countryCode || "",
+        authorCountryCode: payload.authorCountryCode || payload.countryCode || "",
 
         html: payload.html || "",
         text,
@@ -674,6 +1010,18 @@ export const handler = async (event) => {
       };
 
       await ddb.send(new PutCommand({ TableName: TABLE, Item: item }));
+      await ddb.send(
+        new UpdateCommand({
+          TableName: TABLE,
+          Key: { pk: pkPost(threadId), sk: skPost() },
+          UpdateExpression:
+            "SET updatedAt = :now ADD replyCount :one, threadItemCount :one",
+          ExpressionAttributeValues: {
+            ":one": 1,
+            ":now": now,
+          },
+        })
+      );
 
       return {
         statusCode: 201,
@@ -695,6 +1043,146 @@ export const handler = async (event) => {
     }
   }
 
+
+
+
+
+
+
+  /* ---------- POST/DELETE /api/posts/save ---------- */
+if (isPostSavePath && (method === "POST" || method === "DELETE")) {
+  try {
+    const payload = readJsonBody(event);
+    if (!payload) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ ok: false, error: "Invalid JSON" }),
+      };
+    }
+
+    const userId = String(payload.userId || "").trim();
+    const postId = String(payload.postId || payload.id || "").trim();
+    const scope = String(payload.scope || "student-dashboard").trim();
+
+    if (!userId || !postId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ ok: false, error: "userId and postId are required" }),
+      };
+    }
+
+    if (method === "POST") {
+      const now = Date.now();
+
+      await ddb.send(
+        new PutCommand({
+          TableName: TABLE,
+          Item: {
+            pk: pkSaved(userId),
+            sk: skSavedPost(postId),
+            type: "saved_post",
+            userId,
+            postId,
+            scope,
+            createdAt: now,
+            updatedAt: now,
+          },
+        })
+      );
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ ok: true, saved: true, userId, postId, scope }),
+      };
+    }
+
+    await ddb.send(
+      new DeleteCommand({
+        TableName: TABLE,
+        Key: {
+          pk: pkSaved(userId),
+          sk: skSavedPost(postId),
+        },
+      })
+    );
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ ok: true, saved: false, userId, postId, scope }),
+    };
+  } catch (err) {
+    console.error("[PostsHandlerDDB] save/unsave post failed:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ ok: false, error: "Failed to update saved post" }),
+    };
+  }
+}
+
+/* ---------- GET /api/posts/saved?userId=&scope= ---------- */
+if (isPostSavedPath && method === "GET") {
+  try {
+    const qs = event.queryStringParameters || {};
+    const userId = String(qs.userId || "").trim();
+    const scope = String(qs.scope || "").trim();
+
+    if (!userId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ ok: false, error: "userId is required" }),
+      };
+    }
+
+    const resp = await ddb.send(
+      new QueryCommand({
+        TableName: TABLE,
+        KeyConditionExpression: "#pk = :pk",
+        ExpressionAttributeNames: { "#pk": "pk" },
+        ExpressionAttributeValues: { ":pk": pkSaved(userId) },
+        ScanIndexForward: false,
+      })
+    );
+
+    const items = Array.isArray(resp.Items) ? resp.Items : [];
+
+    const saved = items
+      .filter((x) => !scope || String(x.scope || "") === scope)
+      .map((x) => ({
+        postId: x.postId,
+        scope: x.scope || "",
+        createdAt: x.createdAt || 0,
+      }));
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        ok: true,
+        userId,
+        saved,
+        savedPostIds: saved.map((x) => x.postId),
+      }),
+    };
+  } catch (err) {
+    console.error("[PostsHandlerDDB] saved posts GET failed:", err);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ ok: false, error: "Failed to load saved posts" }),
+    };
+  }
+}
+
+
+
+
+
   /* ---------- /api/posts ---------- */
   if (isPostsPath) {
     const qs = event.queryStringParameters || {};
@@ -703,19 +1191,21 @@ export const handler = async (event) => {
     /* ---------- GET /api/posts?scope=...&limit=&cursor=&withThread= ---------- */
     if (method === "GET") {
       try {
-        const sc = scope || "student-dashboard";
+          const sc = scope || "student-dashboard";
 
-        // Optional feed view.
-        // Existing callers that omit "view" keep the current behavior.
-        const view = String(qs.view || "").trim().toLowerCase();
-        const isRecentView = view === "recent";
-        const isOlderView = view === "older";
+// Optional feed view.
+// Existing callers that omit "view" keep the current behavior.
+const view = String(qs.view || "").trim().toLowerCase();
+const isRecentView = view === "recent";
+const isOlderView = view === "older";
 
-        // The GSI sort key begins with the padded createdAt timestamp.
-        const recentCutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
-        const recentCutoffKey = `${pad13(recentCutoffMs)}#`;
+// The GSI sort key begins with the padded createdAt timestamp.
+// Calculate this once per request, not once per DynamoDB page.
+const recentCutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+const recentCutoffKey = `${pad13(recentCutoffMs)}#`;
 
-        const isDateFilteredView = isRecentView || isOlderView;
+
+const isDateFilteredView = isRecentView || isOlderView;
 
 const keyConditionExpression = isRecentView
   ? "#gpk = :gpk AND #gsk >= :cutoff"
@@ -736,18 +1226,16 @@ const expressionAttributeValues = isDateFilteredView
       ":gpk": gsi1pk(sc),
     };
 
-        // Keep compatibility by default (withThread=1)
-        const withThread =
-          qs.withThread == null ? "1" : String(qs.withThread).trim();
+const withThread =
+  qs.withThread == null ? "1" : String(qs.withThread).trim();
+
+
         const wantThread =
           withThread === "1" || withThread.toLowerCase() === "true";
 
-        // IMPORTANT: smaller default keeps UI snappy; still "unlimited" via cursor
         const limit = clampInt(qs.limit, 30, 1, 200);
         const cursor = qs.cursor ? String(qs.cursor) : undefined;
 
-        // ✅ We may need to fetch more than one page to fill `limit`
-        // after filtering out hidden/removed posts.
         const posts = [];
         let lastKey = decodeCursor(cursor);
         let safetyPages = 0;
@@ -762,10 +1250,10 @@ const expressionAttributeValues = isDateFilteredView
               IndexName: GSI_FEED,
               KeyConditionExpression: keyConditionExpression,
               ExpressionAttributeNames: expressionAttributeNames,
-              ExpressionAttributeValues: expressionAttributeValues,
+               ExpressionAttributeValues: expressionAttributeValues,
               ScanIndexForward: false,
-              // fetch a bit more to reduce extra round-trips when many are hidden
-              Limit: Math.min(200, Math.max(30, limit * 2)),
+              /*Limit: Math.min(200, Math.max(30, limit * 2)),*/
+              Limit: limit,
               ExclusiveStartKey: lastKey,
             })
           );
@@ -775,7 +1263,6 @@ const expressionAttributeValues = isDateFilteredView
           for (const p of pageItems) {
             if (posts.length >= limit) break;
 
-            // ✅ Skip hidden/removed posts universally
             if (isHiddenOrRemovedPost(p)) continue;
 
             const postId = String(p.postId || p.id || "").trim();
@@ -786,12 +1273,11 @@ const expressionAttributeValues = isDateFilteredView
             base.id = base.id || postId;
             base.postId = postId;
 
-            // ✅ FAST: 1 query per post (and only if requested)
+            
             if (wantThread && postId) {
               const thr = await loadThreadFast(postId, { limit: 500 });
               base.comments = thr.comments;
             } else {
-              // ✅ FORCE empty comments when withThread=0
               base.comments = [];
             }
 
@@ -799,8 +1285,6 @@ const expressionAttributeValues = isDateFilteredView
           }
 
           lastKey = resp.LastEvaluatedKey;
-
-          // No more items
           if (!lastKey) break;
         }
 
@@ -914,7 +1398,6 @@ const expressionAttributeValues = isDateFilteredView
           images: Array.isArray(payload.images) ? payload.images : attachments,
           files: Array.isArray(payload.files) ? payload.files : [],
 
-          // ✅ default visible state (moderation can later change it)
           moderationStatus: payload.moderationStatus || "published",
 
           createdAt,
@@ -922,6 +1405,7 @@ const expressionAttributeValues = isDateFilteredView
         };
 
         await ddb.send(new PutCommand({ TableName: TABLE, Item: item }));
+       
 
         const out = { ...item };
         delete out.pk;
