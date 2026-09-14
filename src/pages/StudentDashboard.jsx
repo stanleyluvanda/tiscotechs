@@ -2626,7 +2626,7 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
         });
 
         if (cancelled) return;*/
-  const { posts: remote, cursor: nextCursor } = await fetchPostsPage({
+  /*const { posts: remote, cursor: nextCursor } = await fetchPostsPage({
   scope: "student-dashboard",
   limit: 30,
   withThread: true,
@@ -2642,7 +2642,27 @@ const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
   // faculty + faculty/year
   facultyAudience: showFacultyOnly ? baseFac : null,
   facultyYearAudience: showFacultyOnly ? facYearKey : null,
+});*/
+const { posts: remote, cursor: nextCursor } = await fetchPostsPage({
+  scope: "student-dashboard",
+  limit: 30,
+  withThread: true,
+  view: feedView,
+
+  audienceMode: showFacultyOnly ? "faculty" : "program",
+
+  // Normal student feed still uses the exact program/year audience.
+  audience: showFacultyOnly ? null : audKey,
+
+  // Always send the student's faculty keys.
+  // In normal/program mode these are used for NEW detection.
+  // In faculty mode they are used for the faculty feed itself.
+  facultyAudience: baseFac,
+  facultyYearAudience: facYearKey,
 });
+
+
+
 
 if (cancelled) return;
 
@@ -2994,8 +3014,10 @@ async function loadMorePosts() {
 
     audience: showFacultyOnly ? null : audKey,
 
-    facultyAudience: showFacultyOnly ? baseFac : null,
-    facultyYearAudience: showFacultyOnly ? facYearKey : null,
+    /*facultyAudience: showFacultyOnly ? baseFac : null,
+    facultyYearAudience: showFacultyOnly ? facYearKey : null,*/
+    facultyAudience: baseFac,
+    facultyYearAudience: facYearKey,
   });
 
     const incoming = (Array.isArray(morePosts) ? morePosts : [])
@@ -3349,7 +3371,7 @@ const [videoExpanded, setVideoExpanded] = useState(false);
   },[posts]);
 
   // ===== "New" indicators (lecturer/faculty)
-  const isForMyFaculty = (aud) => aud === baseFac || aud === `${baseFac}__${user.year}`;
+  /*const isForMyFaculty = (aud) => aud === baseFac || aud === `${baseFac}__${user.year}`;
   const latestFacTs = useMemo(()=>{
     let max = 0;
     posts.forEach(p=>{ if (isForMyFaculty(p.audience)) max = Math.max(max, p.createdAt || 0); });
@@ -3409,7 +3431,181 @@ const [videoExpanded, setVideoExpanded] = useState(false);
       }
       return next;
     });
-  };
+  };*/
+
+  // ===== "New" indicators (lecturer/faculty)
+// These are derived from the posts already loaded by the existing feed.
+// No additional API request is made.
+
+const isForMyFaculty = (aud = "") =>
+  aud === baseFac || aud === facYearKey;
+
+// ---------------------------------------------------------
+// Lecturer NEW indicator
+// ---------------------------------------------------------
+// A lecturer post counts for this student when it is:
+// 1. sent to this student's exact program/year audience, OR
+// 2. sent to this student's faculty, OR
+// 3. sent to this student's faculty/year.
+//
+// Do not include GLOBAL here because the old NEW behavior
+// was for targeted lecturer/faculty academic posts.
+const latestLecturerTs = useMemo(() => {
+  let max = 0;
+
+  for (const p of posts) {
+    const authorType = String(
+      p?.authorType || p?.role || ""
+    )
+      .trim()
+      .toLowerCase();
+
+    if (authorType !== "lecturer") continue;
+
+    const audience = String(p?.audience || "").trim();
+
+    const isForMe =
+      audience === audKey ||
+      audience === baseFac ||
+      audience === facYearKey;
+
+    if (!isForMe) continue;
+
+    const created = ts(p?.createdAt);
+
+    if (created > max) {
+      max = created;
+    }
+  }
+
+  return max;
+}, [
+  posts,
+  audKey,
+  baseFac,
+  facYearKey,
+]);
+
+const LECTURER_NEW_KEY =
+  `lastSeenLecturer_${user.id}`;
+
+const [lastSeenLecturerTs, setLastSeenLecturerTs] =
+  useState(() =>
+    Number(
+      localStorage.getItem(LECTURER_NEW_KEY) || 0
+    )
+  );
+
+useEffect(() => {
+  localStorage.setItem(
+    LECTURER_NEW_KEY,
+    String(lastSeenLecturerTs || 0)
+  );
+}, [
+  LECTURER_NEW_KEY,
+  lastSeenLecturerTs,
+]);
+
+const hasNewLecturer =
+  latestLecturerTs > lastSeenLecturerTs;
+
+
+// ---------------------------------------------------------
+// Faculty / School / College NEW indicator
+// ---------------------------------------------------------
+// This intentionally includes BOTH student and lecturer posts.
+// The only requirement is that the post targets this student's
+// faculty or faculty/year.
+const latestFacTs = useMemo(() => {
+  let max = 0;
+
+  for (const p of posts) {
+    const audience = String(p?.audience || "").trim();
+
+    if (!isForMyFaculty(audience)) {
+      continue;
+    }
+
+    const created = ts(p?.createdAt);
+
+    if (created > max) {
+      max = created;
+    }
+  }
+
+  return max;
+}, [
+  posts,
+  baseFac,
+  facYearKey,
+]);
+
+const FAC_NEW_KEY =
+  `lastSeenFaculty_${user.id}`;
+
+const [lastSeenFacTs, setLastSeenFacTs] =
+  useState(() =>
+    Number(
+      localStorage.getItem(FAC_NEW_KEY) || 0
+    )
+  );
+
+useEffect(() => {
+  localStorage.setItem(
+    FAC_NEW_KEY,
+    String(lastSeenFacTs || 0)
+  );
+}, [
+  FAC_NEW_KEY,
+  lastSeenFacTs,
+]);
+
+const hasNewFacultyPosts =
+  latestFacTs > lastSeenFacTs;
+
+
+// ---------------------------------------------------------
+// Clicking View Lecturers' posts acknowledges lecturer NEW
+// ---------------------------------------------------------
+const onToggleLecturerOnly = () => {
+  setShowLecturerOnly((v) => {
+    const next = !v;
+
+    if (next) {
+      setLastSeenLecturerTs(
+        latestLecturerTs || Date.now()
+      );
+    }
+
+    return next;
+  });
+};
+
+
+// ---------------------------------------------------------
+// Clicking faculty/school/college posts acknowledges faculty NEW
+// ---------------------------------------------------------
+const onToggleFacultyOnly = () => {
+  setShowFacultyOnly((v) => {
+    const next = !v;
+
+    if (next) {
+      setLastSeenFacTs(
+        latestFacTs || Date.now()
+      );
+
+      // Keep the existing Common Posts indicator synchronized.
+      setHasNewCommonPosts(false);
+
+      localStorage.setItem(
+        `commonPostsSeen_${user.id}`,
+        String(Date.now())
+      );
+    }
+
+    return next;
+  });
+};
 
   // ===== Idle timer
 const [idleWarning, setIdleWarning] = useState(false);
@@ -4687,7 +4883,8 @@ if (showingTab === "Top") {
 
 
       <div className="flex items-center gap-2">
-        <NewBadge show={!showFacultyOnly && (hasNewFacultySignal || hasNewFacultyPosts)} />
+        {/*<NewBadge show={!showFacultyOnly && (hasNewFacultySignal || hasNewFacultyPosts)} />*/}
+        <NewBadge show={!showFacultyOnly && hasNewFacultyPosts} />
         <button
           onClick={onToggleFacultyOnly}
           className={`px-4 py-1 rounded-full text-sm ${
@@ -5263,11 +5460,12 @@ if (showingTab === "Top") {
 
 <button
   type="button"
-  onClick={() => {
+  /*onClick={() => {
   onToggleFacultyOnly();
   setHasNewCommonPosts(false);
   localStorage.setItem(`commonPostsSeen_${user.id}`, String(Date.now()));
-}}
+}}*/
+onClick={onToggleFacultyOnly}
   className={`
     rounded-full px-3 py-1.5 text-sm border whitespace-nowrap transition relative
     ${

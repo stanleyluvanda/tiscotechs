@@ -4310,7 +4310,8 @@ async function clearNotificationsServerBacked() {
         }}
       />
       <span className="leading-4">
-        Check this to post to <strong>{facultyTerm}</strong>. You’ll still choose a <strong>Year of Study</strong>.
+        {/*Check this to post to <strong>{facultyTerm}</strong>. You’ll still choose a <strong>Year of Study</strong>.*/}
+        Check this to post to <strong>{facultyLabel}</strong>. You’ll still choose a <strong>Year of Study</strong>.
       </span>
     </label>
 
