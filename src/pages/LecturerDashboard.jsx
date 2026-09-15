@@ -4952,6 +4952,20 @@ async function clearNotificationsServerBacked() {
         >
           University Academic Platform
         </Link>
+        <li>
+         <Link
+  to="/platform/country"
+  className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+>
+  Country Academic Platform
+</Link>
+  <Link
+    to="/platform/country"
+    className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+  >
+    Country Academic Platform
+  </Link>
+</li>
 
         <Link
           to="/platform/global"
@@ -5077,6 +5091,17 @@ async function clearNotificationsServerBacked() {
                     University Academic Platform
                   </Link>
                  </li>
+
+                  <li>
+    <Link
+      to="/platform/country"
+      className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+    >
+      Country Academic Platform
+    </Link>
+  </li>
+
+
                 <li>
                 <Link
                      to="/platform/global"

@@ -3623,6 +3623,12 @@ const byParent = visibleComments.reduce((acc, c) => {
 >
   🎓 University Academic Platform
 </Link>
+<Link
+  to="/platform/country"
+  className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+>
+  🌍 Country Academic Platform
+</Link>
 
         {!isLecturer && (
           <>
@@ -3725,17 +3731,9 @@ const byParent = visibleComments.reduce((acc, c) => {
               </Card>
             )}
 
-            {/*{activeTopicBarLabel && (
-  <div className="-mt-4 mb-1 rounded-none sm:rounded-xl border border-blue-100 bg-blue-50 px-4 py-1.5 text-center shadow-sm">
-    <div className="inline-flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-blue-700">
-      <span aria-hidden="true">{getTopicIcon(selectedCategory)}</span>
-      <span>{activeTopicBarLabel}</span>
-    </div>
-  </div>
-)}*/}
+          
 
 {(
-/*{activeTopicBarLabel && (*/
   <div className="-mt-4 mb-1 rounded-none sm:rounded-lg border border-blue-100 bg-blue-50 px-4 py-1.5 shadow-sm">
     <div className="grid grid-cols-[110px_1fr_130px] items-center">
       <div className="text-left text-xs sm:text-sm font-semibold text-slate-600">
@@ -4061,6 +4059,13 @@ const byParent = visibleComments.reduce((acc, c) => {
                 <Link to="/platform/university" className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50">
                   University Academic Platform
                 </Link>
+
+                <Link
+  to="/platform/country"
+  className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
+>
+  Country Academic Platform
+</Link>
 
                 {!isLecturer && (
                   <>

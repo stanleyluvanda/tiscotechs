@@ -571,10 +571,11 @@ function normalizePostFromServer(raw = {}, scopeHint = "") {
 
   const flat = flattenCommentTreeToFlat(normalizedFlatComments);
 
-  // Uni + Global platforms render flat parentId threads in your app
-  const wantFlat =
-    scopeHint === "uni-academic-platform" ||
-    scopeHint === "global-academic-platform";
+  // Uni + Global + Country platforms render flat parentId threads in your app
+const wantFlat =
+  scopeHint === "uni-academic-platform" ||
+  scopeHint === "global-academic-platform" ||
+  scopeHint.startsWith("country-academic-platform#");
 
   const comments = wantFlat ? flat : buildThreadFromFlatComments(flat);
 

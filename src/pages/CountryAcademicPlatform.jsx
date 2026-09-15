@@ -1,4 +1,4 @@
-// src/pages/UniversityAcademicPlatform.jsx
+// src/pages/CountryAcademicPlatform.jsx
 /*import { useEffect, useMemo, useRef, useState, memo, forwardRef } from "react";*/
 import { useEffect, useMemo, useRef, useState, memo, forwardRef, Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -83,6 +83,38 @@ function loadActiveUser() {
     safeParse(localStorage.getItem("currentUser"))
   );
 }
+
+// ✅ Country flag image
+function FlagIcon({ country, countryCode, className = "w-6 h-4" }) {
+  const cc = String(countryCode || "")
+    .trim()
+    .toUpperCase();
+
+  if (!cc) return null;
+
+  const lo = `https://flagcdn.com/w40/${cc.toLowerCase()}.png`;
+  const hi = `https://flagcdn.com/w80/${cc.toLowerCase()}.png`;
+  const svg = `https://flagcdn.com/${cc.toLowerCase()}.svg`;
+
+  return (
+    <img
+      src={lo}
+      srcSet={`${lo} 1x, ${hi} 2x`}
+      alt={`${country} flag`}
+      className={`inline-block rounded-[2px] ${className}`}
+      width={24}
+      height={16}
+      onError={(e) => {
+        e.currentTarget.onerror = null;
+        e.currentTarget.src = svg;
+      }}
+      loading="lazy"
+    />
+  );
+}
+
+
+
 const timeAgo = (ts) => {
   const s = Math.floor((Date.now() - ts) / 1000);
   if (s < 60) return `${s}s`;
@@ -492,8 +524,6 @@ function HTMLReadMore({ html = "", lines = 3 }) {
     <div className="text-sm text-slate-800 max-w-full overflow-hidden break-words">
       <div
         ref={shellRef}
-        /*className="prose prose-sm max-w-none [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal"*/
-        /*className="prose prose-sm max-w-full overflow-hidden break-words [&_*]:!my-0 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"*/
         className="prose prose-sm max-w-full overflow-hidden break-words [&_p]:my-3 [&_ul]:my-3 [&_ol]:my-3 [&_ul]:list-disc [&_ol]:list-decimal [&_a]:break-all"
         style={open ? { maxHeight: "none", overflow: "visible" } : undefined}
         dangerouslySetInnerHTML={{ __html: html }}
@@ -1620,14 +1650,104 @@ function NotificationTray({ userId, onOpenPost }) {
 }
 
 /* ============ Page ============ */
-export default function UniversityAcademicPlatform() {
+export default function CountryAcademicPlatform() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
-  const uni = user?.university || "";
-  const STORE_KEY = `quora_uni_posts__${uni}`;
-  const FOL_KEY = `quora_uni_follows__${user?.id || "anon"}__${uni}`;
-  const isLecturer = typeof user?.role === "string" && /lecturer/i.test(user.role || "");
-  const PLATFORM_SCOPE = "uni-academic-platform";
+
+  const country = String(user?.country || "").trim();
+
+  const COUNTRY_TO_CODE = {
+  Tanzania: "TZ",
+  Kenya: "KE",
+  Uganda: "UG",
+  Rwanda: "RW",
+  Burundi: "BI",
+  Ghana: "GH",
+  Nigeria: "NG",
+  "South Africa": "ZA",
+  Zambia: "ZM",
+  Zimbabwe: "ZW",
+  Malawi: "MW",
+  Mozambique: "MZ",
+  Ethiopia: "ET",
+  Somalia: "SO",
+  Cameroon: "CM",
+  Senegal: "SN",
+  Egypt: "EG",
+  Morocco: "MA",
+  Algeria: "DZ",
+  Tunisia: "TN",
+
+  "United States": "US",
+  Canada: "CA",
+  Mexico: "MX",
+
+  "United Kingdom": "GB",
+  France: "FR",
+  Germany: "DE",
+  Italy: "IT",
+  Spain: "ES",
+  Portugal: "PT",
+  Ireland: "IE",
+  Switzerland: "CH",
+  Finland: "FI",
+  Denmark: "DK",
+  Sweden: "SE",
+  Norway: "NO",
+  Netherlands: "NL",
+  Belgium: "BE",
+  Austria: "AT",
+  Hungary: "HU",
+  Poland: "PL",
+  Czechia: "CZ",
+
+  India: "IN",
+  China: "CN",
+  Japan: "JP",
+  "South Korea": "KR",
+  Singapore: "SG",
+  Malaysia: "MY",
+  Indonesia: "ID",
+  Pakistan: "PK",
+  Bangladesh: "BD",
+
+  Australia: "AU",
+  "New Zealand": "NZ",
+};
+
+const countryCode = String(
+  user?.countryCode || COUNTRY_TO_CODE[country] || ""
+)
+  .trim()
+  .toUpperCase();
+
+  const COUNTRY_SCOPE_ID =
+    countryCode ||
+    country
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+  const STORE_KEY = `quora_country_posts__${COUNTRY_SCOPE_ID}`;
+
+// ✅ Short-lived cache for the first Country feed page
+const FEED_CACHE_KEY =
+  `country_feed_cache__${COUNTRY_SCOPE_ID}`;
+
+const FEED_CACHE_TTL = 60 * 1000; // 60 seconds
+
+const FOL_KEY =
+  `quora_country_follows__${user?.id || "anon"}__${COUNTRY_SCOPE_ID}`;
+
+  const isLecturer =
+    typeof user?.role === "string" &&
+    /lecturer/i.test(user.role || "");
+
+  const PLATFORM_SCOPE =
+    `country-academic-platform#${COUNTRY_SCOPE_ID}`;
+
 
   useEffect(() => {
     if (!user) navigate("/login?role=student", { replace: true });
@@ -1682,44 +1802,21 @@ export default function UniversityAcademicPlatform() {
   };
 }, [user?.id, PLATFORM_SCOPE]);
 
-  /*const seeded = useMemo(() => {
-    const now = Date.now();
-    return [
-      {
-        id: uid(),
-        title: "Welcome! Ask or share thoughts about your courses here.",
-        bodyHtml:
-          "Click the prompt above to open the editor. Attach images/files when helpful. Be respectful and cite sources.",
-        category: "Arts & Humanities",
-        topic: "Education",
-        views: 12,
-        likes: 2,
-        saved: false,
-        author: {
-          id: user?.id,
-          name: user?.name || "Student",
-          program: user?.program || "Program",
-          title: user?.title || "",
-          photoUrl: user?.photoUrl || "",
-        },
-        university: uni,
-        createdAt: now - 3600_000,
-        attachments: [],
-        comments: [],
-      },
-    ];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uni]);
-
-  const [posts, setPosts] = useState(() => seeded);*/
   
-  // ✅ Seeded posts DISABLED for UniversityAcademicPlatform
-const seeded = useMemo(() => [], [uni]);
+  // ✅ Seeded posts DISABLED for CountryAcademicPlatform
+const seeded = useMemo(() => [], [COUNTRY_SCOPE_ID]);
 
 // ✅ Start empty (not seeded)
 const [posts, setPosts] = useState(() => []);
 const [nextCursor, setNextCursor] = useState(null);
 const [loadingMore, setLoadingMore] = useState(false);
+
+// ✅ Infinite-scroll trigger
+const loadMoreSentinelRef = useRef(null);
+
+// ✅ Prevent duplicate pagination requests
+const loadMoreInFlightRef = useRef(false);
+
 
   const postsRef = useRef([]);
   useEffect(() => {
@@ -1728,8 +1825,6 @@ const [loadingMore, setLoadingMore] = useState(false);
 
   const [follows, setFollows] = useState(() => safeParse(localStorage.getItem(FOL_KEY)) || {});
   const [toast, setToast] = useState("");
-
-  /*const PLATFORM_SCOPE = "uni-academic-platform";*/
 
   function uploaderAttToUiAtt(a) {
   if (!a) return null;
@@ -1815,10 +1910,7 @@ const [loadingMore, setLoadingMore] = useState(false);
         }
       }
 
-      /*const mergedComments = Array.from(cMap.values());
-      const preferLocal = localHasMoreThread || mergedComments.length > rpComments.length || lpTs > rpTs;
-
-      byId.set(id, preferLocal ? { ...lp, comments: mergedComments } : { ...rp, comments: mergedComments });*/
+      
 
       const mergedCommentsRaw = Array.from(cMap.values());
 
@@ -1989,98 +2081,115 @@ threadItemCount: Number(
 }
 
 
-
-
-
-  /*useEffect(() => {
-    let cancelled = false;
-
-    async function loadFromServer() {
-      try {
-        const remote = await fetchPosts({ scope: PLATFORM_SCOPE });
-
-        const remoteUni = Array.isArray(remote)
-          ? remote.filter((p) => (p?.university || "") === uni)
-          : [];
-
-        if (cancelled) return;
-
-        const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
-
-        setPostsIfChanged((prev) => {
-  const base = prev?.length ? prev : seeded;
-  return mergePostsKeepThreads(base, normalized);
-});
-
-
-      } catch (e) {
-        console.warn("[UniversityAcademicPlatform] fetchPosts failed:", e);
-      }
-    }
-
-    loadFromServer();
-    const id = setInterval(loadFromServer, 30000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [uni, seeded]);*/
   useEffect(() => {
   let cancelled = false;
 
   async function loadFromServer() {
-    try {
-      const { posts: remote, cursor } = await fetchPostsPage({
-        scope: PLATFORM_SCOPE,
-        limit: 10,
-        withThread: false,
-      });
+  try {
+    // ✅ 1. Try the short-lived browser cache first
+    const cached = safeParse(localStorage.getItem(FEED_CACHE_KEY));
 
-      const remoteUni = Array.isArray(remote)
-        ? remote.filter((p) => (p?.university || "") === uni)
-        : [];
+    const cacheIsFresh =
+      cached &&
+      Array.isArray(cached.posts) &&
+      Number(cached.savedAt || 0) > 0 &&
+      Date.now() - Number(cached.savedAt) < FEED_CACHE_TTL;
 
+    if (cacheIsFresh) {
       if (cancelled) return;
 
-      setNextCursor(cursor || null);
-
-      const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
+      setNextCursor(cached.cursor || null);
 
       setPostsIfChanged((prev) => {
         const base = prev?.length ? prev : seeded;
-        return mergePostsKeepThreads(base, normalized);
+        return mergePostsKeepThreads(base, cached.posts);
       });
-    } catch (e) {
-      console.warn("[UniversityAcademicPlatform] fetchPostsPage failed:", e);
+
+      return; // ✅ No API request while cache is fresh
     }
+
+    // ✅ 2. Cache missing/expired → request first 15 from server
+    const { posts: remote, cursor } = await fetchPostsPage({
+      scope: PLATFORM_SCOPE,
+      limit: 100,
+      withThread: false,
+    });
+
+    const remoteCountry = Array.isArray(remote)
+      ? remote
+      : [];
+
+    if (cancelled) return;
+
+    setNextCursor(cursor || null);
+
+    const normalized = remoteCountry
+      .map(normalizeServerPost)
+      .filter(Boolean);
+
+    // ✅ 3. Cache only the first page
+    try {
+      localStorage.setItem(
+        FEED_CACHE_KEY,
+        JSON.stringify({
+          posts: normalized,
+          cursor: cursor || null,
+          savedAt: Date.now(),
+        })
+      );
+    } catch (cacheErr) {
+      console.warn(
+        "[CountryAcademicPlatform] feed cache write failed:",
+        cacheErr
+      );
+    }
+
+    setPostsIfChanged((prev) => {
+      const base = prev?.length ? prev : seeded;
+      return mergePostsKeepThreads(base, normalized);
+    });
+  } catch (e) {
+    console.warn(
+      "[CountryAcademicPlatform] fetchPostsPage failed:",
+      e
+    );
   }
+}
 
   loadFromServer();
 
   return () => {
     cancelled = true;
   };
-}, [PLATFORM_SCOPE, uni, seeded]);
+}, [PLATFORM_SCOPE, COUNTRY_SCOPE_ID, seeded]);
 
 async function loadMorePosts() {
-  if (!nextCursor || loadingMore) return;
+  if (
+    !nextCursor ||
+    loadingMore ||
+    loadMoreInFlightRef.current
+  ) {
+    return;
+  }
 
+  loadMoreInFlightRef.current = true;
   setLoadingMore(true);
 
   try {
     const { posts: morePosts, cursor } = await fetchPostsPage({
       scope: PLATFORM_SCOPE,
-      limit: 10,
+      limit: 100,
       cursor: nextCursor,
       withThread: false,
     });
 
-    const remoteUni = Array.isArray(morePosts)
-      ? morePosts.filter((p) => (p?.university || "") === uni)
+    const remoteCountry = Array.isArray(morePosts)
+      ? morePosts
       : [];
 
-    const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
+    const normalized = remoteCountry
+      .map(normalizeServerPost)
+      .filter(Boolean);
 
     setPostsIfChanged((prev) => {
       return mergePostsKeepThreads(prev, normalized);
@@ -2088,14 +2197,49 @@ async function loadMorePosts() {
 
     setNextCursor(cursor || null);
   } catch (err) {
-    console.error("[UniversityAcademicPlatform] loadMorePosts failed:", err);
+    console.error("[CountryAcademicPlatform] loadMorePosts failed:", err);
     setToast("Failed to load more posts. Please try again.");
     setTimeout(() => setToast(""), 4000);
-  } finally {
-    setLoadingMore(false);
-  }
+ } finally {
+  loadMoreInFlightRef.current = false;
+  setLoadingMore(false);
+}
 }
 
+// ✅ Automatically load the next 100 posts as the user approaches the bottom
+useEffect(() => {
+  const sentinel = loadMoreSentinelRef.current;
+
+  if (!sentinel || !nextCursor) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+
+      if (
+        entry?.isIntersecting &&
+        nextCursor &&
+        !loadingMore
+      ) {
+        loadMorePosts();
+      }
+    },
+    {
+      root: null,
+
+      // Start loading before the user actually reaches the bottom.
+      rootMargin: "700px 0px",
+
+      threshold: 0,
+    }
+  );
+
+  observer.observe(sentinel);
+
+  return () => {
+    observer.disconnect();
+  };
+}, [nextCursor, loadingMore]);
 
 
   useEffect(() => {
@@ -2113,13 +2257,20 @@ async function loadMorePosts() {
   const [myOnly, setMyOnly] = useState(false);
 
   useEffect(() => {
-    if (!myOnly) return;
-    const mine = posts.filter((p) => p.university === uni && p.author?.id === user?.id);
-    if (mine.length) {
-      const latest = mine.reduce((a, b) => ((a.createdAt || 0) > (b.createdAt || 0) ? a : b));
-      setTimeout(() => scrollToPost(latest.id), 120);
-    }
-  }, [myOnly, posts, user?.id, uni]);
+  if (!myOnly) return;
+
+  const mine = posts.filter(
+    (p) => p.author?.id === user?.id
+  );
+
+  if (mine.length) {
+    const latest = mine.reduce((a, b) =>
+      (a.createdAt || 0) > (b.createdAt || 0) ? a : b
+    );
+
+    setTimeout(() => scrollToPost(latest.id), 120);
+  }
+}, [myOnly, posts, user?.id]);
 
   /* Composer (collapsed by default) */
   const [editorOpen, setEditorOpen] = useState(false);
@@ -2135,48 +2286,10 @@ async function loadMorePosts() {
   const [savedPostIds, setSavedPostIds] = useState(() => new Set());
   const [showSavedOnly, setShowSavedOnly] = useState(false);
 
-  /*const onPickAskFiles = async (e) => {
-    const chosen = await readFiles(e.target.files);
-    setAskAtts((prev) => [...prev, ...chosen]);
-    e.target.value = "";
-  };*/
-  /*const removeAskAttachment = (id) => setAskAtts((prev) => prev.filter((a) => a.id !== id));*/
   const removeAskAttachment = (id) =>
   setAskUploadAtts((prev) => (prev || []).filter((a) => String(a.key || "") !== String(id)));
 
-  // ✅ Add onReport HERE (inside the component)
-/*async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
-  const reason = prompt(
-    "Report reason? (harassment, spam, sexual, hate, misinformation, copyright, other)",
-    "spam"
-  );
-  if (!reason) return;
-
-  const details = prompt("Optional details (what happened?)", "") || "";
-
-  const me = user || currentUser || {};
-  const reportedByEmail = String(me.email || "").trim().toLowerCase();
-
-  try {
-    await reportContent({
-      itemType,
-      itemId,
-      postId,
-      commentId,
-      replyId,
-      scope: PLATFORM_SCOPE, // ✅ use this page’s scope
-      reportedByUserId: me.id || "",
-      reportedByEmail,
-      reportedByRole: me.role || "",
-      reason,
-      details,
-    });
-    alert("Report submitted. Thank you.");
-  } catch (e) {
-    console.error("report failed", e);
-    alert(`Report failed: ${e.message}`);
-  }
-}*/
+  
 
 async function onReport({ itemType, itemId, postId, commentId = "", replyId = "" }) {
   const reason = prompt(
@@ -2233,28 +2346,38 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       .map((a) => ({ id: a.id, name: a.name, mime: a.type, dataUrl: a.dataUrl || "" }));
 
     const payload = {
-      scope: PLATFORM_SCOPE,
-      role: isLecturer ? "lecturer" : "student",
-      type: "UniversityAcademicPlatform",
+  scope: PLATFORM_SCOPE,
+  role: isLecturer ? "lecturer" : "student",
+  type: "CountryAcademicPlatform",
 
-      title: askTitle.trim() || "(No title)",
-      text: plain,
-      html: (askBodyHtml || "").replace(/\n/g, "<br/>"),
+  title: askTitle.trim() || "(No title)",
+  text: plain,
+  html: (askBodyHtml || "").replace(/\n/g, "<br/>"),
 
-      category: selectedCategory === "All" ? "Current & Trending Topics" : selectedCategory,
-      topic: selectedTopic === "All" ? "General" : selectedTopic,
+  category:
+    selectedCategory === "All"
+      ? "Current & Trending Topics"
+      : selectedCategory,
 
-      university: uni,
+  topic:
+    selectedTopic === "All"
+      ? "General"
+      : selectedTopic,
 
-      authorId: user?.id || "",
-      authorName: user?.name || "Student",
-      authorProgram: user?.program || "Program",
-      authorTitle: user?.title || "",
-      authorAvatarUrl: user?.photoUrl || "",
+  country,
+  countryCode,
 
-      /*attachments: askAtts,   // ✅ include BOTH images + files in one unified array
-      images,
-      files,*/
+  university: user?.university || "",
+
+  authorCountry: country,
+  authorCountryCode: countryCode,
+  authorUniversity: user?.university || "",
+
+  authorId: user?.id || "",
+  authorName: user?.name || "Student",
+  authorProgram: user?.program || "Program",
+  authorTitle: user?.title || "",
+  authorAvatarUrl: user?.photoUrl || "",
 
       attachments: askAtts,
 images: [],
@@ -2263,17 +2386,18 @@ files: [],
 
     try {
       await createPostOnServer(payload);
+       // ✅ Country feed changed — clear old first-page cache
+  localStorage.removeItem(FEED_CACHE_KEY);
 
-      const remote = await fetchPosts({ scope: PLATFORM_SCOPE });
-      const remoteUni = Array.isArray(remote)
-        ? remote.filter((p) => (p?.university || "") === uni)
-        : [];
-      const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
+const remote = await fetchPosts({ scope: PLATFORM_SCOPE });
 
-      /*setPosts((prev) => {
-        const base = prev?.length ? prev : seeded;
-        return mergePostsKeepThreads(base, normalized);
-      });*/
+const remoteCountry = Array.isArray(remote)
+  ? remote
+  : [];
+
+const normalized = remoteCountry
+  .map(normalizeServerPost)
+  .filter(Boolean);
 
       setPostsIfChanged((prev) => {
   const base = prev?.length ? prev : seeded;
@@ -2290,7 +2414,7 @@ files: [],
       setAskUploadAtts([]);
       setEditorOpen(false);
     } catch (err) {
-      console.error("[UniversityAcademicPlatform] createPost failed:", err);
+     console.error("[CountryAcademicPlatform] createPost failed:", err);
       setToast("Failed to save post to server.");
       setTimeout(() => setToast(""), 4000);
     }
@@ -2358,13 +2482,17 @@ files: [],
 };
 
   const deletePost = async (id) => {
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    try {
-      await deletePostOnServer(id);
-    } catch (e) {
-      console.warn("[UniversityAcademicPlatform] deletePost failed:", e);
-    }
-  };
+  setPosts((prev) => prev.filter((p) => p.id !== id));
+
+  try {
+    await deletePostOnServer(id);
+
+    // ✅ Country feed changed — clear old first-page cache
+    localStorage.removeItem(FEED_CACHE_KEY);
+  } catch (e) {
+    console.warn("[CountryAcademicPlatform] deletePost failed:", e);
+  }
+};
 
   /**
    * IMPORTANT FIX:
@@ -2491,11 +2619,7 @@ files: [],
           });
         }
 
-        /*return {
-          ...p,
-          comments: normalizeThreadComments([...(p.comments || []), ans]),
-          updatedAt: Date.now(),
-        };*/
+       
         return {
   ...p,
   comments: normalizeThreadComments([...(p.comments || []), ans]),
@@ -2537,6 +2661,9 @@ files: [],
         authorPhoto: user?.photoUrl || "",
         authorRole: role,
         authorTitle: user?.title || "",
+        authorCountry: country,
+        authorCountryCode: countryCode,
+        authorUniversity: user?.university || "",
 
         images,
         files,
@@ -2544,20 +2671,16 @@ files: [],
 
       // Pull server truth so refresh/browser/device stays stable
       const remote = await fetchPosts({ scope: PLATFORM_SCOPE });
-      const remoteUni = Array.isArray(remote)
-        ? remote.filter((p) => (p?.university || "") === uni)
-        : [];
-      const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
 
-      /*setPosts((prev) => {
-        const base = prev?.length ? prev : seeded;
-        return mergePostsKeepThreads(base, normalized);
-      });*/
+const remoteCountry = Array.isArray(remote)
+  ? remote
+  : [];
 
-      /*setPostsIfChanged((prev) => {
-  const base = prev?.length ? prev : seeded;
-  return mergePostsKeepThreads(base, normalized);
-});*/
+const normalized = remoteCountry
+  .map(normalizeServerPost)
+  .filter(Boolean);
+
+      
 
 setPostsIfChanged((prev) => {
   const base = prev?.length ? prev : seeded;
@@ -2569,7 +2692,7 @@ setPostsIfChanged((prev) => {
 
 
     } catch (e) {
-      console.error("[UniversityAcademicPlatform] persist comment failed:", e);
+      console.error("[CountryAcademicPlatform] persist comment failed:", e);
       setToast("Failed to save comment to server.");
       setTimeout(() => setToast(""), 4000);
     }
@@ -2612,11 +2735,7 @@ setPostsIfChanged((prev) => {
           });
         }
 
-        /*return {
-          ...p,
-          comments: normalizeThreadComments([...(p.comments || []), r]),
-          updatedAt: Date.now(),
-        };*/
+       
         return {
   ...p,
   comments: normalizeThreadComments([...(p.comments || []), r]),
@@ -2659,26 +2778,24 @@ setPostsIfChanged((prev) => {
         authorPhoto: user?.photoUrl || "",
         authorRole: role,
         authorTitle: user?.title || "",
+        authorCountry: country,
+        authorCountryCode: countryCode,
+        authorUniversity: user?.university || "",
 
         images,
         files,
       });
 
       const remote = await fetchPosts({ scope: PLATFORM_SCOPE });
-      const remoteUni = Array.isArray(remote)
-        ? remote.filter((p) => (p?.university || "") === uni)
-        : [];
-      const normalized = remoteUni.map(normalizeServerPost).filter(Boolean);
 
-      /*setPosts((prev) => {
-        const base = prev?.length ? prev : seeded;
-        return mergePostsKeepThreads(base, normalized);
-      });*/
+const remoteCountry = Array.isArray(remote)
+  ? remote
+  : [];
 
-      /*setPostsIfChanged((prev) => {
-  const base = prev?.length ? prev : seeded;
-  return mergePostsKeepThreads(base, normalized);
-});*/
+const normalized = remoteCountry
+  .map(normalizeServerPost)
+  .filter(Boolean);
+      
 
 setPostsIfChanged((prev) => {
   const base = prev?.length ? prev : seeded;
@@ -2689,7 +2806,7 @@ setPostsIfChanged((prev) => {
 
 
     } catch (e) {
-      console.error("[UniversityAcademicPlatform] persist reply failed:", e);
+      console.error("[CountryAcademicPlatform] persist reply failed:", e);
       setToast("Failed to save reply to server.");
       setTimeout(() => setToast(""), 4000);
     }
@@ -2700,23 +2817,14 @@ setPostsIfChanged((prev) => {
   const toggleFollow = (cat, topic) =>
     setFollows((prev) => ({ ...prev, [followKey(cat, topic)]: !prev[followKey(cat, topic)] }));
 
-  /* Derived lists */
-  /*const visibleBase = posts.filter((p) => p.university === uni);*/
-  /*const visibleBase = posts
-  .filter((p) => p.university === uni)
-  .filter((p) =>
-    showSavedOnly ? savedPostIds.has(String(p.id)) || p.saved : true
-  );
+ 
 
-  const visible = visibleBase
-    .filter((p) => (myOnly ? p.author?.id === user?.id : true))
-    .filter((p) => (!myOnly && selectedCategory !== "All" ? p.category === selectedCategory : true))
-    .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))*/
+const countryPosts = posts;
 
-    const universityPosts = posts.filter((p) => p.university === uni);
-
-const visibleBase = universityPosts.filter((p) =>
-  showSavedOnly ? savedPostIds.has(String(p.id)) || p.saved : true
+const visibleBase = countryPosts.filter((p) =>
+  showSavedOnly
+    ? savedPostIds.has(String(p.id)) || p.saved
+    : true
 );
 
 const visible = visibleBase
@@ -2770,7 +2878,7 @@ const topicStats = useMemo(() => {
   const byCategory = {};
   const byTopic = {};
 
-  for (const p of universityPosts) {
+  for (const p of countryPosts) {
     const cat = p.category || "Current & Trending Topics";
     const topic = p.topic || "General";
     const comments = getPostCommentTotal(p);
@@ -2785,7 +2893,7 @@ const topicStats = useMemo(() => {
   }
 
   return { byCategory, byTopic };
-}, [universityPosts]);
+}, [countryPosts]);
 
 const trendingTopics = Object.entries(topicStats.byTopic)
   .map(([name, s]) => ({ name, ...s }))
@@ -2869,17 +2977,10 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
      
 
 <div className="mt-2 max-w-[520px] sm:block hidden">
-  {/*<AttachmentUploader
-    value={uploadAtts}
-    onChange={setUploadAtts}
-    folder={`uni/${uni || "unknown"}/comments`}
-    maxFiles={5}
-    role={isLecturer ? "lecturer" : "student"}
-  />*/}
   <AttachmentUploader
   value={uploadAtts}
   onChange={setUploadAtts}
-  folder={`uni/${uni || "unknown"}/comments`}
+  folder={`country/${COUNTRY_SCOPE_ID || "unknown"}/comments`}
   maxFiles={5}
   role={isLecturer ? "lecturer" : "student"}
   showList={false}
@@ -2888,22 +2989,13 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
 
 </div>
 
-{/* Mobile only: attachment + Cancel + Post in one row */}
-{/*</form><div className="mt-2 flex sm:hidden items-center gap-2">
-  <div className="shrink-0 rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
-    <AttachmentUploader
-      value={uploadAtts}
-      onChange={setUploadAtts}
-      folder={`uni/${uni || "unknown"}/comments`}
-      maxFiles={5}
-      role={isLecturer ? "lecturer" : "student"}
-    />*/}
+
     <div className="mt-2 flex sm:hidden items-center gap-2">
   <div className="shrink-0 rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
     <AttachmentUploader
       value={uploadAtts}
       onChange={setUploadAtts}
-      folder={`uni/${uni || "unknown"}/comments`}
+      folder={`country/${COUNTRY_SCOPE_ID || "unknown"}/comments`}
       maxFiles={5}
       role={isLecturer ? "lecturer" : "student"}
       showList={false}
@@ -2953,18 +3045,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   );
 }
   function AnswerThread({ post }) {
-    /*const [open, setOpen] = useState(true);
-    const [commentOpen, setCommentOpen] = useState(false);
-    const [replyOpenById, setReplyOpenById] = useState({});
-
-    // ✅ Always normalize before rendering (prevents "reply becomes comment" on refresh)
-    const allComments = normalizeThreadComments(post.comments);
-
-    const answers = allComments
-      .filter((c) => c.parentId == null)
-      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-
-    const byParent = allComments.reduce((acc, c) => {*/
 const [open, setOpen] = useState(false);
 const [threadLoaded, setThreadLoaded] = useState(false);
 const [threadLoading, setThreadLoading] = useState(false);
@@ -2993,11 +3073,7 @@ const byParent = allComments.reduce((acc, c) => {
     const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
 
     return (
-      /*<div className="mt-3">*/
-        <div className="contents">
-        {/*<button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
-          Comments ({answers.length}) {open ? "▾" : "▸"}
-        </button>*/}
+        <div className="contents">    
         <button
   type="button"
   onClick={async () => {
@@ -3169,17 +3245,25 @@ const byParent = allComments.reduce((acc, c) => {
         )}
       </div>
 
-      
+     
       <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
       
       {/* LEFT rail */}
         <aside className="hidden lg:block space-y-4 pb-24">
           <Card square>
-            <HeaderBar title="University Academic Platform" square />
-            <div className="p-3 sm:p-4">
-              <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
-            </div>
-          </Card>
+  <HeaderBar title="Country Academic Platform" square />
+  <div className="p-3 sm:p-4">
+    <div className="flex items-center justify-center gap-2 text-xs text-slate-700">
+  <span>Forumn for {country || "your country"}</span>
+
+  <FlagIcon
+    country={country}
+    countryCode={countryCode}
+    className="w-6 h-4"
+  />
+</div>
+  </div>
+</Card>
 
           <Card square>
             <HeaderBar title="My Posts" square />
@@ -3214,7 +3298,7 @@ const byParent = allComments.reduce((acc, c) => {
     >
       📚 All Topics / Fields
       <span className="ml-1 text-xs font-normal text-slate-500">
-        ({universityPosts.length} posts)
+       ({countryPosts.length} posts)
       </span>
     </button>
 
@@ -3355,64 +3439,7 @@ const byParent = allComments.reduce((acc, c) => {
   />
 </div>
 
-    {/*<div className="mt-3 grid grid-cols-[56px_88px_88px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
-    <div className="order-3 sm:order-none mt-0">
-  <AttachmentUploader
-    value={askUploadAtts}
-    onChange={setAskUploadAtts}
-    folder={`uni/${uni || "unknown"}/posts`}
-    maxFiles={5}
-    role={isLecturer ? "lecturer" : "student"}
-  />
-</div>
-
-  <select
-    value={selectedCategory}
-    onChange={(e) => {
-      const c = e.target.value;
-      setSelectedCategory(c);
-      setSelectedTopic("All");
-    }}
-    className="order-1 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
-  >
-    {CATEGORIES.map((c) => (
-      <option key={c} value={c}>
-        {c}
-      </option>
-    ))}
-  </select>
-
-  <select
-    value={selectedTopic}
-    onChange={(e) => setSelectedTopic(e.target.value)}
-    className="order-2 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
-  >
-    {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
-      (t) => (
-        <option key={t} value={t}>
-          {t}
-        </option>
-      )
-    )}
-  </select>
-
-         <button className="order-4 sm:order-none h-7 rounded-full bg-blue-600 text-white px-1 sm:px-5 text-[10px] sm:text-sm font-semibold shadow-sm">
-    Post
-  </button>
-
-  <button
-    type="button"
-    onClick={() => {
-      setEditorOpen(false);
-      setAskTitle("");
-      setAskBodyHtml("");
-      setAskUploadAtts([]);
-    }}
-    className="order-5 sm:order-none h-7 rounded-full border border-slate-200 bg-white px-1 sm:px-5 text-[10px] sm:text-sm text-slate-700"
-  >
-    Cancel
-  </button>
-</div>*/}
+  
 
 <div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
   <select
@@ -3448,17 +3475,10 @@ const byParent = allComments.reduce((acc, c) => {
   <div className="order-3 sm:order-none col-span-2 flex items-center gap-3 sm:contents">
     {/*<div className="shrink-0 w-[74px] sm:w-auto overflow-hidden">*/}
       <div className="shrink-0 w-[74px] sm:w-auto overflow-hidden rounded-full bg-slate-100 border border-slate-200 px-2 py-1">
-      {/*<AttachmentUploader
-        value={askUploadAtts}
-        onChange={setAskUploadAtts}
-        folder={`uni/${uni || "unknown"}/posts`}
-        maxFiles={5}
-        role={isLecturer ? "lecturer" : "student"}
-      />*/}
       <AttachmentUploader
   value={askUploadAtts}
   onChange={setAskUploadAtts}
-  folder={`uni/${uni || "unknown"}/posts`}
+  folder={`country/${COUNTRY_SCOPE_ID || "unknown"}/posts`}
   maxFiles={5}
   role={isLecturer ? "lecturer" : "student"}
   showList={false}
@@ -3486,13 +3506,7 @@ const byParent = allComments.reduce((acc, c) => {
     </button>
   </div>
 </div>
-{/*<div className="mt-4 pt-4 border-t border-slate-200">
-  <AttachmentStripEditable
-    atts={askAtts}
-    onRemove={removeAskAttachment}
-    onPreview={setPreview}
-  />
-</div>*/}
+
 <div className="mt-3 pt-3 border-t border-slate-200 sm:mt-4 sm:pt-4">
   <div className="max-w-[170px] sm:max-w-none">
     <AttachmentStripEditable
@@ -3531,9 +3545,7 @@ const byParent = allComments.reduce((acc, c) => {
     setSort(s);
   }
 }}
-                    /*className={`text-xs rounded-full px-3 py-1 border ${
-                      sort === s ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"
-                    }`}*/
+                   
                     className={`rounded-full px-3 py-1.5 text-xs border ${
   (s === "Saved Posts" && showSavedOnly) ||
   (s !== "Saved Posts" && sort === s)
@@ -3590,17 +3602,19 @@ const byParent = allComments.reduce((acc, c) => {
       </summary>
 
       <div className="absolute left-0 z-30 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+        
         <Link
   to="/platform/global"
   className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
 >
   🌍 Global Academic Platform
 </Link>
+
 <Link
-  to="/platform/country"
+  to="/platform/university"
   className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
 >
-  🌍 Country Academic Platform
+  🎓 University Academic Platform
 </Link>
 
         <button
@@ -3794,20 +3808,10 @@ const byParent = allComments.reduce((acc, c) => {
   )}
 </div>
 
-                {/*<div className="mt-2">
-                  <div className="text-lg font-semibold text-slate-900">{post.title}</div>
-                  {post.bodyHtml && <HTMLReadMore html={post.bodyHtml} lines={3} />}
-                  <AttachmentStrip atts={post.attachments} onPreview={setPreview} />
-                </div>*/}
+             
 
                 <div className="mt-2">
-  {/*<div className="px-3 sm:px-0">
-    <div className="text-lg font-semibold text-slate-900">{post.title}</div>
-
-    {post.bodyHtml && (
-      <HTMLReadMore html={post.bodyHtml} lines={3} />
-    )}
-  </div>*/}
+ 
   <div className="px-3 sm:px-0">
 
     <div className="mb-2 flex justify-center">
@@ -3871,21 +3875,7 @@ const byParent = allComments.reduce((acc, c) => {
 
   <span className="hidden sm:inline text-slate-400">•</span>
 
-  {/*<button
-    onClick={() => toggleLike(post.id)}
-    className="rounded px-2 py-1 hover:bg-slate-50"
-  >
-    👍Like{" "}
-    {post.likes > 0 && (
-      <span className="text-slate-500">({post.likes})</span>
-    )}
-  </button>
-
-  <span className="text-slate-400">•</span>
-
-  <span className="text-slate-700">
-    {post.views || 0} Views
-  </span>*/}
+ 
 
   <button
     type="button"
@@ -3923,22 +3913,20 @@ const byParent = allComments.reduce((acc, c) => {
           ))}
 
 
-          {nextCursor && (
-  <div className="flex justify-center py-4">
-    <button
-      type="button"
-      onClick={loadMorePosts}
-      disabled={loadingMore}
-      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-    >
-      {loadingMore ? "Loading..." : "Load more posts"}
-    </button>
+         {nextCursor && (
+  <div
+    ref={loadMoreSentinelRef}
+    className="flex min-h-[48px] items-center justify-center py-3"
+    aria-hidden="true"
+  >
+    {loadingMore && (
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+        <span>Loading more posts...</span>
+      </div>
+    )}
   </div>
 )}
-
-
-
-
 
         </section>
 
@@ -3971,12 +3959,7 @@ const byParent = allComments.reduce((acc, c) => {
             </div>
           </Card>
 
-          {/*<Card square>
-            <HeaderBar title="Community rules" square />
-            <div className="p-4 text-sm text-slate-700">
-              Be respectful. No harassment, plagiarism, or sharing of exam content. Cite sources when possible.
-            </div>
-          </Card>*/}
+         
           <Card square>
   <HeaderBar title="Trending Topics" square />
 
@@ -4022,12 +4005,11 @@ const byParent = allComments.reduce((acc, c) => {
               >
                 Global Academic Platform
               </Link>
-
               <Link
-  to="/platform/country"
+  to="/platform/university"
   className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
 >
-  Country Academic Platform
+  University Academic Platform
 </Link>
 
               {!isLecturer && (
