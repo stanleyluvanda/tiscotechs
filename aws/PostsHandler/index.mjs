@@ -307,6 +307,144 @@ async function loadThreadFast(postId, { limit = 500, cursor } = {}) {
   return { comments: out, cursor: encodeCursor(resp.LastEvaluatedKey) };
 }
 
+
+/* ---------------- PAGINATED comment/reply readers ----------------
+   Additive only:
+   - comments are queried independently with CMT#
+   - replies are queried independently for one comment with RPL#<commentId>#
+   - existing loadThreadFast() remains unchanged
+------------------------------------------------------------------- */
+
+async function loadCommentsPage(postId, { limit = 10, cursor } = {}) {
+  const pk = pkPost(postId);
+
+  const resp = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression:
+        "#pk = :pk AND begins_with(#sk, :commentPrefix)",
+      ExpressionAttributeNames: {
+        "#pk": "pk",
+        "#sk": "sk",
+      },
+      ExpressionAttributeValues: {
+        ":pk": pk,
+        ":commentPrefix": "CMT#",
+      },
+      ExclusiveStartKey: decodeCursor(cursor),
+      Limit: clampInt(limit, 10, 1, 50),
+      ScanIndexForward: false,
+    })
+  );
+
+  const items = Array.isArray(resp.Items) ? resp.Items : [];
+
+  const comments = items.map((c) => {
+    const commentId =
+      String(c.commentId || c.id || "").trim() ||
+      String(c.sk || "").split("#").slice(-1)[0] ||
+      uid("c");
+
+    return {
+      id: commentId,
+      postId: String(c.postId || postId),
+
+      authorId: c.authorId || "",
+      authorName: c.authorName || "",
+      authorPhoto: c.authorPhoto || "",
+      authorProgram: c.authorProgram || "",
+      authorRole: c.authorRole || "",
+      authorTitle: c.authorTitle || "",
+      authorUniversity: c.authorUniversity || "",
+      authorFaculty: c.authorFaculty || "",
+      authorCountry: c.authorCountry || "",
+      authorCountryCode: c.authorCountryCode || "",
+
+      html: c.html || "",
+      text: c.text || "",
+      images: safeArr(c.images),
+      files: safeArr(c.files),
+
+      createdAt: c.createdAt || 0,
+      updatedAt: c.updatedAt || 0,
+
+      // Replies will be loaded separately/paginated.
+      replies: [],
+    };
+  });
+
+  return {
+    comments,
+    cursor: encodeCursor(resp.LastEvaluatedKey),
+  };
+}
+
+async function loadRepliesPage(
+  postId,
+  commentId,
+  { limit = 5, cursor } = {}
+) {
+  const pk = pkPost(postId);
+  const cleanCommentId = String(commentId || "").trim();
+
+  if (!cleanCommentId) {
+    return { replies: [], cursor: null };
+  }
+
+  const resp = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      KeyConditionExpression:
+        "#pk = :pk AND begins_with(#sk, :replyPrefix)",
+      ExpressionAttributeNames: {
+        "#pk": "pk",
+        "#sk": "sk",
+      },
+      ExpressionAttributeValues: {
+        ":pk": pk,
+        ":replyPrefix": `RPL#${cleanCommentId}#`,
+      },
+      ExclusiveStartKey: decodeCursor(cursor),
+      Limit: clampInt(limit, 5, 1, 50),
+
+      // Existing UI displays replies oldest -> newest.
+      ScanIndexForward: true,
+    })
+  );
+
+  const items = Array.isArray(resp.Items) ? resp.Items : [];
+
+  const replies = items.map((r) => ({
+    id: r.replyId || r.id || uid("r"),
+    postId: String(r.postId || postId),
+    commentId: cleanCommentId,
+
+    authorId: r.authorId || "",
+    authorName: r.authorName || "",
+    authorPhoto: r.authorPhoto || "",
+    authorProgram: r.authorProgram || "",
+    authorRole: r.authorRole || "",
+    authorTitle: r.authorTitle || "",
+    authorUniversity: r.authorUniversity || "",
+    authorFaculty: r.authorFaculty || "",
+    authorCountry: r.authorCountry || "",
+    authorCountryCode: r.authorCountryCode || "",
+
+    html: r.html || "",
+    text: r.text || "",
+    images: safeArr(r.images),
+    files: safeArr(r.files),
+
+    createdAt: r.createdAt || 0,
+    updatedAt: r.updatedAt || 0,
+  }));
+
+  return {
+    replies,
+    cursor: encodeCursor(resp.LastEvaluatedKey),
+  };
+}
+
 /* ---------------- Delete post + all children (comments/replies) ---------------- */
 async function deleteWholePost(postId) {
   const pk = pkPost(postId);
@@ -412,9 +550,20 @@ path === "/api/posts/saved" || path.endsWith("/posts/saved");
     path === "/api/posts/comment" || path.endsWith("/posts/comment");
   const isReplyPath =
     path === "/api/posts/reply" || path.endsWith("/posts/reply");
-  const isThreadPath =
+  /*const isThreadPath =
     path === "/api/posts/thread" || path.endsWith("/posts/thread");
-  const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
+  const isPostsPath = path === "/api/posts" || path.endsWith("/posts");*/
+
+const isThreadPath =
+    path === "/api/posts/thread" || path.endsWith("/posts/thread");
+
+const isCommentsPagePath =
+  path === "/api/posts/comments" || path.endsWith("/posts/comments");
+
+const isRepliesPagePath =
+  path === "/api/posts/replies" || path.endsWith("/posts/replies");
+
+const isPostsPath = path === "/api/posts" || path.endsWith("/posts");
 
   const isNotifMinePath =
     path === "/api/notifications/mine" || path.endsWith("/notifications/mine");
@@ -479,6 +628,161 @@ path === "/api/posts/saved" || path.endsWith("/posts/saved");
       };
     }
   }
+
+
+  /* ---------- GET /api/posts/comments?postId=&limit=&cursor= ---------- */
+if (isCommentsPagePath && method === "GET") {
+  try {
+    const qs = event.queryStringParameters || {};
+
+    const threadId = normalizeThreadId(qs);
+
+    if (!threadId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "postId is required",
+        }),
+      };
+    }
+
+    const postItem = await ensurePostExists(threadId, null);
+
+    if (!postItem) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "Post not found",
+        }),
+      };
+    }
+
+    if (isHiddenOrRemovedPost(postItem)) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "Post not available",
+        }),
+      };
+    }
+
+    const limit = clampInt(qs.limit, 10, 1, 50);
+    const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
+    const res = await loadCommentsPage(threadId, {
+      limit,
+      cursor,
+    });
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        ok: true,
+        postId: threadId,
+        comments: res.comments,
+        cursor: res.cursor,
+      }),
+    };
+  } catch (err) {
+    console.error("[PostsHandlerDDB] comments page GET failed:", err);
+
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        ok: false,
+        error: "Failed to load comments",
+      }),
+    };
+  }
+}
+
+/* ---------- GET /api/posts/replies?postId=&commentId=&limit=&cursor= ---------- */
+if (isRepliesPagePath && method === "GET") {
+  try {
+    const qs = event.queryStringParameters || {};
+
+    const threadId = normalizeThreadId(qs);
+    const commentId = String(qs.commentId || "").trim();
+
+    if (!threadId || !commentId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "postId and commentId are required",
+        }),
+      };
+    }
+
+    const postItem = await ensurePostExists(threadId, null);
+
+    if (!postItem) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "Post not found",
+        }),
+      };
+    }
+
+    if (isHiddenOrRemovedPost(postItem)) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({
+          ok: false,
+          error: "Post not available",
+        }),
+      };
+    }
+
+    const limit = clampInt(qs.limit, 5, 1, 50);
+    const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
+    const res = await loadRepliesPage(
+      threadId,
+      commentId,
+      {
+        limit,
+        cursor,
+      }
+    );
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        ok: true,
+        postId: threadId,
+        commentId,
+        replies: res.replies,
+        cursor: res.cursor,
+      }),
+    };
+  } catch (err) {
+    console.error("[PostsHandlerDDB] replies page GET failed:", err);
+
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        ok: false,
+        error: "Failed to load replies",
+      }),
+    };
+  }
+}
 
   /* ---------- POST /api/posts/comment ---------- */
   if (isCommentPath && method === "POST") {
@@ -1199,6 +1503,145 @@ const view = String(qs.view || "").trim().toLowerCase();
 const isRecentView = view === "recent";
 const isOlderView = view === "older";
 
+
+
+
+
+
+
+
+// Optional lecturer-only feed retrieval.
+// Completely separate from StudentDashboard audience filtering.
+const authorMode = String(qs.authorMode || "")
+  .trim()
+  .toLowerCase();
+
+const requestedAuthorId = String(qs.authorId || "").trim();
+const requestedAuthorName = String(qs.authorName || "").trim();
+
+const useLecturerAuthorFilter =
+  authorMode === "lecturer" &&
+  (!!requestedAuthorId || !!requestedAuthorName);
+
+const matchesRequestedLecturer = (post) => {
+  if (!useLecturerAuthorFilter) return false;
+
+  const postAuthorId = String(post?.authorId || "").trim();
+
+  const postAuthorName = String(
+    post?.author || post?.authorName || ""
+  ).trim();
+
+  const postAuthorType = String(
+    post?.authorType || post?.role || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const idMatch =
+    !!requestedAuthorId &&
+    !!postAuthorId &&
+    postAuthorId === requestedAuthorId;
+
+  const nameMatch =
+    postAuthorType === "lecturer" &&
+    !!requestedAuthorName &&
+    postAuthorName === requestedAuthorName;
+
+  return idMatch || nameMatch;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Optional audience-aware feed pagination.
+// If these parameters are absent, existing callers keep the old behavior.
+const audienceMode = String(qs.audienceMode || "")
+  .trim()
+  .toLowerCase();
+
+const requestedAudience = String(qs.audience || "").trim();
+
+const requestedFacultyAudience = String(
+  qs.facultyAudience || ""
+).trim();
+
+const requestedFacultyYearAudience = String(
+  qs.facultyYearAudience || ""
+).trim();
+
+const useProgramAudienceFilter =
+  audienceMode === "program" && !!requestedAudience;
+
+const useFacultyAudienceFilter =
+  audienceMode === "faculty" &&
+  (!!requestedFacultyAudience || !!requestedFacultyYearAudience);
+
+const useAudienceFilter =
+  useProgramAudienceFilter || useFacultyAudienceFilter;
+
+const matchesRequestedAudience = (post) => {
+  const postAudience = String(post?.audience || "GLOBAL").trim();
+
+  // Normal student feed:
+  // GLOBAL + exact university/faculty/program/year group
+  /*if (useProgramAudienceFilter) {
+    return (
+      postAudience === "GLOBAL" ||
+      postAudience === requestedAudience
+    );
+  }*/
+  // Normal student feed:
+// GLOBAL + exact program/year + own faculty/faculty-year.
+//
+// Faculty posts are included in the returned data so StudentDashboard
+// can detect the NEW signal while the faculty toggle is still OFF.
+// The frontend continues to decide which posts are actually displayed.
+if (useProgramAudienceFilter) {
+  return (
+    postAudience === "GLOBAL" ||
+    postAudience === requestedAudience ||
+    (
+      !!requestedFacultyAudience &&
+      postAudience === requestedFacultyAudience
+    ) ||
+    (
+      !!requestedFacultyYearAudience &&
+      postAudience === requestedFacultyYearAudience
+    )
+  );
+}
+
+
+
+  // Faculty-only feed:
+  // exact faculty or faculty/year group
+  if (useFacultyAudienceFilter) {
+    return (
+      postAudience === requestedFacultyAudience ||
+      postAudience === requestedFacultyYearAudience
+    );
+  }
+
+  // Old callers: no audience filtering.
+  return true;
+};
+
+
+
+
+
+
 // The GSI sort key begins with the padded createdAt timestamp.
 // Calculate this once per request, not once per DynamoDB page.
 const recentCutoffMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -1233,16 +1676,295 @@ const withThread =
         const wantThread =
           withThread === "1" || withThread.toLowerCase() === "true";
 
-        const limit = clampInt(qs.limit, 30, 1, 200);
+        /*const limit = clampInt(qs.limit, 30, 1, 200);
         const cursor = qs.cursor ? String(qs.cursor) : undefined;
 
         const posts = [];
         let lastKey = decodeCursor(cursor);
         let safetyPages = 0;
-        const MAX_PAGES = 6;
+        const MAX_PAGES = 6;*/
+
+const limit = clampInt(qs.limit, 30, 1, 200);
+const cursor = qs.cursor ? String(qs.cursor) : undefined;
+
+/* =========================================================
+   Lecturer-only feed branch
+   ---------------------------------------------------------
+   IMPORTANT:
+   - Runs only when authorMode=lecturer
+   - Does NOT use StudentDashboard audience filtering
+   - Does NOT change StudentDashboard queryLimit behavior
+========================================================= */
+if (useLecturerAuthorFilter) {
+  /*const lecturerPosts = [];
+
+  let lecturerLastKey = decodeCursor(cursor);
+  let lecturerSafetyPages = 0;
+
+  const LECTURER_MAX_PAGES = 6;
+
+  while (
+    lecturerPosts.length < limit &&
+    lecturerSafetyPages < LECTURER_MAX_PAGES
+  ) {
+    lecturerSafetyPages += 1;*/
+
+/*const lecturerPosts = [];
+
+let lecturerLastKey = decodeCursor(cursor);
+
+while (lecturerPosts.length < limit) {
+
+    // Only request as many raw DynamoDB records as can still
+    // fit in this lecturer response. This preserves cursor correctness.
+    const lecturerQueryLimit = Math.max(
+      1,
+      limit - lecturerPosts.length
+    );
+
+    const resp = await ddb.send(
+      new QueryCommand({
+        TableName: TABLE,
+        IndexName: GSI_FEED,
+        KeyConditionExpression: keyConditionExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ScanIndexForward: false,
+        Limit: lecturerQueryLimit,
+        ExclusiveStartKey: lecturerLastKey,
+      })
+    );
+
+    const pageItems = Array.isArray(resp.Items)
+      ? resp.Items
+      : [];
+
+    for (const p of pageItems) {
+      if (lecturerPosts.length >= limit) break;
+
+      if (isHiddenOrRemovedPost(p)) {
+        continue;
+      }
+
+      if (!matchesRequestedLecturer(p)) {
+        continue;
+      }
+
+      const postId = String(
+        p.postId || p.id || ""
+      ).trim();
+
+      const base = { ...p };
+
+      delete base.pk;
+      delete base.sk;
+
+      base.id = base.id || postId;
+      base.postId = postId;
+
+      if (wantThread && postId) {
+        const thr = await loadThreadFast(postId, {
+          limit: 500,
+        });
+
+        base.comments = thr.comments;
+      } else {
+        base.comments = [];
+      }
+
+      lecturerPosts.push(base);
+    }
+
+    lecturerLastKey = resp.LastEvaluatedKey;
+
+    if (!lecturerLastKey) {
+      break;
+    }
+  }*/
+
+
+    const lecturerPosts = [];
+
+// Tracks logical lecturer posts.
+// Multi-program sibling records with the same multiGroupId
+// count as ONE visible post in LecturerDashboard.
+const lecturerLogicalKeys = new Set();
+
+let lecturerLastKey = decodeCursor(cursor);
+
+// Create a DynamoDB-compatible cursor from an item.
+// This lets us safely stop in the middle of a returned Query page
+// without skipping records on the next Load More request.
+const lecturerCursorKey = (item) => ({
+  pk: item.pk,
+  sk: item.sk,
+  gsi1pk: item.gsi1pk,
+  gsi1sk: item.gsi1sk,
+});
+
+let lecturerDone = false;
+
+while (!lecturerDone) {
+  // Keep each DynamoDB Query reasonably small.
+  // This does NOT change the browser/API page size of 20.
+  const lecturerQueryLimit = 20;
+
+  const resp = await ddb.send(
+    new QueryCommand({
+      TableName: TABLE,
+      IndexName: GSI_FEED,
+      KeyConditionExpression: keyConditionExpression,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ScanIndexForward: false,
+      Limit: lecturerQueryLimit,
+      ExclusiveStartKey: lecturerLastKey,
+    })
+  );
+
+  const pageItems = Array.isArray(resp.Items)
+    ? resp.Items
+    : [];
+
+  // This represents the last raw DynamoDB record that we have
+  // completely consumed.
+  let previousConsumedKey = lecturerLastKey;
+
+  for (const p of pageItems) {
+    const currentItemKey = lecturerCursorKey(p);
+
+    if (isHiddenOrRemovedPost(p)) {
+      previousConsumedKey = currentItemKey;
+      continue;
+    }
+
+    if (!matchesRequestedLecturer(p)) {
+      previousConsumedKey = currentItemKey;
+      continue;
+    }
+
+    const postId = String(
+      p.postId || p.id || ""
+    ).trim();
+
+    if (!postId) {
+      previousConsumedKey = currentItemKey;
+      continue;
+    }
+
+    // One lecturer publication can create several DynamoDB records
+    // when it targets several academic programs.
+    // Those records share multiGroupId and must count as one
+    // visible LecturerDashboard post.
+    const multiGroupId = String(
+      p.multiGroupId || ""
+    ).trim();
+
+    const logicalPostKey = multiGroupId
+      ? `group:${multiGroupId}`
+      : `post:${postId}`;
+
+    const isNewLogicalPost =
+      !lecturerLogicalKeys.has(logicalPostKey);
+
+    // We already have 20 logical posts and have now reached
+    // the first record belonging to post #21.
+    //
+    // Stop BEFORE consuming it so Load More starts exactly here.
+    if (
+      isNewLogicalPost &&
+      lecturerLogicalKeys.size >= limit
+    ) {
+      lecturerLastKey = previousConsumedKey;
+      lecturerDone = true;
+      break;
+    }
+
+    if (isNewLogicalPost) {
+      lecturerLogicalKeys.add(logicalPostKey);
+    }
+
+    const base = { ...p };
+
+    delete base.pk;
+    delete base.sk;
+
+    base.id = base.id || postId;
+    base.postId = postId;
+
+    if (wantThread && postId) {
+      const thr = await loadThreadFast(postId, {
+        limit: 500,
+      });
+
+      base.comments = thr.comments;
+    } else {
+      base.comments = [];
+    }
+
+    lecturerPosts.push(base);
+
+    previousConsumedKey = currentItemKey;
+  }
+
+  if (lecturerDone) {
+    break;
+  }
+
+  lecturerLastKey = resp.LastEvaluatedKey;
+
+  // Actual end of this recent/older feed.
+  // If the lecturer has fewer than 20 logical posts,
+  // cursor becomes null and Load More will not appear.
+  if (!lecturerLastKey) {
+    break;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      ok: true,
+      scope: sc,
+      posts: lecturerPosts,
+      cursor: encodeCursor(lecturerLastKey),
+    }),
+  };
+}
+
+/* =========================================================
+   Existing Student/global feed path
+   LEAVE THIS LOGIC UNCHANGED
+========================================================= */
+
+const posts = [];
+let lastKey = decodeCursor(cursor);
+let safetyPages = 0;
+const MAX_PAGES = 6;
 
         while (posts.length < limit && safetyPages < MAX_PAGES) {
           safetyPages += 1;
+
+
+// For audience-aware requests, only ask DynamoDB for as many
+// raw records as could still fit in this response.
+//
+// This is important for cursor correctness: we do not want to
+// stop halfway through a DynamoDB page and accidentally skip
+// records when generating the next cursor.
+const queryLimit = useAudienceFilter
+? Math.max(1, limit - posts.length)
+: limit;
 
           const resp = await ddb.send(
             new QueryCommand({
@@ -1253,7 +1975,8 @@ const withThread =
                ExpressionAttributeValues: expressionAttributeValues,
               ScanIndexForward: false,
               /*Limit: Math.min(200, Math.max(30, limit * 2)),*/
-              Limit: limit,
+              /*Limit: limit,*/
+              Limit: queryLimit,
               ExclusiveStartKey: lastKey,
             })
           );
@@ -1264,6 +1987,14 @@ const withThread =
             if (posts.length >= limit) break;
 
             if (isHiddenOrRemovedPost(p)) continue;
+
+            // Audience-aware requests only.
+  // Existing callers without audience parameters are unaffected.
+  if (useAudienceFilter && !matchesRequestedAudience(p)) {
+    continue;
+  }
+
+  
 
             const postId = String(p.postId || p.id || "").trim();
             const base = { ...p };

@@ -15,6 +15,9 @@ const API_BASE = (
   import.meta.env.VITE_API_BASE ||
   ""
 ).replace(/\/+$/, "");
+// CloudFront base for public scholarship/fellowship detail GET requests only
+const SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
 
 const AI_API_BASE = (
   import.meta.env.VITE_SCHOLARSHIP_AI_API_BASE || ""
@@ -616,7 +619,9 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
 
       if (useApi) {
         try {
-          const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
+          /*const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
+          const res = await fetch(url);*/
+          const url = `${SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE}/api/scholarships/${encodeURIComponent(id)}`;
           const res = await fetch(url);
 
           if (res.status === 404) {
@@ -681,8 +686,11 @@ const gateKey = `${typePrefix}:${idSafe}:${t}`;
           );*/
           const currentType = String(item?.contentType || "SCHOLARSHIP").toUpperCase();
 
-const res = await fetch(
+/*const res = await fetch(
   `${API_BASE}/api/scholarships?page=1&pageSize=200&contentType=${encodeURIComponent(currentType)}`
+);*/
+const res = await fetch(
+  `${SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE}/api/scholarships?page=1&pageSize=200&contentType=${encodeURIComponent(currentType)}`
 );
           if (res.ok) {
             const data = await res.json();

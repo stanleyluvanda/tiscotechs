@@ -10,6 +10,8 @@ import {
   fetchPosts,
   fetchPostsPage,
   fetchThread,
+  fetchCommentsPage,
+  fetchRepliesPage,
   createPost as createPostOnServer,
   deletePost as deletePostOnServer,
   postCommentToServer,
@@ -657,7 +659,8 @@ function FileIcon({ att }) {
   const k = fileKind(att);
 
   const base =
-    "w-10 h-10 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0";
+    /*"w-5 h-5 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0";*/
+    "w-5 h-5 rounded-lg flex items-center justify-center text-white font-extrabold text-[9px] shrink-0";
   const cls =
     k === "pdf"
       ? "bg-red-500"
@@ -821,19 +824,22 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
       <div
         key={f.id || attHref(f) || uid()}
         className="flex items-center gap-3 border border-slate-200 rounded-xl px-3 py-2 bg-white"
+        
       >
         <FileIcon att={f} />
 
         <a
           href={attHref(f)}
           download={f.name}
-          className="text-sm text-blue-700 underline truncate flex-1 min-w-0"
+          className="text-sm text-blue-700 underline truncate flex-1 min-w-0"         
           title={f.name}
         >
-          {f.name}
+          {/*{f.name}*/}
+          {f.name?.length > 45 ? `${f.name.slice(0, 45)}...` : f.name}
         </a>
 
-        <span className="text-xs text-slate-500 whitespace-nowrap">{humanSize(f.size || 0)}</span>
+        <span className="text-xs text-slate-500 whitespace-nowrap">
+          {humanSize(f.size || 0)}</span>
 
         <button
           type="button"
@@ -1681,24 +1687,96 @@ function flattenDdbThreadShape(comments = []) {
   const list = Array.isArray(comments) ? comments : [];
   if (!list.length) return [];
 
+  // Normalize attachments the same way the working
+  // UniversityAcademicPlatform does.
+  const normalizeThreadAtts = (item) => {
+    const attachmentsArr = Array.isArray(item?.attachments)
+      ? item.attachments
+      : [];
+
+    const imagesArr = Array.isArray(item?.images)
+      ? item.images
+      : [];
+
+    const filesArr = Array.isArray(item?.files)
+      ? item.files
+      : [];
+
+    const merged = [
+      ...attachmentsArr.map((x) => ({
+        ...x,
+        id: String(x?.id || uid()),
+        name: x?.name || x?.fileName || "file",
+        type: x?.type || x?.mime || "application/octet-stream",
+        dataUrl: x?.dataUrl || x?.url || x?.href || "",
+        url: x?.url,
+        href: x?.href,
+        size: x?.size || 0,
+      })),
+
+      ...imagesArr.map((x) => ({
+        ...x,
+        id: String(x?.id || uid()),
+        name: x?.name || x?.fileName || "image",
+        type: x?.mime || x?.type || "image/*",
+        dataUrl: x?.dataUrl || x?.url || x?.href || "",
+        url: x?.url,
+        href: x?.href,
+        size: x?.size || 0,
+      })),
+
+      ...filesArr.map((x) => ({
+        ...x,
+        id: String(x?.id || uid()),
+        name: x?.name || x?.fileName || "file",
+        type: x?.mime || x?.type || "application/octet-stream",
+        dataUrl: x?.dataUrl || x?.url || x?.href || "",
+        url: x?.url,
+        href: x?.href,
+        size: x?.size || 0,
+      })),
+    ].filter((a) => a && a.dataUrl);
+
+    // Remove duplicates by URL + name + type.
+    const seen = new Set();
+
+    return merged.filter((a) => {
+      const key = `${a.dataUrl || ""}__${a.name || ""}__${a.type || ""}`;
+
+      if (seen.has(key)) return false;
+
+      seen.add(key);
+      return true;
+    });
+  };
+
   const out = [];
+
   for (const c of list) {
     if (!c) continue;
 
-    // push comment itself (strip nested replies to keep flat)
-    out.push({ ...c, replies: [] });
+    // Normalize the top-level comment.
+    out.push({
+      ...c,
+      attachments: normalizeThreadAtts(c),
+      replies: [],
+    });
 
-    // if DynamoDB returns replies nested under comment.replies, flatten them
+    // Flatten and normalize replies returned inside comment.replies.
     const kids = Array.isArray(c.replies) ? c.replies : [];
+
     for (const r of kids) {
       if (!r) continue;
+
       out.push({
         ...r,
-        parentId: r.parentId ?? c.id, // ✅ ensure parentId exists
+        parentId: r.parentId ?? c.id,
+        attachments: normalizeThreadAtts(r),
         replies: [],
       });
     }
   }
+
   return out;
 }
 
@@ -1790,6 +1868,7 @@ export default function GlobalAcademicPlatform() {
   const [nextCursor, setNextCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedTrendingTopic, setSelectedTrendingTopic] = useState(null);
+  const loadMoreRef = useRef(null);
 
 
 
@@ -1988,6 +2067,35 @@ return () => {
     setLoadingMore(false);
   }
 }
+
+ // ✅ Auto-load next page when user approaches bottom of feed
+  useEffect(() => {
+    const node = loadMoreRef.current;
+
+    if (!node || !nextCursor) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        if (entry?.isIntersecting && !loadingMore) {
+          loadMorePosts();
+        }
+      },
+      {
+        root: null,
+        rootMargin: "300px 0px",
+        threshold: 0,
+      }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [nextCursor, loadingMore]);
+
+
+
 
   const postRefs = useRef({});
 
@@ -3026,9 +3134,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   <SafeTextEditor html={html} onChange={setHtml} />
 </div>
 
-
-
-
       <div className="flex items-center gap-2 mt-2">
         <div className="mt-2">
           <AttachmentUploader
@@ -3037,6 +3142,7 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
             folder="global/posts"
             maxFiles={5}
             role={isLecturer ? "lecturer" : "student"}
+            showList={false}
           />
         </div>
 
@@ -3065,8 +3171,30 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   const [threadLoaded, setThreadLoaded] = useState(false);
   const [threadLoading, setThreadLoading] = useState(false);
   const [threadComments, setThreadComments] = useState(null);
-  const [commentOpen, setCommentOpen] = useState(false);
+// Server-side comment pagination
+  const [commentsCursor, setCommentsCursor] = useState(null);
+  const [commentsHasMore, setCommentsHasMore] = useState(false);
+  const [commentsLoadingMore, setCommentsLoadingMore] = useState(false);
+
+const [commentOpen, setCommentOpen] = useState(false);
   const [replyOpenById, setReplyOpenById] = useState({});
+  const [repliesVisibleById, setRepliesVisibleById] = useState({});
+  // Server-side reply pagination, keyed by parent comment ID
+const [repliesByCommentId, setRepliesByCommentId] = useState({});
+const [repliesCursorByCommentId, setRepliesCursorByCommentId] = useState({});
+const [repliesHasMoreByCommentId, setRepliesHasMoreByCommentId] = useState({});
+const [repliesLoadingByCommentId, setRepliesLoadingByCommentId] = useState({});
+
+  // Comment/reply display pagination.
+// Server-side comment pagination; replies remain locally paginated for now.
+const COMMENTS_PAGE_SIZE = 10;
+const REPLIES_PAGE_SIZE = 5;
+
+/*const [visibleCommentCount, setVisibleCommentCount] = useState(
+  COMMENTS_PAGE_SIZE
+);*/
+
+const [visibleReplyCountById, setVisibleReplyCountById] = useState({});
   
 
   /*const answers = (post.comments || []).filter((c) => !c.parentId);
@@ -3087,6 +3215,12 @@ const byParent = visibleComments.reduce((acc, c) => {
     if (c.parentId) (acc[c.parentId] ||= []).push(c);
     return acc;
   }, {});
+
+  /*const visibleAnswers = answers.slice(0, visibleCommentCount);*/
+  const visibleAnswers = answers;
+
+const getVisibleReplyCount = (commentId) =>
+  visibleReplyCountById[commentId] ?? REPLIES_PAGE_SIZE;
 
   const setReplyOpen = (id, val) => setReplyOpenById((s) => ({ ...s, [id]: val }));
 
@@ -3110,21 +3244,33 @@ const byParent = visibleComments.reduce((acc, c) => {
       try {
         setThreadLoading(true);
 
-        const res = await fetchThread({ postId: post.id });
-        const comments = Array.isArray(res?.comments) ? res.comments : [];
 
-        /*setPosts((prev) =>
-          prev.map((p) =>
-            String(p.id) === String(post.id)
-              ? { ...p, comments }
-              : p
-          )
-        );*/
-        /*setThreadComments(comments);*/
-        setThreadComments(flattenDdbThreadShape(comments));
+  const res = await fetchCommentsPage({
+  postId: post.id,
+  limit: COMMENTS_PAGE_SIZE,
+});
 
-        setThreadLoaded(true);
-        setOpen(true);
+const comments = Array.isArray(res?.comments)
+  ? res.comments
+  : Array.isArray(res?.items)
+  ? res.items
+  : [];
+
+setThreadComments(flattenDdbThreadShape(comments));
+
+/*setCommentsCursor(res?.nextCursor || null);
+setCommentsHasMore(Boolean(res?.nextCursor));*/
+setCommentsCursor(res?.cursor || null);
+setCommentsHasMore(Boolean(res?.cursor));
+
+setThreadLoaded(true);
+setOpen(true);
+
+
+
+
+
+
       } catch (err) {
         console.error("Failed to load comments", err);
         setToast("Failed to load comments. Please try again.");
@@ -3144,7 +3290,8 @@ const byParent = visibleComments.reduce((acc, c) => {
       {open && (
         /*<div className="mt-2">*/
            <div className="col-span-5 mt-2 text-left">
-          {answers.map((a) => (
+          {/*{answers.map((a) => (*/}
+          {visibleAnswers.map((a) => (
             <div key={a.id} className="mt-3">
               <div className="flex items-start gap-2">
                 <Avatar
@@ -3201,7 +3348,85 @@ const byParent = visibleComments.reduce((acc, c) => {
                   </div>
 
                   {/* Replies */}
-                  {(byParent[a.id] || []).map((r) => (
+                 {/* View replies button */}
+{/*{(byParent[a.id] || []).length > 0 && !repliesVisibleById[a.id] && (*/}
+  {Number(a.replyCount || 0) > 0 && !repliesVisibleById[a.id] && (
+  <div className="mt-2 flex justify-center">
+    <button
+      type="button"
+      /*onClick={() =>
+        setRepliesVisibleById((prev) => ({
+          ...prev,
+          [a.id]: true,
+        }))
+      }*/
+  onClick={async () => {
+  if (repliesLoadingByCommentId[a.id]) return;
+
+  try {
+    setRepliesLoadingByCommentId((prev) => ({
+      ...prev,
+      [a.id]: true,
+    }));
+
+    const res = await fetchRepliesPage({
+      postId: post.id,
+      commentId: a.id,
+      limit: REPLIES_PAGE_SIZE,
+    });
+
+    const replies = Array.isArray(res?.replies)
+      ? res.replies
+      : Array.isArray(res?.items)
+      ? res.items
+      : [];
+
+    const normalizedReplies = flattenDdbThreadShape(replies);
+
+    setRepliesByCommentId((prev) => ({
+      ...prev,
+      [a.id]: normalizedReplies,
+    }));
+
+    setRepliesCursorByCommentId((prev) => ({
+      ...prev,
+      [a.id]: res?.cursor || null,
+    }));
+
+    setRepliesHasMoreByCommentId((prev) => ({
+      ...prev,
+      [a.id]: Boolean(res?.cursor),
+    }));
+
+    setRepliesVisibleById((prev) => ({
+      ...prev,
+      [a.id]: true,
+    }));
+  } catch (err) {
+    console.error("Failed to load replies", err);
+    setToast("Failed to load replies. Please try again.");
+    setTimeout(() => setToast(""), 4000);
+  } finally {
+    setRepliesLoadingByCommentId((prev) => ({
+      ...prev,
+      [a.id]: false,
+    }));
+  }
+}}
+      className="text-xs font-medium text-blue-700 hover:underline"
+    >
+      {/*View replies ({(byParent[a.id] || []).length})*/}
+      {repliesLoadingByCommentId[a.id]
+  ? "Loading..."
+  : `View replies (${Number(a.replyCount || 0)})`}
+    </button>
+  </div>
+)}
+
+{/* Replies — hidden until View replies is clicked */}
+{repliesVisibleById[a.id] &&
+  (repliesByCommentId[a.id] || [])
+    .map((r) => (
                    
                     <div key={r.id} className="mt-3 pl-1 sm:pl-4 border-l border-slate-200">
                       <div className="flex items-start gap-2">
@@ -3233,7 +3458,8 @@ const byParent = visibleComments.reduce((acc, c) => {
                           </div>
 
                           {/*<div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full">*/}
-                          <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full -ml-10 sm:ml-0 sm:w-full">
+                          {/*<div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full -ml-10 sm:ml-0 sm:w-full">*/}
+                          <div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100 w-full -ml-10 sm:w-full">
                             <HTMLReadMore html={r.html} lines={3} />
                             <AttachmentStrip atts={r.attachments} onPreview={setPreview} />
                           </div>
@@ -3242,11 +3468,100 @@ const byParent = visibleComments.reduce((acc, c) => {
                     </div>
                   ))}
 
+                  
+                  {repliesVisibleById[a.id] && repliesHasMoreByCommentId[a.id] && (
+  <div className="mt-2 flex justify-center">
+    <button
+      type="button"
+      disabled={repliesLoadingByCommentId[a.id]}
+      onClick={async () => {
+        const cursor = repliesCursorByCommentId[a.id];
+
+        if (repliesLoadingByCommentId[a.id] || !cursor) return;
+
+        try {
+          setRepliesLoadingByCommentId((prev) => ({
+            ...prev,
+            [a.id]: true,
+          }));
+
+          const res = await fetchRepliesPage({
+            postId: post.id,
+            commentId: a.id,
+            limit: REPLIES_PAGE_SIZE,
+            cursor,
+          });
+
+          const moreReplies = Array.isArray(res?.replies)
+            ? res.replies
+            : Array.isArray(res?.items)
+            ? res.items
+            : [];
+
+          const normalizedMoreReplies =
+            flattenDdbThreadShape(moreReplies);
+
+          setRepliesByCommentId((prev) => {
+            const existing = Array.isArray(prev[a.id])
+              ? prev[a.id]
+              : [];
+
+            const combined = [
+              ...existing,
+              ...normalizedMoreReplies,
+            ];
+
+            // Prevent duplicate replies if the same page is returned twice.
+            const seen = new Set();
+
+            return {
+              ...prev,
+              [a.id]: combined.filter((reply) => {
+                const key = String(
+                  reply?.id || reply?._id || ""
+                );
+
+                if (!key || seen.has(key)) return false;
+
+                seen.add(key);
+                return true;
+              }),
+            };
+          });
+
+          setRepliesCursorByCommentId((prev) => ({
+            ...prev,
+            [a.id]: res?.cursor || null,
+          }));
+
+          setRepliesHasMoreByCommentId((prev) => ({
+            ...prev,
+            [a.id]: Boolean(res?.cursor),
+          }));
+        } catch (err) {
+          console.error("Failed to load more replies", err);
+          setToast("Failed to load more replies. Please try again.");
+          setTimeout(() => setToast(""), 4000);
+        } finally {
+          setRepliesLoadingByCommentId((prev) => ({
+            ...prev,
+            [a.id]: false,
+          }));
+        }
+      }}
+      className="text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+    >
+      {repliesLoadingByCommentId[a.id]
+        ? "Loading..."
+        : "View more replies"}
+    </button>
+  </div>
+)}
+
                   {/* Reply composer */}
-                  {/*<div className="mt-2 pl-8 flex items-start gap-2">*/}
-                  <div className="mt-2 pl-2 sm:pl-8 flex items-start gap-2">
-                    <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
-                    <div className="flex-1">
+  <div className="mt-2 pl-0 sm:pl-2 flex items-start gap-2">
+  <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
+  <div className="flex-1 min-w-0">
                       <InlineComposer
                         placeholder="Reply…"
                         onSubmit={(v, ra) => addReply(post.id, a.id, v, ra)}
@@ -3262,10 +3577,62 @@ const byParent = visibleComments.reduce((acc, c) => {
             </div>
           ))}
 
+          {commentsHasMore && (
+  <div className="mt-4 flex justify-center">
+    <button
+      type="button"
+      disabled={commentsLoadingMore}
+      onClick={async () => {
+        if (commentsLoadingMore || !commentsCursor) return;
+
+        try {
+          setCommentsLoadingMore(true);
+
+          const res = await fetchCommentsPage({
+            postId: post.id,
+            limit: COMMENTS_PAGE_SIZE,
+            cursor: commentsCursor,
+          });
+
+          const moreComments = Array.isArray(res?.comments)
+            ? res.comments
+            : Array.isArray(res?.items)
+            ? res.items
+            : [];
+
+          setThreadComments((prev) => {
+            const existing = Array.isArray(prev) ? prev : [];
+            return flattenDdbThreadShape([
+              ...existing,
+              ...moreComments,
+            ]);
+          });
+
+          /*setCommentsCursor(res?.nextCursor || null);
+          setCommentsHasMore(Boolean(res?.nextCursor));*/
+          setCommentsCursor(res?.cursor || null);
+          setCommentsHasMore(Boolean(res?.cursor));
+        } catch (err) {
+          console.error("Failed to load more comments", err);
+          setToast("Failed to load more comments. Please try again.");
+          setTimeout(() => setToast(""), 4000);
+        } finally {
+          setCommentsLoadingMore(false);
+        }
+      }}
+      className="text-sm font-medium text-blue-700 hover:underline disabled:opacity-50"
+    >
+      {commentsLoadingMore ? "Loading..." : "View more comments"}
+    </button>
+  </div>
+)}
+
           {/* New top-level comment */}
-          <div className="mt-3 flex items-start gap-2">
+          {/*<div className="mt-3 flex items-start gap-2">*/}
+          <div className="mt-3 -ml-3 flex items-start gap-2">
             <Avatar url={user?.photoUrl} name={userDisplayName} size="sm" online />
-            <div className="flex-1">
+            {/*<div className="flex-1">*/}
+            <div className="flex-1 min-w-0">
               <InlineComposer
                 placeholder="Write a comment…"
                 onSubmit={(v, atts) => addAnswer(post.id, v, atts)}
@@ -3426,7 +3793,7 @@ const byParent = visibleComments.reduce((acc, c) => {
           </aside>
 
           {/* CENTER */}
-          <section className="space-y-1">
+<section className="space-y-1">
             <Card>
               <div className="p-4">
                 {!editorOpen ? (
@@ -3448,7 +3815,8 @@ const byParent = visibleComments.reduce((acc, c) => {
                     <div className="flex items-start gap-2 sm:gap-3">
                       <Avatar url={user?.photoUrl} name={userDisplayName} size="md" online={true} />
                       {/*<div className="flex-1 min-w-0">*/}
-                      <div className="flex-1 min-w-0 -ml-1 sm:ml-0">
+                      {/*<div className="flex-1 min-w-0 -ml-1 sm:ml-0">*/}
+                      <div className="flex-1 w-0 min-w-0 -ml-1 sm:ml-0">
                         <input
                           value={askTitle}
                           onChange={(e) => setAskTitle(e.target.value)}
@@ -3483,9 +3851,9 @@ const byParent = visibleComments.reduce((acc, c) => {
 
 
              
-                        </div>
-                        {/*<AttachmentStripEditable atts={askAtts} onRemove={removeAskAttachment} onPreview={setPreview} />*/}
-                        <div className="mt-1">
+</div>
+                       
+<div className="mt-1">
   <AttachmentUploader
   value={askUploadAtts}
   onChange={setAskUploadAtts}
@@ -3497,7 +3865,8 @@ const byParent = visibleComments.reduce((acc, c) => {
 
 </div>
 
-                    <div className="mt-2 space-y-2 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
+                  
+     <div className="mt-2 space-y-2 sm:flex sm:items-center sm:gap-2 sm:space-y-0">
   <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2 sm:ml-auto">
     <select
       value={selectedCategory}
@@ -3975,15 +4344,11 @@ const byParent = visibleComments.reduce((acc, c) => {
 
 
             {nextCursor && (
-  <div className="flex justify-center py-4">
-    <button
-      type="button"
-      onClick={loadMorePosts}
-      disabled={loadingMore}
-      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-    >
-      {loadingMore ? "Loading..." : "Load more posts"}
-    </button>
+  <div
+    ref={loadMoreRef}
+    className="flex justify-center py-4 text-sm text-slate-500"
+  >
+    {loadingMore ? "Loading more posts..." : ""}
   </div>
 )}
   </section>

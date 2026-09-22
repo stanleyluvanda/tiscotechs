@@ -10,6 +10,8 @@ import {
   fetchPosts,
   fetchPostsPage,
   fetchThread,
+  fetchCommentsPage,
+  fetchRepliesPage,
   createPost as createPostOnServer,
   deletePost as deletePostOnServer,
   postCommentToServer,
@@ -615,7 +617,7 @@ function fileIconDataUrl(filename = "") {
   const svg = (bg, letter) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
   <rect x="6" y="6" width="44" height="44" rx="8" fill="${bg}"/>
-  <text x="28" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#fff">${letter}</text>
+  <text x="28" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#fff">${letter}</text>
 </svg>`.trim();
 
   let bg = "#64748b"; // slate default
@@ -632,121 +634,6 @@ function fileIconDataUrl(filename = "") {
   return `data:image/svg+xml;charset=utf-8,${encoded}`;
 }
 
-
-
-
-/*function AttachmentStrip({ atts = [], onPreview }) {
-  if (!atts.length) return null;
-  const images = atts.filter((a) => (a.type || "").startsWith("image/"));
-  const files = atts.filter((a) => !(a.type || "").startsWith("image/"));
-  return (
-    <div className="mt-2 space-y-2">
-      {images.length > 0 && (
-        <div className={images.length === 1 ? "grid grid-cols-1 gap-2" : "grid grid-cols-2 sm:grid-cols-3 gap-2"}>
-          {images.map((img) => (
-            <button
-              key={img.id}
-              type="button"
-              onClick={() => onPreview && onPreview(img)}
-              className="relative group"
-              title="Click to enlarge"
-            >
-              <img
-                src={img.dataUrl}
-                alt={img.name}
-                className={images.length === 1 ? "w-full max-h-[70vh] object-contain bg-slate-100 rounded transition-transform group-active:scale-95" : "w-full h-40 object-cover rounded transition-transform group-active:scale-95"}
-              />
-              <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
-                Zoom
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-      {files.length > 0 && (
-        <ul className="text-sm list-disc pl-5">
-          {files.map((f) => (
-            <li key={f.id} className="break-all">
-              <a href={f.dataUrl} download={f.name} className="text-blue-600 underline">
-                {f.name}
-              </a>
-              <span className="text-slate-400 text-xs">
-                {" "}
-                ({Math.round((f.size || 0) / 1024)} KB)
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}*/
-
-
-
-/*function AttachmentStrip({ atts = [], onPreview }) {
-  if (!atts.length) return null;
-
-  const images = atts.filter((a) => isImageAtt(a));
-  const files = atts.filter((a) => !isImageAtt(a));
-
-  return (
-    <div className="mt-2 space-y-2">
-      {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {images.map((img) => (
-            <button
-              key={img.id}
-              type="button"
-              onClick={() => onPreview && onPreview(img)}
-              className="relative group"
-              title="Click to enlarge"
-            >
-              <img
-                src={img.dataUrl}
-                alt={img.name}
-                className="w-full h-40 object-cover rounded transition-transform group-active:scale-95"
-              />
-              <span className="absolute bottom-1 right-1 text-[10px] bg-black/50 text-white rounded px-1">
-                Zoom
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {files.length > 0 && (
-        <div className="space-y-2">
-          {files.map((f) => (
-            <div key={f.id} className="flex items-center gap-3">
-              <img
-                src={fileIconDataUrl(f.name)}
-                alt=""
-                className="h-15 w-6 shrink-0"
-              />
-
-              <div className="min-w-0 flex items-center gap-2">
-  <a
-    href={f.dataUrl}
-    download={f.name}
-    className="text-sm text-blue-700 underline truncate max-w-[520px]"
-    title={f.name}
-  >
-    {f.name}
-  </a>
-
-  <span className="text-xs text-slate-500 whitespace-nowrap">
-    ({formatBytes(attachmentSize(f))})
-  </span>
-</div>
-
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}*/
 
 function dedupeAtts(list = []) {
   const seen = new Set();
@@ -957,7 +844,7 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
               <img
                 src={fileIconDataUrl(f.name)}
                 alt=""
-                className="h-8 w-8 shrink-0"
+                className="h-6 w-6 shrink-0"
               />
 
               <div className="min-w-0 flex items-center gap-2">
@@ -967,7 +854,8 @@ function AttachmentStripEditable({ atts = [], onRemove, onPreview }) {
                   className="text-sm text-blue-700 underline truncate max-w-[520px]"
                   title={f.name}
                 >
-                  {f.name}
+                  {/*{f.name}*/}
+                  {f.name?.length > 45 ? `${f.name.slice(0, 45)}...` : f.name}
                 </a>
 
                 <span className="text-xs text-slate-500 whitespace-nowrap">
@@ -1720,6 +1608,7 @@ const seeded = useMemo(() => [], [uni]);
 const [posts, setPosts] = useState(() => []);
 const [nextCursor, setNextCursor] = useState(null);
 const [loadingMore, setLoadingMore] = useState(false);
+const loadMoreSentinelRef = useRef(null);
 
   const postsRef = useRef([]);
   useEffect(() => {
@@ -2033,7 +1922,7 @@ threadItemCount: Number(
     try {
       const { posts: remote, cursor } = await fetchPostsPage({
         scope: PLATFORM_SCOPE,
-        limit: 10,
+        limit: 20,
         withThread: false,
       });
 
@@ -2095,6 +1984,31 @@ async function loadMorePosts() {
     setLoadingMore(false);
   }
 }
+
+useEffect(() => {
+  const sentinel = loadMoreSentinelRef.current;
+
+  if (!sentinel || !nextCursor) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+
+      if (entry?.isIntersecting && nextCursor && !loadingMore) {
+        loadMorePosts();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "300px 0px",
+      threshold: 0,
+    }
+  );
+
+  observer.observe(sentinel);
+
+  return () => observer.disconnect();
+}, [nextCursor, loadingMore]);
 
 
 
@@ -2917,18 +2831,18 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       setHtml("");
       setUploadAtts([]);
     }}
-    className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700 hover:bg-amber-100"
+    className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700 hover:bg-amber-100"
   >
     Cancel
   </button>
 
-  <button className="rounded-full bg-blue-600 text-white px-3 py-1.5 hover:bg-blue-700">
+  <button className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
     Post
   </button>
 </div>
 
 {/* Desktop only: keep original right-side button position */}
-<div className="hidden sm:flex items-center gap-2 mt-2 sm:-mt-10">
+<div className="hidden sm:flex items-center gap-2 mt-2 sm:-mt-7">
   <div className="w-full sm:w-auto sm:ml-auto flex items-center gap-2">
     <button
       type="button"
@@ -2937,12 +2851,12 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
         setHtml("");
         setUploadAtts([]);
       }}
-      className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-amber-700 hover:bg-amber-100"
+      className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700 hover:bg-amber-100"
     >
       Cancel
     </button>
 
-    <button className="rounded-full bg-blue-600 text-white px-3 py-1.5 hover:bg-blue-700">
+    <button className="rounded-full bg-blue-600 text-white px-3 py-1 hover:bg-blue-700">
       Post
     </button>
   </div>
@@ -2953,33 +2867,35 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
   );
 }
   function AnswerThread({ post }) {
-    /*const [open, setOpen] = useState(true);
-    const [commentOpen, setCommentOpen] = useState(false);
-    const [replyOpenById, setReplyOpenById] = useState({});
+  const COMMENTS_PAGE_SIZE = 10;
+  const REPLIES_PAGE_SIZE = 5;
 
-    // ✅ Always normalize before rendering (prevents "reply becomes comment" on refresh)
-    const allComments = normalizeThreadComments(post.comments);
+  const [open, setOpen] = useState(false);
+  const [threadLoaded, setThreadLoaded] = useState(false);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadComments, setThreadComments] = useState(null);
 
-    const answers = allComments
-      .filter((c) => c.parentId == null)
-      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  const [commentsCursor, setCommentsCursor] = useState(null);
+  const [commentsHasMore, setCommentsHasMore] = useState(false);
+  const [commentsLoadingMore, setCommentsLoadingMore] = useState(false);
 
-    const byParent = allComments.reduce((acc, c) => {*/
-const [open, setOpen] = useState(false);
-const [threadLoaded, setThreadLoaded] = useState(false);
-const [threadLoading, setThreadLoading] = useState(false);
-const [threadComments, setThreadComments] = useState(null);
-const [commentOpen, setCommentOpen] = useState(false);
-const [replyOpenById, setReplyOpenById] = useState({});
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [replyOpenById, setReplyOpenById] = useState({});
 
+  const [repliesVisibleById, setRepliesVisibleById] = useState({});
+  const [repliesByCommentId, setRepliesByCommentId] = useState({});
+  const [repliesCursorByCommentId, setRepliesCursorByCommentId] = useState({});
+  const [repliesHasMoreByCommentId, setRepliesHasMoreByCommentId] = useState({});
+  const [repliesLoadingByCommentId, setRepliesLoadingByCommentId] = useState({});
 // ✅ Load comments only when user clicks Comments
 const allComments = normalizeThreadComments(
   Array.isArray(threadComments) ? threadComments : post.comments
 );
 
-const answers = allComments
-  .filter((c) => c.parentId == null)
-  .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+const answers = allComments.filter(
+  (c) => c.parentId == null
+);
 
 const byParent = allComments.reduce((acc, c) => {
       if (c.parentId != null) (acc[c.parentId] ||= []).push(c);
@@ -3012,7 +2928,7 @@ const byParent = allComments.reduce((acc, c) => {
       try {
         setThreadLoading(true);
 
-        const res = await fetchThread({ postId: post.id });
+        /*const res = await fetchThread({ postId: post.id });
 
         const comments = normalizeThreadComments(
           Array.isArray(res?.comments) ? res.comments : []
@@ -3020,7 +2936,29 @@ const byParent = allComments.reduce((acc, c) => {
 
         setThreadComments(comments);
         setThreadLoaded(true);
-        setOpen(true);
+        setOpen(true);*/
+
+const res = await fetchCommentsPage({
+  postId: post.id,
+  limit: COMMENTS_PAGE_SIZE,
+});
+
+const comments = normalizeThreadComments(
+  Array.isArray(res?.comments)
+    ? res.comments
+    : Array.isArray(res?.items)
+    ? res.items
+    : []
+);
+
+setThreadComments(comments);
+
+setCommentsCursor(res?.cursor || null);
+setCommentsHasMore(Boolean(res?.cursor));
+
+setThreadLoaded(true);
+setOpen(true);
+
       } catch (err) {
         console.error("Failed to load comments", err);
       } finally {
@@ -3064,9 +3002,81 @@ const byParent = allComments.reduce((acc, c) => {
         <AttachmentStrip atts={a.attachments} onPreview={setPreview} />
       </div>
 
-      {/* replies */}
-      {(byParent[a.id] || []).map((r) => (
-        /*<div key={r.id} className="mt-3 pl-4 border-l border-slate-200">*/
+
+      {/* View replies */}
+{Number(a.replyCount || 0) > 0 && !repliesVisibleById[a.id] && (
+  <div className="mt-2 flex justify-center">
+    <button
+      type="button"
+      disabled={repliesLoadingByCommentId[a.id]}
+      onClick={async () => {
+        if (repliesLoadingByCommentId[a.id]) return;
+
+        try {
+          setRepliesLoadingByCommentId((prev) => ({
+            ...prev,
+            [a.id]: true,
+          }));
+
+          const res = await fetchRepliesPage({
+            postId: post.id,
+            commentId: a.id,
+            limit: REPLIES_PAGE_SIZE,
+          });
+
+          const replies = Array.isArray(res?.replies)
+            ? res.replies
+            : Array.isArray(res?.items)
+            ? res.items
+            : [];
+
+          const normalizedReplies =
+            normalizeThreadComments(replies);
+
+          setRepliesByCommentId((prev) => ({
+            ...prev,
+            [a.id]: normalizedReplies,
+          }));
+
+          setRepliesCursorByCommentId((prev) => ({
+            ...prev,
+            [a.id]: res?.cursor || null,
+          }));
+
+          setRepliesHasMoreByCommentId((prev) => ({
+            ...prev,
+            [a.id]: Boolean(res?.cursor),
+          }));
+
+          setRepliesVisibleById((prev) => ({
+            ...prev,
+            [a.id]: true,
+          }));
+        } catch (err) {
+          console.error("Failed to load replies", err);
+
+          setToast("Failed to load replies. Please try again.");
+          setTimeout(() => setToast(""), 4000);
+        } finally {
+          setRepliesLoadingByCommentId((prev) => ({
+            ...prev,
+            [a.id]: false,
+          }));
+        }
+      }}
+      className="text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+    >
+      {repliesLoadingByCommentId[a.id]
+        ? "Loading..."
+        : `View replies (${Number(a.replyCount || 0)})`}
+    </button>
+  </div>
+)}
+
+      {/* Replies — hidden until View replies is clicked */}
+{repliesVisibleById[a.id] &&
+  (repliesByCommentId[a.id] || []).map((r) => (
+
         <div key={r.id} className="mt-3 pl-0 sm:pl-4 sm:border-l sm:border-slate-200">
           <div className="flex items-start gap-2">
             <Avatar url={r.authorPhoto} name={r.author} size="sm" online={isOnline(r.authorId)} />
@@ -3086,7 +3096,8 @@ const byParent = allComments.reduce((acc, c) => {
 
               {/* bubble content only */}
               {/*<div className="mt-1 bg-white rounded-2xl px-3 py-2 border border-slate-100">*/}
-                <div className="mt-1 bg-white rounded-2xl px-0 sm:px-3 py-2 border border-transparent sm:border-slate-100 -ml-10 sm:ml-0">
+                {/*<div className="mt-1 bg-white rounded-2xl px-0 sm:px-3 py-2 border border-transparent sm:border-slate-100 -ml-10 sm:ml-0">*/}
+                <div className="mt-1 bg-white rounded-2xl px-0 sm:px-3 py-2 border border-transparent sm:border-slate-100 -ml-10">
                 <HTMLReadMore html={r.html} lines={3} />
                 <AttachmentStrip atts={r.attachments} onPreview={setPreview} />
               </div>
@@ -3095,9 +3106,113 @@ const byParent = allComments.reduce((acc, c) => {
         </div>
       ))}
 
+      {repliesVisibleById[a.id] &&
+  repliesHasMoreByCommentId[a.id] && (
+    <div className="mt-2 flex justify-center">
+      <button
+        type="button"
+        disabled={repliesLoadingByCommentId[a.id]}
+        onClick={async () => {
+          const cursor = repliesCursorByCommentId[a.id];
+
+          if (
+            repliesLoadingByCommentId[a.id] ||
+            !cursor
+          ) {
+            return;
+          }
+
+          try {
+            setRepliesLoadingByCommentId((prev) => ({
+              ...prev,
+              [a.id]: true,
+            }));
+
+            const res = await fetchRepliesPage({
+              postId: post.id,
+              commentId: a.id,
+              limit: REPLIES_PAGE_SIZE,
+              cursor,
+            });
+
+            const moreReplies = Array.isArray(res?.replies)
+              ? res.replies
+              : Array.isArray(res?.items)
+              ? res.items
+              : [];
+
+            const normalizedMoreReplies =
+              normalizeThreadComments(moreReplies);
+
+            setRepliesByCommentId((prev) => {
+              const existing = Array.isArray(prev[a.id])
+                ? prev[a.id]
+                : [];
+
+              const combined = [
+                ...existing,
+                ...normalizedMoreReplies,
+              ];
+
+              const seen = new Set();
+
+              return {
+                ...prev,
+
+                [a.id]: combined.filter((reply) => {
+                  const key = String(
+                    reply?.id || reply?._id || ""
+                  );
+
+                  if (!key || seen.has(key)) {
+                    return false;
+                  }
+
+                  seen.add(key);
+                  return true;
+                }),
+              };
+            });
+
+            setRepliesCursorByCommentId((prev) => ({
+              ...prev,
+              [a.id]: res?.cursor || null,
+            }));
+
+            setRepliesHasMoreByCommentId((prev) => ({
+              ...prev,
+              [a.id]: Boolean(res?.cursor),
+            }));
+          } catch (err) {
+            console.error(
+              "Failed to load more replies",
+              err
+            );
+
+            setToast(
+              "Failed to load more replies. Please try again."
+            );
+
+            setTimeout(() => setToast(""), 4000);
+          } finally {
+            setRepliesLoadingByCommentId((prev) => ({
+              ...prev,
+              [a.id]: false,
+            }));
+          }
+        }}
+        className="text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+      >
+        {repliesLoadingByCommentId[a.id]
+          ? "Loading..."
+          : "View more replies"}
+      </button>
+    </div>
+  )}
+
       {/* Reply composer */}
       {/*<div className="mt-2 pl-8 flex items-start gap-2">*/}
-        <div className="mt-2 pl-0 sm:pl-8 flex items-start gap-2">
+        <div className="mt-2 pl-0 sm:pl-2 flex items-start gap-2">
         <Avatar url={user?.photoUrl} name={user?.name} size="sm" online />
         {/*<div className="flex-1">*/}
         <div className="flex-1 -ml-5 sm:ml-0">
@@ -3113,6 +3228,68 @@ const byParent = allComments.reduce((acc, c) => {
   </div>
 </div>
             ))}
+
+
+            {commentsHasMore && (
+  <div className="mt-3 flex justify-center">
+    <button
+      type="button"
+      disabled={commentsLoadingMore}
+      onClick={async () => {
+  if (commentsLoadingMore || !commentsCursor) return;
+
+  try {
+    setCommentsLoadingMore(true);
+
+          const res = await fetchCommentsPage({
+            postId: post.id,
+            limit: COMMENTS_PAGE_SIZE,
+            cursor: commentsCursor,
+          });
+
+          const moreComments = normalizeThreadComments(
+            Array.isArray(res?.comments)
+              ? res.comments
+              : Array.isArray(res?.items)
+              ? res.items
+              : []
+          );
+
+          setThreadComments((prev) => {
+            const existing = Array.isArray(prev) ? prev : [];
+            const combined = [...existing, ...moreComments];
+
+            const seen = new Set();
+
+            return combined.filter((comment) => {
+              const key = String(comment?.id || comment?._id || "");
+
+              if (!key || seen.has(key)) return false;
+
+              seen.add(key);
+              return true;
+            });
+          });
+
+          setCommentsCursor(res?.cursor || null);
+          setCommentsHasMore(Boolean(res?.cursor));
+
+  
+        } catch (err) {
+          console.error("Failed to load more comments", err);
+
+          setToast("Failed to load more comments. Please try again.");
+          setTimeout(() => setToast(""), 4000);
+        } finally {
+          setCommentsLoadingMore(false);
+        }
+      }}
+      className="text-sm font-medium text-blue-700 hover:underline disabled:opacity-50"
+    >
+      {commentsLoadingMore ? "Loading..." : "Load more comments"}
+    </button>
+  </div>
+)}
 
             {/* New top-level comment */}
             <div className="mt-3 flex items-start gap-2">
@@ -3924,15 +4101,15 @@ const byParent = allComments.reduce((acc, c) => {
 
 
           {nextCursor && (
-  <div className="flex justify-center py-4">
-    <button
-      type="button"
-      onClick={loadMorePosts}
-      disabled={loadingMore}
-      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-    >
-      {loadingMore ? "Loading..." : "Load more posts"}
-    </button>
+  <div
+    ref={loadMoreSentinelRef}
+    className="flex justify-center py-4"
+  >
+    {loadingMore && (
+      <span className="text-sm text-slate-500">
+        Loading more posts...
+      </span>
+    )}
   </div>
 )}
 

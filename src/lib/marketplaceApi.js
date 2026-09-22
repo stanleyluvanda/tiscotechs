@@ -9,6 +9,9 @@ const RAW_BASE =
 
 // Strip any trailing slashes so we can safely append paths.
 const BASE = RAW_BASE.replace(/\/+$/, "");
+// ✅ CloudFront API base for cached Marketplace listing GET requests only
+const MARKETPLACE_FEED_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
 
 /** Build a full marketplace URL from a path. */
 function buildUrl(path) {
@@ -89,6 +92,7 @@ export async function fetchMarketplaceItemsPage({
   if (university) qs.set("university", String(university));
 
   const data = await apiFetch(`/api/marketplace?${qs.toString()}`, { method: "GET" });
+  
 
   return {
     items: Array.isArray(data?.items) ? data.items : [],
@@ -114,7 +118,19 @@ export async function fetchMarketplacePage(opts = {}) {
   if (university) qs.set("university", String(university));
   if (includeComments) qs.set("includeComments", "1");
 
-  const data = await apiFetch(`/api/marketplace?${qs.toString()}`, { method: "GET" });
+  /*const data = await apiFetch(`/api/marketplace?${qs.toString()}`, { method: "GET" });*/
+  const res = await fetch(
+  `${MARKETPLACE_FEED_BASE}/api/marketplace?${qs.toString()}`,
+  {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "content-type": "application/json",
+    },
+  }
+);
+
+const data = await readJson(res);
 
   const items = Array.isArray(data?.items) ? data.items : [];
   return {

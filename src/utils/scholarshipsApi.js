@@ -10,6 +10,9 @@ const RAW_API_BASE =
 
 // Strip trailing slashes so we can safely append paths.
 const API_BASE = RAW_API_BASE.replace(/\/+$/, "");
+// CloudFront base for cached public scholarship/fellowship listing GET requests only
+const SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
 
 const LS_KEY = "scholarships_local";
 const IS_PROD = !!import.meta?.env?.PROD;
@@ -198,9 +201,27 @@ if (view) {
   params.set("contentType", String(contentType));
 }
 
-  const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
+  /*const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
     method: "GET",
-  });
+  });*/
+
+  let apiData = null;
+
+try {
+  const r = await fetch(
+    `${SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE}/api/scholarships?${params.toString()}`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  apiData = await r.json();
+} catch (e) {
+  // In production, do not silently fall back to browser-local scholarship data.
+  if (IS_PROD) throw e;
+}
+
 
   if (apiData) {
     // ✅ NEW: cache results (helps Scholarship page render instantly next time)
@@ -329,9 +350,19 @@ export async function listFundedGraduateAdmissions({
   params.set("view", String(view));
 }
 
-  const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
+  /*const apiData = await apiFetch(`/api/scholarships?${params.toString()}`, {
     method: "GET",
-  });
+  });*/
+  const res = await fetch(
+  `${SCHOLARSHIPS_PUBLIC_CLOUDFRONT_BASE}/api/scholarships?${params.toString()}`,
+  {
+    method: "GET",
+  }
+);
+
+if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+const apiData = await res.json();
 
   if (apiData) {
     if (Number(page) === 1) {

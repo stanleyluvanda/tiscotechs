@@ -15,6 +15,9 @@ const API_BASE = (
   import.meta.env.VITE_API_BASE ||
   ""
 ).replace(/\/+$/, "");
+// CloudFront base for cached public scholarship/funded-program GET requests
+const SCHOLARSHIPS_CLOUDFRONT_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
 
 /* Render server-provided HTML */
 function RichHtml({ html }) {
@@ -509,7 +512,9 @@ const [newsError, setNewsError] = useState("");
       const useApi = Boolean(API_BASE);
       if (useApi) {
         try {
-          const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
+          /*const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
+          const res = await fetch(url);*/
+          const url = `${SCHOLARSHIPS_CLOUDFRONT_BASE}/api/scholarships/${encodeURIComponent(id)}`;
           const res = await fetch(url);
 
           if (res.status === 404) throw new Error("NOT_FOUND");
@@ -572,9 +577,12 @@ const [newsError, setNewsError] = useState("");
 
       if (API_BASE) {
         try {
-          const res = await fetch(
+          /*const res = await fetch(
             `${API_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
-          );
+          );*/
+          const res = await fetch(
+  `${SCHOLARSHIPS_CLOUDFRONT_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
+);
           if (res.ok) {
             const data = await res.json();
             list = Array.isArray(data?.items) ? data.items : [];

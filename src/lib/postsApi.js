@@ -26,6 +26,17 @@ const RAW_POSTS_BASE =
 
 const POSTS_BASE = RAW_POSTS_BASE.replace(/\/+$/, "");
 
+// CloudFront shared cache for GET /api/posts feed reads only.
+// All writes, threads, saved posts, notifications, etc. continue
+// using the existing POSTS_BASE / API Gateway.
+const POSTS_FEED_READ_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
+
+  // CloudFront shared cache for paginated comment/reply GET reads only.
+// Comment/reply POST writes continue using POSTS_BASE / API Gateway.
+const POSTS_THREAD_READ_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
+
 /* ===================== URL / Fetch helpers ===================== */
 
 function buildPostsUrl(path, params) {
@@ -405,6 +416,7 @@ function normalizeCommentFromServer(raw = {}, inferredParentId = null) {
     files,
 
     replies: nestedReplies,
+    replyCount: toNumber(raw.replyCount, nestedReplies.length),
 
     createdAt,
     updatedAt: toNumber(raw.updatedAt || raw.updated_at, createdAt),
@@ -656,7 +668,7 @@ threadItemCount: toNumber(raw.threadItemCount, comments.length),
   facultyAudience = null,
   facultyYearAudience = null,
 } = {}) {
-  const url = buildPostsUrl("/api/posts", {
+  /*const url = buildPostsUrl("/api/posts", {
     scope,
     limit,
     cursor: cursor || undefined,
@@ -667,9 +679,29 @@ threadItemCount: toNumber(raw.threadItemCount, comments.length),
     audience: audience || undefined,
     facultyAudience: facultyAudience || undefined,
     facultyYearAudience: facultyYearAudience || undefined,
-  });
+  });*/
 
-  const data = await doJsonFetch(url, { method: "GET" });
+const url = new URL(`${POSTS_FEED_READ_BASE}/api/posts`);
+const params = {
+  scope,
+  limit,
+  cursor: cursor || undefined,
+  withThread: withThread ? 1 : 0,
+  view: view || undefined,
+
+  audienceMode: audienceMode || undefined,
+  audience: audience || undefined,
+  facultyAudience: facultyAudience || undefined,
+  facultyYearAudience: facultyYearAudience || undefined,
+};
+
+for (const [key, value] of Object.entries(params)) {
+  if (value == null) continue;
+  url.searchParams.set(key, String(value));
+}
+
+  /*const data = await doJsonFetch(url, { method: "GET" });*/
+  const data = await doJsonFetch(url.toString(), { method: "GET" });
 
   let list = [];
   let nextCursor = null;
@@ -748,6 +780,140 @@ export async function fetchThread({ postId, limit = 500, cursor = null } = {}) {
   _threadCache.set(cacheKey, p);
   return p;
 }
+
+
+/**
+ * ✅ Paginated comments for ONE post
+ * GET /api/posts/comments
+ * Returns: { comments, cursor }
+ *
+ * Kept separate from fetchThread() so existing thread logic
+ * remains unchanged while dashboards migrate to pagination.
+ */
+export async function fetchCommentsPage({
+  postId,
+  limit = 10,
+  cursor = null,
+} = {}) {
+  const threadId = getThreadId(postId);
+
+  if (!threadId) {
+    throw new Error("postId is required for fetchCommentsPage");
+  }
+
+  /*const url = buildPostsUrl("/api/posts/comments", {
+    postId: threadId,
+    limit,
+    cursor: cursor || undefined,
+  });
+
+  const res = await doJsonFetch(url, { method: "GET" });*/
+
+  const url = new URL(`${POSTS_THREAD_READ_BASE}/api/posts/comments`);
+
+const params = {
+  postId: threadId,
+  limit,
+  cursor: cursor || undefined,
+};
+
+for (const [key, value] of Object.entries(params)) {
+  if (value == null) continue;
+  url.searchParams.set(key, String(value));
+}
+
+const res = await doJsonFetch(url.toString(), { method: "GET" });
+
+  const commentsRaw = Array.isArray(res?.comments)
+    ? res.comments
+    : [];
+
+  const comments = commentsRaw
+    .map((comment) => normalizeCommentFromServer(comment))
+    .filter(Boolean);
+
+  return {
+    comments,
+    cursor: res?.cursor ? String(res.cursor) : null,
+  };
+}
+
+
+/**
+ * ✅ Paginated replies for ONE comment
+ * GET /api/posts/replies
+ * Returns: { replies, cursor }
+ *
+ * Kept separate from fetchThread() so existing reply/thread
+ * behavior remains unchanged while dashboards migrate.
+ */
+export async function fetchRepliesPage({
+  postId,
+  commentId,
+  limit = 5,
+  cursor = null,
+} = {}) {
+  const threadId = getThreadId(postId);
+  const realCommentId = String(commentId || "").trim();
+
+  if (!threadId) {
+    throw new Error("postId is required for fetchRepliesPage");
+  }
+
+  if (!realCommentId) {
+    throw new Error("commentId is required for fetchRepliesPage");
+  }
+
+  /*const url = buildPostsUrl("/api/posts/replies", {
+    postId: threadId,
+    commentId: realCommentId,
+    limit,
+    cursor: cursor || undefined,
+  });
+
+  const res = await doJsonFetch(url, { method: "GET" });*/
+
+  const url = new URL(`${POSTS_THREAD_READ_BASE}/api/posts/replies`);
+
+const params = {
+  postId: threadId,
+  commentId: realCommentId,
+  limit,
+  cursor: cursor || undefined,
+};
+
+for (const [key, value] of Object.entries(params)) {
+  if (value == null) continue;
+  url.searchParams.set(key, String(value));
+}
+
+const res = await doJsonFetch(url.toString(), { method: "GET" });
+
+  const repliesRaw = Array.isArray(res?.replies)
+    ? res.replies
+    : [];
+
+  const replies = repliesRaw
+    .map((reply) =>
+      normalizeCommentFromServer(reply, realCommentId)
+    )
+    .filter(Boolean);
+
+  return {
+    replies,
+    cursor: res?.cursor ? String(res.cursor) : null,
+  };
+}
+
+
+
+
+
+
+
+
+
+
 
 /* ===================== Mutations ===================== */
 

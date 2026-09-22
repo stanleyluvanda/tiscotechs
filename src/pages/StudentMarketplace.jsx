@@ -1,5 +1,6 @@
 // src/pages/StudentMarketplace.jsx
-import { useEffect, useMemo, useState } from "react";
+//import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 //import { Link, useNavigate } from "react-router-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { reportContent } from "../lib/moderationApi"; // (or wherever you placed it)
@@ -1180,6 +1181,7 @@ export default function StudentMarketplace() {
   // ✅ Pagination state
   const [cursor, setCursor] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadMoreSentinelRef = useRef(null);
 
   /// 🔄 NEW: load & poll listings from backend (global marketplace)
   const [feedLoading, setFeedLoading] = useState(false);
@@ -1397,7 +1399,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       try {
         // ✅ Page 1 only (fast) + scoped to this university for correct cursor
         const page = await fetchMarketplacePage({
-          limit: 30,
+          limit: 50,
           cursor: null,
           university: uni || "",
           includeComments: false,
@@ -1478,7 +1480,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
     setLoadingMore(true);
     try {
       const page = await fetchMarketplacePage({
-        limit: 30,
+        limit: 50,
         cursor,
         university: uni || "",
         includeComments: false,
@@ -1501,6 +1503,33 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
       setLoadingMore(false);
     }
   }
+  // ✅ Auto-load the next marketplace page when user nears the bottom
+useEffect(() => {
+  const sentinel = loadMoreSentinelRef.current;
+
+  if (!sentinel || !cursor) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+
+      if (entry?.isIntersecting && cursor && !loadingMore) {
+        loadMore();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "300px 0px",
+      threshold: 0,
+    }
+  );
+
+  observer.observe(sentinel);
+
+  return () => {
+    observer.disconnect();
+  };
+}, [cursor, loadingMore]);
 
   /* ---------- Notifications ---------- */
   const [notiOpen, setNotiOpen] = useState(false);
@@ -3314,17 +3343,21 @@ const filtered =
           );
          })}
 
-          {/* ✅ Pagination: Load more */}
-          {cursor && (
-            <button
-              type="button"
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="mt-4 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-            >
-              {loadingMore ? "Loading…" : "Load more"}
-            </button>
-          )}
+          {/* ✅ Auto-scroll pagination sentinel */}
+           {cursor && (
+             <div
+               ref={loadMoreSentinelRef}
+              className="h-1 w-full"
+               aria-hidden="true"
+              />
+              )}
+
+{/* Optional loading indicator while next page is being fetched */}
+{loadingMore && (
+  <div className="py-3 text-center text-sm text-slate-500">
+    Loading more listings…
+  </div>
+)}
         </section>
 
         {/* RIGHT: Tips / rules */}

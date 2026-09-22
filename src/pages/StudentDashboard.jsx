@@ -18,7 +18,8 @@ import AttachmentUploader from "../components/upload/AttachmentUploader"; // ⬅
 //import { fetchPosts, createPost, deletePostOnServer } from "../lib/postsApi";
 import SingleImageUploader from "../components/upload/SingleImageUploader.jsx";
 /*import {fetchPosts, createPost, deletePostOnServer,createComment,createReply,} from "../lib/postsApi";*/
-import {fetchPosts,fetchPostsPage,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";
+/*import {fetchPosts,fetchPostsPage,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";*/
+import {fetchPosts,fetchPostsPage,fetchCommentsPage, fetchRepliesPage,createPost,deletePostOnServer,createComment,createReply,savePost,unsavePost,fetchSavedPosts,} from "../lib/postsApi";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
@@ -957,10 +958,14 @@ function ImageGrid({
 }
 
 /* ====== Comment thread with attachments (LinkedIn-style) ====== */
-function CommentThread({ comment, onAddReply, onOpenLightbox }) {
+/*function CommentThread({ comment, onAddReply, onOpenLightbox }) {*/
+/*function CommentThread({comment,onAddReply,onOpenLightbox,onLoadMoreReplies,repliesCursor,}) {*/
+function CommentThread({comment,onAddReply,onOpenLightbox,onOpenReplies,onLoadMoreReplies,repliesCursor,}) {
   const [reply,setReply]=useState("");
   const [replyImages,setReplyImages]=useState([]); // [{name,dataUrl}]
   const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
+  const [loadingMoreReplies, setLoadingMoreReplies] = useState(false);
+  const [repliesOpen, setRepliesOpen] = useState(false);
 
   const onPickReplyImages = async (e)=>{
     const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
@@ -1022,12 +1027,31 @@ function CommentThread({ comment, onAddReply, onOpenLightbox }) {
             </ul>
           )}
 
-          {/* replies */}
+
+          {/* Load first page of replies only when this comment is explicitly opened */}
+{!repliesOpen && (
+  <button
+    type="button"
+    onClick={async () => {
+      await onOpenReplies?.();
+      setRepliesOpen(true);
+    }}
+    className="mt-2 text-xs font-medium text-green-600 hover:text-green-700"
+  >
+    View replies
+{Number(comment?.replyCount || 0) > 0
+  ? ` (${Number(comment.replyCount)})`
+  : ""}
+
+  </button>
+)}
+
           {/* replies */}
 {(() => {
 
 const replies = Array.isArray(comment.replies) ? comment.replies : [];
-  if (!replies.length) return null;
+  /*if (!replies.length) return null;*/
+  if (!repliesOpen || !replies.length) return null;
 
   return (
     <div className="mt-2 -ml-2 sm:ml-0 pl-0 sm:pl-6 space-y-2">
@@ -1081,6 +1105,34 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
     </div>
   );
 })()}
+
+
+{/*{repliesCursor && (*/}
+{repliesOpen && repliesCursor && (
+  <div className="mt-2 pl-0 sm:pl-6">
+    <button
+      type="button"
+      onClick={async () => {
+        if (loadingMoreReplies) return;
+
+        try {
+          setLoadingMoreReplies(true);
+          await onLoadMoreReplies?.();
+        } finally {
+          setLoadingMoreReplies(false);
+        }
+      }}
+      disabled={loadingMoreReplies}
+      className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loadingMoreReplies ? "Loading..." : "View more replies"}
+    </button>
+  </div>
+)}
+
+
+
+
           {/* reply composer */}
           <form
             /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
@@ -1212,12 +1264,18 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
   currentUser,
   isHighlighted,
   onOpenComments,
+  onLoadMoreComments,
+  commentsCursor,
+  onOpenReplies,
+  onLoadMoreReplies,
+  replyCursors,
 }) {
 
  
 
   {/*const [showComments,setShowComments]=useState(true);// This hide the comment from loading automatically*/}
   const [showComments,setShowComments]=useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [cmt,setCmt]=useState("");
   const [postMenuOpen, setPostMenuOpen] = useState(false);
   const [cmtImages,setCmtImages]=useState([]); // [{name,dataUrl}]
@@ -1730,13 +1788,56 @@ const files = mergedFiles.filter((a) => {
       {showComments && (
         <div className="mt-3 space-y-3">
           {(Array.isArray(post.comments) ? post.comments : []).map((c, index) => (
-  <CommentThread
+  /*<CommentThread
     key={c?.id || `${post.id}-comment-${index}`}
     comment={c}
     onAddReply={(text, images, files) => onAddReply(c?.id, text, images, files)}
     onOpenLightbox={(items, idx) => openLightbox(items, idx)}
-  />
+  />*/
+
+  <CommentThread
+  key={c?.id || `${post.id}-comment-${index}`}
+  comment={c}
+  onAddReply={(text, images, files) =>
+    onAddReply(c?.id, text, images, files)
+  }
+  onOpenLightbox={(items, idx) => openLightbox(items, idx)}
+  onOpenReplies={() =>
+    onOpenReplies?.(c?.id || c?.commentId)
+  }
+  onLoadMoreReplies={() =>
+    onLoadMoreReplies?.(c?.id || c?.commentId)
+  }
+  repliesCursor={
+    replyCursors?.[
+      String(c?.id || c?.commentId || "")
+    ] || null
+  }
+/>
 ))}
+
+
+{commentsCursor && (
+  <div className="flex justify-center py-1">
+    <button
+      type="button"
+      onClick={async () => {
+        if (loadingMoreComments) return;
+
+        try {
+          setLoadingMoreComments(true);
+          await onLoadMoreComments?.();
+        } finally {
+          setLoadingMoreComments(false);
+        }
+      }}
+      disabled={loadingMoreComments}
+      className="text-sm font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {loadingMoreComments ? "Loading..." : "Load more comments"}
+    </button>
+  </div>
+)}
 
           {/* comment composer with attachments */}
           <form
@@ -2597,7 +2698,14 @@ const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "A
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
   const [feedCursor, setFeedCursor] = useState(null);
-  const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+const [loadingMorePosts, setLoadingMorePosts] = useState(false);
+
+// Infinite-scroll trigger for loading the next page of posts
+const loadMorePostsRef = useRef(null);
+  // Pagination cursor for comments, stored separately for each post
+  const [commentCursors, setCommentCursors] = useState({});
+  // Pagination cursor for replies, stored separately for each comment
+  const [replyCursors, setReplyCursors] = useState({});
   // ✅ Show sidebar ads only when the feed has enough real content
 const showSidebarAds = !feedLoading && ((posts?.length || 0) >= 3);
 
@@ -2846,7 +2954,13 @@ const latestSeenCommonTs = Number(
           : !!p.liked,
 
       // comments/replies prefer backend when present
-      comments: backendComments ?? existingComments ?? [],
+      /*comments: backendComments ?? existingComments ?? [],*/
+      // During silent background refresh, preserve the comments currently
+// loaded through comment pagination. Do not let withThread overwrite them.
+comments:
+  silent && existingComments
+    ? existingComments
+    : backendComments ?? existingComments ?? [],
     };
 
     byId.set(id, merged);
@@ -3095,6 +3209,38 @@ async function loadMorePosts() {
     setLoadingMorePosts(false);
   }
 }
+
+// Infinite scroll: automatically load the next page near the bottom
+useEffect(() => {
+  const target = loadMorePostsRef.current;
+
+  if (!target || !feedCursor || loadingMorePosts) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+
+      if (
+        entry?.isIntersecting &&
+        feedCursor &&
+        !loadingMorePosts
+      ) {
+        loadMorePosts();
+      }
+    },
+    {
+      root: null,
+      rootMargin: "300px 0px",
+      threshold: 0,
+    }
+  );
+
+  observer.observe(target);
+
+  return () => {
+    observer.disconnect();
+  };
+}, [feedCursor, loadingMorePosts]);
 
 
 
@@ -4194,6 +4340,295 @@ const syncPostToServer = async (updatedPost) => {
     console.warn("[StudentDashboard] syncPostToServer failed", e);
   }
 };
+
+// ============================================================
+// Load first page of comments when Comment is opened
+// ============================================================
+const openCommentsForPost = async (post) => {
+  const postId =
+    post?.postId || post?.id || post?.threadId || post?.multiGroupId;
+
+  if (!postId) return;
+
+  try {
+    const { comments, cursor } = await fetchCommentsPage({
+  postId,
+  limit: 10,
+});
+setCommentCursors((prev) => ({
+  ...prev,
+  [String(postId)]: cursor || null,
+}));
+
+    setPosts((prev) =>
+      (Array.isArray(prev) ? prev : []).map((p) => {
+        const id =
+           p?.postId || p?.id || p?.threadId || p?.multiGroupId;
+
+        if (String(id || "") !== String(postId)) {
+          return p;
+        }
+
+        return {
+          ...p,
+          comments: Array.isArray(comments) ? comments : [],
+        };
+      })
+    );
+  } catch (err) {
+    console.error(
+      "[StudentDashboard] fetchCommentsPage failed:",
+      err
+    );
+  }
+};
+
+
+// ============================================================
+// Load next page of comments
+// ============================================================
+const loadMoreCommentsForPost = async (post) => {
+  const postId =
+    post?.postId || post?.id || post?.threadId || post?.multiGroupId;
+
+  if (!postId) return;
+
+  const cursor = commentCursors[String(postId)];
+
+  // No cursor means there is no next page.
+  if (!cursor) return;
+
+  try {
+    const { comments, cursor: nextCursor } = await fetchCommentsPage({
+      postId,
+      limit: 10,
+      cursor,
+    });
+
+    // Append the next page without duplicating comments.
+    setPosts((prev) =>
+      (Array.isArray(prev) ? prev : []).map((p) => {
+        const id =
+          p?.postId || p?.id || p?.threadId || p?.multiGroupId;
+
+        if (String(id || "") !== String(postId)) {
+          return p;
+        }
+
+        const existingComments = Array.isArray(p?.comments)
+          ? p.comments
+          : [];
+
+        const incomingComments = Array.isArray(comments)
+          ? comments
+          : [];
+
+        const byId = new Map();
+
+        for (const comment of existingComments) {
+          if (!comment) continue;
+
+          const commentId = String(
+            comment?.id || comment?.commentId || ""
+          );
+
+          if (commentId) {
+            byId.set(commentId, comment);
+          }
+        }
+
+        for (const comment of incomingComments) {
+          if (!comment) continue;
+
+          const commentId = String(
+            comment?.id || comment?.commentId || ""
+          );
+
+          if (commentId) {
+            byId.set(commentId, comment);
+          }
+        }
+
+        return {
+          ...p,
+          comments: Array.from(byId.values()),
+        };
+      })
+    );
+
+    // Save cursor for the following comments page.
+    setCommentCursors((prev) => ({
+      ...prev,
+      [String(postId)]: nextCursor || null,
+    }));
+  } catch (err) {
+    console.error(
+      "[StudentDashboard] loadMoreCommentsForPost failed:",
+      err
+    );
+  }
+};
+
+const openRepliesForComment = async (post, commentId) => {
+  const postId =
+    post?.postId || post?.id || post?.threadId || post?.multiGroupId;
+
+  const realCommentId = String(commentId || "").trim();
+
+  if (!postId || !realCommentId) return;
+
+  try {
+    const { replies, cursor } = await fetchRepliesPage({
+      postId,
+      commentId: realCommentId,
+      limit: 5,
+    });
+
+    setReplyCursors((prev) => ({
+      ...prev,
+      [realCommentId]: cursor || null,
+    }));
+
+    setPosts((prev) =>
+      (Array.isArray(prev) ? prev : []).map((p) => {
+        const id =
+          p?.postId || p?.id || p?.threadId || p?.multiGroupId;
+
+        if (String(id || "") !== String(postId)) {
+          return p;
+        }
+
+        const comments = Array.isArray(p?.comments)
+          ? p.comments
+          : [];
+
+        return {
+          ...p,
+          comments: comments.map((comment) => {
+            const id = String(
+              comment?.id || comment?.commentId || ""
+            );
+
+            if (id !== realCommentId) {
+              return comment;
+            }
+
+            return {
+              ...comment,
+              replies: Array.isArray(replies) ? replies : [],
+            };
+          }),
+        };
+      })
+    );
+  } catch (err) {
+    console.error(
+      "[StudentDashboard] openRepliesForComment failed:",
+      err
+    );
+  }
+};
+
+
+const loadMoreRepliesForComment = async (post, commentId) => {
+  const postId =
+    post?.postId || post?.id || post?.threadId || post?.multiGroupId;
+
+  const realCommentId = String(commentId || "").trim();
+
+  if (!postId || !realCommentId) return;
+
+  const cursor = replyCursors[realCommentId];
+
+  if (!cursor) return;
+
+  try {
+    const { replies, cursor: nextCursor } = await fetchRepliesPage({
+      postId,
+      commentId: realCommentId,
+      limit: 5,
+      cursor,
+    });
+
+    setPosts((prev) =>
+      (Array.isArray(prev) ? prev : []).map((p) => {
+        const id =
+          p?.postId || p?.id || p?.threadId || p?.multiGroupId;
+
+        if (String(id || "") !== String(postId)) {
+          return p;
+        }
+
+        const comments = Array.isArray(p?.comments)
+          ? p.comments
+          : [];
+
+        return {
+          ...p,
+          comments: comments.map((comment) => {
+            const id = String(
+              comment?.id || comment?.commentId || ""
+            );
+
+            if (id !== realCommentId) {
+              return comment;
+            }
+
+            const existingReplies = Array.isArray(comment?.replies)
+              ? comment.replies
+              : [];
+
+            const incomingReplies = Array.isArray(replies)
+              ? replies
+              : [];
+
+            const byId = new Map();
+
+            for (const reply of existingReplies) {
+              if (!reply) continue;
+
+              const replyId = String(
+                reply?.id || reply?.replyId || ""
+              );
+
+              if (replyId) {
+                byId.set(replyId, reply);
+              }
+            }
+
+            for (const reply of incomingReplies) {
+              if (!reply) continue;
+
+              const replyId = String(
+                reply?.id || reply?.replyId || ""
+              );
+
+              if (replyId) {
+                byId.set(replyId, reply);
+              }
+            }
+
+            return {
+              ...comment,
+              replies: Array.from(byId.values()),
+            };
+          }),
+        };
+      })
+    );
+
+    setReplyCursors((prev) => ({
+      ...prev,
+      [realCommentId]: nextCursor || null,
+    }));
+  } catch (err) {
+    console.error(
+      "[StudentDashboard] loadMoreRepliesForComment failed:",
+      err
+    );
+  }
+};
+
 
 const addComment = async (postId, text, images = [], files = []) => {
   const t = (text || "").trim();
@@ -5541,6 +5976,29 @@ onClick={onToggleFacultyOnly}
     >
       <PostCard
         post={p}
+        onOpenComments={() => openCommentsForPost(p)}
+        onLoadMoreComments={() => loadMoreCommentsForPost(p)}
+        commentsCursor={
+        commentCursors[
+         String(
+      p?.postId ||
+      p?.id ||
+      p?.threadId ||
+      p?.multiGroupId ||
+      ""
+       )
+        ] || null
+      }
+
+      onOpenReplies={(commentId) =>
+      openRepliesForComment(p, commentId)
+      }
+     onLoadMoreReplies={(commentId) =>
+      loadMoreRepliesForComment(p, commentId)
+      }
+      replyCursors={replyCursors}
+
+
         onToggleLike={() => toggleLike(p.id)}
         onToggleSavePost={() => toggleSavePost(p.id || p.postId)}
         isSavedPost={savedPostIds.has(String(p.id || p.postId || ""))}
@@ -5609,17 +6067,17 @@ onClick={onToggleFacultyOnly}
  </>
 )}
 
-
 {feedCursor && (
-  <div className="flex justify-center py-4">
-    <button
-      type="button"
-      onClick={loadMorePosts}
-      disabled={loadingMorePosts}
-      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {loadingMorePosts ? "Loading..." : "Load more posts"}
-    </button>
+  <div
+    ref={loadMorePostsRef}
+    className="flex justify-center py-4"
+    aria-hidden="true"
+  >
+    {loadingMorePosts && (
+      <span className="text-sm text-slate-500">
+        Loading more posts...
+      </span>
+    )}
   </div>
 )}
 
