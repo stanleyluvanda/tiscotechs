@@ -257,7 +257,7 @@ export default function Home() {
   <img
     src="/images/share-knowledge-banner.webp"
     alt="Share, learn and access academic opportunities with ScholarsKnowledge"
-    className="block h-[180px] w-full object-cover object-center sm:h-auto sm:object-contain"
+    className="block h-[220px] w-full object-cover object-center sm:h-auto sm:object-contain"
     loading="lazy"
   />
 
