@@ -15,8 +15,10 @@ export default function Home() {
   <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/20" />
 
         <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-10 items-center">
-          <div>
+          {/*<div>*/}
+            <div className="hero-reveal">
             <p className="max-w-2xl text-sm sm:text-base md:text-lg font-semibold leading-relaxed text-[#FFBF32] drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+              
               Empowering global academic collaboration and making educational resources accessible to students and faculty worldwide.
             </p>
 
@@ -511,7 +513,50 @@ export default function Home() {
             <Link to="/terms-of-use" className="transition hover:text-white">Terms</Link>
           </nav>
         </div>
-      </footer>
+       </footer>
+
+      <style>{`
+        @keyframes heroFadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(14px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .hero-reveal > * {
+          opacity: 0;
+          animation: heroFadeUp 0.60s ease-out forwards;
+        }
+
+        .hero-reveal > *:nth-child(1) {
+          animation-delay: 0.15s;
+        }
+
+        .hero-reveal > *:nth-child(2) {
+          animation-delay: 0.20s;
+        }
+
+        .hero-reveal > *:nth-child(3) {
+          animation-delay: 0.30s;
+        }
+
+        .hero-reveal > *:nth-child(4) {
+          animation-delay: 0.50s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hero-reveal > * {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }

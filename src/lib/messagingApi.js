@@ -1,5 +1,9 @@
 // src/lib/messagingApi.js
 
+// CloudFront is used only for the cacheable Messaging people directory.
+const MESSAGING_PEOPLE_CLOUDFRONT_BASE =
+  "https://d9xoeam8jbfti.cloudfront.net";
+
 function pickBase() {
   const raw = import.meta.env.VITE_MESSAGING_API_BASE || "";
   return String(raw).trim().replace(/\/+$/, "");
@@ -54,8 +58,25 @@ export async function listPeople({ scopeKey, role, q = "" }) {
     `&role=${encodeURIComponent(r)}` +
     (query ? `&q=${encodeURIComponent(query)}` : "");
 
-  return http("GET", `/api/messaging/people${qs}`);
+  /*return http("GET", `/api/messaging/people${qs}`);*/
+  const res = await fetch(
+  `${MESSAGING_PEOPLE_CLOUDFRONT_BASE}/api/messaging/people${qs}`,
+  {
+    method: "GET",
+  }
+);
+
+const data = await res.json().catch(() => null);
+
+if (!res.ok) {
+  const msg =
+    (data && (data.error || data.message)) || `HTTP_${res.status}`;
+  throw new Error(msg);
 }
+
+return data;
+}
+
 
 export async function listThreads({ userId }) {
   const uid = pickStr(userId);
