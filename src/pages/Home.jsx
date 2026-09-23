@@ -253,27 +253,30 @@ export default function Home() {
 
 
       {/* ScholarsKnowledge academic community banner */}
-      <section className="relative w-full overflow-hidden">
-        <img
-          src="/images/share-knowledge-banner.webp"
-          alt="Share, learn and access academic opportunities with ScholarsKnowledge"
-          className="block h-auto w-full"
-          loading="lazy"
-        />
+<section className="relative w-full overflow-hidden bg-[#eaf7ff]">
+  <img
+    src="/images/share-knowledge-banner.webp"
+    alt="Share, learn and access academic opportunities with ScholarsKnowledge"
+    className="block h-[180px] w-full object-cover object-center sm:h-auto sm:object-contain"
+    loading="lazy"
+  />
 
-        {/* Clickable CTA positioned where it appeared in the original banner */}
-        <div className="absolute bottom-[6%] left-[5.7%]">
-          <Link
-            to="/student-sign-up"
-            className="inline-flex items-center justify-center rounded-full bg-[#0877c9] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#0567af] sm:px-8 sm:py-4 sm:text-base lg:px-10 lg:py-4 lg:text-lg"
-          >
-            Join ScholarsKnowledge
-            <span className="ml-3 text-xl" aria-hidden="true">
-              →
-            </span>
-          </Link>
-        </div>
-      </section>
+  {/* Clickable CTA */}
+  <div className="absolute bottom-[7%] left-[5.7%]">
+    <Link
+      to="/student-sign-up"
+      className="inline-flex items-center justify-center rounded-full bg-[#0877c9] px-3.5 py-2 text-[10px] font-bold text-white shadow-md transition hover:bg-[#0567af] sm:px-8 sm:py-4 sm:text-base lg:px-10 lg:py-4 lg:text-lg"
+    >
+      Join ScholarsKnowledge
+      <span
+        className="ml-1.5 text-sm sm:ml-3 sm:text-xl"
+        aria-hidden="true"
+      >
+        →
+      </span>
+    </Link>
+  </div>
+</section>
 
       {/* 4) Three pillars */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
