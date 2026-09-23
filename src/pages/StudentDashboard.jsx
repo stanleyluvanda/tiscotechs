@@ -1054,7 +1054,8 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   if (!repliesOpen || !replies.length) return null;
 
   return (
-    <div className="mt-2 -ml-2 sm:ml-0 pl-0 sm:pl-6 space-y-2">
+    /*<div className="mt-2 -ml-2 sm:ml-0 pl-0 sm:pl-6 space-y-2">*/
+    <div className="mt-2 -ml-2 sm:-ml-10 pl-4 space-y-2">
       {replies.map((r, index) => (
           <div
   key={r?.id || `${comment.id || "comment"}-reply-${index}`}
