@@ -5727,21 +5727,6 @@ commentsCursor={
   );
 })}
 
-{/*{feedCursor && (
-  <div className="flex justify-center py-4">
-    <button
-      type="button"
-      onClick={loadMoreLecturerPosts}
-      disabled={loadingMorePosts}
-      className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {loadingMorePosts
-        ? "Loading..."
-        : "Load more posts"}
-    </button>
-  </div>
-)}*/}
-
 {feedCursor && (
   <div
     ref={loadMorePostsRef}
@@ -7331,7 +7316,7 @@ function CommentThread({ comment, onAddReply, onOpenReplies,onLoadMoreReplies, r
   const replies = dedupeRepliesForRender(comment.replies || []);
   /*return replies.length > 0 ? (*/
   return repliesOpen && replies.length > 0 ? (
-    <div className="mt-2 pl-6 space-y-2">
+      <div className="mt-1 space-y-1">
 
 
  {replies.map((r) => {
