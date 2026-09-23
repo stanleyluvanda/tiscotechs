@@ -250,6 +250,31 @@ export default function Home() {
         </div>
       </section>
 
+
+
+      {/* ScholarsKnowledge academic community banner */}
+      <section className="relative w-full overflow-hidden">
+        <img
+          src="/images/share-knowledge-banner.webp"
+          alt="Share, learn and access academic opportunities with ScholarsKnowledge"
+          className="block h-auto w-full"
+          loading="lazy"
+        />
+
+        {/* Clickable CTA positioned where it appeared in the original banner */}
+        <div className="absolute bottom-[6%] left-[5.7%]">
+          <Link
+            to="/student-sign-up"
+            className="inline-flex items-center justify-center rounded-full bg-[#0877c9] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#0567af] sm:px-8 sm:py-4 sm:text-base lg:px-10 lg:py-4 lg:text-lg"
+          >
+            Join ScholarsKnowledge
+            <span className="ml-3 text-xl" aria-hidden="true">
+              →
+            </span>
+          </Link>
+        </div>
+      </section>
+
       {/* 4) Three pillars */}
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 text-center">
