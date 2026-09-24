@@ -373,6 +373,7 @@ if (USE_SUPERTOKENS_TEST) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: em, password, role: "partner" }),
+      
     });
 
     data = await res.json().catch(() => ({}));

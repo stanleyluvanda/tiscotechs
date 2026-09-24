@@ -621,11 +621,16 @@ const onGoogleLogin = async () => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
+    /*body: JSON.stringify({
       email: em,
       password,
       role,
-    }),
+    }),*/
+  body: JSON.stringify({
+  email: em,
+  password,
+  role,
+}),
   });
 
   resp = await res.json().catch(() => ({}));

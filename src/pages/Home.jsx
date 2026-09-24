@@ -24,7 +24,7 @@ export default function Home() {
             </p>
 
             <h1 className="mt-4 max-w-3xl text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-[0_3px_18px_rgba(0,0,0,0.65)]">
-              Digital Academic Hub connecting students, lecturers, and partners for seamless academic progress.
+              Digital Academic Hub connecting students,Learners, lecturers, and partners for seamless academic progress.
             </h1>
 
             <p className="mt-5 max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
