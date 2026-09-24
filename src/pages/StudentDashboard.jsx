@@ -1130,10 +1130,6 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
     </button>
   </div>
 )}
-
-
-
-
           {/* reply composer */}
           <form
             /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
@@ -1306,10 +1302,6 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
       post.lecturerMiniProfile.courses?.length ||
       post.lecturerMiniProfile.education?.length
     );
-
- 
-
-
 
 
 
