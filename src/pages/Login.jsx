@@ -259,6 +259,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   /* ====== Turnstile ====== */
   const turnstileRef = useRef(null);
@@ -449,6 +450,7 @@ const onGoogleLogin = async () => {
       setError("Please enter email and password.");
       return;
     }
+    setIsLoggingIn(true);
 
     /* ----- SERVERLESS PATH (localStorage auth) --------------------- */
     if (SERVERLESS) {
@@ -536,6 +538,7 @@ const onGoogleLogin = async () => {
       } catch (err) {
         console.error("[login][serverless]", err);
         setError(err?.message || "Invalid credentials.");
+        setIsLoggingIn(false);
         return;
       }
     }
@@ -544,88 +547,15 @@ const onGoogleLogin = async () => {
     // Hash the password before sending. Lambda expects { email, passwordHash, role }.
     const passwordHash = await sha256Hex(password);
 
-    /*const resp = await apiLogin({
-      email: em,
-      password,          // ✅ NEW for Cognito
-      passwordHash,
-      role,
-    });*/
-
     let resp;
 /*if (USE_SUPERTOKENS_TEST) {*/
-/*if (USE_SUPERTOKENS_LOGIN_TEST) {
-  const res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: em,
-      password,
-      role,
-    }),
-  });
 
-  resp = await res.json().catch(() => ({}));
-
-  if (!res.ok || !resp?.ok) {
-    setError(resp?.error || "Invalid credentials.");
-    return;
-  }
-
-  // make SuperTokens response look like Cognito response
-  resp = {
-    ok: true,
-    uid: resp.userId,
-    role: resp.role || role,
-    user: {
-      email: resp.email || em,
-      ...(resp.user || {}),
-    },
-  };
-}*/
-
-/*if (USE_SUPERTOKENS_LOGIN_TEST) {
-  let res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email: em,
-      password,
-      role,
-    }),
-  });
-
-  resp = await res.json().catch(() => ({}));
-
-  if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {
-    res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: em,
-        password,
-        role,
-      }),
-    });
-
-    resp = await res.json().catch(() => ({}));
-  }*/
   if (USE_SUPERTOKENS_LOGIN_TEST) {
   let res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    /*body: JSON.stringify({
-      email: em,
-      password,
-      role,
-    }),*/
   body: JSON.stringify({
   email: em,
   password,
@@ -668,7 +598,7 @@ const onGoogleLogin = async () => {
   } else {
     setError(resp?.error || "Login failed.");
   }
-
+setIsLoggingIn(false);
   return;
 }
 
@@ -697,6 +627,7 @@ else {
 
       if (code === 404) {
         setError("No account registered with this email.");
+        setIsLoggingIn(false);
         return;
       }
 
@@ -707,12 +638,14 @@ else {
             ? "Incorrect password."
             : "No account registered with this email."
         );
+        setIsLoggingIn(false);
         return;
       }
     }
 
     if (!(resp?.ok && resp?.user && resp?.user?.email)) {
       setError("No account registered for this email or the password is incorrect.");
+      setIsLoggingIn(false);
       return;
     }
 
@@ -1322,12 +1255,27 @@ if (USE_SUPERTOKENS_RESET_TEST) {
                   )}
                 </div>
 
-                <button
+                {/*<button
                   type="submit"
                   className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90"
                 >
                   Log in
-                </button>
+                </button>*/}
+
+                <button
+  type="submit"
+  disabled={isLoggingIn}
+  className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
+>
+  {isLoggingIn && (
+    <span
+      className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+      aria-hidden="true"
+    />
+  )}
+
+  <span>{isLoggingIn ? "Logging in..." : "Log in"}</span>
+</button>
 
                 <div className="text-sm text-slate-600 text-center">
                   Don’t have an account?{" "}
