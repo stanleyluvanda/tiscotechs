@@ -609,7 +609,9 @@ function Avatar({ size="md", url, name, online=false }) {
 }
 function stripHtml(s=""){ const d=document.createElement("div"); d.innerHTML=s; return (d.textContent||d.innerText||"").trim(); }
 
-function ExpandableText({ text, initialChars = 180, className = "" }) {
+/*function ExpandableText({ text, initialChars = 180, className = "" }) {*/
+function ExpandableText({
+  text,initialChars = 180,className = "",afterReadMore = null,}) {
   const [open, setOpen] = useState(false);
   if (!text) return null;
 
@@ -668,14 +670,36 @@ function ExpandableText({ text, initialChars = 180, className = "" }) {
   return (
     <div className={`mt-1 text-slate-800 ${className}`}>
       {renderTextWithHeadingsSafe(shown)}
-      {tooLong && (
+      {/*{tooLong && (
         <button
           onClick={() => setOpen((v) => !v)}
           className="mt-1 text-blue-600 hover:underline"
         >
           {open ? "Read less" : "Read more"}
         </button>
-      )}
+      )}*/}
+
+      {tooLong && (
+  <div className="mt-1 flex items-center gap-1">
+    <button
+      type="button"
+      onClick={() => setOpen((v) => !v)}
+      className="text-blue-600 hover:underline"
+    >
+      {open ? "Read less" : "Read more"}
+    </button>
+
+    {afterReadMore && (
+      <>
+        <span className="text-slate-400">|</span>
+        {afterReadMore}
+      </>
+    )}
+  </div>
+)}
+
+
+
     </div>
   );
 }
@@ -966,6 +990,7 @@ function CommentThread({comment,onAddReply,onOpenLightbox,onOpenReplies,onLoadMo
   const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
   const [loadingMoreReplies, setLoadingMoreReplies] = useState(false);
   const [repliesOpen, setRepliesOpen] = useState(false);
+  const [replyComposerOpen, setReplyComposerOpen] = useState(false);
 
   const onPickReplyImages = async (e)=>{
     const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
@@ -1002,7 +1027,19 @@ function CommentThread({comment,onAddReply,onOpenLightbox,onOpenReplies,onLoadMo
   </div>
 ) : null}
 
-          <ExpandableText text={comment.text}/>
+          {/*<ExpandableText text={comment.text}/>*/}
+          <ExpandableText
+  text={comment.text}
+  afterReadMore={
+    <button
+      type="button"
+      onClick={() => setReplyComposerOpen(true)}
+      className="text-blue-600 hover:underline"
+    >
+      Reply
+    </button>
+  }
+/>
 
           {/* comment images */}
           {comment.images?.length>0 && (
@@ -1131,6 +1168,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   </div>
 )}
           {/* reply composer */}
+          {replyComposerOpen && (
           <form
             /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
             onSubmit={(e) => {
@@ -1202,6 +1240,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
               </div>
             )}
           </form>
+          )}
         </div>
       </div>
     </div>
