@@ -116,6 +116,10 @@ const LEVEL_OPTIONS = [
   "Undergraduate",
   "Masters",
   "PhD",
+  "PostDoctoral Research",
+  "Postdoctoral Fellowships",
+  "Research Fellowship",
+  "Research",
   "Undergraduate / Masters",
   "Masters / PhD",
   "Non-Degree"
