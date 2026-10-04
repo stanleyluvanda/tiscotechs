@@ -5804,9 +5804,63 @@ if (showingTab === "Top") {
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="flex items-center gap-2">
                 {["Top", "Newest", "Answered", "Saved Posts", "Older Posts", "Archive"].map(tab => (*/}
-                {/* Showing bar + Search under the composer */}
+               {/* Showing bar + Search under the composer */}
 <Card className="py-3">
-  <div className="flex flex-col md:flex-row md:items-center gap-2">
+
+  {/* ================= MOBILE ONLY ================= */}
+  <div className="md:hidden space-y-2">
+
+    {/* All tabs in one line */}
+    <div className="flex items-center gap-1 overflow-x-auto px-1">
+      {[
+        "Top",
+        "Newest",
+        "Answered",
+        "Saved Posts",
+        "Older Posts",
+        "Archive",
+      ].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setShowingTab(tab)}
+          className={`shrink-0 rounded-full px-2 py-1 text-[11px] whitespace-nowrap ${
+            showingTab === tab
+              ? tab === "Top"
+                ? "bg-blue-600 text-white"
+                : tab === "Newest"
+                ? "bg-emerald-600 text-white"
+                : tab === "Answered"
+                ? "bg-purple-600 text-white"
+                : tab === "Saved Posts"
+                ? "bg-amber-500 text-white"
+                : "bg-slate-700 text-white"
+              : "border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          {tab === "Saved Posts"
+            ? "Saved"
+            : tab === "Older Posts"
+            ? "Older"
+            : tab}
+        </button>
+      ))}
+    </div>
+
+    {/* Mobile search underneath */}
+    <div className="w-full">
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by student name, lecturer name, course code, keywords…"
+        className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+      />
+    </div>
+
+  </div>
+
+
+  {/* ================= DESKTOP ONLY ================= */}
+  <div className="hidden md:flex md:items-center gap-2">
 
     {/* Top / Newest / Answered */}
     <div className="flex items-center gap-2">
@@ -5829,7 +5883,7 @@ if (showingTab === "Top") {
       ))}
     </div>
 
-    {/* Search */}
+    {/* Desktop search remains in the middle */}
     <div className="w-full md:flex-1">
       <input
         value={search}
@@ -5869,8 +5923,8 @@ if (showingTab === "Top") {
     </div>
 
   </div>
+
 </Card>
-                  
                  
 
           {/* MOBILE QUICK LINKS / FILTERS ONLY */}
