@@ -794,6 +794,7 @@ export async function fetchCommentsPage({
   postId,
   limit = 10,
   cursor = null,
+   view = null,
 } = {}) {
   const threadId = getThreadId(postId);
 
@@ -815,6 +816,7 @@ const params = {
   postId: threadId,
   limit,
   cursor: cursor || undefined,
+   view: view || undefined,
 };
 
 for (const [key, value] of Object.entries(params)) {
@@ -852,6 +854,7 @@ export async function fetchRepliesPage({
   commentId,
   limit = 5,
   cursor = null,
+  view = null,
 } = {}) {
   const threadId = getThreadId(postId);
   const realCommentId = String(commentId || "").trim();
@@ -880,6 +883,7 @@ const params = {
   commentId: realCommentId,
   limit,
   cursor: cursor || undefined,
+  view: view || undefined,
 };
 
 for (const [key, value] of Object.entries(params)) {

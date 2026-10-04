@@ -2686,7 +2686,8 @@ function normalizeCommentFromBackend(c) {
 
 const [showFacultyOnly, setShowFacultyOnly] = useState(false);
 const [showingTab, setShowingTab] = useState("Newest"); // "Top" | "Newest" | "Answered"
-  const feedView = showingTab === "Older Posts" ? "older" : "recent";
+  /*const feedView = showingTab === "Older Posts" ? "older" : "recent";*/
+const feedView =showingTab === "Archive"? "archive": showingTab === "Older Posts"? "older": "recent";
 
   // 🔄 Load posts from backend API (global feed for student dashboard)
   const [feedLoading, setFeedLoading] = useState(false);
@@ -3065,7 +3066,8 @@ loadFromApi({ silent: false });
 
 // Poll recent posts every 30 seconds.
 // Older posts load when the tab opens but do not keep polling.
-if (feedView !== "older") {
+/*if (feedView !== "older") {*/
+if (feedView === "recent") {
   pollTimer = setInterval(() => {
     if (!cancelled) {
       loadFromApi({ silent: true });
@@ -4348,6 +4350,7 @@ const openCommentsForPost = async (post) => {
     const { comments, cursor } = await fetchCommentsPage({
   postId,
   limit: 10,
+  view: feedView,
 });
 setCommentCursors((prev) => ({
   ...prev,
@@ -4397,6 +4400,7 @@ const loadMoreCommentsForPost = async (post) => {
       postId,
       limit: 10,
       cursor,
+      view: feedView,
     });
 
     // Append the next page without duplicating comments.
@@ -4476,6 +4480,7 @@ const openRepliesForComment = async (post, commentId) => {
       postId,
       commentId: realCommentId,
       limit: 5,
+      view: feedView,
     });
 
     setReplyCursors((prev) => ({
@@ -4542,6 +4547,7 @@ const loadMoreRepliesForComment = async (post, commentId) => {
       commentId: realCommentId,
       limit: 5,
       cursor,
+      view: feedView,
     });
 
     setPosts((prev) =>
@@ -4981,11 +4987,20 @@ const feedCombined = useMemo(() => {
 // enforce the 30-day boundary when deciding what is displayed.
 const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-if (showingTab === "Older Posts") {
+/*if (showingTab === "Older Posts") {
   filtered = filtered.filter(
     (p) => Number(p?.createdAt || 0) < thirtyDaysAgo
   );
 } else {
+  filtered = filtered.filter(
+    (p) => Number(p?.createdAt || 0) >= thirtyDaysAgo
+  );
+}*/
+if (showingTab === "Older Posts") {
+  filtered = filtered.filter(
+    (p) => Number(p?.createdAt || 0) < thirtyDaysAgo
+  );
+} else if (showingTab !== "Archive") {
   filtered = filtered.filter(
     (p) => Number(p?.createdAt || 0) >= thirtyDaysAgo
   );
@@ -5793,7 +5808,7 @@ if (showingTab === "Top") {
                 {/*<span className="text-sm text-slate-600">Showing:</span>*/}
                 {/*{["Top","Newest","Answered"].map(tab => (*/}
                 {/*{["Top","Newest","Answered","Saved Posts"].map(tab => (*/}
-                {["Top", "Newest", "Answered", "Saved Posts", "Older Posts"].map(tab => (
+                {["Top", "Newest", "Answered", "Saved Posts", "Older Posts", "Archive"].map(tab => (
                   
                   <button
                     key={tab}
