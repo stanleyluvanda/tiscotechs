@@ -961,7 +961,7 @@ function ImageGrid({
 /* ====== Comment thread with attachments (LinkedIn-style) ====== */
 /*function CommentThread({ comment, onAddReply, onOpenLightbox }) {*/
 /*function CommentThread({comment,onAddReply,onOpenLightbox,onLoadMoreReplies,repliesCursor,}) {*/
-function CommentThread({comment,onAddReply,onOpenLightbox,onOpenReplies,onLoadMoreReplies,repliesCursor,}) {
+function CommentThread({comment,readOnly,onAddReply,onOpenLightbox,onOpenReplies,onLoadMoreReplies,repliesCursor,}) {
   const [reply,setReply]=useState("");
   const [replyImages,setReplyImages]=useState([]); // [{name,dataUrl}]
   const [replyFiles,setReplyFiles]=useState([]);   // [{name,mime,dataUrl}]
@@ -1132,8 +1132,8 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
   </div>
 )}
           {/* reply composer */}
+          {!readOnly && (
           <form
-            /*onSubmit={(e)=>{e.preventDefault(); onAddReply(reply, replyImages, replyFiles); setReply(""); setReplyImages([]); setReplyFiles([]); }}*/
             onSubmit={(e) => {
   e.preventDefault();
   const text = (reply || "").replace(/\r\n/g, "\n"); // ✅ keep newlines
@@ -1203,6 +1203,7 @@ const replies = Array.isArray(comment.replies) ? comment.replies : [];
               </div>
             )}
           </form>
+          )}
         </div>
       </div>
     </div>
@@ -1252,6 +1253,7 @@ async function pasteClipboardImagesToState(e, { setImages, max = 5 }) {
 /* ====== Post card (with lightbox + prev/next) ====== */
   function PostCard({
   post,
+  readOnly,
   onToggleLike,
   onToggleSavePost,
   isSavedPost,
@@ -1782,16 +1784,11 @@ const files = mergedFiles.filter((a) => {
       {showComments && (
         <div className="mt-3 space-y-3">
           {(Array.isArray(post.comments) ? post.comments : []).map((c, index) => (
-  /*<CommentThread
-    key={c?.id || `${post.id}-comment-${index}`}
-    comment={c}
-    onAddReply={(text, images, files) => onAddReply(c?.id, text, images, files)}
-    onOpenLightbox={(items, idx) => openLightbox(items, idx)}
-  />*/
-
+ 
   <CommentThread
   key={c?.id || `${post.id}-comment-${index}`}
   comment={c}
+   readOnly={readOnly}
   onAddReply={(text, images, files) =>
     onAddReply(c?.id, text, images, files)
   }
@@ -1834,8 +1831,8 @@ const files = mergedFiles.filter((a) => {
 )}
 
           {/* comment composer with attachments */}
+          {!readOnly && (
           <form
-            /*onSubmit={(e)=>{e.preventDefault(); onAddComment(cmt, cmtImages, cmtFiles); setCmt(""); setCmtImages([]); setCmtFiles([]);}}*/
             onSubmit={(e)=>{ 
   e.preventDefault(); 
   const text = (cmt || "").replace(/\r\n/g, "\n"); // keep newlines
@@ -1905,6 +1902,7 @@ const files = mergedFiles.filter((a) => {
               </div>
             )}
           </form>
+          )}
 </div>
       )}
 
@@ -5183,7 +5181,8 @@ if (showingTab === "Top") {
     {current?.authProvider !== "supertokens-google" && (
   <VerifyGate email={current?.email} />
 )}
-        <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
+        {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">*/}
+        <main className="w-full max-w-[1420px] mx-auto px-0 sm:px-4 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(800px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT */}
         {/* LEFT - DESKTOP ONLY */}
        <aside className="hidden lg:block space-y-4 pb-24">
@@ -5327,7 +5326,6 @@ if (showingTab === "Top") {
 
 
       <div className="flex items-center gap-2">
-        {/*<NewBadge show={!showFacultyOnly && (hasNewFacultySignal || hasNewFacultyPosts)} />*/}
         <NewBadge show={!showFacultyOnly && hasNewFacultyPosts} />
         <button
           onClick={onToggleFacultyOnly}
@@ -5802,63 +5800,78 @@ if (showingTab === "Top") {
           </Card>
 
           {/* Showing bar + Search under the composer */}
-          <Card className="py-3">
+          {/*<Card className="py-3">
             <div className="flex flex-col md:flex-row md:items-center gap-3">
               <div className="flex items-center gap-2">
-                {/*<span className="text-sm text-slate-600">Showing:</span>*/}
-                {/*{["Top","Newest","Answered"].map(tab => (*/}
-                {/*{["Top","Newest","Answered","Saved Posts"].map(tab => (*/}
-                {["Top", "Newest", "Answered", "Saved Posts", "Older Posts", "Archive"].map(tab => (
-                  
-                  <button
-                    key={tab}
-                    onClick={()=>setShowingTab(tab)}
-                    /*className={`px-3 py-1.5 rounded-full text-sm ${showingTab===tab ? "bg-slate-900 text-white" : "border border-slate-200 hover:bg-slate-50"}`}*/
-                    className={`px-2 py-1.5 rounded-text-xs whitespace-nowrap sm:px-3 sm:text-sm ${
-  showingTab===tab
-    ? tab === "Top"
-      ? "bg-blue-600 text-white"
-      : tab === "Newest"
-      ? "bg-emerald-600 text-white"
-      /*: tab === "Answered"
-      ? "bg-purple-600 text-white"
-      : "bg-amber-500 text-white"*/
-      : tab === "Answered"
-? "bg-purple-600 text-white"
-: tab === "Saved Posts"
-? "bg-amber-500 text-white"
-: "bg-slate-700 text-white"
-    : "border border-slate-200 hover:bg-slate-50"
-}`}
-                  /*>
-                    {tab}
-                  </button>*/
-                  >
-  <span className="sm:hidden">
-    {/*{tab === "Saved Posts" ? "Saved" : tab}*/}
-    {tab === "Saved Posts"
-  ? "Saved"
-  : tab === "Older Posts"
-  ? "Older"
-  : tab}
-  </span>
+                {["Top", "Newest", "Answered", "Saved Posts", "Older Posts", "Archive"].map(tab => (*/}
+                {/* Showing bar + Search under the composer */}
+<Card className="py-3">
+  <div className="flex flex-col md:flex-row md:items-center gap-2">
 
-  <span className="hidden sm:inline">
-    {tab}
-  </span>
-</button>
-                ))}
-              </div>
-              <div className="md:ml-auto w-full md:w-[420px]">
-                <input
-                  value={search}
-                  onChange={(e)=>setSearch(e.target.value)}
-                  placeholder="Search by student name, lecturer name, course code, keywords…"
-                  className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
-                />
-              </div>
-            </div>
-          </Card>
+    {/* Top / Newest / Answered */}
+    <div className="flex items-center gap-2">
+      {["Top", "Newest", "Answered"].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setShowingTab(tab)}
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap ${
+            showingTab === tab
+              ? tab === "Top"
+                ? "bg-blue-600 text-white"
+                : tab === "Newest"
+                ? "bg-emerald-600 text-white"
+                : "bg-purple-600 text-white"
+              : "border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+
+    {/* Search */}
+    <div className="w-full md:flex-1">
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by student name, lecturer name, course code, keywords…"
+        className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+      />
+    </div>
+
+    {/* Saved / Older / Archive */}
+    <div className="flex items-center gap-2">
+      {["Saved Posts", "Older Posts", "Archive"].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setShowingTab(tab)}
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap ${
+            showingTab === tab
+              ? tab === "Saved Posts"
+                ? "bg-amber-500 text-white"
+                : "bg-slate-700 text-white"
+              : "border border-slate-200 hover:bg-slate-50"
+          }`}
+        >
+          <span className="sm:hidden">
+            {tab === "Saved Posts"
+              ? "Saved"
+              : tab === "Older Posts"
+              ? "Older"
+              : tab}
+          </span>
+
+          <span className="hidden sm:inline">
+            {tab}
+          </span>
+        </button>
+      ))}
+    </div>
+
+  </div>
+</Card>
+                  
+                 
 
           {/* MOBILE QUICK LINKS / FILTERS ONLY */}
 {/*<div className="lg:hidden px-1">*/}
@@ -5985,6 +5998,7 @@ onClick={onToggleFacultyOnly}
     >
       <PostCard
         post={p}
+        readOnly={feedView === "archive"}
         onOpenComments={() => openCommentsForPost(p)}
         onLoadMoreComments={() => loadMoreCommentsForPost(p)}
         commentsCursor={
@@ -6171,50 +6185,56 @@ onClick={onToggleFacultyOnly}
           <StudentAlertsCTA />
         
 
-          {/* Students' links: quick links under Contact a Lecturer */}
-<div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-  <h3 className="text-base font-semibold text-slate-900 text-center rounded-lg px-3 py-2 bg-sky-100">
+         {/* Students' links */}
+<div className="mt-1 overflow-hidden rounded-lg border border-slate-200 bg-white">
+
+  {/* Full-width header */}
+  <h3 className="w-full bg-sky-100 px-3 py-2 text-center text-sm font-semibold text-slate-900">
     Students' links
   </h3>
 
-  <ul className="mt-3 space-y-2 text-sm">
+  {/* Compact links */}
+  <ul className="space-y-1.5 p-3 text-[13px]">
     <li>
       <Link
         to="/platform/university"
-        className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
         University Academic Platform
       </Link>
     </li>
 
     <li>
-  <Link
-    to="/platform/country"
-    className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
-  >
-    Country Academic Platform
-  </Link>
-</li>
+      <Link
+        to="/platform/country"
+        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
+      >
+        Country Academic Platform
+      </Link>
+    </li>
+
     <li>
       <Link
         to="/platform/global"
-        className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
         Global Academic Platform
       </Link>
     </li>
+
     <li>
       <Link
         to="/marketplace"
-        className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
         Student Market Place
       </Link>
     </li>
+
     <li>
       <Link
         to="/student/video-tips"
-        className="block text-center rounded-lg px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800"
+        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
         Video Tips
       </Link>

@@ -273,27 +273,31 @@ export default function StudentAlertsCTA({ className = "" }) {
   return (
     <>
       {/* PURPLE CTA CARD */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className={`w-full rounded-2xl px-4 py-4 text-left shadow-sm border border-slate-200
-                    bg-[rgb(102,0,102)] hover:brightness-110 text-white ${className}`}
-      >
-        <div className="flex items-start gap-3">
-          <span className="text-xl leading-none mt-0.5">🔔</span>
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold">Click here for alerts</div>
-            <div className="mt-2 text-xs opacity-90">
-              {!hydrated
-                ? "Loading…"
-                : grantedCount > 0
-                ? `${grantedCount}/${CONSENT_SCOPES.length} selected`
-                : "No alerts selected"}
-              {" • Saved to account"}
-            </div>
-          </div>
-        </div>
-      </button>
+     <button
+  type="button"
+  onClick={() => setOpen(true)}
+  className={`w-full rounded-lg px-3 py-3 text-left shadow-sm border border-slate-200
+              bg-[rgb(102,0,102)] hover:brightness-110 text-white ${className}`}
+>
+  <div className="flex items-start gap-2.5">
+    <span className="text-lg leading-none mt-0.5">🔔</span>
+
+    <div className="flex-1 min-w-0">
+      <div className="text-sm font-semibold">
+        Click here for alerts
+      </div>
+
+      <div className="mt-1.5 text-[11px] opacity-90">
+        {!hydrated
+          ? "Loading…"
+          : grantedCount > 0
+          ? `${grantedCount}/${CONSENT_SCOPES.length} selected`
+          : "No alerts selected"}
+        {" • Saved to account"}
+      </div>
+    </div>
+  </div>
+</button>
 
       {/* POP-UP */}
       {open && (

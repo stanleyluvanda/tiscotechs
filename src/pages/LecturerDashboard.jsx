@@ -1812,8 +1812,10 @@ const [feedCursor, setFeedCursor] = useState("");
 const [loadingMorePosts, setLoadingMorePosts] = useState(false);
 const loadMorePostsRef = useRef(null);
 
-const feedView =
-  showingTab === "Older Posts" ? "older" : "recent";
+/*const feedView =
+  showingTab === "Older Posts" ? "older" : "recent";*/
+  const feedView =
+  showingTab === "Archive"? "archive": showingTab === "Older Posts"? "older": "recent";
 
 
   // ✅ Merge remote posts into local without losing local-only threads (comments/replies)
@@ -1876,73 +1878,6 @@ function mergeRemoteIntoLocal(localPosts = [], remotePosts = []) {
 
   // 🔄 Load lecturer posts from backend.
   // Recent posts stay fresh in the background; older posts load only on demand.
-  /*useEffect(() => {
-    let cancelled = false;
-    let id = null;
-
-    async function loadFromServer({ silent = false } = {}) {
-      if (!silent) {
-        setFeedError("");
-        // Keep the normal dashboard feeling instant. Only show a loading hint
-        // when the lecturer explicitly opens Older Posts.
-        setFeedLoading(feedView === "older");
-      }
-
-      try {
-        const { posts: remotePosts } = await fetchLecturerPostsFromServer({
-          limit: 20,
-          view: feedView,
-        });
-
-        if (cancelled) return;
-
-        const remote = Array.isArray(remotePosts) ? remotePosts : [];
-
-        if (feedView === "older") {
-          // Older is a separate server-backed list. Do not mix recent posts into it.
-          setPosts(remote);
-        } else {
-          // Keep only recent local items before merging so returning from Older Posts
-          // cannot accidentally mix archived rows into the normal feed.
-          const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
-
-          setPosts((prev) => {
-            const recentPrev = (Array.isArray(prev) ? prev : []).filter((p) => {
-              const created = Number(p?.createdAt || 0);
-              return created > 0 && created >= cutoff;
-            });
-
-            return mergeRemoteIntoLocal(recentPrev, remote);
-          });
-        }
-      } catch (err) {
-        console.error("[LecturerDashboard] feed load failed:", err);
-        if (!silent && !cancelled) {
-          setFeedError("Could not load posts. Please try again.");
-        }
-      } finally {
-        if (!silent && !cancelled) {
-          setFeedLoading(false);
-        }
-      }
-    }
-
-    loadFromServer({ silent: false });
-
-    // Poll only the current/recent feed. Older posts do not need background polling.
-    if (feedView !== "older") {
-      id = setInterval(() => {
-        if (document.visibilityState !== "visible") return;
-        loadFromServer({ silent: true });
-      }, 30000);
-    }
-
-    return () => {
-      cancelled = true;
-      if (id) clearInterval(id);
-    };
-  }, [feedView]);*/
-
   // 🔄 Load this lecturer's posts from backend.
 // First page = 20 underlying lecturer posts.
 // Additional pages are loaded manually.
@@ -1984,7 +1919,8 @@ useEffect(() => {
         : [];
 
       if (!silent) {
-        if (feedView === "older") {
+        /*if (feedView === "older") {*/
+        if (feedView === "older" || feedView === "archive") {
           setPosts(remote);
         } else {
           const remoteIds = new Set(
@@ -2051,7 +1987,8 @@ useEffect(() => {
 
   loadFromServer({ silent: false });
 
-  if (feedView !== "older") {
+  {/*if (feedView !== "older") {*/}
+  if (feedView === "recent") {
     id = setInterval(() => {
       if (document.visibilityState !== "visible") {
         return;
@@ -3185,65 +3122,7 @@ const [threadLoaded, setThreadLoaded] = useState(() => ({}));  // { [postId]: tr
 const [commentCursors, setCommentCursors] = useState({});
 const [replyCursors, setReplyCursors] = useState({});
 
-/*async function openCommentsForPost(post) {
-  if (!post) return;
 
-  const postId =
-    post?.postId ||
-    post?.id ||
-    post?.threadId ||
-    post?.multiGroupId;
-
-  if (!postId) return;
-  if (threadLoading[postId]) return;
-
-  setThreadLoading((m) => ({
-    ...m,
-    [postId]: true,
-  }));
-
-  try {
-    const { comments, cursor } = await fetchCommentsPage({
-      postId,
-      limit: 10,
-    });
-
-    setPosts((prev) =>
-      (Array.isArray(prev) ? prev : []).map((p) => {
-        const currentId =
-          p?.postId ||
-          p?.id ||
-          p?.threadId ||
-          p?.multiGroupId;
-
-        if (String(currentId) !== String(postId)) {
-          return p;
-        }
-
-        return {
-          ...p,
-          comments: Array.isArray(comments) ? comments : [],
-        };
-      })
-    );
-
-    setCommentCursors((prev) => ({
-      ...prev,
-      [String(postId)]: cursor || null,
-    }));
-  } catch (e) {
-    console.error(
-      "[LecturerDashboard] openCommentsForPost failed:",
-      e
-    );
-  } finally {
-    setThreadLoading((m) => {
-      const next = { ...m };
-      delete next[postId];
-      return next;
-    });
-  }
-}*/
 async function openCommentsForPost(post) {
   if (!post) return;
 
@@ -3279,6 +3158,7 @@ async function openCommentsForPost(post) {
         fetchCommentsPage({
           postId,
           limit: 10,
+          view: feedView,
         }).then((result) => ({
           postId,
           comments: Array.isArray(result?.comments)
@@ -3380,6 +3260,7 @@ async function loadMoreCommentsForPost(post) {
           postId,
           limit: 10,
           cursor,
+          view: feedView,
         }).then((result) => ({
           postId,
           comments: Array.isArray(result?.comments)
@@ -3613,6 +3494,7 @@ async function openRepliesForComment(comment) {
           postId,
           commentId,
           limit: 5,
+           view: feedView,
         });
 
         return {
@@ -3710,6 +3592,7 @@ async function loadMoreRepliesForComment(comment) {
       commentId,
       limit: 5,
       cursor,
+      view: feedView,
     });
 
     setPosts((prev) =>
@@ -4679,9 +4562,8 @@ async function clearNotificationsServerBacked() {
 )}
 
       {/* Keep total width tight and ensure equal margins on both sides */}
-      {/*<main className="max-w-[1280px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
-      {/*<main className="max-w-[1400px] mx-auto px-4 lg:px-6 py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-6">*/}
-      <main className="w-full max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-6 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-3 sm:gap-4 lg:gap-6">
+   {/*<main className="w-full max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-6 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-3 sm:gap-4 lg:gap-6">*/}
+      <main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">
         {/* LEFT: Profile + filters */}
         {/*<aside className="space-y-4 pb-24">*/}
           <aside className="hidden lg:block space-y-4 pb-24">
@@ -5489,12 +5371,14 @@ async function clearNotificationsServerBacked() {
           <Card className="mx-0 sm:mx-0">
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
               <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-                {["Top", "Newest", "Answered", "Older Posts"].map((tab) => (
+                {/*{["Top", "Newest", "Answered", "Older Posts"].map((tab) => (*/}
+                  {["Top", "Newest", "Answered", "Older Posts", "Archive"].map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setShowingTab(tab)}
-                    className={`shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap ${
+                    /*className={`shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap ${*/
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs whitespace-nowrap ${
                       showingTab === tab
                         ? tab === "Top"
                           ? "bg-blue-600 text-white"
@@ -5514,12 +5398,14 @@ async function clearNotificationsServerBacked() {
                 ))}
               </div>
 
-              <div className="w-full md:ml-auto md:w-[365px]">
+              {/*<div className="w-full md:ml-auto md:w-[365px]">*/}
+              <div className="w-full md:ml-auto md:flex-1">
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search your posts by title, program, year, type, keywords…"
-                  className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  /*className="w-full rounded-full border border-slate-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"*/
+                  className="w-full rounded-full border border-slate-200 px-4 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -5663,6 +5549,7 @@ async function clearNotificationsServerBacked() {
       <div id={`post-${key}`} className="scroll-mt-24">
         <PostCard
           post={p}
+          readOnly={feedView === "archive"}
           onToggleLike={() => toggleLikeBy(p)}
           onAddComment={(text, images, files) => addComment(p.id, text, images, files)}
           onAddReply={(commentId, text, images, files) => addReply(p.id, commentId, text, images, files)}
@@ -6559,13 +6446,7 @@ async function fetchThreadFromServer({ postId, scope }) {
 
 
 /* ------------------- Post & Comments (with lightbox + attachments) ---------------------- */
-//function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser }) {
-//function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, currentUser, currentUserId }) {
-/*function PostCard({ post, onToggleLike, onAddComment, onAddReply, onDelete, onReport, currentUser }) {*/
-/*function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,}) {*/
-/*function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,commentsLoading,forceOpenComments,}) {*/
-/*function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,onLoadMoreComments,commentsCursor,commentsLoading,forceOpenComments,}) {*/
-function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,onLoadMoreComments,onOpenReplies,onLoadMoreReplies,replyCursors,commentsCursor,commentsLoading,forceOpenComments,}) {
+function PostCard({post,readOnly,onToggleLike,onAddComment,onAddReply,onDelete,onReport,currentUser,onOpenComments,onLoadMoreComments,onOpenReplies,onLoadMoreReplies,replyCursors,commentsCursor,commentsLoading,forceOpenComments,}) {
   /*const [showComments, setShowComments] = useState(true);*/
   const [showComments, setShowComments] = useState(false);
   const [cmt, setCmt] = useState("");
@@ -6931,14 +6812,6 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
       {/* comments */}
       {showComments && (
         <div className="mt-3 space-y-3">
-          {/*{(Array.isArray(post.comments) ? post.comments : []).map(c => (
-            <CommentThread
-              key={c.id}
-              comment={c}
-              onAddReply={(text, images, files) => onAddReply(c.id, text, images, files)}  // ✅ pass just (commentId, text…)
-            />
-          ))}*/}
-
          {(Array.isArray(post.comments) ? post.comments : []).map((c) => (
   <div
     key={c.id}
@@ -6949,6 +6822,7 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
 
     <CommentThread
   comment={c}
+  readOnly={readOnly}
   onAddReply={(text, images, files) =>
     onAddReply(c.id, text, images, files)
   }
@@ -6988,6 +6862,7 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
      
 
 {/* add comment */}
+{!readOnly && (
       <form
   onSubmit={(e) => {
     e.preventDefault();
@@ -7094,6 +6969,7 @@ function PostCard({post,onToggleLike,onAddComment,onAddReply,onDelete,onReport,c
               </div>
             )}
           </form>
+          )}
         </div>
       )}
     </div>
@@ -7132,7 +7008,7 @@ function dedupeRepliesForRender(replies = []) {
 
 
 /*function CommentThread({ comment, onAddReply }) {*/
-function CommentThread({ comment, onAddReply, onOpenReplies,onLoadMoreReplies, repliesCursor}) {
+function CommentThread({ comment, readOnly, onAddReply, onOpenReplies,onLoadMoreReplies, repliesCursor}) {
   const [reply, setReply] = useState("");
   const [replyImages, setReplyImages] = useState([]); // [{name,dataUrl}]
   const [replyFiles, setReplyFiles] = useState([]);   // [{name,mime,dataUrl}]
@@ -7493,7 +7369,8 @@ function CommentThread({ comment, onAddReply, onOpenReplies,onLoadMoreReplies, r
           )}
 
           {/* add reply */}
-          
+
+   {!readOnly && (       
 <form
    onSubmit={(e) => {
     e.preventDefault();
@@ -7602,6 +7479,7 @@ function CommentThread({ comment, onAddReply, onOpenReplies,onLoadMoreReplies, r
     </div>
   )}
 </form>
+)}
         </div>
       </div>
     </div>
