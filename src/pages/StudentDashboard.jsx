@@ -6041,7 +6041,7 @@ onClick={onToggleFacultyOnly}
   }}
   className="rounded-lg px-2.5 py-1 text-xs border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
 >
-  <option value="" disabled>Academic Platform</option>
+  {/*<option value="" disabled>Academic Platform</option>*/}
   <option value="/platform/university">University Academic Platform</option>
   <option value="/platform/country">Country Academic Platform</option>
   <option value="/platform/global">Global Academic Platform</option>
