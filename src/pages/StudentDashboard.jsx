@@ -6288,18 +6288,44 @@ onClick={onToggleFacultyOnly}
         to="/platform/global"
         className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
-        Global Academic Platform
+        🌍Global Academic Platform
       </Link>
     </li>
 
-    <li>
+    {/*<li>
       <Link
         to="/marketplace"
         className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
       >
-        Student Market Place
+      <span className="text-green-700">🛒</span>   Student Market Place
       </Link>
-    </li>
+    </li>*/}
+    <li>
+  <Link
+    to="/marketplace"
+    className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
+  >
+    <span className="inline-flex items-center justify-center gap-1.5">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4 text-green-600"
+        aria-hidden="true"
+      >
+        <circle cx="9" cy="20" r="1" />
+        <circle cx="19" cy="20" r="1" />
+        <path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 7H6" />
+      </svg>
+
+      <span>Student Market Place</span>
+    </span>
+  </Link>
+</li>
 
     <li>
       <Link

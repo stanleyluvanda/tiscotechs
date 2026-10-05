@@ -2354,6 +2354,12 @@ const filtered =
                 University Academic Platform
               </Link>
               <Link
+                to="/platform/country"
+                className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+              >
+                Country Academic Platform
+              </Link>
+              <Link
                 to="/platform/global"
                 className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
               >

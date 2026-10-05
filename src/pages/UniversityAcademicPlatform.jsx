@@ -3777,7 +3777,7 @@ setOpen(true);
   to="/platform/country"
   className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
 >
-  🌍 Country Academic Platform
+  Country Academic Platform
 </Link>
 
         <button
@@ -3793,7 +3793,7 @@ setOpen(true);
           onClick={() => navigate("/profile")}
           className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50"
         >
-          👤 View My Profile
+          👤 View My Dashboard
         </button>
       </div>
     </details>
