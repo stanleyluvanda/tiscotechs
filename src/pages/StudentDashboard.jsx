@@ -6034,32 +6034,29 @@ onClick={onToggleFacultyOnly}
 
       </select>*/}
 
-      <div className="relative shrink-0">
+      <div className="w-full overflow-hidden rounded-lg border border-[#e7d7c8] bg-white">
+
+  {/* Header */}
   <button
     type="button"
     onClick={() => setAcademicPlatformOpen((open) => !open)}
-    className="overflow-hidden rounded-lg border border-[#e7d7c8] bg-white text-left shadow-sm"
+    className="flex w-full items-center justify-between gap-2 bg-[#faf0e6] px-3 py-2 text-left text-xs font-semibold text-[#6d5a49]"
     aria-expanded={academicPlatformOpen}
   >
-    <div className="flex items-center justify-between gap-2 bg-[#faf0e6] px-3 py-1.5 text-xs font-semibold text-[#6d5a49]">
-      <span>Academic Platform</span>
+    <span>Academic Platform</span>
 
-      <span
-        className={`text-[10px] transition-transform ${
-          academicPlatformOpen ? "rotate-180" : ""
-        }`}
-      >
-        ▼
-      </span>
-    </div>
+    <span
+      className={`text-[10px] transition-transform ${
+        academicPlatformOpen ? "rotate-180" : ""
+      }`}
+    >
+      ▼
+    </span>
   </button>
 
+  {/* Platform links */}
   {academicPlatformOpen && (
-    <div className="absolute right-0 top-full z-50 mt-1 w-[230px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
-
-      <div className="w-full bg-[#faf0e6] px-3 py-2 text-center text-xs font-semibold text-[#6d5a49]">
-        Academic Platform
-      </div>
+    <div className="border-t border-[#e7d7c8] bg-white">
 
       <button
         type="button"
@@ -6096,8 +6093,8 @@ onClick={onToggleFacultyOnly}
 
     </div>
   )}
-</div>
 
+</div>
 
 
 
