@@ -6019,7 +6019,7 @@ onClick={onToggleFacultyOnly}
         ))}
       </select>
 
-      {/*<select
+      <select
   defaultValue=""
   onChange={(e) => {
     if (e.target.value) navigate(e.target.value);
@@ -6032,70 +6032,7 @@ onClick={onToggleFacultyOnly}
 <option value="/platform/country">Country Academic Platform</option>
 <option value="/platform/global">Global Academic Platform</option>
 
-      </select>*/}
-
-      <div className="w-full overflow-hidden rounded-lg border border-[#e7d7c8] bg-white">
-
-  {/* Header */}
-  <button
-    type="button"
-    onClick={() => setAcademicPlatformOpen((open) => !open)}
-    className="flex w-full items-center justify-between gap-2 bg-[#faf0e6] px-3 py-2 text-left text-xs font-semibold text-[#6d5a49]"
-    aria-expanded={academicPlatformOpen}
-  >
-    <span>Academic Platform</span>
-
-    <span
-      className={`text-[10px] transition-transform ${
-        academicPlatformOpen ? "rotate-180" : ""
-      }`}
-    >
-      ▼
-    </span>
-  </button>
-
-  {/* Platform links */}
-  {academicPlatformOpen && (
-    <div className="border-t border-[#e7d7c8] bg-white">
-
-      <button
-        type="button"
-        onClick={() => {
-          setAcademicPlatformOpen(false);
-          navigate("/platform/university");
-        }}
-        className="block w-full border-b border-slate-100 px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50"
-      >
-        University Academic Platform
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          setAcademicPlatformOpen(false);
-          navigate("/platform/country");
-        }}
-        className="block w-full border-b border-slate-100 px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50"
-      >
-        Country Academic Platform
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
-          setAcademicPlatformOpen(false);
-          navigate("/platform/global");
-        }}
-        className="block w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50"
-      >
-        Global Academic Platform
-      </button>
-
-    </div>
-  )}
-
-</div>
-
+      </select>
 
 
     </div>
