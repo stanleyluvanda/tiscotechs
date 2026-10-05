@@ -6039,9 +6039,9 @@ onClick={onToggleFacultyOnly}
     if (e.target.value) navigate(e.target.value);
     e.target.value = "";
   }}
-  className="appearance-none rounded-lg px-3.5 py-1.5 text-xs text-center border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
+  className="appearance-none rounded-full px-3.5 py-1.5 text-xs text-center border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
 >
-  <option value="">Academic Platform</option>
+  <option value="" disabled>Academic Platform</option>
   <option value="/platform/university">University Academic Platform</option>
   <option value="/platform/country">Country Academic Platform</option>
   <option value="/platform/global">Global Academic Platform</option>
