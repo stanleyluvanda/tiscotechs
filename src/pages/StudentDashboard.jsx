@@ -6019,7 +6019,7 @@ onClick={onToggleFacultyOnly}
         ))}
       </select>
 
-      <select
+      {/*<select
   defaultValue=""
   onChange={(e) => {
     if (e.target.value) navigate(e.target.value);
@@ -6032,7 +6032,20 @@ onClick={onToggleFacultyOnly}
 <option value="/platform/country">Country Academic Platform</option>
 <option value="/platform/global">Global Academic Platform</option>
 
-      </select>
+      </select>*/}
+      <select
+  defaultValue=""
+  onChange={(e) => {
+    if (e.target.value) navigate(e.target.value);
+    e.target.value = "";
+  }}
+  className="rounded-lg px-2.5 py-1 text-xs border border-[#e7d7c8] bg-[#faf5ef] text-[#6d5a49]"
+>
+  <option value="" disabled>Academic Platform</option>
+  <option value="/platform/university">University Academic Platform</option>
+  <option value="/platform/country">Country Academic Platform</option>
+  <option value="/platform/global">Global Academic Platform</option>
+</select>
 
 
     </div>
