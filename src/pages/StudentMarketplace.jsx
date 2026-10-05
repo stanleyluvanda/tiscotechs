@@ -2808,6 +2808,10 @@ const filtered =
         <Link to="/platform/university" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
           University Academic Platform
         </Link>
+        <Link to="/platform/country"
+      className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
+      Country Academic Platform
+        </Link>
 
         <Link to="/platform/global" className="rounded-xl border border-slate-200 px-4 py-3 text-sm">
           Global Academic Platform
@@ -2819,6 +2823,7 @@ const filtered =
       </div>
     )}
 
+
     {mobileMarketPanel === "category" && (
       <div className="px-4 pb-3 grid grid-cols-1 gap-2">
         <select
@@ -2829,10 +2834,7 @@ const filtered =
           }}
           className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm bg-white"
         >
-          {/*<option value="All">All categories</option>
-          {MAIN_CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}*/}
+          
   <option value="All">All categories</option>
 
 {DEFAULT_MAIN_CATEGORIES.map((c) => (
