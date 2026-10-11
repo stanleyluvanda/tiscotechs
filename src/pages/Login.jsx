@@ -260,6 +260,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  // Login rate-limit popup
+const [showRateLimitPopup, setShowRateLimitPopup] = useState(false);
+const [rateLimitMinutes, setRateLimitMinutes] = useState(15);
 
   /* ====== Turnstile ====== */
   const turnstileRef = useRef(null);
@@ -590,7 +593,7 @@ const onGoogleLogin = async () => {
   if (!res.ok || !resp?.ok) {
   const code = String(resp?.error || "").toUpperCase();
 
-  if (
+  /*if (
     code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
     code === "INVALID_CREDENTIALS" ||
     code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR"
@@ -598,7 +601,30 @@ const onGoogleLogin = async () => {
     setError("Incorrect email or password.");
   } else {
     setError(resp?.error || "Login failed.");
-  }
+  }*/
+
+    if (code === "TOO_MANY_LOGIN_ATTEMPTS") {
+  const seconds = Number(resp?.retryAfterSeconds);
+
+  const minutes =
+    Number.isFinite(seconds) && seconds > 0
+      ? Math.ceil(seconds / 60)
+      : 15;
+
+  setRateLimitMinutes(minutes);
+  setShowRateLimitPopup(true);
+  setError("");
+} else if (
+  code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
+  code === "INVALID_CREDENTIALS" ||
+  code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR"
+) {
+  setError("Incorrect email or password.");
+} else {
+  setError(resp?.error || "Login failed.");
+}
+
+
 setIsLoggingIn(false);
   return;
 }
@@ -1148,6 +1174,59 @@ if (USE_SUPERTOKENS_RESET_TEST) {
   );
    return (
   <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50">
+
+
+    {showRateLimitPopup && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="rate-limit-title"
+      aria-describedby="rate-limit-description"
+      className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+    >
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 text-xl">
+          !
+        </span>
+
+        <h2
+          id="rate-limit-title"
+          className="text-lg font-semibold text-gray-900"
+        >
+          Too many login attempts
+        </h2>
+      </div>
+
+      <p
+        id="rate-limit-description"
+        className="text-sm leading-6 text-gray-700"
+      >
+        You have reached the maximum number of unsuccessful
+        login attempts. For security reasons, please wait{" "}
+        <strong>{rateLimitMinutes} minute{rateLimitMinutes === 1 ? "" : "s"}</strong>{" "}
+        before trying again. Make sure you enter the correct
+        email and password.
+      </p>
+
+      <div className="mt-6 flex justify-end">
+        <button
+          type="button"
+          autoFocus
+          onClick={() => setShowRateLimitPopup(false)}
+          className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+
     {/* Cognito-like soft background blobs */}
     <div
       className="pointer-events-none absolute -left-[420px] -top-[260px] h-[900px] w-[900px] rounded-full blur-[55px] opacity-80"
