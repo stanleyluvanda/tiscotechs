@@ -565,7 +565,8 @@ const onGoogleLogin = async () => {
 
   resp = await res.json().catch(() => ({}));
 
-  if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {
+  /*if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {*/
+  if (!res.ok && resp?.error === "LEGACY_MIGRATION_REQUIRED") {
     res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
       method: "POST",
       headers: {
