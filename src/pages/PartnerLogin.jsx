@@ -359,7 +359,7 @@ export default function PartnerLogin() {
       let res;
 let data;
 
-if (USE_SUPERTOKENS_TEST) {
+/*if (USE_SUPERTOKENS_TEST) {
   res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -378,7 +378,31 @@ if (USE_SUPERTOKENS_TEST) {
 
     data = await res.json().catch(() => ({}));
   }
-} else {
+}*/
+
+if (USE_SUPERTOKENS_TEST) {
+  res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: em, password, role: "partner" }),
+  });
+
+  data = await res.json().catch(() => ({}));
+
+  // Migrate only accounts explicitly identified as legacy accounts.
+  if (!res.ok && data?.error === "LEGACY_MIGRATION_REQUIRED") {
+    res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: em, password, role: "partner" }),
+    });
+
+    data = await res.json().catch(() => ({}));
+  }
+}
+
+
+else {
   res = await fetch(`${PARTNER_AUTH_API_BASE}/api/auth/login/partner`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
