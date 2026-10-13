@@ -140,6 +140,9 @@ export default function PartnerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  // Partner login rate-limit popup
+  const [showRateLimitPopup, setShowRateLimitPopup] = useState(false);
+  const [rateLimitMinutes, setRateLimitMinutes] = useState(15);
 
   /* ====== Turnstile ====== */
   const turnstileRef = useRef(null);
@@ -445,7 +448,7 @@ else {
 }
 
       // Clean error for invalid creds
-      if (res.status === 401 || String(data?.error || "").toLowerCase().includes("invalid")) {
+      /*if (res.status === 401 || String(data?.error || "").toLowerCase().includes("invalid")) {
         setErr("Invalid email or password.");
         return;
       }
@@ -454,7 +457,36 @@ else {
       if (!res.ok) {
         setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
         return;
-      }
+      }*/
+     // Handle login rate-limit response
+if (!res.ok && data?.error === "TOO_MANY_LOGIN_ATTEMPTS") {
+  const seconds = Number(data?.retryAfterSeconds);
+
+  const minutes =
+    Number.isFinite(seconds) && seconds > 0
+      ? Math.ceil(seconds / 60)
+      : 15;
+
+  setRateLimitMinutes(minutes);
+  setShowRateLimitPopup(true);
+  setErr("");
+  return;
+}
+
+// Clean error for invalid credentials
+if (
+  res.status === 401 ||
+  String(data?.error || "").toLowerCase().includes("invalid")
+) {
+  setErr("Invalid email or password.");
+  return;
+}
+
+// Otherwise show backend error if present
+if (!res.ok) {
+  setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
+  return;
+}
     } catch (apiErr) {
       console.warn("[PartnerLogin] API login error:", apiErr?.message || apiErr);
       setErr("Login failed. Please try again.");
@@ -629,10 +661,58 @@ setForgotSent(true);
 
   /* ====== UI ====== */
   
-  
-
   return (
   <div className="relative min-h-screen flex flex-col overflow-hidden bg-slate-50">
+
+     {/* Partner login rate-limit popup */}
+    {showRateLimitPopup && (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4">
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="rate-limit-title"
+          aria-describedby="rate-limit-description"
+          className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+        >
+          <div className="mb-4 flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600 text-xl">
+              !
+            </span>
+
+            <h2
+              id="rate-limit-title"
+              className="text-lg font-semibold text-gray-900"
+            >
+              Too many login attempts
+            </h2>
+          </div>
+
+          <p
+            id="rate-limit-description"
+            className="text-sm leading-6 text-gray-700"
+          >
+            You have reached the maximum number of unsuccessful
+            login attempts. For security reasons, please wait{" "}
+            <strong>
+              {rateLimitMinutes} minute{rateLimitMinutes === 1 ? "" : "s"}
+            </strong>{" "}
+            before trying again. Make sure you enter the correct
+            email and password.
+          </p>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setShowRateLimitPopup(false)}
+              className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     {/* Cognito-like soft background blobs */}
     <div
       className="pointer-events-none absolute -left-[420px] -top-[260px] h-[900px] w-[900px] rounded-full blur-[55px] opacity-80"
