@@ -614,12 +614,24 @@ const onGoogleLogin = async () => {
   setRateLimitMinutes(minutes);
   setShowRateLimitPopup(true);
   setError("");
-} else if (
+/*} else if (
   code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
   code === "INVALID_CREDENTIALS" ||
   code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR"
 ) {
   setError("Incorrect email or password.");
+} else {
+  setError(resp?.error || "Login failed.");
+}*/
+} else if (
+  code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
+  code === "INVALID_CREDENTIALS" ||
+  code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR" ||
+  code === "NOT_FOUND"
+) {
+  setError(
+    "Incorrect email or password. Please check your credentials and try again."
+  );
 } else {
   setError(resp?.error || "Login failed.");
 }

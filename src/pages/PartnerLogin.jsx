@@ -474,7 +474,7 @@ if (!res.ok && data?.error === "TOO_MANY_LOGIN_ATTEMPTS") {
 }
 
 // Clean error for invalid credentials
-if (
+/*if (
   res.status === 401 ||
   String(data?.error || "").toLowerCase().includes("invalid")
 ) {
@@ -483,6 +483,29 @@ if (
 }
 
 // Otherwise show backend error if present
+if (!res.ok) {
+  setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
+  return;
+}*/
+
+// Handle invalid credentials with a standard message
+const loginErrorCode = String(data?.error || "").toUpperCase();
+
+if (
+  res.status === 401 ||
+  loginErrorCode === "NOT_FOUND" ||
+  loginErrorCode === "INVALID_CREDENTIALS" ||
+  loginErrorCode === "INVALID_SUPERTOKENS_CREDENTIALS" ||
+  loginErrorCode === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR" ||
+  loginErrorCode.includes("INVALID")
+) {
+  setErr(
+    "Incorrect email or password. Please check your credentials and try again."
+  );
+  return;
+}
+
+// Preserve handling of other backend errors
 if (!res.ok) {
   setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
   return;
