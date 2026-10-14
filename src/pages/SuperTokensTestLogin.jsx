@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 
 const API =
   /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
+  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";*/
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
 
 
 function normalizeEmail(x) {
