@@ -6,7 +6,8 @@ import {
   sha256Hex,
   markActiveUser, // kept for compatibility with your existing imports
 } from "../lib/authState"; // single source of truth for auth rules
-import { verifyTurnstileToken } from "../lib/turnstileVerify";
+/*import { verifyTurnstileToken } from "../lib/turnstileVerify";*/
+import {verifyTurnstileToken,requestTurnstileProof,} from "../lib/turnstileVerify";
 import { login as apiLogin } from "../lib/api"; // ONLY for /api/auth/login
 import { apiCompletePasswordReset } from "../lib/api";
 import useNoIndex from "../lib/useNoIndex";
@@ -435,8 +436,11 @@ const onGoogleLogin = async () => {
     }
 
     /*const v = await verifyTurnstileToken(tsToken);*/
-    const v = USE_SUPERTOKENS_LOGIN_TEST
+    /*const v = USE_SUPERTOKENS_LOGIN_TEST
   ? { ok: true }
+  : await verifyTurnstileToken(tsToken);*/
+  const v = USE_SUPERTOKENS_LOGIN_TEST
+  ? await requestTurnstileProof(tsToken)
   : await verifyTurnstileToken(tsToken);
     if (!v.ok) {
       setError(
@@ -569,7 +573,7 @@ const onGoogleLogin = async () => {
   email: em,
   password,
   role,
-  turnstileToken: tsToken,
+  proofId: v.proofId,
 }),
   });
 
@@ -646,6 +650,27 @@ if (!migrationToken) {
   setIsLoggingIn(false);
   return;
 }
+// Request a separate, single-use proof for legacy migration.
+const migrationProof = await requestTurnstileProof(migrationToken);
+
+if (!migrationProof.ok) {
+  setError(
+    migrationProof.offline
+      ? "Cannot reach verification service. Please try again."
+      : "Human verification failed. Please try again."
+  );
+
+  try {
+    if (window.turnstile?.reset && widgetIdRef.current != null) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  } catch {}
+
+  setTurnToken("");
+  setTurnReady(false);
+  setIsLoggingIn(false);
+  return;
+}
 
     res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
       method: "POST",
@@ -656,7 +681,7 @@ if (!migrationToken) {
         email: em,
         password,
         role,
-        turnstileToken: migrationToken,
+       proofId: migrationProof.proofId,
       }),
     });
 
