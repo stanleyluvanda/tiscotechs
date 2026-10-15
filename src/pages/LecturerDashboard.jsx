@@ -19,6 +19,7 @@ import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda";
 import useNoIndex from "../lib/useNoIndex";
 import { signOut } from "aws-amplify/auth";
+import Session from "supertokens-web-js/recipe/session";
 import MessagingDock from "../components/MessagingDock";
 import LecturerMiniProfile from "../components/LecturerMiniProfile.jsx";
 
@@ -52,8 +53,15 @@ const LECTURER_SCOPE = "student-dashboard";
 
 
 async function logoutEverywhereClientOnly() {
-  // 1) Cognito/Amplify session
-  try { await signOut({ global: true }); } catch {}
+  // 1) Terminate the SuperTokens session.
+  try {
+    await Session.signOut();
+  } catch (error) {
+    console.error("Lecturer SuperTokens sign-out failed:", error);
+  }
+
+  // 2) Clear any remaining legacy Cognito/Amplify session.
+  // try { await signOut({ global: true }); } catch {}
 
   // 2) Your local/session storage keys (same list as Navbar)
   try {

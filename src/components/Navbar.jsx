@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
+import Session from "supertokens-web-js/recipe/session";
 /*import { signOut } from "aws-amplify/auth";*/
 
 
@@ -88,8 +89,15 @@ function clearAuthStateKeepData() {
   }
 }
 
-
 async function logoutEverywhere() {
+  // Terminate the SuperTokens session first.
+  try {
+    await Session.signOut();
+  } catch (error) {
+    console.error("Navbar SuperTokens sign-out failed:", error);
+  }
+
+  // Preserve the existing browser storage cleanup and events.
   try {
     [
       "currentUser",
