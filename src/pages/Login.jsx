@@ -308,7 +308,6 @@ const [rateLimitMinutes, setRateLimitMinutes] = useState(15);
   if (typeof window !== "undefined" && !window.onTurnstileSuccess) {
     window.onTurnstileSuccess = (token) => {
       try {
-        console.log("✅ Turnstile token:", token);
         sessionStorage.setItem("turnstileToken", token || "");
       } catch {}
     };
@@ -425,13 +424,20 @@ const onGoogleLogin = async () => {
       });
     } catch {}
 
-    const tsToken = sessionStorage.getItem("turnstileToken") || turnToken;
+    /*const tsToken = sessionStorage.getItem("turnstileToken") || turnToken;*/
+    const tsToken =
+  window.turnstile && widgetIdRef.current != null
+    ? window.turnstile.getResponse(widgetIdRef.current) || ""
+    : "";
     if (!tsToken) {
       setError("Please complete the human verification.");
       return;
     }
 
-    const v = await verifyTurnstileToken(tsToken);
+    /*const v = await verifyTurnstileToken(tsToken);*/
+    const v = USE_SUPERTOKENS_LOGIN_TEST
+  ? { ok: true }
+  : await verifyTurnstileToken(tsToken);
     if (!v.ok) {
       setError(
         v.offline
@@ -563,6 +569,7 @@ const onGoogleLogin = async () => {
   email: em,
   password,
   role,
+  turnstileToken: tsToken,
 }),
   });
 
@@ -570,6 +577,76 @@ const onGoogleLogin = async () => {
 
   /*if (!res.ok && resp?.error === "INVALID_CREDENTIALS") {*/
   if (!res.ok && resp?.error === "LEGACY_MIGRATION_REQUIRED") {
+
+    // Obtain a fresh Turnstile token for legacy migration.
+let migrationToken = "";
+
+try {
+  migrationToken = await new Promise((resolve, reject) => {
+    const widgetId = widgetIdRef.current;
+    const turnstile = window.turnstile;
+
+    if (!turnstile || widgetId == null) {
+      reject(new Error("Turnstile widget unavailable"));
+      return;
+    }
+
+    let settled = false;
+
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error("Turnstile verification timed out"));
+    }, 60000);
+
+    const finish = (token) => {
+      if (settled) return;
+
+      const freshToken = String(token || "");
+
+      if (!freshToken || freshToken === tsToken) return;
+
+      settled = true;
+      clearTimeout(timeout);
+      resolve(freshToken);
+    };
+
+    try {
+      // Register the callback before resetting the widget.
+      turnstile.reset(widgetId);
+
+      // Wait for a fresh token from the existing widget.
+      const checkToken = () => {
+        if (settled) return;
+
+        const token = turnstile.getResponse(widgetId);
+
+        if (token && token !== tsToken) {
+          finish(token);
+          return;
+        }
+
+        setTimeout(checkToken, 250);
+      };
+
+      checkToken();
+    } catch (err) {
+      clearTimeout(timeout);
+      reject(err);
+    }
+  });
+} catch (err) {
+  console.error("[login] Turnstile migration refresh failed:", err);
+}
+
+if (!migrationToken) {
+  setError("Human verification must be renewed. Please try again.");
+  setTurnToken("");
+  setTurnReady(false);
+  setIsLoggingIn(false);
+  return;
+}
+
     res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
       method: "POST",
       headers: {
@@ -579,6 +656,7 @@ const onGoogleLogin = async () => {
         email: em,
         password,
         role,
+        turnstileToken: migrationToken,
       }),
     });
 
@@ -592,6 +670,22 @@ const onGoogleLogin = async () => {
   }*/
   if (!res.ok || !resp?.ok) {
   const code = String(resp?.error || "").toUpperCase();
+  // Refresh Turnstile after an unsuccessful authentication request.
+// The previous token may already have been consumed by the backend.
+try {
+  if (window.turnstile?.reset && widgetIdRef.current != null) {
+    window.turnstile.reset(widgetIdRef.current);
+  }
+} catch (err) {
+  console.warn("[login] Turnstile reset failed:", err);
+}
+
+setTurnToken("");
+setTurnReady(false);
+
+try {
+  sessionStorage.removeItem("turnstileToken");
+} catch {}
 
   /*if (
     code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
@@ -614,15 +708,7 @@ const onGoogleLogin = async () => {
   setRateLimitMinutes(minutes);
   setShowRateLimitPopup(true);
   setError("");
-/*} else if (
-  code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
-  code === "INVALID_CREDENTIALS" ||
-  code === "EMAIL_PASSWORD_WRONG_CREDENTIALS_ERROR"
-) {
-  setError("Incorrect email or password.");
-} else {
-  setError(resp?.error || "Login failed.");
-}*/
+
 } else if (
   code === "INVALID_SUPERTOKENS_CREDENTIALS" ||
   code === "INVALID_CREDENTIALS" ||
