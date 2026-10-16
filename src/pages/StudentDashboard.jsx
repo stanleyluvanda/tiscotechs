@@ -5182,6 +5182,11 @@ if (showingTab === "Top") {
     {current?.authProvider !== "supertokens-google" && (
   <VerifyGate email={current?.email} />
 )}
+{/* Student dashboard announcement strip */}
+<div
+  className="w-full h-[28px] bg-[#ad1263]"
+  aria-label="ScholarsKnowledge announcements"
+/>
         {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">*/}
         <main className="w-full max-w-[1420px] mx-auto px-0 sm:px-4 lg:px-5 py-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(800px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT */}
