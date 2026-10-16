@@ -4568,10 +4568,16 @@ async function clearNotificationsServerBacked() {
     {current?.authProvider !== "supertokens-google" && (
   <VerifyGate email={current?.email} />
 )}
+{/* Lecturer dashboard announcement strip */}
+<div
+  className="w-full h-[28px] bg-[#ad1263]"
+  aria-label="ScholarsKnowledge announcements"
+/>
 
       {/* Keep total width tight and ensure equal margins on both sides */}
    {/*<main className="w-full max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-6 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-3 sm:gap-4 lg:gap-6">*/}
-      <main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">
+      {/*<main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">*/}
+      <main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-1 pb-6 lg:pt-2 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">
         {/* LEFT: Profile + filters */}
         {/*<aside className="space-y-4 pb-24">*/}
           <aside className="hidden lg:block space-y-4 pb-24">
