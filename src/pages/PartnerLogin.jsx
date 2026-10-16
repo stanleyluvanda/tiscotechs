@@ -1,6 +1,7 @@
 // src/pages/PartnerLogin.jsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { requestTurnstileProof } from "../lib/turnstileVerify";
 
 /* ---------- Helpers ---------- */
 function safeParse(json) {
@@ -140,6 +141,7 @@ export default function PartnerLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const submittingRef = useRef(false);
   // Partner login rate-limit popup
   const [showRateLimitPopup, setShowRateLimitPopup] = useState(false);
   const [rateLimitMinutes, setRateLimitMinutes] = useState(15);
@@ -329,21 +331,70 @@ export default function PartnerLogin() {
   const [resetMsg, setResetMsg] = useState("");
 
   /* ====== Handlers ====== */
-  const submit = async (e) => {
+  /*const submit = async (e) => {
     e.preventDefault();
+    setErr("");*/
+  const submit = async (e) => {
+  e.preventDefault();
+
+  // Prevent another submission while login is processing.
+  if (submittingRef.current) return;
+
+  submittingRef.current = true;
+
+  try {
     setErr("");
 
-    const tokenFromSession = sessionStorage.getItem("partnerTurnstileToken") || "";
+    /*const tokenFromSession = sessionStorage.getItem("partnerTurnstileToken") || "";
     if (!turnToken && !tokenFromSession) {
       setErr("Please complete the human verification.");
       return;
-    }
+    }*/
+   const tsToken =
+  window.turnstile && widgetIdRef.current != null
+    ? window.turnstile.getResponse(widgetIdRef.current) || ""
+    : "";
+
+if (!tsToken) {
+  setErr("Please complete the human verification.");
+  return;
+}
 
     const em = (email || "").trim().toLowerCase();
     if (!em || !password) {
       setErr("Please enter email and password.");
       return;
     }
+
+    // Verify Partner Turnstile and obtain a single-use proof.
+const v = USE_SUPERTOKENS_TEST
+  ? await requestTurnstileProof(tsToken)
+  : { ok: true };
+
+if (!v.ok) {
+  setErr(
+    v.offline
+      ? "Cannot reach verification service. Please try again."
+      : "Human verification failed. Please try again."
+  );
+
+  try {
+    if (window.turnstile?.reset && widgetIdRef.current != null) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  } catch {}
+
+  setTurnToken("");
+  setTurnReady(false);
+
+  try {
+    sessionStorage.removeItem("partnerTurnstileToken");
+  } catch {}
+
+  return;
+}
+
+
 
     // ✅ API-first login (DynamoDB) — works across browsers/devices
     try {
@@ -354,7 +405,8 @@ export default function PartnerLogin() {
         password,
         passwordHash,
         role: "partner",
-        turnstileToken: turnToken || tokenFromSession || "",
+        /*turnstileToken: turnToken || tokenFromSession || "",*/
+        turnstileToken: tsToken,
       };
 
       
@@ -387,13 +439,13 @@ if (USE_SUPERTOKENS_TEST) {
   res = await fetch(`${SUPERTOKENS_TEST_API}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: em, password, role: "partner" }),
+    body: JSON.stringify({ email: em, password, role: "partner",proofId: v.proofId,}),
   });
 
   data = await res.json().catch(() => ({}));
 
   // Migrate only accounts explicitly identified as legacy accounts.
-  if (!res.ok && data?.error === "LEGACY_MIGRATION_REQUIRED") {
+  /*if (!res.ok && data?.error === "LEGACY_MIGRATION_REQUIRED") {
     res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -401,7 +453,70 @@ if (USE_SUPERTOKENS_TEST) {
     });
 
     data = await res.json().catch(() => ({}));
+  }*/
+ // Migrate only accounts explicitly identified as legacy accounts.
+if (!res.ok && data?.error === "LEGACY_MIGRATION_REQUIRED") {
+  // The first Turnstile proof was already consumed by /login.
+  // Reset the widget and obtain a fresh token for migration.
+  if (window.turnstile?.reset && widgetIdRef.current != null) {
+    window.turnstile.reset(widgetIdRef.current);
   }
+
+  setTurnToken("");
+  setTurnReady(false);
+
+  try {
+    sessionStorage.removeItem("partnerTurnstileToken");
+  } catch {}
+
+  let migrationToken = "";
+
+  // Wait briefly for Cloudflare to generate a new token.
+  for (let attempt = 0; attempt < 30; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    migrationToken =
+      window.turnstile && widgetIdRef.current != null
+        ? window.turnstile.getResponse(widgetIdRef.current) || ""
+        : "";
+
+    if (migrationToken && migrationToken !== tsToken) {
+      break;
+    }
+  }
+
+  if (!migrationToken || migrationToken === tsToken) {
+    setErr("Please complete human verification again and retry login.");
+    return;
+  }
+
+  const migrationProof = await requestTurnstileProof(migrationToken);
+
+  if (!migrationProof.ok) {
+    setErr("Human verification failed. Please try again.");
+
+    if (window.turnstile?.reset && widgetIdRef.current != null) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+
+    setTurnToken("");
+    setTurnReady(false);
+    return;
+  }
+
+  res = await fetch(`${SUPERTOKENS_TEST_API}/migrate-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: em,
+      password,
+      role: "partner",
+      proofId: migrationProof.proofId,
+    }),
+  });
+
+  data = await res.json().catch(() => ({}));
+}
 }
 
 
@@ -470,6 +585,19 @@ if (!res.ok && data?.error === "TOO_MANY_LOGIN_ATTEMPTS") {
   setRateLimitMinutes(minutes);
   setShowRateLimitPopup(true);
   setErr("");
+  // Reset the consumed Turnstile token.
+try {
+  if (window.turnstile?.reset && widgetIdRef.current != null) {
+    window.turnstile.reset(widgetIdRef.current);
+  }
+} catch {}
+
+setTurnToken("");
+setTurnReady(false);
+
+try {
+  sessionStorage.removeItem("partnerTurnstileToken");
+} catch {}
   return;
 }
 
@@ -502,20 +630,75 @@ if (
   setErr(
     "Incorrect email or password. Please check your credentials and try again."
   );
+
+  // Reset the consumed Turnstile token for the next login attempt.
+try {
+  if (window.turnstile?.reset && widgetIdRef.current != null) {
+    window.turnstile.reset(widgetIdRef.current);
+  }
+} catch {}
+
+setTurnToken("");
+setTurnReady(false);
+
+try {
+  sessionStorage.removeItem("partnerTurnstileToken");
+} catch {}
+
+
   return;
 }
 
 // Preserve handling of other backend errors
-if (!res.ok) {
+/*if (!res.ok) {
   setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
   return;
-}
-    } catch (apiErr) {
-      console.warn("[PartnerLogin] API login error:", apiErr?.message || apiErr);
-      setErr("Login failed. Please try again.");
-      return;
+}*/
+// Preserve handling of other backend errors
+if (!res.ok) {
+  setErr(`Login failed. (${data?.error || res.status || "UNKNOWN"})`);
+
+  // Reset the consumed Turnstile token for the next attempt.
+  try {
+    if (window.turnstile?.reset && widgetIdRef.current != null) {
+      window.turnstile.reset(widgetIdRef.current);
     }
-  };
+  } catch {}
+
+  setTurnToken("");
+  setTurnReady(false);
+
+  try {
+    sessionStorage.removeItem("partnerTurnstileToken");
+  } catch {}
+
+  return;
+}
+   } catch (apiErr) {
+  console.warn("[PartnerLogin] API login error:", apiErr?.message || apiErr);
+  setErr("Login failed. Please try again.");
+
+  // Reset Turnstile if the login request fails unexpectedly.
+  try {
+    if (window.turnstile?.reset && widgetIdRef.current != null) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  } catch {}
+
+  setTurnToken("");
+  setTurnReady(false);
+
+  try {
+    sessionStorage.removeItem("partnerTurnstileToken");
+  } catch {}
+
+  return;
+}
+
+} finally {
+  submittingRef.current = false;
+}
+};
 
   const onSubmitForgot = async (e) => {
     e.preventDefault();
