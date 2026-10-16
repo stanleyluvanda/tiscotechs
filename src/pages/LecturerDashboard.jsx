@@ -4570,7 +4570,7 @@ async function clearNotificationsServerBacked() {
 )}
 {/* Lecturer dashboard announcement strip */}
 <div
-  className="w-full h-[28px] bg-[#ad1263]"
+  className="w-full h-[28px] bg-[#1E3A5F]"
   aria-label="ScholarsKnowledge announcements"
 />
 
