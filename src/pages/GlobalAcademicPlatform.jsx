@@ -3117,8 +3117,6 @@ function InlineComposer({ placeholder = "Write a comment…", onSubmit, isOpen, 
       </div>*/}
 
       <div
-  /*className="mt-2"*/
-  /*className="mt-2 -ml-9 sm:ml-0"*/
   className="mt-2 -ml-2 sm:ml-0"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
@@ -3820,9 +3818,8 @@ setOpen(true);
                     {/*<div className="flex items-start gap-3">*/}
                     <div className="flex items-start gap-2 sm:gap-3">
                       <Avatar url={user?.photoUrl} name={userDisplayName} size="md" online={true} />
-                      {/*<div className="flex-1 min-w-0">*/}
-                      {/*<div className="flex-1 min-w-0 -ml-1 sm:ml-0">*/}
-                      <div className="flex-1 w-0 min-w-0 -ml-1 sm:ml-0">
+                      {/*<div className="flex-1 w-0 min-w-0 -ml-1 sm:ml-0">*/}
+                        <div className="flex-1 w-0 min-w-0 -ml-1 sm:ml-0">
                         <input
                           value={askTitle}
                           onChange={(e) => setAskTitle(e.target.value)}
@@ -3831,9 +3828,7 @@ setOpen(true);
                           dir="ltr"
                           style={{ direction: "ltr", unicodeBidi: "plaintext", textAlign: "left", writingMode: "horizontal-tb" }}
                         />
-                        {/*<div className="mt-2">
-                          <SafeTextEditor html={askBodyHtml} onChange={setAskBodyHtml}/>
-                        </div>*/}
+                        
   <AttachmentStripEditable
   atts={askAtts}
   onRemove={removeAskAttachment}
@@ -3841,7 +3836,8 @@ setOpen(true);
 />
 
   <div
-  className="mt-2"
+  /*className="mt-2"*/
+  className="mt-2 -ml-[56px] sm:-ml-[60px]"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
