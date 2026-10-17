@@ -3950,7 +3950,7 @@ setOpen(true);
       }}
       /*className="min-w-0 w-[65px] sm:w-[230px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"*/
       /*className="shrink-0 w-[90px] sm:w-[180px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"*/
-      className="shrink-0 w-[90px] sm:w-[160px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
+      className="min-w-0 w-[65px] sm:w-[160px] shrink border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
     >
       {CATEGORIES.map((c) => (
         <option key={c} value={c}>
@@ -3963,7 +3963,7 @@ setOpen(true);
       value={selectedTopic}
       onChange={(e) => setSelectedTopic(e.target.value)}
       /*className="min-w-0 w-[52px] sm:w-[65px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"*/
-      className="shrink-0 w-[90px] sm:w-[200px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
+      className="min-w-0 w-[65px] sm:w-[200px] shrink border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
     >
       {[
         "All",
