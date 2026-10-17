@@ -3924,7 +3924,7 @@ setOpen(true);
 
   {/* Attachment button */}
   {/*<div className="shrink-0">*/}
-  <div className="shrink-0 ml-[16px]">
+  <div className="shrink-0 ml-[10px]">
     <AttachmentUploader
       value={askUploadAtts}
       onChange={setAskUploadAtts}
