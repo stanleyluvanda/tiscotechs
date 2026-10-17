@@ -4231,8 +4231,15 @@ setOpen(true);
         )}
       </div>
 
-     
-      <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
+     {/* Country Academic Platform announcement strip */}
+<div
+  className="w-full h-[28px] bg-[#0F766E]"
+  aria-label="ScholarsKnowledge country announcements"
+/>
+
+{/* Main platform layout */}
+<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-1 lg:pt-2 lg:pb-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">
+{/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
       
       {/* LEFT rail */}
         <aside className="hidden lg:block space-y-4 pb-24">
