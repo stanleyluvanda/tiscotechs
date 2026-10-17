@@ -3521,7 +3521,8 @@ setOpen(true);
                      
 <div
   /*className="mt-2"*/
-  className="mt-2 sm:-ml-[52px] sm:w-[calc(100%+52px)]"
+  /*className="mt-2 sm:-ml-[52px] sm:w-[calc(100%+52px)]"*/
+  className="mt-2 -ml-[40px] w-[calc(100%+40px)] sm:-ml-[52px] sm:w-[calc(100%+52px)]"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
@@ -3541,7 +3542,8 @@ setOpen(true);
 </div>
 
 {/*<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
-<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:-ml-[52px] sm:w-[calc(100%+52px)] sm:flex sm:items-center sm:justify-end sm:gap-2">
+{/*<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:-ml-[52px] sm:w-[calc(100%+52px)] sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
+<div className="mt-3 grid grid-cols-2 gap-2 -ml-[40px] w-[calc(100%+40px)] sm:-ml-[52px] sm:w-[calc(100%+52px)] sm:flex sm:items-center sm:justify-end sm:gap-2">
   <select
     value={selectedCategory}
     onChange={(e) => {
