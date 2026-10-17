@@ -3859,7 +3859,7 @@ setOpen(true);
              
 </div>
                        
-<div className="mt-1">
+{/*<div className="mt-1">
   <AttachmentUploader
   value={askUploadAtts}
   onChange={setAskUploadAtts}
@@ -3921,7 +3921,81 @@ setOpen(true);
       Cancel
     </button>
   </div>
+</div>*/}
+{/* Attachment uploader and posting controls on one horizontal row */}
+<div className="mt-1 flex items-center gap-1 sm:gap-2">
+
+  {/* Attachment button */}
+  <div className="shrink-0">
+    <AttachmentUploader
+      value={askUploadAtts}
+      onChange={setAskUploadAtts}
+      folder="global/posts"
+      maxFiles={5}
+      role={isLecturer ? "lecturer" : "student"}
+      showList={false}
+    />
+  </div>
+
+  {/* Category, topic, Post and Cancel */}
+  <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
+
+    <select
+      value={selectedCategory}
+      onChange={(e) => {
+        const c = e.target.value;
+        setSelectedCategory(c);
+        setSelectedTopic("All");
+      }}
+      className="min-w-0 w-[65px] sm:w-[230px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
+    >
+      {CATEGORIES.map((c) => (
+        <option key={c} value={c}>
+          {c}
+        </option>
+      ))}
+    </select>
+
+    <select
+      value={selectedTopic}
+      onChange={(e) => setSelectedTopic(e.target.value)}
+      className="min-w-0 w-[52px] sm:w-[65px] border border-slate-200 rounded px-1 sm:px-2 py-1 text-xs"
+    >
+      {[
+        "All",
+        ...(selectedCategory === "All"
+          ? []
+          : TOPIC_MAP[selectedCategory] || []),
+      ].map((t) => (
+        <option key={t} value={t}>
+          {t}
+        </option>
+      ))}
+    </select>
+
+    <button className="shrink-0 rounded-full bg-blue-600 text-white px-2 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold hover:bg-blue-700">
+      Post
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        setEditorOpen(false);
+        setAskTitle("");
+        setAskBodyHtml("");
+        setAskUploadAtts([]);
+      }}
+      className="shrink-0 rounded-full border border-slate-200 px-2 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-slate-50"
+    >
+      Cancel
+    </button>
+
+  </div>
 </div>
+
+
+
+
                       </div>
                     </div>
 
