@@ -3520,7 +3520,8 @@ setOpen(true);
                       />
                      
 <div
-  className="mt-2"
+  /*className="mt-2"*/
+  className="mt-2 sm:-ml-[52px] sm:w-[calc(100%+52px)]"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
@@ -3539,66 +3540,8 @@ setOpen(true);
   />
 </div>
 
-    {/*<div className="mt-3 grid grid-cols-[56px_88px_88px] gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
-    <div className="order-3 sm:order-none mt-0">
-  <AttachmentUploader
-    value={askUploadAtts}
-    onChange={setAskUploadAtts}
-    folder={`uni/${uni || "unknown"}/posts`}
-    maxFiles={5}
-    role={isLecturer ? "lecturer" : "student"}
-  />
-</div>
-
-  <select
-    value={selectedCategory}
-    onChange={(e) => {
-      const c = e.target.value;
-      setSelectedCategory(c);
-      setSelectedTopic("All");
-    }}
-    className="order-1 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
-  >
-    {CATEGORIES.map((c) => (
-      <option key={c} value={c}>
-        {c}
-      </option>
-    ))}
-  </select>
-
-  <select
-    value={selectedTopic}
-    onChange={(e) => setSelectedTopic(e.target.value)}
-    className="order-2 sm:order-none col-span-3 min-w-0 w-full rounded-xl border border-slate-200 px-2 py-2 text-xs bg-white"
-  >
-    {["All", ...(selectedCategory === "All" ? [] : TOPIC_MAP[selectedCategory] || [])].map(
-      (t) => (
-        <option key={t} value={t}>
-          {t}
-        </option>
-      )
-    )}
-  </select>
-
-         <button className="order-4 sm:order-none h-7 rounded-full bg-blue-600 text-white px-1 sm:px-5 text-[10px] sm:text-sm font-semibold shadow-sm">
-    Post
-  </button>
-
-  <button
-    type="button"
-    onClick={() => {
-      setEditorOpen(false);
-      setAskTitle("");
-      setAskBodyHtml("");
-      setAskUploadAtts([]);
-    }}
-    className="order-5 sm:order-none h-7 rounded-full border border-slate-200 bg-white px-1 sm:px-5 text-[10px] sm:text-sm text-slate-700"
-  >
-    Cancel
-  </button>
-</div>*/}
-
-<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">
+{/*<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:flex sm:items-center sm:justify-end sm:gap-2">*/}
+<div className="mt-3 grid grid-cols-2 gap-2 w-full sm:-ml-[52px] sm:w-[calc(100%+52px)] sm:flex sm:items-center sm:justify-end sm:gap-2">
   <select
     value={selectedCategory}
     onChange={(e) => {
