@@ -3837,7 +3837,8 @@ setOpen(true);
 
   <div
   /*className="mt-2"*/
-  className="mt-2 -ml-[56px] sm:-ml-[60px]"
+  /*className="mt-2 -ml-[56px] sm:-ml-[60px]"*/
+  className="mt-2 -ml-[40px] sm:-ml-[44px]"
   onPasteCapture={async (e) => {
     const cb = e.clipboardData || window.clipboardData;
 
@@ -3922,7 +3923,8 @@ setOpen(true);
 <div className="mt-1 flex items-center gap-1 sm:gap-2">
 
   {/* Attachment button */}
-  <div className="shrink-0">
+  {/*<div className="shrink-0">*/}
+  <div className="shrink-0 ml-[16px]">
     <AttachmentUploader
       value={askUploadAtts}
       onChange={setAskUploadAtts}
