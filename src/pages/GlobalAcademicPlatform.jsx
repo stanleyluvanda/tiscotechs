@@ -3920,10 +3920,12 @@ setOpen(true);
   </div>
 </div>*/}
 {/* Attachment uploader and posting controls on one horizontal row */}
-<div className="mt-1 flex items-center gap-1 sm:gap-2">
+{/*</div><div className="mt-1 flex items-center gap-1 sm:gap-2">*/}
+<div className="mt-1 flex w-full min-w-0 items-center gap-1 sm:gap-2">
 
   {/* Attachment button */}
-  <div className="shrink-0">
+  {/*</div><div className="shrink-0">*/}
+  <div className="shrink-0 ml-0 sm:ml-0">
     <AttachmentUploader
       value={askUploadAtts}
       onChange={setAskUploadAtts}
@@ -3936,7 +3938,8 @@ setOpen(true);
 
   {/* Category, topic, Post and Cancel */}
   {/*<div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">*/}
-  <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+  {/*<div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">*/}
+  <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-2">
 
     <select
       value={selectedCategory}
@@ -3974,7 +3977,8 @@ setOpen(true);
       ))}
     </select>
 
-    <button className="shrink-0 rounded-full bg-blue-600 text-white px-2 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold hover:bg-blue-700">
+    {/*<button className="shrink-0 rounded-full bg-blue-600 text-white px-2 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold hover:bg-blue-700">*/}
+      <button className="shrink-0 rounded-full bg-blue-600 text-white px-1.5 sm:px-4 py-1.5 text-xs sm:text-sm font-semibold hover:bg-blue-700">
       Post
     </button>
 
@@ -3986,7 +3990,8 @@ setOpen(true);
         setAskBodyHtml("");
         setAskUploadAtts([]);
       }}
-      className="shrink-0 rounded-full border border-slate-200 px-2 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-slate-50"
+      /*className="shrink-0 rounded-full border border-slate-200 px-2 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-slate-50"*/
+      className="shrink-0 rounded-full border border-slate-200 px-1.5 sm:px-3 py-1.5 text-xs sm:text-sm hover:bg-slate-50"
     >
       Cancel
     </button>
