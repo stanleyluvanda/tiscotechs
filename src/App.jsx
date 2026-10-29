@@ -73,7 +73,12 @@ const CountryAcademicPlatform = lazy(() =>
 const GlobalAcademicPlatform = lazy(() =>
   import("./pages/GlobalAcademicPlatform.jsx")
 );
-
+const AcademicBookSharingPlatform = lazy(() =>
+  import("./pages/AcademicBookSharingPlatform.jsx")
+);
+const AcademicBookReader = lazy(() =>
+  import("./pages/AcademicBookReader.jsx")
+);
 const StudentMarketplace = lazy(() => import("./pages/StudentMarketplace.jsx"));
 const ContactLecturer = lazy(() => import("./pages/ContactLecturer.jsx"));
 const LecturerMessages = lazy(() => import("./pages/LecturerMessages.jsx"));
@@ -414,7 +419,14 @@ export default function App() {
             path="/platform/global"
             element={<GlobalAcademicPlatform />}
           />
-
+          <Route
+  path="/platform/books"
+  element={<AcademicBookSharingPlatform />}
+/>
+<Route
+  path="/platform/books/read/:bookId"
+  element={<AcademicBookReader />}
+/>
           <Route
   path="/scholarship-tips"
   element={<ScholarshipTips />}

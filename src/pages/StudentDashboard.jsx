@@ -6297,15 +6297,14 @@ onClick={onToggleFacultyOnly}
         🌍Global Academic Platform
       </Link>
     </li>
-
-    {/*<li>
-      <Link
-        to="/marketplace"
-        className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
-      >
-      <span className="text-green-700">🛒</span>   Student Market Place
-      </Link>
-    </li>*/}
+    <li>
+  <Link
+    to="/platform/books"
+    className="block rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-center text-slate-800 hover:bg-slate-100"
+  >
+    Academic Books Sharing
+  </Link>
+</li>
     <li>
   <Link
     to="/marketplace"

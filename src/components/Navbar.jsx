@@ -169,6 +169,9 @@ const link = ({ isActive }) =>
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  // Hide the advertisement strip only on the Academic Book Reader.
+const isAcademicBookReader =
+  location.pathname.startsWith("/platform/books/read/");
 
   const [user, setUser] = useState(() => loadNavbarUser());
   const [open, setOpen] = useState(false);
@@ -567,19 +570,37 @@ export default function Navbar() {
       }}
       className="border-b border-black/5"
     >
-      <div id="ad-banner" className="hidden md:flex h-full w-full items-center justify-center">
-        <div className="h-[72px] md:h-[90px] w-[96%] rounded-xl border border-slate-200 bg-white shadow-sm flex items-center justify-center text-slate-500 text-sm">
-          Banner Ad Slot (728×90 / responsive)
-        </div>
-      </div>
+      <div
+  id="ad-banner"
+  className="hidden md:flex h-full w-full items-center justify-center"
+>
+  <div className="h-[72px] md:h-[90px] w-[96%]" />
+</div>
     </div>
   );
 
-  return (
+  {/*return (
     <>
       {createPortal(NavbarBar, document.body)}
       {createPortal(BannerStrip, document.body)}
       <div className="h-[56px] md:h-[152px]" />
     </>
   );
+}*/}
+return (
+  <>
+    {createPortal(NavbarBar, document.body)}
+
+    {!isAcademicBookReader &&
+      createPortal(BannerStrip, document.body)}
+
+    <div
+      className={
+        isAcademicBookReader
+          ? "h-[56px]"
+          : "h-[56px] md:h-[152px]"
+      }
+    />
+  </>
+);
 }

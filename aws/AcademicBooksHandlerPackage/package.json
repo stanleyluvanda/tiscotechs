@@ -1,0 +1,24 @@
+{
+  "name": "academicbookshandlerpackage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1153.0",
+    "@aws-sdk/client-s3": "^3.1153.0",
+    "@aws-sdk/client-ssm": "^3.1159.0",
+    "@aws-sdk/cloudfront-signer": "^3.1157.0",
+    "@aws-sdk/s3-request-presigner": "^3.1153.0",
+    "cfb": "^1.2.2",
+    "supertokens-node": "^24.0.2"
+  },
+  "overrides": {
+    "nodemailer": "10.1.7"
+  }
+}
