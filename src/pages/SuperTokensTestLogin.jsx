@@ -1,3 +1,4 @@
+//src/pages/SuperTokensTestLogin.jsx//
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -193,17 +194,55 @@ window.dispatchEvent(new Event("user:updated"));
   setResult("");
 
   try {
-    const res = await fetch(`${API}/authorisationurl?thirdPartyId=google`);
+    // Generate a cryptographically secure browser verifier.
+    const verifierBytes = new Uint8Array(32);
+    window.crypto.getRandomValues(verifierBytes);
+
+    const browserVerifier = Array.from(
+      verifierBytes,
+      (byte) => byte.toString(16).padStart(2, "0")
+    ).join("");
+
+    // Bind the OAuth request to this browser verifier.
+    const encodedVerifier = new TextEncoder().encode(browserVerifier);
+
+    const challengeBuffer = await window.crypto.subtle.digest(
+      "SHA-256",
+      encodedVerifier
+    );
+
+    const oauthChallenge = Array.from(
+      new Uint8Array(challengeBuffer),
+      (byte) => byte.toString(16).padStart(2, "0")
+    ).join("");
+
+    const params = new URLSearchParams({
+      thirdPartyId: "google",
+      role,
+      frontendOrigin: window.location.origin,
+      oauthChallenge,
+    });
+
+    const res = await fetch(
+      `${API}/authorisationurl?${params.toString()}`
+    );
+
     const data = await res.json().catch(() => ({}));
 
-    setResult(JSON.stringify(data, null, 2));
-
+    // Do not display or log OAuth authorization data.
     if (!res.ok || !data?.url) {
       setError(data?.error || "Could not start Google login.");
       return;
     }
 
-    window.location.href = data.url;
+    // Save only the browser verifier needed for completion.
+    // It is not an authentication token.
+    sessionStorage.setItem(
+      "sk_google_test_browser_verifier",
+      browserVerifier
+    );
+
+    window.location.assign(data.url);
   } catch (err) {
     setError(err?.message || "Google login failed.");
   }
