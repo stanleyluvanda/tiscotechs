@@ -343,25 +343,25 @@ const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
     setForm((f) => ({ ...f, year: e.target.value }));
 
 
-  // ✅ Google OAuth entry for Student signup (doesn't touch backend)
-  const onGoogleSignup = async () => {
-    setError("");
-    try { sessionStorage.setItem("oauthRole", "student"); } catch {}
-    try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
-    /*await loginWithGoogle();*/
-    const res = await fetch(
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google"
-);
+  // Isolated Google OAuth entry for Student signup.
+// Does not use production SuperTokens authorization.
+const onGoogleSignup = () => {
+  setError("");
 
-const data = await res.json().catch(() => ({}));
+  try {
+    sessionStorage.setItem("oauthRole", "student");
+    sessionStorage.setItem(
+      "oauthFrom",
+      window.location.pathname + window.location.search
+    );
+  } catch {}
 
-if (!res.ok || !data?.url) {
-  setError(data?.error || "Could not start Google signup.");
-  return;
-}
-
-window.location.href = data.url;
-  };
+  // Start OAuth through the isolated callback.
+  // Top-level navigation allows the callback to establish OAuth state.
+  window.location.assign(
+    "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=student"
+  );
+};
 
 
   /* ----------------- SUBMIT ----------------- */
@@ -415,11 +415,12 @@ window.location.href = data.url;
     // Normalize email
     const emailNorm = normalizeEmail(form.email);
 
-    // Local duplicate check
-    if (emailExistsForRoleLocal(emailNorm, "student")) {
-      setError("An account with this email already exists for a student. Please log in instead.");
-      return;
-    }
+    // Preserve the existing local duplicate check for email/password signup.
+// Isolated Google signup uses the backend's authoritative account check.
+if (!oauthMode && emailExistsForRoleLocal(emailNorm, "student")) {
+  setError("An account with this email already exists for a student. Please log in instead.");
+  return;
+}
 
     // Hash password ONCE
     /*const passwordHash = await sha256Hex(form.password);*/
@@ -445,6 +446,89 @@ const profile = {
   scopeKey,
   gsi_scopeRole,
 };
+
+
+// Isolated Google registration only.
+// Email/password registration continues below unchanged.
+if (oauthMode) {
+  if (!googleSignup || !googleSignupSig) {
+    setError("Google verification is missing. Please restart Google signup.");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-google-test/google-register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          googleSignup,
+          googleSignupSig,
+          role: "student",
+          academicProfile: profile,
+        }),
+      }
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || data.ok !== true) {
+      const code = String(data.error || "");
+
+      const messages = {
+        GOOGLE_TEST_REGISTRATION_DISABLED:
+          "Google registration is not yet enabled.",
+        GOOGLE_SIGNUP_ACCOUNT_EXISTS:
+          "An account with this email already exists.",
+        INVALID_GOOGLE_SIGNUP_PROOF:
+          "Google verification has expired or is invalid. Please restart Google signup.",
+        GOOGLE_SIGNUP_ROLE_MISMATCH:
+          "Google signup role mismatch. Please restart Student signup.",
+        MISSING_ACADEMIC_FIELDS:
+          "Please complete all required academic fields.",
+        INVALID_ACADEMIC_SCOPE:
+          "Please reselect your university and faculty.",
+      };
+
+      setError(
+        messages[code] ||
+          "Google registration could not be completed. Please contact support before retrying."
+      );
+      return;
+    }
+
+    if (res.status !== 201 || data.registered !== true) {
+      setError("Unexpected Google registration response.");
+      return;
+    }
+
+    // Google registration succeeded.
+// Do not create a local session or bypass SuperTokens authentication.
+try {
+  sessionStorage.removeItem("oauthFrom");
+  sessionStorage.removeItem("oauthRole");
+} catch {}
+
+navigate("/login?role=student", {
+  replace: true,
+  state: {
+    googleRegistrationCompleted: true,
+  },
+});
+
+return;
+  } catch {
+    setError(
+      "Unable to confirm Google registration. Please check your connection and account status before retrying."
+    );
+    return;
+  }
+}
+
+
 
     /* ----------------- BACKEND CALL ----------------- */
 let backendResp;

@@ -111,10 +111,35 @@ if (!verifiedEmail || !verifiedEmail.includes("@")) {
   throw new Error("Verified Google account email is missing.");
 }
 
-// Synchronize the verified Google identity with frontend state.
+// Restore the original registered ScholarsKnowledge account.
+// The isolated SuperTokens session remains independently verified.
+const registeredUserId = String(
+  result.registeredUserId || ""
+).trim();
+
+if (!registeredUserId) {
+  throw new Error(
+    "Verified Google account has no registered user ID."
+  );
+}
+
+const academicProfile = result.academicProfile;
+
+if (
+  !academicProfile ||
+  typeof academicProfile !== "object" ||
+  Array.isArray(academicProfile)
+) {
+  throw new Error(
+    "Verified Google account profile is missing or invalid."
+  );
+}
+
+// Synchronize the existing registered account with frontend state.
 markActiveUser({
-  id: userId,
-  uid: userId,
+  ...academicProfile,
+  id: registeredUserId,
+  uid: registeredUserId,
   email: verifiedEmail,
   role,
   authProvider: "supertokens-google",

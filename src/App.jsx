@@ -40,8 +40,8 @@ const SuperTokensTestLogin = lazy(() =>
 const SuperTokensGoogleDone = lazy(() =>
   import("./pages/SuperTokensGoogleDone.jsx")
 );
-const SuperTokensGoogleCallback = lazy(() =>
-  import("./pages/SuperTokensGoogleCallback.jsx")
+const GoogleSessionRedeem = lazy(() =>
+  import("./pages/GoogleSessionRedeem.jsx")
 );
 const ForgotStart = lazy(() => import("./pages/ForgotStart.jsx"));
 const ForgotVerify = lazy(() => import("./pages/ForgotVerify.jsx"));
@@ -76,12 +76,7 @@ const CountryAcademicPlatform = lazy(() =>
 const GlobalAcademicPlatform = lazy(() =>
   import("./pages/GlobalAcademicPlatform.jsx")
 );
-const AcademicBookSharingPlatform = lazy(() =>
-  import("./pages/AcademicBookSharingPlatform.jsx")
-);
-const AcademicBookReader = lazy(() =>
-  import("./pages/AcademicBookReader.jsx")
-);
+
 const StudentMarketplace = lazy(() => import("./pages/StudentMarketplace.jsx"));
 const ContactLecturer = lazy(() => import("./pages/ContactLecturer.jsx"));
 const LecturerMessages = lazy(() => import("./pages/LecturerMessages.jsx"));
@@ -376,20 +371,19 @@ export default function App() {
           <Route path="/terms-of-use" element={<TermsOfUse />} />
 
           <Route path="/login" element={<Login />} />
-
-          {/*<Route path="/auth-st-test" element={<SuperTokensTestLogin />} />
-          <Route path="/auth-st-test/google-done"element={<SuperTokensGoogleDone />}/>*/}
           <Route path="/auth-st-test" element={<SuperTokensTestLogin />} />
+          <Route path="/auth-st-test/google-done"element={<SuperTokensGoogleDone />}/>
+          <Route path="/auth-st-test/google-redeem"element={<GoogleSessionRedeem />}/>
 
-<Route
+          <Route
   path="/auth-st-test/callback/google"
-  element={<SuperTokensGoogleCallback />}
+  element={
+    <PageWrap title="Google Authentication Test">
+      Google OAuth callback implementation pending.
+    </PageWrap>
+  }
 />
 
-<Route
-  path="/auth-st-test/google-done"
-  element={<SuperTokensGoogleDone />}
-/>
 
           <Route path="/auth/login" element={<Navigate to="/login" replace />} />
           <Route
@@ -435,14 +429,7 @@ export default function App() {
             path="/platform/global"
             element={<GlobalAcademicPlatform />}
           />
-          <Route
-  path="/platform/books"
-  element={<AcademicBookSharingPlatform />}
-/>
-<Route
-  path="/platform/books/read/:bookId"
-  element={<AcademicBookReader />}
-/>
+
           <Route
   path="/scholarship-tips"
   element={<ScholarshipTips />}

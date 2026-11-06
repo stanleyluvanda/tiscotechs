@@ -4,8 +4,12 @@ import { useNavigate, Link } from "react-router-dom";
 
 const API =
   /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
-  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";*/
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
+  /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";*/
+  const GOOGLE_TEST_API =
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-google-test";
+
+
 
 
 function normalizeEmail(x) {
@@ -39,32 +43,8 @@ export default function SuperTokensTestLogin() {
     }
 
     try {
-      /*const res = await fetch(`${API}/login`, {*/
-      /*const res = await fetch(`${API}/migrate-login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: em, password, role }),
-      });
 
-      const data = await res.json().catch(() => ({}));*/
 
-      /*let res = await fetch(`${API}/migrate-login`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email: em, password, role }),
-});
-
-let data = await res.json().catch(() => ({}));
-
-if (!res.ok && data?.error === "INVALID_CREDENTIALS") {
-  res = await fetch(`${API}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: em, password, role }),
-  });
-
-  data = await res.json().catch(() => ({}));
-}*/
 let res = await fetch(`${API}/login`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -194,67 +174,22 @@ window.dispatchEvent(new Event("user:updated"));
   setResult("");
 
   try {
-    // Generate a cryptographically secure browser verifier.
-    const verifierBytes = new Uint8Array(32);
-    window.crypto.getRandomValues(verifierBytes);
-
-    const browserVerifier = Array.from(
-      verifierBytes,
-      (byte) => byte.toString(16).padStart(2, "0")
-    ).join("");
-
-    // Bind the OAuth request to this browser verifier.
-    const encodedVerifier = new TextEncoder().encode(browserVerifier);
-
-    const challengeBuffer = await window.crypto.subtle.digest(
-      "SHA-256",
-      encodedVerifier
-    );
-
-    const oauthChallenge = Array.from(
-      new Uint8Array(challengeBuffer),
-      (byte) => byte.toString(16).padStart(2, "0")
-    ).join("");
-
-    const params = new URLSearchParams({
-      thirdPartyId: "google",
-      role,
-      frontendOrigin: window.location.origin,
-      oauthChallenge,
-    });
-
-    const res = await fetch(
-      `${API}/authorisationurl?${params.toString()}`
-    );
-
+    /*const res = await fetch(`${API}/authorisationurl?thirdPartyId=google`);*/
+    const res = await fetch(`${GOOGLE_TEST_API}/authorisationurl?thirdPartyId=google`);
     const data = await res.json().catch(() => ({}));
 
-    // Do not display or log OAuth authorization data.
+    setResult(JSON.stringify(data, null, 2));
+
     if (!res.ok || !data?.url) {
       setError(data?.error || "Could not start Google login.");
       return;
     }
 
-    // Save only the browser verifier needed for completion.
-    // It is not an authentication token.
-    sessionStorage.setItem(
-      "sk_google_test_browser_verifier",
-      browserVerifier
-    );
-
-    window.location.assign(data.url);
+    window.location.href = data.url;
   } catch (err) {
     setError(err?.message || "Google login failed.");
   }
 }
-
-
-
-
-
-
-
-
 
 
   const RoleTabs = (

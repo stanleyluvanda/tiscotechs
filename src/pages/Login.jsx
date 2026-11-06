@@ -68,20 +68,6 @@ const SUPERTOKENS_TEST_API = IS_LOCAL_SUPERTOKENS
   : "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod";
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* === Local auth helpers for strict password check ================ */
 function lower(x) { return String(x || "").trim().toLowerCase(); }
 
@@ -391,20 +377,27 @@ const [rateLimitMinutes, setRateLimitMinutes] = useState(15);
   const [newPass2, setNewPass2] = useState("");
   const [resetMsg, setResetMsg] = useState("");
 
-  // ✅ Google login wrapper: remember selected role before redirecting
-const onGoogleLogin = async () => {
-  setError(""); // keep if you already have it
+  // Google login: use the verified isolated OAuth flow.
+const onGoogleLogin = () => {
+  setError("");
 
-  // ✅ Persist chosen role for AuthCallback to use after Google returns
-  try { sessionStorage.setItem("oauthRole", role); } catch {}
+  const selectedRole =
+    role === "lecturer" ? "lecturer" : "student";
 
-  // (optional but recommended) remember where they came from
-  try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
+  try {
+    sessionStorage.setItem("oauthRole", selectedRole);
+    sessionStorage.setItem(
+      "oauthFrom",
+      window.location.pathname + window.location.search
+    );
+  } catch {}
 
-  // ✅ always redirect to Google Hosted UI
-  /*await loginWithGoogle();*/
-  /*await loginWithGoogle({ useSuperTokens: USE_SUPERTOKENS_PROD });*/
-  await loginWithGoogle({ useSuperTokens: true });
+  const googleLoginUrl =
+    "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start";
+
+  window.location.assign(
+    `${googleLoginUrl}?role=${encodeURIComponent(selectedRole)}`
+  );
 };
 
   /* ====== LOGIN HANDLER ====== */
@@ -1438,7 +1431,8 @@ if (USE_SUPERTOKENS_RESET_TEST) {
                     <button
   type="button"
   onClick={onGoogleLogin}
-  className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2"
+  /*className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2"*/
+  className="w-full border rounded px-3 py-2 flex items-center justify-center gap-2 cursor-pointer"
 >
   <img
     src="/images/Google icon.svg"
@@ -1447,10 +1441,10 @@ if (USE_SUPERTOKENS_RESET_TEST) {
   />
   <span>Continue with Google</span>
 </button>
-
-
-                <div className="pt-1">
-                  <div ref={turnstileRef} />
+                  <div className="pt-1">
+        <div className="w-full flex justify-center">
+  <div ref={turnstileRef} />
+        </div>
                   {!turnReady && (
                     <p className="mt-2 text-xs text-slate-500">
                       Human verification will appear here. If it doesn’t, refresh the page.
@@ -1458,17 +1452,12 @@ if (USE_SUPERTOKENS_RESET_TEST) {
                   )}
                 </div>
 
-                {/*<button
-                  type="submit"
-                  className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90"
-                >
-                  Log in
-                </button>*/}
+
 
                 <button
   type="submit"
   disabled={isLoggingIn}
-  className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
+  className="w-full bg-[#1a73e8] text-white py-2 rounded font-semibold hover:opacity-90 cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 flex items-center justify-center gap-2"
 >
   {isLoggingIn && (
     <span

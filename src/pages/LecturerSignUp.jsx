@@ -150,9 +150,7 @@ export default function LecturerSignUp() {
   const navigate = useNavigate();
    useNoIndex();
   const [sp] = useSearchParams();
-  /*const oauthMode = sp.get("oauth") === "1";
-  const oauthEmail = (sp.get("email") || "").trim();
-  const oauthName = (sp.get("name") || "").trim();*/
+
 const oauthMode = sp.get("oauth") === "1";
 const googleSignup = sp.get("googleSignup") || "";
 const googleSignupSig = sp.get("googleSignupSig") || "";
@@ -323,47 +321,28 @@ const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
   const onFaculty = (e) =>
     setForm((f) => ({ ...f, faculty: e.target.value }));
 
-// ✅ Google OAuth entry for Lecturer signup (doesn't touch backend)
-  const onGoogleSignup = async () => {
+// ✅ Isolated Google OAuth entry for Lecturer signup.
+  // Does not use production SuperTokens authorization.
+  const onGoogleSignup = () => {
     setError("");
-    try { sessionStorage.setItem("oauthRole", "lecturer"); } catch {}
-    try { sessionStorage.setItem("oauthFrom", window.location.pathname + window.location.search); } catch {}
-    /*await loginWithGoogle();*/
-/*const res = await fetch(
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google"
-);*/
-const res = await fetch(
-  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-prod/authorisationurl?thirdPartyId=google&role=lecturer"
-);
 
-const data = await res.json().catch(() => ({}));
+    try {
+      sessionStorage.setItem("oauthRole", "lecturer");
+      sessionStorage.setItem(
+        "oauthFrom",
+        window.location.pathname + window.location.search
+      );
+    } catch {}
 
-if (!res.ok || !data?.url) {
-  setError(data?.error || "Could not start Google signup.");
-  return;
-}
-
-window.location.href = data.url;
+    window.location.assign(
+      "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=lecturer"
+    );
   };
 
   /* ------------------ Submit ------------------ */
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    // Required fields
-    /*const required = [
-      "name",
-      "gender",
-      "email",
-      "password",
-      "confirmPassword",
-      "continent",
-      "country",
-      "university",
-      "faculty",
-      "agree",
-    ];*/
 
      const required = [
       "name",
@@ -401,10 +380,11 @@ window.location.href = data.url;
         String(u.role).toLowerCase() === "lecturer"
     );
 
-    if (duplicate)
-      return setError(
-        "An account with this email already exists for a lecturer. Please log in instead."
-      );
+    if (!oauthMode && duplicate) {
+  return setError(
+    "An account with this email already exists for a lecturer. Please log in instead."
+  );
+}
 
     /* ------------------ Hash password ------------------ */
     /*const passwordHash = await sha256Hex(form.password);*/
@@ -434,20 +414,95 @@ const gsi_scopeRole = buildGsiScopeRole({ scopeKey, role: "lecturer" });
       photo: photo || "", // <--- S3 URL
     };
 
-    /* ------------------ Backend call ------------------ */
-    /*let backendResp;
-    try {
-      backendResp = await apiRegisterLecturer({
-        email: emailNorm,
-        password: form.password,     // ✅ NEW
-        passwordHash,
-        role: "lecturer",
-        profile,
-      });
-    } catch (err) {
-      console.error("[lecturer-signup] network error:", err);
-      backendResp = { ok: false, error: "network" };
-    }*/
+
+
+    // Isolated Google Lecturer registration only.
+    // Email/password registration continues below unchanged.
+    if (oauthMode) {
+      if (!googleSignup || !googleSignupSig) {
+        setError(
+          "Google verification is missing. Please restart Google signup."
+        );
+        return;
+      }
+
+      // The isolated backend accepts photoUrl, not photo.
+      // Preserve the original profile for email/password signup.
+      const { photo: unusedPhoto, ...googleAcademicProfile } = profile;
+
+      try {
+       const res = await fetch(
+  "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-google-test/google-register",
+  {
+    method: "POST",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              googleSignup,
+              googleSignupSig,
+              role: "lecturer",
+              academicProfile: googleAcademicProfile,
+            }),
+          }
+        );
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.ok !== true) {
+          const code = String(data.error || "");
+
+          const messages = {
+            GOOGLE_TEST_REGISTRATION_DISABLED:
+              "Google registration is not yet enabled.",
+            GOOGLE_SIGNUP_ACCOUNT_EXISTS:
+              "An account with this email already exists.",
+            INVALID_GOOGLE_SIGNUP_PROOF:
+              "Google verification has expired or is invalid. Please restart Google signup.",
+            GOOGLE_SIGNUP_ROLE_MISMATCH:
+              "Google signup role mismatch. Please restart Lecturer signup.",
+            MISSING_ACADEMIC_FIELDS:
+              "Please complete all required academic fields.",
+            INVALID_ACADEMIC_SCOPE:
+              "Please reselect your university and faculty.",
+          };
+
+          setError(
+            messages[code] ||
+              "Google registration could not be completed. Please contact support before retrying."
+          );
+          return;
+        }
+
+        if (res.status !== 201 || data.registered !== true) {
+          setError("Unexpected Google registration response.");
+          return;
+        }
+
+        // Registration succeeded, but no browser session exists yet.
+        try {
+          sessionStorage.removeItem("oauthFrom");
+          sessionStorage.removeItem("oauthRole");
+        } catch {}
+
+        navigate("/login?role=lecturer", {
+          replace: true,
+          state: {
+            googleRegistrationCompleted: true,
+          },
+        });
+
+        return;
+      } catch {
+        setError(
+          "Unable to confirm Google registration. Please check your connection and account status before retrying."
+        );
+        return;
+      }
+    }
+
+
 
     let backendResp;
 
@@ -458,17 +513,9 @@ try {
     scopeKey,
     gsi_scopeRole,
     profile,
-    /*...(oauthMode
-      ? { oauth: true, authProvider: "google" }
-      : { password: form.password, passwordHash }),*/
-   ...(oauthMode
-  ? {
-      oauth: true,
-      authProvider: "supertokens-google",
-      password: `GoogleOAuth-${Date.now()}-${Math.random().toString(36).slice(2)}@`,
-      passwordHash: "",
-    }
-  : { password: form.password, passwordHash }),
+
+  password: form.password,
+  passwordHash,
   };
 
   const res = await fetch(

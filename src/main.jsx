@@ -31,6 +31,31 @@ SuperTokens.init({
   recipeList: [
   Session.init({
     tokenTransferMethod: "header",
+    override: {
+      functions: (originalImplementation) => ({
+        ...originalImplementation,
+
+        shouldDoInterceptionBasedOnUrl: (
+          url,
+          apiDomain,
+          sessionTokenBackendDomain
+        ) => {
+          const isGoogleRedemption =
+            url ===
+            "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/auth-st-google-test/google-redeem";
+
+          if (isGoogleRedemption) {
+            return true;
+          }
+
+          return originalImplementation.shouldDoInterceptionBasedOnUrl(
+            url,
+            apiDomain,
+            sessionTokenBackendDomain
+          );
+        },
+      }),
+    },
   }),
 ],
 });
@@ -47,25 +72,3 @@ createRoot(container).render(
     <BannerAdPortal />
   </React.StrictMode>
 );
-/*import React from "react";
-import { createRoot } from "react-dom/client";
-
-import "./lib/amplify";
-import "aws-amplify/auth/enable-oauth-listener";
-import "./index.css";
-
-import App from "./App.jsx";
-import BannerAdPortal from "./components/BannerAdPortal.jsx";
-
-const container = document.getElementById("root");
-
-if (!container) {
-  throw new Error("Root element #root not found in index.html");
-}
-
-createRoot(container).render(
-  <React.StrictMode>
-    <App />
-    <BannerAdPortal />
-  </React.StrictMode>
-);*/

@@ -7,6 +7,7 @@ const API =
   /*"https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/api/auth-st";*/
    "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st";
 
+
 export default function SuperTokensGoogleCallback() {
   const [status, setStatus] = useState(
     "Processing Google authentication..."
