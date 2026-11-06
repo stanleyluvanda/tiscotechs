@@ -392,12 +392,19 @@ const onGoogleLogin = () => {
     );
   } catch {}
 
+  
   const googleLoginUrl =
-    "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start";
+  "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start";
 
-  window.location.assign(
-    `${googleLoginUrl}?role=${encodeURIComponent(selectedRole)}`
-  );
+const frontend =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "local"
+    : "live";
+
+window.location.assign(
+  `${googleLoginUrl}?role=${encodeURIComponent(selectedRole)}&frontend=${frontend}`
+);
 };
 
   /* ====== LOGIN HANDLER ====== */

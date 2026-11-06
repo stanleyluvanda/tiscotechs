@@ -150,7 +150,7 @@ export default function LecturerSignUp() {
   const navigate = useNavigate();
    useNoIndex();
   const [sp] = useSearchParams();
-
+  
 const oauthMode = sp.get("oauth") === "1";
 const googleSignup = sp.get("googleSignup") || "";
 const googleSignupSig = sp.get("googleSignupSig") || "";
@@ -334,9 +334,17 @@ const oauthName = (sp.get("name") || googleSignupData.name || "").trim();
       );
     } catch {}
 
-    window.location.assign(
-      "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=lecturer"
-    );
+    // Identify whether Google signup started locally or on the live website.
+const frontend =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "local"
+    : "live";
+
+// Preserve the existing isolated Google OAuth endpoint and Lecturer role.
+window.location.assign(
+  `https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=lecturer&frontend=${frontend}`
+);
   };
 
   /* ------------------ Submit ------------------ */
@@ -434,7 +442,7 @@ const gsi_scopeRole = buildGsiScopeRole({ scopeKey, role: "lecturer" });
        const res = await fetch(
   "https://287gaj3pt3.execute-api.us-east-1.amazonaws.com/default/api/auth-st-google-test/google-register",
   {
-    method: "POST",
+    
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -502,7 +510,7 @@ const gsi_scopeRole = buildGsiScopeRole({ scopeKey, role: "lecturer" });
       }
     }
 
-
+    
 
     let backendResp;
 
@@ -513,7 +521,7 @@ try {
     scopeKey,
     gsi_scopeRole,
     profile,
-
+   
   password: form.password,
   passwordHash,
   };
@@ -643,10 +651,7 @@ if (oauthMode && googleSignup && googleSignupSig) {
       createdAt: new Date().toISOString(),
     };
 
-    /*const newStoredUser = { ...newUser, passwordHash };
-    users.push(newStoredUser);
-    const byId = safeParse(localStorage.getItem("usersById")) || {};
-    byId[id] = newStoredUser;*/
+   
     const newStoredUser = oauthMode ? { ...newUser } : { ...newUser, passwordHash };
     users.push(newStoredUser);
     const byId = safeParse(localStorage.getItem("usersById")) || {};
@@ -670,7 +675,6 @@ if (oauthMode && googleSignup && googleSignupSig) {
       } catch {}
     }
 
-    /*navigate("/lecturer-dashboard");*/
     navigate("/lecturer/dashboard", { replace: true });
   };
 
@@ -767,10 +771,6 @@ if (oauthMode && googleSignup && googleSignupSig) {
   )}
 
 
-
-
-
-
             {/* NEW S3 PHOTO UPLOADER */}
             <SingleImageUploader
               value={photo}
@@ -825,14 +825,7 @@ if (oauthMode && googleSignup && googleSignupSig) {
             </label>
 
             {/* Email */}
-            {/*<input
-              name="email"
-              type="email"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Email"
-              value={form.email}
-              onChange={onBasic}
-            />*/}
+            
             <input
   name="email"
   type="email"
@@ -844,81 +837,6 @@ if (oauthMode && googleSignup && googleSignupSig) {
 />
 
             {/* PASSWORD (enhanced UX, no backend changes) */}
-            {/*<div className="space-y-2">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <input
-                    name="password"
-                    type="password"
-                    className="w-full border rounded px-3 py-2"
-                    placeholder="Password"
-                    value={form.password}
-                    onChange={onBasic}
-                  />
-
-                  {pw.length > 0 && (
-                    <div className="text-xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-600">
-                          Strength:{" "}
-                          <span className="font-semibold text-slate-900">
-                            {pwStrength.label}
-                          </span>
-                        </span>
-
-                        <button
-                          type="button"
-                          className="text-[#1a73e8] underline whitespace-nowrap"
-                          onClick={() => {
-                            const gen = generateStrongPassword(14);
-                            setForm((f) => ({ ...f, password: gen, confirmPassword: gen }));
-                          }}
-                          title="Generate a strong password"
-                        >
-                          Generate strong password
-                        </button>
-                      </div>
-
-                      <div className="mt-1 h-2 w-full rounded bg-slate-200 overflow-hidden">
-                        <div
-                          className="h-full rounded bg-[#1a73e8]"
-                          style={{ width: `${(pwStrength.score / 5) * 100}%` }}
-                        />
-                      </div>
-
-                      {pwStrength.tips.length > 0 && (
-                        <div className="mt-1 text-slate-600">
-                          Suggestions: {pwStrength.tips.slice(0, 2).join(" • ")}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-1">
-                  <input
-                    name="confirmPassword"
-                    type="password"
-                    className={`w-full border rounded px-3 py-2 ${
-                      passwordsMatch ? "border-green-400" : passwordsMismatch ? "border-red-400" : ""
-                    }`}
-                    placeholder="Confirm password"
-                    value={form.confirmPassword}
-                    onChange={onBasic}
-                  />
-
-                  {pwTouched && cpw.length > 0 && (
-                    <div className={`text-xs ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
-                      {passwordsMatch ? "✅ Passwords match" : "❌ Passwords do not match"}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-600">
-                Use 12+ characters with upper/lowercase letters, a number, and a symbol.
-              </div>
-            </div>*/}
 
             {!oauthMode && (
               <>

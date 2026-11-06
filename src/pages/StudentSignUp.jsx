@@ -356,11 +356,17 @@ const onGoogleSignup = () => {
     );
   } catch {}
 
-  // Start OAuth through the isolated callback.
-  // Top-level navigation allows the callback to establish OAuth state.
-  window.location.assign(
-    "https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=student"
-  );
+  // Identify the frontend that initiated Google signup.
+const frontend =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "local"
+    : "live";
+
+// Start Google OAuth through the existing isolated callback.
+window.location.assign(
+  `https://kv6gns63oabbkktpn62iqrj4ca0mqolv.lambda-url.us-east-1.on.aws/start?role=student&frontend=${frontend}`
+);
 };
 
 
