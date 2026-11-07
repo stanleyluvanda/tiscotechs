@@ -1432,13 +1432,16 @@ try {
 useEffect(() => {
   let cancelled = false;
 
-  async function checkAuthentication() {
-    try {
-      const hasSession = await Session.doesSessionExist();
 
-      if (!cancelled) {
-        setIsAuthenticated(hasSession);
-      }
+     async function checkAuthentication() {
+  try {
+    const hasSession = await Session.doesSessionExist();
+
+
+
+    if (!cancelled) {
+      setIsAuthenticated(hasSession);
+    }
     } catch (error) {
       console.error("Academic Books session check failed:", error);
 
@@ -2110,7 +2113,6 @@ if (publicBooksFilterKeyRef.current !== requestedFilterKey) {
 </div>
 </div>
 
-
         </aside>
 
         {/* CENTER CONTENT */}
@@ -2121,15 +2123,20 @@ if (publicBooksFilterKeyRef.current !== requestedFilterKey) {
  <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
     <div className="flex items-center gap-3">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sm font-semibold text-sky-800">
-        {currentUser?.avatarUrl ||
-        currentUser?.photoURL ||
-        currentUser?.profilePicture ? (
-          <img
-            src={
-              currentUser.avatarUrl ||
-              currentUser.photoURL ||
-              currentUser.profilePicture
-            }
+
+{currentUser?.avatarUrl ||
+currentUser?.photoURL ||
+currentUser?.profilePicture ||
+currentUser?.photoUrl ||
+currentUser?.photo ? (
+  <img
+    src={
+      currentUser.avatarUrl ||
+      currentUser.photoURL ||
+      currentUser.profilePicture ||
+      currentUser.photoUrl ||
+      currentUser.photo
+    }
             alt="Your profile"
             className="h-full w-full object-cover"
           />
