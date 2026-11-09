@@ -19,6 +19,7 @@ export async function fetchAcademicBooks({
   cursor = null,
   subject = "All",
   subcategory = "All",
+  resourceType = "All Academic Resources",
 } = {}) {
   if (!API_BASE) {
     throw new Error("VITE_ACADEMIC_BOOKS_API_BASE is not configured");
@@ -39,6 +40,9 @@ if (subject && subject !== "All") {
 if (subcategory && subcategory !== "All") {
   url.searchParams.set("subcategory", subcategory);
   }
+if (resourceType && resourceType !== "All Academic Resources") {
+  url.searchParams.set("resourceType", resourceType);
+}
 
   const response = await fetch(url.toString(), {
     method: "GET",
@@ -213,6 +217,7 @@ export async function publishAcademicBook({
   author,
   subject,
   subcategory,
+  resourceType = "Academic Books",
   description,
   accessToken,
 }) {
@@ -239,6 +244,7 @@ export async function publishAcademicBook({
   author,
   subject,
   subcategory,
+  resourceType,
   description,
 }),
   });

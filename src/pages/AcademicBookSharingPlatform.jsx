@@ -18,6 +18,13 @@ import Session from "supertokens-web-js/recipe/session";
 import { generateAcademicBookCover } from "../utils/academicBookCover";
 
 
+const ACADEMIC_RESOURCE_TYPES = [
+  "Academic Books",
+  "Research Samples",
+  "Academic Essays",
+  "Theses & Dissertations",
+];
+
 const SUBJECTS = [
   "Agriculture",
   "Artificial Intelligence",
@@ -1155,6 +1162,10 @@ const [bookDescription, setBookDescription] = useState("");
 const [bookDiscipline, setBookDiscipline] = useState("");
 // Selected academic subcategory for the shared book
 const [bookSubcategory, setBookSubcategory] = useState("");
+// Frontend-only classification until the publishing API supports resourceType.
+const [bookResourceType, setBookResourceType] = useState("Academic Books");
+/*const [selectedResourceType, setSelectedResourceType] = useState("All Academic Resources");*/
+const [selectedResourceType, setSelectedResourceType] = useState("Academic Books");
 // Selected academic book PDF file
 const [bookFile, setBookFile] = useState(null);
 // Error message for invalid academic book PDF files
@@ -1384,6 +1395,7 @@ await publishAcademicBook({
       author: bookAuthor.trim(),
       subject: bookDiscipline,
       subcategory: bookSubcategory,
+      resourceType: bookResourceType,
       description:
         bookDescriptionEditorRef.current?.textContent?.trim() || "",
       accessToken,
@@ -1399,11 +1411,12 @@ try {
   const requestedFilterKey = publicBooksFilterKey;
 
   const result = await fetchAcademicBooks({
-    limit: 20,
-    subject: selectedBookDiscipline,
-    subcategory: selectedBookSubcategory,
-  });
-
+  limit: 20,
+  cursor: booksCursor,
+  subject: selectedBookDiscipline,
+  subcategory: selectedBookSubcategory,
+  resourceType: selectedResourceType,
+});
   // Do not overwrite the feed if the user changed filters.
   if (publicBooksFilterKeyRef.current === requestedFilterKey) {
     setBooks(result.books);
@@ -1494,8 +1507,14 @@ const [booksLoading, setBooksLoading] = useState(false);
 const [booksError, setBooksError] = useState("");
 const [booksCursor, setBooksCursor] = useState(null);
 // Identifies the currently selected public book-feed filters.
-const publicBooksFilterKey =
-  JSON.stringify([selectedBookDiscipline, selectedBookSubcategory]);
+/*const publicBooksFilterKey =
+  JSON.stringify([selectedBookDiscipline, selectedBookSubcategory]);*/
+  const publicBooksFilterKey =
+  JSON.stringify([
+    selectedBookDiscipline,
+    selectedBookSubcategory,
+    selectedResourceType,
+  ]);
 
 // Allows asynchronous pagination requests to detect filter changes.
 const publicBooksFilterKeyRef = useRef(publicBooksFilterKey);
@@ -1585,10 +1604,11 @@ useEffect(() => {
 
   try {
     const result = await fetchAcademicBooks({
-      limit: 20,
-      subject: selectedBookDiscipline,
-      subcategory: selectedBookSubcategory,
-    });
+  limit: 20,
+  subject: selectedBookDiscipline,
+  subcategory: selectedBookSubcategory,
+  resourceType: selectedResourceType,
+});
 
       if (cancelled) return;
 
@@ -1608,10 +1628,14 @@ useEffect(() => {
 
   loadBooks();
 
-  return () => {
-    cancelled = true;
-  };
-}, [selectedBookDiscipline, selectedBookSubcategory]);
+return () => {
+  cancelled = true;
+};
+}, [
+  selectedBookDiscipline,
+  selectedBookSubcategory,
+  selectedResourceType,
+]);
 
 // Load books shared by the authenticated user.
 useEffect(() => {
@@ -2043,28 +2067,80 @@ if (publicBooksFilterKeyRef.current !== requestedFilterKey) {
               My Academic books Library
             </h3>
 
-            {["Browse All Books", "Saved Books", "My Shared Books"].map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setActiveSection(item)}
-                className={`mb-1 w-full rounded-xl px-3 py-2.5 text-left text-sm transition ${
-                  activeSection === item
-                    ? "bg-blue-50 font-semibold text-blue-900"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+            {/*{["Browse All Books", "Saved Books", "My Shared Books"].map((item) => (*/}
+             {["Saved Books", "My Shared Books"].map((item) => {
+  const isOn = activeSection === item;
 
-            <div className="my-4 border-t border-slate-100" />
+  return (
+    <button
+      key={item}
+      type="button"
+      onClick={() =>
+        setActiveSection((current) =>
+          current === item ? "Browse All Books" : item
+        )
+      }
+      aria-pressed={isOn}
+      className={`mb-1 flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+        isOn
+          ? "bg-blue-50 font-semibold text-blue-900"
+          : "text-slate-600 hover:bg-slate-50"
+      }`}
+    >
+      <span>{item}</span>
+
+      <span className="flex items-center gap-1.5">
+        <span
+          className={`text-[10px] font-semibold ${
+            isOn ? "text-green-700" : "text-slate-400"
+          }`}
+        >
+          {isOn ? "ON" : "OFF"}
+        </span>
+
+        <span
+          className={`flex h-4 w-7 items-center rounded-full p-0.5 transition-colors ${
+            isOn ? "bg-green-600" : "bg-slate-300"
+          }`}
+        >
+          <span
+            className={`h-3 w-3 rounded-full bg-white shadow-sm transition-transform ${
+              isOn ? "translate-x-3" : "translate-x-0"
+            }`}
+          />
+        </span>
+      </span>
+    </button>
+  );
+})}
+
+            <div className="my-2 border-t border-slate-100" />
+
+            <h3 className="mb-2 px-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+              Academic Resource Types
+            </h3>
+            <select
+              aria-label="Academic Resource Type"
+              value={selectedResourceType}
+              onChange={(e) => setSelectedResourceType(e.target.value)}
+              className="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400"
+            >
+              <option value="All Academic Resources">All Academic Resources</option>
+              {ACADEMIC_RESOURCE_TYPES.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+            {/*<p className="mt-2 px-2 text-xs text-slate-500">
+              Resource-type filtering will be available when published materials include this classification.
+            </p>*/}
+
+            <div className="my-2 border-t border-slate-100" />
 
             <h3 className="mb-2 px-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
               Academic Disciplines
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
   {/* Academic discipline selector */}
   <select
     value={selectedBookDiscipline}
@@ -2073,9 +2149,10 @@ if (publicBooksFilterKeyRef.current !== requestedFilterKey) {
       setSelectedBookDiscipline(e.target.value);
       setSelectedBookSubcategory("All");
     }}
-    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400"
+    /*className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400"*/
+    className="w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-blue-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
   >
-    <option value="All">All Books</option>
+    <option value="All">All Academic Disciplines</option>
 
     {SUBJECTS.map((subject) => (
       <option key={subject} value={subject}>
@@ -2160,7 +2237,7 @@ currentUser?.photo ? (
     type="text"
     value={bookTitle}
     onChange={(e) => setBookTitle(e.target.value)}
-    placeholder="Enter the title of the academic book/resource to save and share"
+    placeholder="Enter the title of the academic book/resource/Topic to save and share"
     maxLength={250}
     aria-label="Book Title"
     className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -2204,7 +2281,7 @@ currentUser?.photo ? (
     htmlFor="academic-book-description"
     className="block text-sm font-medium text-slate-700"
   >
-    Academic Book/resources Description
+    Academic resources Description
   </label>
   {/* Description formatting toolbar */}
 <div
@@ -2416,66 +2493,69 @@ currentUser?.photo ? (
   className="min-h-[180px] w-full rounded-b-lg border border-t-0 border-slate-300 bg-white px-4 py-3 text-sm leading-relaxed text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 empty:before:pointer-events-none empty:before:text-slate-400 empty:before:content-[attr(data-placeholder)] [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_a]:cursor-pointer [&_a]:text-blue-600 [&_a]:underline"
 />
 
-  <p className="text-xs text-slate-500">
+  {/*<p className="text-xs text-slate-500">
     Provide a clear description to help other students and lecturers
     understand the book.
-  </p>
+  </p>*/}
 </div>
 
-{/* Academic Discipline and Subcategory horizontal layout */}
-<div className="mt-4 grid grid-cols-2 gap-3">
-{/* Academic Discipline selection */}
-<div className="min-w-0 space-y-2">
-  <label
-    htmlFor="academic-book-discipline"
-    className="block text-sm font-medium text-slate-700"
-  >
-    Academic Discipline
-  </label>
+{/* Academic classification: three compact selectors in one row on desktop. */}
+<div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+  <div className="min-w-0 space-y-1">
+    <label htmlFor="academic-book-discipline" className="block text-sm font-medium text-slate-700">
+      Academic Discipline
+    </label>
+    <select
+      id="academic-book-discipline"
+      value={bookDiscipline}
+      onChange={(e) => { setBookDiscipline(e.target.value); setBookSubcategory(""); }}
+      className="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      <option value="">Select Academic Discipline</option>
+      {SUBJECTS.map((subject) => (
+        <option key={subject} value={subject}>{subject}</option>
+      ))}
+    </select>
+  </div>
 
-  <select
-    id="academic-book-discipline"
-    value={bookDiscipline}
-    onChange={(e) => {setBookDiscipline(e.target.value);setBookSubcategory("");}}
-    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-  >
-    <option value="">Select Academic Discipline</option>
+  <div className="min-w-0 space-y-1">
+    <label htmlFor="academic-book-subcategory" className="block text-sm font-medium text-slate-700">
+      Academic Subcategory
+    </label>
+    <select
+      id="academic-book-subcategory"
+      value={bookSubcategory}
+      onChange={(e) => setBookSubcategory(e.target.value)}
+      disabled={!BOOK_SUBCATEGORIES[bookDiscipline]}
+      className="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+    >
+      <option value="">Select Academic Subcategory</option>
+      {(BOOK_SUBCATEGORIES[bookDiscipline] || []).map((subcategory) => (
+        <option key={subcategory} value={subcategory}>{subcategory}</option>
+      ))}
+    </select>
+  </div>
 
-    {SUBJECTS.map((subject) => (
-      <option key={subject} value={subject}>
-        {subject}
-      </option>
-    ))}
-  </select>
+ {/* Academic resource type saved through the publishing API. */}
+  <div className="min-w-0 space-y-1">
+    <label htmlFor="academic-resource-type" className="block text-sm font-medium text-slate-700">
+      Academic Resource Type
+    </label>
+    <select
+      id="academic-resource-type"
+      value={bookResourceType}
+      onChange={(e) => setBookResourceType(e.target.value)}
+      className="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+    >
+      {ACADEMIC_RESOURCE_TYPES.map((type) => (
+        <option key={type} value={type}>{type}</option>
+      ))}
+    </select>
+  </div>
 </div>
-{/* Academic Subcategory selection */}
-<div className="min-w-0 space-y-2">
-  <label
-    htmlFor="academic-book-subcategory"
-    className="block text-sm font-medium text-slate-700"
-  >
-    Academic Subcategory
-  </label>
-
-  <select
-    id="academic-book-subcategory"
-    value={bookSubcategory}
-    onChange={(e) => setBookSubcategory(e.target.value)}
-    disabled={!BOOK_SUBCATEGORIES[bookDiscipline]}
-    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-  >
-    <option value="">Select Academic Subcategory</option>
-
-    {(BOOK_SUBCATEGORIES[bookDiscipline] || []).map(
-      (subcategory) => (
-        <option key={subcategory} value={subcategory}>
-          {subcategory}
-        </option>
-      )
-    )}
-  </select>
-</div>
-</div> {/* End of Academic Discipline and Subcategory horizontal layout */}
+<p className="mt-2 text-xs text-slate-500">
+  Select the academic resource type that best describes your uploaded material.
+</p>
 {/* Academic Book PDF and PowerPoint selection */}
 <div className="mt-4 space-y-2">
   <label
@@ -2533,7 +2613,7 @@ setBookFile(file);
   />
 
   <p className="text-xs text-slate-500">
-  Select an academic book or presentation in PDF or PowerPoint
+  Select in academic resource in PDF or PowerPoint
   format (.pdf, .ppt, .pptx), up to 25 MB. The file will
   not be uploaded until you submit it.
 </p>
@@ -2598,8 +2678,8 @@ setBookFile(file);
 
     <span className="text-sm leading-relaxed text-slate-700">
       I confirm that I own the rights to share this academic
-      book, have permission from the copyright holder, or
-      that the book is legally available for redistribution
+      resource, have permission from the copyright holder, or
+      that the resource is legally available for redistribution
       under an applicable open license or public-domain status.
     </span>
   </label>
@@ -2657,16 +2737,23 @@ setBookFile(file);
   </section>
 )}
 
-          <section className="mt-2 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+  <section className="mt-2 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
   <h2 className="bg-blue-50 px-4 py-1 text-center text-lg font-semibold text-slate-900">
-    {activeSection === "Browse All Books"
-      ? selectedBookSubcategory !== "All"
-        ? selectedBookSubcategory
-        : selectedBookDiscipline !== "All"
-          ? selectedBookDiscipline
-          : "Browse All Books"
-      : activeSection}
-  </h2>
+  {activeSection === "Browse All Books"
+    ? selectedBookSubcategory !== "All"
+      ? selectedBookSubcategory
+      : selectedBookDiscipline !== "All"
+        ? selectedBookDiscipline
+        : selectedResourceType === "All Academic Resources"
+          ? "Browse All Academic Resources"
+          : selectedResourceType === "Academic Books"
+            ? "Browse All Books"
+            : `Browse ${selectedResourceType}`
+    : activeSection}
+</h2>
+
+
+
 
   <div className="px-5 pb-5">
 
@@ -2830,6 +2917,27 @@ setBookFile(file);
         </button>
       </>
     )}
+    {/* Display the resource type without changing filtering logic */}
+    {/*<span className="text-slate-500">:</span>
+    <span className="font-semibold text-green-700">
+      {book.resourceType || "Academic Books"}
+    </span>*/}
+    {/* Clickable academic resource type */}
+<span className="text-slate-500">:</span>
+
+<button
+  type="button"
+  onClick={() => {
+    setActiveSection("Browse All Books");
+    setSelectedResourceType(book.resourceType || "Academic Books");
+    setSelectedBookDiscipline("All");
+    setSelectedBookSubcategory("All");
+  }}
+  className="font-semibold text-green-700 transition hover:text-green-900 hover:underline focus:outline-none focus:underline"
+  title={`Browse ${book.resourceType || "Academic Books"}`}
+>
+  {book.resourceType || "Academic Books"}
+</button>
   </div>
 )}
       {book.description && (
@@ -2961,9 +3069,8 @@ setBookFile(file);
 
       <div className="mt-3 space-y-3 text-sm text-slate-600">
         <p>Browse academic disciplines</p>
-        <p>Discover shared books</p>
-        <p>Save books to your library space</p>
-        <p>Participate in academic discussions</p>
+        <p>Discover shared resources</p>
+        <p>Save resources to your library space</p>
       </div>
     </div>
 

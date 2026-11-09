@@ -22,3 +22,17 @@ textarea::placeholder {
   opacity: 1;          /* important: some browsers default to < 1 */
   color: #94a3b8;      /* slate-400-ish */
 }
+
+/* Show hand pointer on clickable elements */
+button:not(:disabled),
+select:not(:disabled),
+a[href],
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+/* Show unavailable cursor on disabled controls */
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
