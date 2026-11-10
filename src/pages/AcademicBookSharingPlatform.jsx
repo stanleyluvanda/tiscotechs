@@ -1150,6 +1150,11 @@ const [isAuthenticated, setIsAuthenticated] = useState(false);
 const [authLoading, setAuthLoading] = useState(true);
 // Current user's profile for the book-sharing editor
 const [currentUser, setCurrentUser] = useState(null);
+// Verified SuperTokens identity for account-specific book feeds.
+const [authenticatedUserId, setAuthenticatedUserId] = useState(null);
+const authenticatedUserIdRef = useRef(null);
+
+
 // Controls whether the book-sharing editor is expanded
 const [showBookEditor, setShowBookEditor] = useState(false);
 // Academic book title
@@ -1448,19 +1453,36 @@ useEffect(() => {
 
      async function checkAuthentication() {
   try {
-    const hasSession = await Session.doesSessionExist();
+    /*const hasSession = await Session.doesSessionExist();
 
 
 
     if (!cancelled) {
       setIsAuthenticated(hasSession);
-    }
+    }*/
+
+const hasSession = await Session.doesSessionExist();
+
+const verifiedUserId = hasSession
+  ? await Session.getUserId()
+  : null;
+
+if (!cancelled) {
+  authenticatedUserIdRef.current = verifiedUserId;
+  setAuthenticatedUserId(verifiedUserId);
+  setIsAuthenticated(Boolean(verifiedUserId));
+}
     } catch (error) {
       console.error("Academic Books session check failed:", error);
 
-      if (!cancelled) {
+      /*if (!cancelled) {
         setIsAuthenticated(false);
-      }
+      }*/
+      if (!cancelled) {
+  authenticatedUserIdRef.current = null;
+  setAuthenticatedUserId(null);
+  setIsAuthenticated(false);
+}
     } finally {
       if (!cancelled) {
         setAuthLoading(false);
@@ -1475,32 +1497,179 @@ useEffect(() => {
   };
 }, []);
 
+
+
+
+
+
+// Recheck the verified SuperTokens identity when the window regains focus.
+useEffect(() => {
+  let cancelled = false;
+
+  async function synchronizeAuthenticatedUser() {
+    try {
+      const hasSession = await Session.doesSessionExist();
+
+      const latestUserId = hasSession
+        ? await Session.getUserId()
+        : null;
+
+      if (cancelled) return;
+
+      /*setAuthenticatedUserId((previousUserId) => {
+        if (previousUserId !== latestUserId) {
+          setMySharedBooks([]);
+          setMySharedBooksCursor(null);
+          setSavedBooks([]);
+          setSavedBooksCursor(null);
+          setSavedBookIds([]);
+        }
+
+        return latestUserId;
+      });
+
+      setIsAuthenticated(Boolean(latestUserId));*/
+
+      if (authenticatedUserIdRef.current !== latestUserId) {
+  authenticatedUserIdRef.current = latestUserId;
+
+  setMySharedBooks([]);
+  setMySharedBooksCursor(null);
+  setSavedBooks([]);
+  setSavedBooksCursor(null);
+  setSavedBookIds([]);
+}
+
+setAuthenticatedUserId(latestUserId);
+setIsAuthenticated(Boolean(latestUserId));
+
+
+    } catch (error) {
+      if (cancelled) return;
+
+      console.error("Academic Books identity synchronization failed:", error);
+      authenticatedUserIdRef.current = null;
+      setAuthenticatedUserId(null);
+      setIsAuthenticated(false);
+      setMySharedBooks([]);
+      setMySharedBooksCursor(null);
+      setSavedBooks([]);
+      setSavedBooksCursor(null);
+      setSavedBookIds([]);
+    }
+  }
+
+  /*window.addEventListener("focus", synchronizeAuthenticatedUser);*/
+  window.addEventListener("focus", synchronizeAuthenticatedUser);
+
+const handleVisibilityChange = () => {
+  if (document.visibilityState === "visible") {
+    synchronizeAuthenticatedUser();
+  }
+};
+
+document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  /*return () => {
+    cancelled = true;
+    window.removeEventListener("focus", synchronizeAuthenticatedUser);
+  };*/
+  return () => {
+  cancelled = true;
+  window.removeEventListener("focus", synchronizeAuthenticatedUser);
+  document.removeEventListener("visibilitychange", handleVisibilityChange);
+};
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 useEffect(() => {
   if (authLoading) return;
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !authenticatedUserId) {
     setCurrentUser(null);
     return;
   }
 
-  try {
-    const raw =
-      sessionStorage.getItem("currentUser") ||
-      localStorage.getItem("currentUser");
+  let cancelled = false;
 
-    const user = raw ? JSON.parse(raw) : null;
+  const loadCurrentProfile = async () => {
+    try {
+      const hasSession = await Session.doesSessionExist();
 
-    setCurrentUser(
-      user && typeof user === "object" && !Array.isArray(user)
-        ? user
-        : null
-    );
-  } catch (error) {
-    console.error("Failed to load Academic Books user profile:", error);
+      const sessionUserId = hasSession
+        ? await Session.getUserId()
+        : null;
+
+      if (
+        cancelled ||
+        !sessionUserId ||
+        sessionUserId !== authenticatedUserId ||
+        authenticatedUserIdRef.current !== sessionUserId
+      ) {
+        if (!cancelled) setCurrentUser(null);
+        return;
+      }
+
+      const raw =
+        sessionStorage.getItem("currentUser") ||
+        localStorage.getItem("currentUser");
+
+      const user = raw ? JSON.parse(raw) : null;
+      // Ensure the stored ScholarsKnowledge profile belongs
+// to the authenticated SuperTokens session.
+const profileUserId = user?.supertokensUserId || null;
+
+if (!profileUserId || profileUserId !== sessionUserId) {
+  if (!cancelled) {
     setCurrentUser(null);
   }
-}, [authLoading, isAuthenticated]);
+  return;
+}
 
+      if (!cancelled) {
+        setCurrentUser(
+          user && typeof user === "object" && !Array.isArray(user)
+            ? user
+            : null
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Failed to synchronize Academic Books profile:",
+        error
+      );
+
+      if (!cancelled) setCurrentUser(null);
+    }
+  };
+
+  loadCurrentProfile();
+
+  window.addEventListener("storage", loadCurrentProfile);
+  window.addEventListener("user:updated", loadCurrentProfile);
+
+  return () => {
+    cancelled = true;
+    window.removeEventListener("storage", loadCurrentProfile);
+    window.removeEventListener("user:updated", loadCurrentProfile);
+  };
+}, [authLoading, isAuthenticated, authenticatedUserId]);
   // Academic Books API state
 const [books, setBooks] = useState([]);
 const [booksLoading, setBooksLoading] = useState(false);
@@ -1545,9 +1714,32 @@ useEffect(() => {
 
   async function initializeSavedBookIds() {
   try {
+    /*const accessToken = await Session.getAccessToken();
+
+    if (!accessToken) return;*/
     const accessToken = await Session.getAccessToken();
 
-    if (!accessToken) return;
+if (!accessToken || !authenticatedUserId) {
+  if (!cancelled) setSavedBookIds([]);
+  return;
+}
+
+// Confirm the identity before starting pagination.
+const requestUserId = await Session.getUserId();
+
+
+/*if (cancelled || requestUserId !== authenticatedUserId) {
+  return;
+}*/
+if (
+  cancelled ||
+  !authenticatedUserId ||
+  requestUserId !== authenticatedUserId ||
+  authenticatedUserIdRef.current !== authenticatedUserId
+) {
+  return;
+}
+
 
     const allSavedIds = new Set();
     let cursor = null;
@@ -1561,7 +1753,23 @@ useEffect(() => {
 
       if (cancelled) return;
 
+      // Verify that the authenticated identity has not changed.
+const latestUserId = await Session.getUserId();
+
+/*if (cancelled || latestUserId !== requestUserId) {
+  return;
+}*/
+if (
+  cancelled ||
+  latestUserId !== requestUserId ||
+  authenticatedUserIdRef.current !== requestUserId
+) {
+  return;
+}
+
+
       for (const book of result.books) {
+
         const bookId = String(book.bookId || book.pk || "")
           .replace(/^BOOK#/, "");
 
@@ -1575,6 +1783,20 @@ useEffect(() => {
 
     if (cancelled) return;
 
+    // Verify identity again before updating saved-book IDs.
+const finalUserId = await Session.getUserId();
+
+/*if (cancelled || finalUserId !== requestUserId) {
+  return;
+}*/
+if (
+  cancelled ||
+  finalUserId !== requestUserId ||
+  authenticatedUserIdRef.current !== requestUserId
+) {
+  return;
+}
+
     setSavedBookIds([...allSavedIds]);
   } catch (error) {
     console.error("Failed to initialize saved book IDs:", error);
@@ -1585,7 +1807,8 @@ useEffect(() => {
   return () => {
     cancelled = true;
   };
-}, [authLoading, isAuthenticated]);
+/*}, [authLoading, isAuthenticated]);*/
+}, [authLoading, isAuthenticated, authenticatedUserId]);
 // Separate loading state for fetching additional book pages.
 const [booksLoadingMore, setBooksLoadingMore] = useState(false);
 const [mySharedBooksLoadingMore, setMySharedBooksLoadingMore] = useState(false);
@@ -1646,6 +1869,57 @@ useEffect(() => {
   async function loadMySharedBooks() {
     if (authLoading) return;
 
+     if (isAuthenticated && !authenticatedUserId) {
+    setMySharedBooks([]);
+    setMySharedBooksCursor(null);
+    setMySharedBooksError(
+      "Unable to verify your account. Please log in again."
+    );
+    return;
+  }
+
+
+
+
+
+  const storedProfile = (() => {
+  try {
+    return JSON.parse(
+      sessionStorage.getItem("currentUser") ||
+      localStorage.getItem("currentUser") ||
+      "null"
+    );
+  } catch {
+    return null;
+  }
+})();
+
+if (
+  !storedProfile?.supertokensUserId ||
+  storedProfile.supertokensUserId !== authenticatedUserId
+) {
+  setMySharedBooks([]);
+  setMySharedBooksCursor(null);
+  setMySharedBooksError(
+    "Your account profile does not match the active session. Please sign in again."
+  );
+  return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     if (!isAuthenticated) {
       setMySharedBooks([]);
       setMySharedBooksCursor(null);
@@ -1655,8 +1929,12 @@ useEffect(() => {
       return;
     }
 
+    /*setMySharedBooksLoading(true);
+    setMySharedBooksError("");*/
     setMySharedBooksLoading(true);
-    setMySharedBooksError("");
+setMySharedBooksError("");
+setMySharedBooks([]);
+setMySharedBooksCursor(null);
 
     try {
       const accessToken = await Session.getAccessToken();
@@ -1666,8 +1944,17 @@ useEffect(() => {
           "Your session has expired. Please log in again."
         );
       }
+const requestUserId = await Session.getUserId();
 
-      const result = await fetchMySharedAcademicBooks({
+if (
+  cancelled ||
+  requestUserId !== authenticatedUserId ||
+  authenticatedUserIdRef.current !== authenticatedUserId
+) {
+  return;
+}
+
+      /*const result = await fetchMySharedAcademicBooks({
         limit: 20,
         accessToken,
       });
@@ -1675,9 +1962,39 @@ useEffect(() => {
       if (cancelled) return;
 
       setMySharedBooks(result.books);
-      setMySharedBooksCursor(result.cursor);
+      setMySharedBooksCursor(result.cursor);*/
+
+      const result = await fetchMySharedAcademicBooks({
+  limit: 20,
+  accessToken,
+});
+
+if (cancelled) return;
+
+// Verify that the session still belongs to the same user.
+const latestUserId = await Session.getUserId();
+
+/*if (cancelled || latestUserId !== authenticatedUserId) {
+  return;
+}*/
+if (
+  cancelled ||
+  !authenticatedUserId ||
+  latestUserId !== authenticatedUserId ||
+  authenticatedUserIdRef.current !== authenticatedUserId
+) {
+  return;
+}
+
+setMySharedBooks(result.books);
+setMySharedBooksCursor(result.cursor);
+
+
     } catch (error) {
       if (cancelled) return;
+
+      setMySharedBooks([]);
+      setMySharedBooksCursor(null);
 
       console.error("Failed to load My Shared Books:", error);
       setMySharedBooksError(
@@ -1695,7 +2012,8 @@ useEffect(() => {
   return () => {
     cancelled = true;
   };
-}, [activeSection, authLoading, isAuthenticated]);
+/*}, [activeSection, authLoading, isAuthenticated]);*/
+}, [activeSection, authLoading, isAuthenticated, authenticatedUserId]);
 
 // Load books saved by the authenticated user.
 useEffect(() => {
@@ -1706,6 +2024,16 @@ useEffect(() => {
   async function loadSavedBooks() {
     if (authLoading) return;
 
+    if (isAuthenticated && !authenticatedUserId) {
+  setSavedBooks([]);
+  setSavedBooksCursor(null);
+  setSavedBookIds([]);
+  setSavedBooksError(
+    "Unable to verify your account. Please log in again."
+  );
+  return;
+}
+
     if (!isAuthenticated) {
       setSavedBooks([]);
       setSavedBooksCursor(null);
@@ -1713,8 +2041,12 @@ useEffect(() => {
       return;
     }
 
+    /*setSavedBooksLoading(true);
+    setSavedBooksError("");*/
     setSavedBooksLoading(true);
-    setSavedBooksError("");
+setSavedBooksError("");
+setSavedBooks([]);
+setSavedBooksCursor(null);
 
     try {
       const accessToken = await Session.getAccessToken();
@@ -1732,6 +2064,21 @@ useEffect(() => {
 
       if (cancelled) return;
 
+      // Confirm that the authenticated identity has not changed.
+const latestUserId = await Session.getUserId();
+
+/*if (cancelled || latestUserId !== authenticatedUserId) {
+  return;
+}*/
+if (
+  cancelled ||
+  !authenticatedUserId ||
+  latestUserId !== authenticatedUserId ||
+  authenticatedUserIdRef.current !== authenticatedUserId
+) {
+  return;
+}
+
       setSavedBooks(result.books);
       setSavedBooksCursor(result.cursor);
       // Record the IDs of books returned by the Saved Books API.
@@ -1747,6 +2094,9 @@ setSavedBookIds((previousIds) => [
 ]);
     } catch (error) {
       if (cancelled) return;
+
+      setSavedBooks([]);
+      setSavedBooksCursor(null);
 
       console.error("Failed to load Saved Books:", error);
       setSavedBooksError(
@@ -1764,7 +2114,8 @@ setSavedBookIds((previousIds) => [
   return () => {
     cancelled = true;
   };
-}, [activeSection, authLoading, isAuthenticated]);
+/*}, [activeSection, authLoading, isAuthenticated]);*/
+}, [activeSection, authLoading, isAuthenticated, authenticatedUserId]);
 
 
 
@@ -1819,8 +2170,10 @@ const handleLoadMoreMySharedBooks = async () => {
     return;
   }
 
-  setMySharedBooksLoadingMore(true);
-  setMySharedBooksError("");
+  /*setMySharedBooksLoadingMore(true);
+  setMySharedBooksError("");*/
+setMySharedBooksLoadingMore(true);
+setMySharedBooksError("");
 
   try {
     const accessToken = await Session.getAccessToken();
@@ -1834,6 +2187,23 @@ const handleLoadMoreMySharedBooks = async () => {
       cursor: mySharedBooksCursor,
       accessToken,
     });
+
+    // Reject results if the authenticated user has changed.
+const latestUserId = await Session.getUserId();
+
+/*if (
+  !authenticatedUserId ||
+  latestUserId !== authenticatedUserId
+) {
+  return;
+}*/
+if (
+  !authenticatedUserId ||
+  latestUserId !== authenticatedUserId ||
+  authenticatedUserIdRef.current !== authenticatedUserId
+) {
+  return;
+}
 
     setMySharedBooks((previousBooks) => [
       ...previousBooks,
@@ -1861,8 +2231,10 @@ const handleLoadMoreSavedBooks = async () => {
     return;
   }
 
-  setSavedBooksLoadingMore(true);
-  setSavedBooksError("");
+  /*setSavedBooksLoadingMore(true);
+  setSavedBooksError("");*/
+  ssetSavedBooksLoadingMore(true);
+setSavedBooksError("");
 
   try {
     const accessToken = await Session.getAccessToken();
@@ -1878,6 +2250,17 @@ const handleLoadMoreSavedBooks = async () => {
       cursor: savedBooksCursor,
       accessToken,
     });
+
+    // Reject results if the authenticated user has changed.
+const latestUserId = await Session.getUserId();
+
+if (
+  !authenticatedUserId ||
+  latestUserId !== authenticatedUserId
+) {
+  return;
+}
+
 
     setSavedBooks((previousBooks) => [
       ...previousBooks,
