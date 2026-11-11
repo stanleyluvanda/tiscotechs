@@ -14,9 +14,31 @@ import {
   uploadAcademicBookCover,
   requestAcademicBookReadUrl,
 } from "../lib/academicBooksApi";
-import Session from "supertokens-web-js/recipe/session";
 import { generateAcademicBookCover } from "../utils/academicBookCover";
 
+
+// Account identity compatibility adapter. No SuperTokens session required.
+// This is a browser identity hint, not a verified authentication credential.
+const AcademicBooksAccount = {
+  async getAccessToken() {
+    const u = readAcademicBooksAccount();
+    return u?.id ? String(u.id) : null;
+  },
+  async getUserId() {
+    const u = readAcademicBooksAccount();
+    return u?.id ? String(u.id) : "";
+  },
+};
+function readAcademicBooksAccount() {
+  try {
+    const raw = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+    const user = JSON.parse(raw || "null");
+    const id = String(user?.id || user?.uid || "").trim();
+    const active = sessionStorage.getItem("currentUserId") || localStorage.getItem("currentUserId");
+    if (!id || (active && active !== id)) return null;
+    return { ...user, id };
+  } catch { return null; }
+}
 
 const ACADEMIC_RESOURCE_TYPES = [
   "Academic Books",
@@ -1022,18 +1044,8 @@ function BookDescription({ description, expanded, onToggle }) {
 
     const measure = () => {
       const text = String(description || "");
-      /*const width = container.clientWidth;*/
-      // Measure the actual available width beside the floated book cover.
-const cover = container.closest("article")?.querySelector("button.float-left");
-
-const width = cover
-  ? Math.max(
-      0,
-      container.clientWidth -
-        cover.getBoundingClientRect().width -
-        parseFloat(window.getComputedStyle(cover).marginRight || "0")
-    )
-  : container.clientWidth;
+      // Text width is now the independent flex column width.
+      const width = container.clientWidth;
 
       if (!width) return;
 
@@ -1102,7 +1114,8 @@ const width = cover
   return (
     <div
       ref={containerRef}
-      className="mt-3 min-w-0 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-600"
+      /*className="mt-3 min-w-0 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-600"*/
+      className="mt-3 min-w-0 whitespace-normal break-words text-sm leading-relaxed text-slate-600"
     >
      {expanded ? (
   <>
@@ -1145,14 +1158,40 @@ const [expandedBookDescriptions, setExpandedBookDescriptions] = useState({});
   // Academic discipline and subcategory filtering
   const [selectedBookDiscipline, setSelectedBookDiscipline] = useState("All");
   const [selectedBookSubcategory, setSelectedBookSubcategory] = useState("All");
-  // SuperTokens authentication state
-const [isAuthenticated, setIsAuthenticated] = useState(false);
-const [authLoading, setAuthLoading] = useState(true);
-// Current user's profile for the book-sharing editor
-const [currentUser, setCurrentUser] = useState(null);
-// Verified SuperTokens identity for account-specific book feeds.
-const [authenticatedUserId, setAuthenticatedUserId] = useState(null);
-const authenticatedUserIdRef = useRef(null);
+  // Profile data is for presentation only; never authorizes book ownership.
+/*const [currentUser, setCurrentUser] = useState(null);*/
+// Use the existing ScholarsKnowledge login account.
+const readAcademicBooksCurrentUser = () => {
+  const safeParse = (raw) => {
+    try {
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const user =
+    safeParse(sessionStorage.getItem("currentUser")) ||
+    safeParse(localStorage.getItem("currentUser"));
+
+  const activeId =
+    sessionStorage.getItem("currentUserId") ||
+    localStorage.getItem("currentUserId");
+
+  if (!user || typeof user !== "object" || Array.isArray(user)) {
+    return null;
+  }
+
+  if (activeId && String(user.id || "") !== String(activeId)) {
+    return null;
+  }
+
+  return user.id ? user : null;
+};
+
+const [currentUser, setCurrentUser] = useState(
+  readAcademicBooksCurrentUser
+);
 
 
 // Controls whether the book-sharing editor is expanded
@@ -1297,7 +1336,7 @@ if (!isPowerPoint) {
   }
 
   try {
-    const accessToken = await Session.getAccessToken();
+    const accessToken = await AcademicBooksAccount.getAccessToken();
 
     if (!accessToken) {
       throw new Error(
@@ -1332,8 +1371,8 @@ const handleShareAcademicBook = async () => {
   setBookSubmissionSuccess("");
 
   try {
-    // 1. Obtain the current SuperTokens access token.
-    const accessToken = await Session.getAccessToken();
+    // 1. Obtain the current site-login access token.
+    const accessToken = await AcademicBooksAccount.getAccessToken();
 
     if (!accessToken) {
       throw new Error(
@@ -1447,229 +1486,43 @@ try {
   }
 };
 
+// Authentication is resolved by the shared boundary, not reinitialized here.
+const {
+  isAuthenticated,
+  authLoading,
+  authenticatedUserId,
+  authenticatedUserIdRef,
+} = (() => {
+  const id = String(currentUser?.id || currentUser?.uid || "").trim();
+  return {
+    isAuthenticated: Boolean(id),
+    authLoading: false,
+    authenticatedUserId: id,
+    authenticatedUserIdRef: { current: id },
+  };
+})();
+
 useEffect(() => {
-  let cancelled = false;
+  const refreshCurrentUser = () => {
+    const nextUser = readAcademicBooksCurrentUser();
 
+    setCurrentUser(nextUser);
+  };
 
-     async function checkAuthentication() {
-  try {
-    /*const hasSession = await Session.doesSessionExist();
+  refreshCurrentUser();
 
-
-
-    if (!cancelled) {
-      setIsAuthenticated(hasSession);
-    }*/
-
-const hasSession = await Session.doesSessionExist();
-
-const verifiedUserId = hasSession
-  ? await Session.getUserId()
-  : null;
-
-if (!cancelled) {
-  authenticatedUserIdRef.current = verifiedUserId;
-  setAuthenticatedUserId(verifiedUserId);
-  setIsAuthenticated(Boolean(verifiedUserId));
-}
-    } catch (error) {
-      console.error("Academic Books session check failed:", error);
-
-      /*if (!cancelled) {
-        setIsAuthenticated(false);
-      }*/
-      if (!cancelled) {
-  authenticatedUserIdRef.current = null;
-  setAuthenticatedUserId(null);
-  setIsAuthenticated(false);
-}
-    } finally {
-      if (!cancelled) {
-        setAuthLoading(false);
-      }
-    }
-  }
-
-  checkAuthentication();
+  window.addEventListener("storage", refreshCurrentUser);
+  window.addEventListener("user:updated", refreshCurrentUser);
+  window.addEventListener("auth:changed", refreshCurrentUser);
+  window.addEventListener("focus", refreshCurrentUser);
 
   return () => {
-    cancelled = true;
+    window.removeEventListener("storage", refreshCurrentUser);
+    window.removeEventListener("user:updated", refreshCurrentUser);
+    window.removeEventListener("auth:changed", refreshCurrentUser);
+    window.removeEventListener("focus", refreshCurrentUser);
   };
 }, []);
-
-
-
-
-
-
-// Recheck the verified SuperTokens identity when the window regains focus.
-useEffect(() => {
-  let cancelled = false;
-
-  async function synchronizeAuthenticatedUser() {
-    try {
-      const hasSession = await Session.doesSessionExist();
-
-      const latestUserId = hasSession
-        ? await Session.getUserId()
-        : null;
-
-      if (cancelled) return;
-
-      /*setAuthenticatedUserId((previousUserId) => {
-        if (previousUserId !== latestUserId) {
-          setMySharedBooks([]);
-          setMySharedBooksCursor(null);
-          setSavedBooks([]);
-          setSavedBooksCursor(null);
-          setSavedBookIds([]);
-        }
-
-        return latestUserId;
-      });
-
-      setIsAuthenticated(Boolean(latestUserId));*/
-
-      if (authenticatedUserIdRef.current !== latestUserId) {
-  authenticatedUserIdRef.current = latestUserId;
-
-  setMySharedBooks([]);
-  setMySharedBooksCursor(null);
-  setSavedBooks([]);
-  setSavedBooksCursor(null);
-  setSavedBookIds([]);
-}
-
-setAuthenticatedUserId(latestUserId);
-setIsAuthenticated(Boolean(latestUserId));
-
-
-    } catch (error) {
-      if (cancelled) return;
-
-      console.error("Academic Books identity synchronization failed:", error);
-      authenticatedUserIdRef.current = null;
-      setAuthenticatedUserId(null);
-      setIsAuthenticated(false);
-      setMySharedBooks([]);
-      setMySharedBooksCursor(null);
-      setSavedBooks([]);
-      setSavedBooksCursor(null);
-      setSavedBookIds([]);
-    }
-  }
-
-  /*window.addEventListener("focus", synchronizeAuthenticatedUser);*/
-  window.addEventListener("focus", synchronizeAuthenticatedUser);
-
-const handleVisibilityChange = () => {
-  if (document.visibilityState === "visible") {
-    synchronizeAuthenticatedUser();
-  }
-};
-
-document.addEventListener("visibilitychange", handleVisibilityChange);
-
-  /*return () => {
-    cancelled = true;
-    window.removeEventListener("focus", synchronizeAuthenticatedUser);
-  };*/
-  return () => {
-  cancelled = true;
-  window.removeEventListener("focus", synchronizeAuthenticatedUser);
-  document.removeEventListener("visibilitychange", handleVisibilityChange);
-};
-}, []);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-useEffect(() => {
-  if (authLoading) return;
-
-  if (!isAuthenticated || !authenticatedUserId) {
-    setCurrentUser(null);
-    return;
-  }
-
-  let cancelled = false;
-
-  const loadCurrentProfile = async () => {
-    try {
-      const hasSession = await Session.doesSessionExist();
-
-      const sessionUserId = hasSession
-        ? await Session.getUserId()
-        : null;
-
-      if (
-        cancelled ||
-        !sessionUserId ||
-        sessionUserId !== authenticatedUserId ||
-        authenticatedUserIdRef.current !== sessionUserId
-      ) {
-        if (!cancelled) setCurrentUser(null);
-        return;
-      }
-
-      const raw =
-        sessionStorage.getItem("currentUser") ||
-        localStorage.getItem("currentUser");
-
-      const user = raw ? JSON.parse(raw) : null;
-      // Ensure the stored ScholarsKnowledge profile belongs
-// to the authenticated SuperTokens session.
-const profileUserId = user?.supertokensUserId || null;
-
-if (!profileUserId || profileUserId !== sessionUserId) {
-  if (!cancelled) {
-    setCurrentUser(null);
-  }
-  return;
-}
-
-      if (!cancelled) {
-        setCurrentUser(
-          user && typeof user === "object" && !Array.isArray(user)
-            ? user
-            : null
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Failed to synchronize Academic Books profile:",
-        error
-      );
-
-      if (!cancelled) setCurrentUser(null);
-    }
-  };
-
-  loadCurrentProfile();
-
-  window.addEventListener("storage", loadCurrentProfile);
-  window.addEventListener("user:updated", loadCurrentProfile);
-
-  return () => {
-    cancelled = true;
-    window.removeEventListener("storage", loadCurrentProfile);
-    window.removeEventListener("user:updated", loadCurrentProfile);
-  };
-}, [authLoading, isAuthenticated, authenticatedUserId]);
   // Academic Books API state
 const [books, setBooks] = useState([]);
 const [booksLoading, setBooksLoading] = useState(false);
@@ -1688,6 +1541,11 @@ const [booksCursor, setBooksCursor] = useState(null);
 // Allows asynchronous pagination requests to detect filter changes.
 const publicBooksFilterKeyRef = useRef(publicBooksFilterKey);
 publicBooksFilterKeyRef.current = publicBooksFilterKey;
+// Track the active ScholarsKnowledge account for private book data.
+const activeBooksAccountId = String(currentUser?.id || "");
+// Track the latest frontend account during asynchronous requests.
+const activeBooksAccountIdRef = useRef(activeBooksAccountId);
+activeBooksAccountIdRef.current = activeBooksAccountId;
 // My Shared Books — separate authenticated feed state
 const [mySharedBooks, setMySharedBooks] = useState([]);
 const [mySharedBooksLoading, setMySharedBooksLoading] = useState(false);
@@ -1701,6 +1559,27 @@ const [savedBooksCursor, setSavedBooksCursor] = useState(null);
 // Track saved book IDs and ongoing Save/Unsave requests.
 const [savedBookIds, setSavedBookIds] = useState([]);
 const [savingBookIds, setSavingBookIds] = useState([]);
+// Clear private book data when the active ScholarsKnowledge account changes.
+const previousBooksAccountIdRef = useRef(activeBooksAccountId);
+
+useEffect(() => {
+  if (previousBooksAccountIdRef.current === activeBooksAccountId) {
+    return;
+  }
+
+  previousBooksAccountIdRef.current = activeBooksAccountId;
+
+  setMySharedBooks([]);
+  setMySharedBooksCursor(null);
+  setMySharedBooksError("");
+
+  setSavedBooks([]);
+  setSavedBooksCursor(null);
+  setSavedBooksError("");
+
+  setSavedBookIds([]);
+  setSavingBookIds([]);
+}, [activeBooksAccountId]);
 // Load saved book IDs when the authenticated user opens the platform.
 useEffect(() => {
   if (authLoading) return;
@@ -1711,13 +1590,19 @@ useEffect(() => {
   }
 
   let cancelled = false;
+  const requestAccountId = activeBooksAccountId;
+
+  if (!requestAccountId) {
+    setSavedBookIds([]);
+    return;
+  }
 
   async function initializeSavedBookIds() {
   try {
-    /*const accessToken = await Session.getAccessToken();
+    /*const accessToken = await AcademicBooksAccount.getAccessToken();
 
     if (!accessToken) return;*/
-    const accessToken = await Session.getAccessToken();
+    const accessToken = await AcademicBooksAccount.getAccessToken();
 
 if (!accessToken || !authenticatedUserId) {
   if (!cancelled) setSavedBookIds([]);
@@ -1725,7 +1610,7 @@ if (!accessToken || !authenticatedUserId) {
 }
 
 // Confirm the identity before starting pagination.
-const requestUserId = await Session.getUserId();
+const requestUserId = await AcademicBooksAccount.getUserId();
 
 
 /*if (cancelled || requestUserId !== authenticatedUserId) {
@@ -1733,6 +1618,7 @@ const requestUserId = await Session.getUserId();
 }*/
 if (
   cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId ||
   !authenticatedUserId ||
   requestUserId !== authenticatedUserId ||
   authenticatedUserIdRef.current !== authenticatedUserId
@@ -1754,13 +1640,14 @@ if (
       if (cancelled) return;
 
       // Verify that the authenticated identity has not changed.
-const latestUserId = await Session.getUserId();
+const latestUserId = await AcademicBooksAccount.getUserId();
 
 /*if (cancelled || latestUserId !== requestUserId) {
   return;
 }*/
 if (
   cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId ||
   latestUserId !== requestUserId ||
   authenticatedUserIdRef.current !== requestUserId
 ) {
@@ -1784,22 +1671,26 @@ if (
     if (cancelled) return;
 
     // Verify identity again before updating saved-book IDs.
-const finalUserId = await Session.getUserId();
+const finalUserId = await AcademicBooksAccount.getUserId();
 
 /*if (cancelled || finalUserId !== requestUserId) {
   return;
 }*/
 if (
   cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId ||
   finalUserId !== requestUserId ||
   authenticatedUserIdRef.current !== requestUserId
 ) {
   return;
 }
 
+    if (activeBooksAccountIdRef.current !== requestAccountId) return;
     setSavedBookIds([...allSavedIds]);
   } catch (error) {
-    console.error("Failed to initialize saved book IDs:", error);
+    if (!cancelled && activeBooksAccountIdRef.current === requestAccountId) {
+      console.error("Failed to initialize saved book IDs:", error);
+    }
   }
 }
   initializeSavedBookIds();
@@ -1808,7 +1699,7 @@ if (
     cancelled = true;
   };
 /*}, [authLoading, isAuthenticated]);*/
-}, [authLoading, isAuthenticated, authenticatedUserId]);
+}, [authLoading, isAuthenticated, authenticatedUserId, activeBooksAccountId]);
 // Separate loading state for fetching additional book pages.
 const [booksLoadingMore, setBooksLoadingMore] = useState(false);
 const [mySharedBooksLoadingMore, setMySharedBooksLoadingMore] = useState(false);
@@ -1868,6 +1759,17 @@ useEffect(() => {
 
   async function loadMySharedBooks() {
     if (authLoading) return;
+    // Capture the account that initiated this request.
+const requestAccountId = activeBooksAccountId;
+
+if (
+  !requestAccountId ||
+  activeBooksAccountIdRef.current !== requestAccountId
+) {
+  setMySharedBooks([]);
+  setMySharedBooksCursor(null);
+  return;
+}
 
      if (isAuthenticated && !authenticatedUserId) {
     setMySharedBooks([]);
@@ -1882,43 +1784,8 @@ useEffect(() => {
 
 
 
-  const storedProfile = (() => {
-  try {
-    return JSON.parse(
-      sessionStorage.getItem("currentUser") ||
-      localStorage.getItem("currentUser") ||
-      "null"
-    );
-  } catch {
-    return null;
-  }
-})();
-
-if (
-  !storedProfile?.supertokensUserId ||
-  storedProfile.supertokensUserId !== authenticatedUserId
-) {
-  setMySharedBooks([]);
-  setMySharedBooksCursor(null);
-  setMySharedBooksError(
-    "Your account profile does not match the active session. Please sign in again."
-  );
-  return;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // Do not use cached profile identity to select private resources.
+  // GET /books/my-shared resolves the publisher from the backend session.
 
     if (!isAuthenticated) {
       setMySharedBooks([]);
@@ -1937,32 +1804,24 @@ setMySharedBooks([]);
 setMySharedBooksCursor(null);
 
     try {
-      const accessToken = await Session.getAccessToken();
+      const accessToken = await AcademicBooksAccount.getAccessToken();
 
       if (!accessToken) {
         throw new Error(
           "Your session has expired. Please log in again."
         );
       }
-const requestUserId = await Session.getUserId();
+const requestUserId = await AcademicBooksAccount.getUserId();
 
 if (
   cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId ||
   requestUserId !== authenticatedUserId ||
   authenticatedUserIdRef.current !== authenticatedUserId
 ) {
   return;
 }
 
-      /*const result = await fetchMySharedAcademicBooks({
-        limit: 20,
-        accessToken,
-      });
-
-      if (cancelled) return;
-
-      setMySharedBooks(result.books);
-      setMySharedBooksCursor(result.cursor);*/
 
       const result = await fetchMySharedAcademicBooks({
   limit: 20,
@@ -1972,7 +1831,7 @@ if (
 if (cancelled) return;
 
 // Verify that the session still belongs to the same user.
-const latestUserId = await Session.getUserId();
+const latestUserId = await AcademicBooksAccount.getUserId();
 
 /*if (cancelled || latestUserId !== authenticatedUserId) {
   return;
@@ -1986,12 +1845,19 @@ if (
   return;
 }
 
+// Discard results if the active account changed during the request.
+if (
+  cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId
+) {
+  return;
+}
+
 setMySharedBooks(result.books);
 setMySharedBooksCursor(result.cursor);
 
-
     } catch (error) {
-      if (cancelled) return;
+      if (cancelled || activeBooksAccountIdRef.current !== requestAccountId) return;
 
       setMySharedBooks([]);
       setMySharedBooksCursor(null);
@@ -2001,7 +1867,7 @@ setMySharedBooksCursor(result.cursor);
         error.message || "Unable to load your shared books."
       );
     } finally {
-      if (!cancelled) {
+      if (!cancelled && activeBooksAccountIdRef.current === requestAccountId) {
         setMySharedBooksLoading(false);
       }
     }
@@ -2013,7 +1879,14 @@ setMySharedBooksCursor(result.cursor);
     cancelled = true;
   };
 /*}, [activeSection, authLoading, isAuthenticated]);*/
-}, [activeSection, authLoading, isAuthenticated, authenticatedUserId]);
+/*}, [activeSection, authLoading, isAuthenticated, authenticatedUserId]);*/
+}, [
+  activeSection,
+  authLoading,
+  isAuthenticated,
+  authenticatedUserId,
+  activeBooksAccountId,
+]);
 
 // Load books saved by the authenticated user.
 useEffect(() => {
@@ -2023,6 +1896,14 @@ useEffect(() => {
 
   async function loadSavedBooks() {
     if (authLoading) return;
+
+    const requestAccountId = activeBooksAccountId;
+    if (!requestAccountId || activeBooksAccountIdRef.current !== requestAccountId) {
+      setSavedBooks([]);
+      setSavedBooksCursor(null);
+      setSavedBookIds([]);
+      return;
+    }
 
     if (isAuthenticated && !authenticatedUserId) {
   setSavedBooks([]);
@@ -2049,7 +1930,7 @@ setSavedBooks([]);
 setSavedBooksCursor(null);
 
     try {
-      const accessToken = await Session.getAccessToken();
+      const accessToken = await AcademicBooksAccount.getAccessToken();
 
       if (!accessToken) {
         throw new Error(
@@ -2065,13 +1946,14 @@ setSavedBooksCursor(null);
       if (cancelled) return;
 
       // Confirm that the authenticated identity has not changed.
-const latestUserId = await Session.getUserId();
+const latestUserId = await AcademicBooksAccount.getUserId();
 
 /*if (cancelled || latestUserId !== authenticatedUserId) {
   return;
 }*/
 if (
   cancelled ||
+  activeBooksAccountIdRef.current !== requestAccountId ||
   !authenticatedUserId ||
   latestUserId !== authenticatedUserId ||
   authenticatedUserIdRef.current !== authenticatedUserId
@@ -2079,6 +1961,7 @@ if (
   return;
 }
 
+      if (cancelled || activeBooksAccountIdRef.current !== requestAccountId) return;
       setSavedBooks(result.books);
       setSavedBooksCursor(result.cursor);
       // Record the IDs of books returned by the Saved Books API.
@@ -2093,7 +1976,7 @@ setSavedBookIds((previousIds) => [
   ]),
 ]);
     } catch (error) {
-      if (cancelled) return;
+      if (cancelled || activeBooksAccountIdRef.current !== requestAccountId) return;
 
       setSavedBooks([]);
       setSavedBooksCursor(null);
@@ -2103,7 +1986,7 @@ setSavedBookIds((previousIds) => [
         error.message || "Unable to load your saved books."
       );
     } finally {
-      if (!cancelled) {
+      if (!cancelled && activeBooksAccountIdRef.current === requestAccountId) {
         setSavedBooksLoading(false);
       }
     }
@@ -2115,7 +1998,7 @@ setSavedBookIds((previousIds) => [
     cancelled = true;
   };
 /*}, [activeSection, authLoading, isAuthenticated]);*/
-}, [activeSection, authLoading, isAuthenticated, authenticatedUserId]);
+}, [activeSection, authLoading, isAuthenticated, authenticatedUserId, activeBooksAccountId]);
 
 
 
@@ -2162,60 +2045,39 @@ const displayedBooksError = isSavedBooks
     : booksError;
   // Load the next page of books shared by the logged-in user.
 const handleLoadMoreMySharedBooks = async () => {
-  if (
-    !mySharedBooksCursor ||
-    mySharedBooksLoadingMore ||
-    mySharedBooksLoading
-  ) {
-    return;
-  }
+  if (!mySharedBooksCursor || mySharedBooksLoadingMore || mySharedBooksLoading ||
+      !isAuthenticated || !authenticatedUserId || !activeBooksAccountId) return;
 
-  /*setMySharedBooksLoadingMore(true);
-  setMySharedBooksError("");*/
-setMySharedBooksLoadingMore(true);
-setMySharedBooksError("");
+  const requestAccountId = activeBooksAccountId;
+  const requestUserId = authenticatedUserId;
+  const requestCursor = mySharedBooksCursor;
+  setMySharedBooksLoadingMore(true);
+  setMySharedBooksError("");
 
   try {
-    const accessToken = await Session.getAccessToken();
-
-    if (!accessToken) {
-      throw new Error("Your session has expired. Please log in again.");
-    }
+    const accessToken = await AcademicBooksAccount.getAccessToken();
+    const sessionUserId = await AcademicBooksAccount.getUserId();
+    if (!accessToken || sessionUserId !== requestUserId ||
+        authenticatedUserIdRef.current !== requestUserId ||
+        activeBooksAccountIdRef.current !== requestAccountId) return;
 
     const result = await fetchMySharedAcademicBooks({
-      limit: 20,
-      cursor: mySharedBooksCursor,
-      accessToken,
+      limit: 20, cursor: requestCursor, accessToken,
     });
 
-    // Reject results if the authenticated user has changed.
-const latestUserId = await Session.getUserId();
+    const latestUserId = await AcademicBooksAccount.getUserId();
+    if (activeBooksAccountIdRef.current !== requestAccountId ||
+        authenticatedUserIdRef.current !== requestUserId ||
+        latestUserId !== requestUserId) return;
 
-/*if (
-  !authenticatedUserId ||
-  latestUserId !== authenticatedUserId
-) {
-  return;
-}*/
-if (
-  !authenticatedUserId ||
-  latestUserId !== authenticatedUserId ||
-  authenticatedUserIdRef.current !== authenticatedUserId
-) {
-  return;
-}
-
-    setMySharedBooks((previousBooks) => [
-      ...previousBooks,
-      ...result.books,
-    ]);
-
+    setMySharedBooks((previousBooks) => [...previousBooks, ...result.books]);
     setMySharedBooksCursor(result.cursor);
   } catch (error) {
-    console.error("Failed to load more shared books:", error);
-    setMySharedBooksError(
-      error.message || "Unable to load more shared books."
-    );
+    if (activeBooksAccountIdRef.current === requestAccountId &&
+        authenticatedUserIdRef.current === requestUserId) {
+      console.error("Failed to load more shared books:", error);
+      setMySharedBooksError(error.message || "Unable to load more shared books.");
+    }
   } finally {
     setMySharedBooksLoadingMore(false);
   }
@@ -2223,68 +2085,47 @@ if (
 
 // Load the next page of books saved by the logged-in user.
 const handleLoadMoreSavedBooks = async () => {
-  if (
-    !savedBooksCursor ||
-    savedBooksLoadingMore ||
-    savedBooksLoading
-  ) {
-    return;
-  }
+  if (!savedBooksCursor || savedBooksLoadingMore || savedBooksLoading ||
+      !isAuthenticated || !authenticatedUserId || !activeBooksAccountId) return;
 
-  /*setSavedBooksLoadingMore(true);
-  setSavedBooksError("");*/
-  ssetSavedBooksLoadingMore(true);
-setSavedBooksError("");
+  const requestAccountId = activeBooksAccountId;
+  const requestUserId = authenticatedUserId;
+  const requestCursor = savedBooksCursor;
+  setSavedBooksLoadingMore(true);
+  setSavedBooksError("");
 
   try {
-    const accessToken = await Session.getAccessToken();
-
-    if (!accessToken) {
-      throw new Error(
-        "Your session has expired. Please log in again."
-      );
-    }
+    const accessToken = await AcademicBooksAccount.getAccessToken();
+    const sessionUserId = await AcademicBooksAccount.getUserId();
+    if (!accessToken || sessionUserId !== requestUserId ||
+        authenticatedUserIdRef.current !== requestUserId ||
+        activeBooksAccountIdRef.current !== requestAccountId) return;
 
     const result = await fetchSavedAcademicBooks({
-      limit: 20,
-      cursor: savedBooksCursor,
-      accessToken,
+      limit: 20, cursor: requestCursor, accessToken,
     });
 
-    // Reject results if the authenticated user has changed.
-const latestUserId = await Session.getUserId();
+    const latestUserId = await AcademicBooksAccount.getUserId();
+    if (activeBooksAccountIdRef.current !== requestAccountId ||
+        authenticatedUserIdRef.current !== requestUserId ||
+        latestUserId !== requestUserId) return;
 
-if (
-  !authenticatedUserId ||
-  latestUserId !== authenticatedUserId
-) {
-  return;
-}
-
-
-    setSavedBooks((previousBooks) => [
-      ...previousBooks,
-      ...result.books,
-    ]);
-
+    setSavedBooks((previousBooks) => [...previousBooks, ...result.books]);
     setSavedBooksCursor(result.cursor);
-    // Track saved IDs from additional pages.
-setSavedBookIds((previousIds) => [
-  ...new Set([
-    ...previousIds,
-    ...result.books
-      .map((book) =>
-        String(book.bookId || book.pk || "").replace(/^BOOK#/, "")
-      )
-      .filter(Boolean),
-  ]),
-]);
+    setSavedBookIds((previousIds) => [
+      ...new Set([
+        ...previousIds,
+        ...result.books.map((book) =>
+          String(book.bookId || book.pk || "").replace(/^BOOK#/, "")
+        ).filter(Boolean),
+      ]),
+    ]);
   } catch (error) {
-    console.error("Failed to load more saved books:", error);
-
-    setSavedBooksError(
-      error.message || "Unable to load more saved books."
-    );
+    if (activeBooksAccountIdRef.current === requestAccountId &&
+        authenticatedUserIdRef.current === requestUserId) {
+      console.error("Failed to load more saved books:", error);
+      setSavedBooksError(error.message || "Unable to load more saved books.");
+    }
   } finally {
     setSavedBooksLoadingMore(false);
   }
@@ -2300,19 +2141,30 @@ const handleToggleSaveBook = async (book) => {
     return;
   }
 
+  const requestAccountId = activeBooksAccountId;
+  const requestUserId = authenticatedUserId;
+  if (!requestAccountId || !requestUserId) return;
+
   const alreadySaved = savedBookIds.includes(bookId);
 
   setSavingBookIds((previous) => [...previous, bookId]);
 
   try {
-    const accessToken = await Session.getAccessToken();
+    const accessToken = await AcademicBooksAccount.getAccessToken();
 
     if (!accessToken) {
       throw new Error("Your session has expired. Please log in again.");
     }
 
+    const sessionUserId = await AcademicBooksAccount.getUserId();
+    if (sessionUserId !== requestUserId ||
+        authenticatedUserIdRef.current !== requestUserId ||
+        activeBooksAccountIdRef.current !== requestAccountId) return;
+
     if (alreadySaved) {
       await unsaveAcademicBook({ bookId, accessToken });
+      if (activeBooksAccountIdRef.current !== requestAccountId ||
+          authenticatedUserIdRef.current !== requestUserId) return;
 
       setSavedBookIds((previous) =>
         previous.filter((id) => id !== bookId)
@@ -2327,14 +2179,19 @@ const handleToggleSaveBook = async (book) => {
       );
     } else {
       await saveAcademicBook({ bookId, accessToken });
+      if (activeBooksAccountIdRef.current !== requestAccountId ||
+          authenticatedUserIdRef.current !== requestUserId) return;
 
       setSavedBookIds((previous) =>
         previous.includes(bookId) ? previous : [...previous, bookId]
       );
     }
   } catch (error) {
-    console.error("Failed to update saved book:", error);
-    window.alert(error.message || "Unable to update saved book.");
+    if (activeBooksAccountIdRef.current === requestAccountId &&
+        authenticatedUserIdRef.current === requestUserId) {
+      console.error("Failed to update saved book:", error);
+      window.alert(error.message || "Unable to update saved book.");
+    }
   } finally {
     setSavingBookIds((previous) =>
       previous.filter((id) => id !== bookId)
@@ -3203,7 +3060,8 @@ setBookFile(file);
   key={book.pk}
   className="overflow-hidden rounded-md border border-slate-200 bg-white p-4 shadow-sm"
 >
-  <div className="flow-root">
+  {/*<div className="flex items-start gap-4">*/}
+    <div className="flow-root">
 
     {/* Book cover — left side, clickable to read PDF */}
 <button
@@ -3211,6 +3069,8 @@ setBookFile(file);
   onClick={() => handleReadBook(book)}
   title={`Read ${book.title || "Academic book"}`}
   aria-label={`Read ${book.title || "Academic book"}`}
+  /*className="shrink-0 w-28 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 text-left transition hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  className="shrink-0 w-28 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 text-left transition hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"*/
   className="float-left mr-4 mb-2 w-28 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 text-left transition hover:border-blue-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 >
   {book.coverUrl ? (
@@ -3250,9 +3110,11 @@ setBookFile(file);
   )}
 </button>
 
-    {/* Book information — right side */}
-      <div className="min-w-0">
-
+<div className="ml-32 min-w-0">
+  
+ {/* Book information — title and description wrap beside the cover */}
+      
+      {/*<h3 className="ml-32 break-words text-sm font-semibold leading-6 text-slate-900">*/}
       <h3 className="break-words text-sm font-semibold leading-6 text-slate-900">
   <button
     type="button"
@@ -3323,6 +3185,8 @@ setBookFile(file);
 </button>
   </div>
 )}
+</div>
+
       {book.description && (
   <BookDescription
     description={book.description}
@@ -3366,7 +3230,6 @@ setBookFile(file);
 )}
 
     </div>
-  </div>
 </article>
        ))}
     </div>
@@ -3531,6 +3394,6 @@ setBookFile(file);
 
       </div>
     </div>
-  </div>
+   </div>
   );
 }

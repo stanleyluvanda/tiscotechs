@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import Session from "supertokens-web-js/recipe/session";
 import { requestAcademicBookReadUrl } from "../lib/academicBooksApi";
 
 export default function AcademicBookReader() {
@@ -42,19 +41,9 @@ useEffect(() => {
       setPdfUrl("");
 
       try {
-        const accessToken = await Session.getAccessToken();
-
-        if (!accessToken) {
-          throw new Error(
-            "Your session has expired. Please log in again."
-          );
-        }
-
         const { readUrl } = await requestAcademicBookReadUrl({
-          bookId,
-          accessToken,
-        });
-
+  bookId,
+});
         // Download the PDF into a temporary browser object URL.
         // This keeps the S3 URL out of the address bar.
         const response = await fetch(readUrl);
