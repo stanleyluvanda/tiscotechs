@@ -1,4 +1,4 @@
-// COMPATIBILITY MODE: accessToken is the browser-supplied account ID, NOT a verified token.
+// Private operations require a genuine access token supplied by the platform adapter.
 //src/lib/academicBooksApi.js
 
 const API_BASE = (
@@ -15,7 +15,7 @@ const API_BASE = (
 
 const PUBLIC_BOOKS_API_BASE =
 
-  "https\://d9xoeam8jbfti.cloudfront.net";
+  "https://d9xoeam8jbfti.cloudfront.net";
 
 
 
@@ -731,14 +731,17 @@ export async function uploadAcademicBookCover({
 
 /**
 
- * Request a temporary, authenticated PDF reading URL.
+ * Request a temporary reading URL for a published academic book.
 
  * The PDF remains in the private S3 bucket.
 
  */
 
 export async function requestAcademicBookReadUrl({
+
   bookId,
+
+
 }) {
 
   if (!API_BASE) {
@@ -755,7 +758,6 @@ export async function requestAcademicBookReadUrl({
 
   }
 
-
   const response = await fetch(
 
     `${API_BASE}/books/${encodeURIComponent(bookId)}/read-url`,
@@ -765,7 +767,8 @@ export async function requestAcademicBookReadUrl({
       method: "GET",
 
       headers: {
-  Accept: "application/json",
+
+        Accept: "application/json",
 },
 
     }

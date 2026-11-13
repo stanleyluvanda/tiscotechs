@@ -1,6 +1,7 @@
 //src/pages/AcademicBookSharingPlatform.jsx//
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import Session from "supertokens-web-js/recipe/session";
 import {
   fetchMySharedAcademicBooks,
   fetchSavedAcademicBooks,
@@ -17,12 +18,22 @@ import {
 import { generateAcademicBookCover } from "../utils/academicBookCover";
 
 
-// Account identity compatibility adapter. No SuperTokens session required.
-// This is a browser identity hint, not a verified authentication credential.
+// Existing session adapter: private requests require a verified access token.
+// The stored profile is used only for UI identity and account-switch protection.
 const AcademicBooksAccount = {
   async getAccessToken() {
-    const u = readAcademicBooksAccount();
-    return u?.id ? String(u.id) : null;
+    // The stored profile is a UI hint, not proof of authentication.
+    const account = readAcademicBooksAccount();
+    if (!account) return null;
+    try {
+      // Reuse the site's existing session; do not create a new one.
+      const sessionUserId = await Session.getUserId();
+      if (sessionUserId !== account.id) return null;
+      const token = await Session.getAccessToken();
+      return typeof token === "string" && token ? token : null;
+    } catch {
+      return null;
+    }
   },
   async getUserId() {
     const u = readAcademicBooksAccount();
@@ -1322,7 +1333,7 @@ if (!isPowerPoint) {
 }
 
   // Open a blank tab immediately to avoid popup blockers
-  // while the authenticated download URL is being requested.
+  // while the temporary download URL is being requested.
   const downloadTab = window.open(
     "about:blank",
     "_blank"
@@ -1336,18 +1347,7 @@ if (!isPowerPoint) {
   }
 
   try {
-    const accessToken = await AcademicBooksAccount.getAccessToken();
-
-    if (!accessToken) {
-      throw new Error(
-        "Your session has expired. Please log in again."
-      );
-    }
-
-    const { readUrl } = await requestAcademicBookReadUrl({
-      bookId,
-      accessToken,
-    });
+    const { readUrl } = await requestAcademicBookReadUrl({ bookId });
 
     // S3 serves PowerPoint files as attachments.
     downloadTab.location.replace(readUrl);
