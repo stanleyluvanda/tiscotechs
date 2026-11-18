@@ -14,6 +14,7 @@ import BannerAdPortal from "./components/BannerAdPortal.jsx";
 import SuperTokens from "supertokens-web-js";
 import Session from "supertokens-web-js/recipe/session";
 
+
 // Preserve separate local and production authentication endpoints
 const IS_LOCAL_AUTH =
   window.location.hostname === "localhost" ||
