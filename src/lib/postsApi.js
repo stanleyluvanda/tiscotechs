@@ -1,4 +1,5 @@
 // src/lib/postsApi.js
+import { ScholarsAuthSession } from "./scholarsAuthSession";
 // Universal helper for global posts API
 // Used by:
 // - StudentDashboard.jsx
@@ -18,6 +19,7 @@
 //
 // ✅ FIX (reply not showing after 201):
 // - When server returns replies with commentId (no parentId), treat commentId as parentId during normalization.
+
 
 const RAW_POSTS_BASE =
   (import.meta.env.VITE_POSTS_API_BASE &&
@@ -70,9 +72,55 @@ async function doJsonFetch(pathOrUrl, options = {}) {
     ...(options.headers || {}),
   };
 
+  /*if (options.body && typeof options.body !== "string") {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+    init.body = JSON.stringify(options.body);
+  }
+
+  init.headers = headers;*/
+
   if (options.body && typeof options.body !== "string") {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
     init.body = JSON.stringify(options.body);
+  }
+
+  // Reuse the existing ScholarsKnowledge SuperTokens session.
+  // Public posts, comments, replies and threads remain unauthenticated.
+  const method = String(init.method || "GET").toUpperCase();
+  const pathname = new URL(url).pathname.replace(/\/+$/, "") || "/";
+
+  const protectedRequest =
+    (
+      method !== "GET" &&
+      (
+        pathname === "/api/posts" ||
+        pathname === "/api/posts/comment" ||
+        pathname === "/api/posts/reply" ||
+        pathname === "/posts/save" ||
+        pathname === "/api/notifications/markRead" ||
+        pathname === "/api/notifications/clearRead"
+      )
+    ) ||
+    (
+      method === "GET" &&
+      (
+        pathname === "/posts/saved" ||
+        pathname === "/api/notifications/mine"
+      )
+    );
+
+  if (protectedRequest) {
+    const token = await ScholarsAuthSession.getAccessToken();
+
+    if (!token) {
+      const err = new Error(
+        "Authentication required. Please sign in again."
+      );
+      err.status = 401;
+      throw err;
+    }
+
+    headers.Authorization = `Bearer ${token}`;
   }
 
   init.headers = headers;
@@ -937,10 +985,14 @@ export async function createPost(payload) {
     }
 
     return { ...payload, ...(serverPost || {}) };
-  } catch (err) {
+  /*} catch (err) {
     console.error("[postsApi] createPost failed, using local payload only", err);
     return payload;
-  }
+  }*/
+ } catch (err) {
+  console.error("[postsApi] createPost failed:", err);
+  throw err;
+}
 }
 
 export async function createComment(payload = {}) {
