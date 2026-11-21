@@ -236,7 +236,7 @@ function Card({ className = "", children, square = false }) {
     <div
       className={`${
         square ? "rounded-none" : "rounded-none sm:rounded-lg"
-      } border border-slate-100 bg-white p-0 shadow-sm overflow-hidden ${className}`}
+      } border border-slate-200/80 bg-white p-0 shadow-sm overflow-hidden ${className}`}
     >
       {children}
     </div>
@@ -246,8 +246,8 @@ function CardHeader({ title, small = false, square = false }) {
   return (
     <div
       className={`${square ? "rounded-none" : "rounded-t-2xl"} ${
-        small ? "py-2" : "py-2.5"
-      } px-3 text-sm font-semibold text-center bg-[#7bdad1]/90 text-slate-900`}
+        small ? "py-1.5" : "py-2.5"
+      } px-3 text-[13px] font-semibold text-center bg-[#e8f1f5] text-[#17375e]`}
     >
       {title}
     </div>
@@ -2189,12 +2189,12 @@ const filtered =
       {/* Layout */}
       <main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-1 lg:pt-2 lg:pb-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT: Filters */}
-        <aside className="hidden lg:block space-y-4 pb-32">
+        <aside className="hidden lg:block space-y-2 pb-32">
          
           <Card square>
-  <div className="border-b border-indigo-200/70 bg-gradient-to-r from-indigo-700 via-violet-700 to-purple-700 px-3 py-2">
+  <div className="border-b border-[#244c75] bg-gradient-to-r from-[#183b66] via-[#20517b] to-[#256b85] px-3 py-1.5">
     <div className="grid grid-cols-[30px_1fr_30px] items-center gap-1">
-      <div className="ml-1 flex h-8 w-8 items-center justify-center rounded-md bg-white/15 ring-1 ring-white/25">
+      <div className="ml-1 flex h-7 w-7 items-center justify-center rounded-md bg-white/15 ring-1 ring-white/25">
         <svg
           viewBox="0 0 24 24"
           className="h-5 w-5"
@@ -2220,29 +2220,28 @@ const filtered =
       </div>
 
       {/*<span className="text-center text-sm font-bold text-white">*/}
-        <span className="text-center text-[15px] font-bold leading-none tracking-tight text-white whitespace-nowrap">
+        <span className="text-center text-[14px] font-bold leading-none tracking-tight text-white whitespace-nowrap">
         Student Marketplace
       </span>
 
       <span
         aria-hidden="true"
-        className="mr-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-300 text-base font-black leading-none text-slate-950 shadow-sm ring-2 ring-white/40"
+        className="mr-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#e7f2f6] text-base font-black leading-none text-[#174568] shadow-sm ring-2 ring-white/30"
       >
         $
       </span>
     </div>
   </div>
-  <CardBody>
-    <p className="text-xs text-slate-700 text-center">Only for {uni || "your university"}.</p>
+  <CardBody className="!px-3 !py-2">
+    <p className="text-[11px] leading-4 text-slate-700 text-center">Only for {uni || "your university"}.</p>
     {feedError && <p className="mt-2 text-xs text-red-600 text-center">{feedError}</p>}
     {/*<div className="mt-1 text-[11px] text-slate-500 text-center h-4">
       {feedLoading ? "Refreshing listings…" : "\u00A0"}
     </div>*/}
-    <div className="mt-1 h-4" />
   </CardBody>
 </Card>
 
-         <div className="mb-3">
+         <div className="mb-0">
   <button
     onClick={() =>
       setShowMine((v) => {
@@ -2251,10 +2250,10 @@ const filtered =
         return next;
       })
     }
-    className={`w-full rounded-full px-4 py-2 text-sm font-semibold transition ${
+    className={`w-full rounded-full px-4 py-1.5 text-[13px] font-semibold transition ${
       showMine
-        ? "bg-blue-600 text-white"
-        : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+        ? "bg-[#205b7e] text-white border border-[#205b7e]"
+        : "bg-[#deedff] border border-[#c4daf3] text-[#244560] hover:bg-[#d2e5fc]"
     }`}
   >
     My listings: {showMine ? "On" : "Off"}
@@ -2293,15 +2292,15 @@ const filtered =
           </Card>*/}
 
           <Card square>
-            <CardHeader title="Search by Category" square />
-            <CardBody className="space-y-2">
+            <CardHeader title="Search by Category" square small />
+            <CardBody className="!px-3 !py-2 space-y-2">
               <select
                 value={catFilter}
                 onChange={(e) => {
                   setCatFilter(e.target.value);
                   setSubFilter("All");
                 }}
-                className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
+                className="w-full border border-[#cbdbe4] rounded px-3 py-1.5 text-[13px] bg-[#f8fbfc] text-[#203e59] focus:border-[#327c97] focus:outline-none"
               >
 <option value="All">All</option>
 
@@ -2339,7 +2338,7 @@ const filtered =
                 <select
                   value={subFilter}
                   onChange={(e) => setSubFilter(e.target.value)}
-                  className="w-full border border-slate-200 rounded px-3 py-2 text-sm"
+                  className="w-full border border-[#cbdbe4] rounded px-3 py-1.5 text-[13px] bg-[#f8fbfc] text-[#203e59] focus:border-[#327c97] focus:outline-none"
                 >
                   <option>All</option>
                   {subFilterOptions.map((s) => (
@@ -2353,29 +2352,29 @@ const filtered =
           </Card>
 
           <Card square>
-            <CardHeader title="Students' links" square />
-            <CardBody className="text-sm space-y-2 text-center">
+            <CardHeader title="Students' links" square small />
+            <CardBody className="!px-3 !py-2 text-[13px] space-y-1 text-center">
               <Link
                 to="/platform/university"
-                className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
+                className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-[#d7e4ea] bg-[#f8fbfc] text-[#244560] hover:bg-[#edf5f8] hover:border-[#b7d1de] transition-colors"
               >
                 University Academic Platform
               </Link>
               <Link
                 to="/platform/country"
-                className="block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 border-b border-slate-100"
+                className="block w-full text-left px-4 py-2 text-[13px] text-[#244560] hover:bg-[#edf5f8] border-b border-[#e0eaf0] transition-colors"
               >
                 Country Academic Platform
               </Link>
               <Link
                 to="/platform/global"
-                className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
+                className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-[#d7e4ea] bg-[#f8fbfc] text-[#244560] hover:bg-[#edf5f8] hover:border-[#b7d1de] transition-colors"
               >
                 Global Academic Platform
               </Link>
               <Link
                 to="/student-dashboard?tab=profile"
-                className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
+                className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-[#d7e4ea] bg-[#f8fbfc] text-[#244560] hover:bg-[#edf5f8] hover:border-[#b7d1de] transition-colors"
               >
                 View My Profile
               </Link>
@@ -2393,7 +2392,7 @@ const filtered =
 
         {/* CENTER: Composer + Feed */}
         {/*<section className="space-y-4">*/}
-        <section className="space-y-2 sm:space-y-4">
+        <section className="space-y-2">
           <Card>
             <CardBody>
               {!openComposer ? (
@@ -2800,7 +2799,7 @@ const filtered =
       </div>
 
       <div className="p-4">
-        <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
+        <ul className="text-sm text-[#344e62] list-disc pl-5 space-y-1">
           <li>Meet on campus in public places.</li>
           <li>Do not pay or send any money to anybody.</li>
           <li>Check items before you pay.</li>
@@ -2958,8 +2957,41 @@ const filtered =
   
 
   <Badge>
-    {item.mainCategory}
-    {item.subCategory ? ` • ${item.subCategory}` : ""}
+    <button
+      type="button"
+      className="hover:underline focus-visible:underline focus:outline-none"
+      title={`Show all ${item.mainCategory} listings`}
+      onClick={() => {
+        setSellerFilter(null);
+        setShowMine(false);
+        setQ("");
+        setMobileSort("top");
+        setCatFilter(item.mainCategory || "All");
+        setSubFilter("All");
+      }}
+    >
+      {item.mainCategory}
+    </button>
+    {item.subCategory && (
+      <>
+        {" • "}
+        <button
+          type="button"
+          className="hover:underline focus-visible:underline focus:outline-none"
+          title={`Show ${item.subCategory} listings in ${item.mainCategory}`}
+          onClick={() => {
+            setSellerFilter(null);
+            setShowMine(false);
+            setQ("");
+            setMobileSort("top");
+            setCatFilter(item.mainCategory || "All");
+            setSubFilter(item.subCategory);
+          }}
+        >
+          {item.subCategory}
+        </button>
+      </>
+    )}
   </Badge>
 
   {seller.id === userId && (
@@ -3087,48 +3119,6 @@ const filtered =
     <span className="relative inline-flex items-center gap-1 group">*/}
       {locationText && (
   <>
-    <span className="relative inline-flex items-center gap-1 group whitespace-nowrap text-slate-700">
-      <LocationPinIcon className="h-4 w-4 text-red-600" />
-
-      <a
-        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          locationText
-        )}`}
-        target="_blank"
-        rel="noreferrer"
-        className="text-sm hover:underline"
-        title={`View ${locationText} on Google Maps`}
-      >
-        {locationText}
-      </a>
-
-      {/* Google Maps preview on hover */}
-      <span
-        className="
-          hidden group-hover:block
-          absolute z-50
-          bottom-full left-1/2 -translate-x-1/2
-          mb-2
-          w-72 h-44
-          bg-white border border-slate-200
-          rounded-lg shadow-lg
-          overflow-hidden
-        "
-      >
-        <iframe
-          title={`Map of ${locationText}`}
-          src={`https://www.google.com/maps?q=${encodeURIComponent(
-            locationText
-          )}&output=embed`}
-          className="w-full h-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
-      </span>
-    </span>
-
-
-
     {item.listingLabel ? (
   <span
     /*className={`inline-flex items-center gap-1 text-sm font-semibold ${*/
@@ -3188,6 +3178,49 @@ const filtered =
     <span>{item.listingLabel}</span>
   </span>
 ) : null}
+
+
+    <span className="relative inline-flex items-center gap-1 group whitespace-nowrap text-slate-700">
+      <LocationPinIcon className="h-4 w-4 text-red-600" />
+
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          locationText
+        )}`}
+        target="_blank"
+        rel="noreferrer"
+        className="text-sm hover:underline"
+        title={`View ${locationText} on Google Maps`}
+      >
+        {locationText}
+      </a>
+
+      {/* Google Maps preview on hover */}
+      <span
+        className="
+          hidden group-hover:block
+          absolute z-50
+          bottom-full left-1/2 -translate-x-1/2
+          mb-2
+          w-72 h-44
+          bg-white border border-slate-200
+          rounded-lg shadow-lg
+          overflow-hidden
+        "
+      >
+        <iframe
+          title={`Map of ${locationText}`}
+          src={`https://www.google.com/maps?q=${encodeURIComponent(
+            locationText
+          )}&output=embed`}
+          className="w-full h-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </span>
+    </span>
+
+
 
     {/* ✅ NEW badge appears after location and blinks for 7 days */}
     {isNewPost(item.createdAt) && <NewPostBadge />}
@@ -3382,7 +3415,7 @@ const filtered =
           <Card square>
              <Card square>
              
-            <div className="border-b border-rose-200/70 bg-gradient-to-r from-rose-700 via-red-600 to-orange-600 px-3 py-2">
+            <div className="border-b border-[#285a7a] bg-gradient-to-r from-[#183b66] via-[#20517b] to-[#256b85] px-3 py-2">
   <div className="grid grid-cols-[42px_minmax(0,1fr)] items-center gap-2">
     <div className="ml-1 flex h-8 w-8 items-center justify-center rounded-md bg-white/15 ring-1 ring-white/25">
       <img
@@ -3398,13 +3431,13 @@ const filtered =
   </div>
 </div>
 
-<div className="bg-amber-300 px-2 py-1">
-  <p className="text-sm font-semibold leading-6 text-amber-950">
+<div className="bg-[#edf5f7] px-2 py-1">
+  <p className="text-sm font-semibold leading-6 text-[#29485e]">
     Are you passionate about business? Start listing your business now.
   </p>
 </div>
 
-            <div className="border-b border-sky-200/70 bg-gradient-to-r from-sky-700 via-cyan-700 to-teal-700 px-3 py-2">
+            <div className="border-b border-[#247a83] bg-gradient-to-r from-[#205b76] via-[#216f7e] to-[#278b88] px-3 py-2">
   <div className="grid grid-cols-[30px_1fr_30px] items-center gap-1">
     <img
       src="/images/Studentmarketsafety.jpg"
@@ -3425,7 +3458,7 @@ const filtered =
   </div>
 </div>
 <CardBody>
-  <ul className="text-sm text-slate-700 list-disc pl-5 space-y-1">
+  <ul className="text-sm text-[#344e62] list-disc pl-5 space-y-1">
     <li>Meet on campus in public places.</li>
     <li>Do not pay or send any money to anybody.</li>
     <li>Check items before you pay.</li>
