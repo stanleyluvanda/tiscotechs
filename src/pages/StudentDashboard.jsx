@@ -27,6 +27,7 @@ import {callAssistAI,callAssistAIChunked,sanitizeSimpleAiHtml,} from "../utils/a
 import LecturerMiniProfile from "../components/LecturerMiniProfile.jsx";
 //import {getConversation,listPeople,listThreads,markRead,sendMessage,} from "../lib/messagingApi";
 import MessagingDock from "../components/MessagingDock";
+
 const AiStudyAssistantEmbedded = lazy(() =>
   import("../components/AiStudyAssistantEmbedded.jsx")
 );
@@ -431,6 +432,20 @@ function persistUser(user) {
   map[user.id] = user; trySet("usersById", JSON.stringify(map));
 }
 function loadActiveUser() {
+
+  // Google login: prefer the verified account restored during
+  // ticket redemption over older locally cached profile records.
+  const googleSessionUser = safeParse(
+    sessionStorage.getItem("currentUser")
+  );
+
+  if (
+    googleSessionUser?.authProvider === "supertokens-google" &&
+    googleSessionUser?.id
+  ) {
+    return googleSessionUser;
+  }
+
   for (const src of [sessionStorage, localStorage]) {
     for (const key of ID_KEYS) {
       const id = src.getItem(key);
@@ -4726,6 +4741,7 @@ updatePostById(postId, (x) => {
   const updated = { ...x, comments, updatedAt: Date.now() };
 
 
+
   return updated;
 });
 };
@@ -4841,8 +4857,7 @@ updatePostById(postId, (x) => {
 
   const updated = { ...x, comments: nextComments, updatedAt: Date.now() };
 
-
-  return updated;
+return updated;
 });
 };
   
