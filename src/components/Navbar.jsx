@@ -61,19 +61,6 @@ function loadNavbarUser() {
   return loadActiveUser();
 }
 
-  // 2) Fallback: partner session (does not affect student/lecturer)
-  /*const p = safeParse(localStorage.getItem("partnerAuth")) || null;
-  if (!p?.email) return null;
-
-  return {
-    // keep the same field names the Navbar already uses
-    role: "partner",
-    email: p.email,
-    name: p.organization || p.orgName || p.contactName || "Partner",
-    photoUrl: p.logoUrl || p.photo || p.avatarUrl || "",
-  };
-}*/
-
 function initials(name = "") {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   const a = (parts[0]?.[0] || "U").toUpperCase();

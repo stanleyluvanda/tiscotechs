@@ -4575,8 +4575,6 @@ async function clearNotificationsServerBacked() {
 />
 
       {/* Keep total width tight and ensure equal margins on both sides */}
-   {/*<main className="w-full max-w-[1400px] mx-auto px-0 sm:px-4 lg:px-6 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[280px_minmax(720px,1fr)_280px] gap-3 sm:gap-4 lg:gap-6">*/}
-      {/*<main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-3 pb-6 sm:py-6 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">*/}
       <main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-1 pb-6 lg:pt-2 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">
         {/* LEFT: Profile + filters */}
         {/*<aside className="space-y-4 pb-24">*/}
@@ -4605,10 +4603,6 @@ async function clearNotificationsServerBacked() {
               <div className="-mt-8">
                 <div className="inline-block relative">
                   <Avatar size="lg" url={user.photoUrl} name={user.name} online />
-                  {/*<label className="absolute -right-1 -bottom-1 bg-white text-[10px] px-1 py-0.5 rounded cursor-pointer border border-slate-100">
-                    Edit
-                    <input type="file" accept="image/*" className="hidden" onChange={onPickAvatar} />
-                  </label>*/}
                   <label className="absolute -right-1 -bottom-1 bg-white text-[10px] px-1 py-0.5 rounded cursor-pointer border border-slate-100">
   Edit
   <input
@@ -4634,12 +4628,6 @@ async function clearNotificationsServerBacked() {
               </div>
 
 
-
-
-
-
-
-
               <div className="mt-3 flex flex-wrap gap-2">
   <button
     type="button"
@@ -4661,25 +4649,6 @@ async function clearNotificationsServerBacked() {
     </button>
   )}
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4772,22 +4741,7 @@ async function clearNotificationsServerBacked() {
             </div>
           </Card>
 
-          {/* Faculty-only filter */}
-          {/*<SidebarCard title={`View ${facultyLabel} posts`}>
-            <div className="mt-2 flex justify-center">
-              <button
-                onClick={() => setShowFacultyOnly((v) => !v)}
-                className={`px-4 py-1 rounded-full text-sm ${
-                  showFacultyOnly ? "bg-blue-600 text-white" : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                {showFacultyOnly ? "On" : "Off"}
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-slate-600 text-center">
-              When on, you’ll only see {facultyLabel.toLowerCase()} posts you created (including year-specific).
-            </p>
-          </SidebarCard>*/}
+
           {/* Faculty-only filter */}
 <SidebarCard title={`View ${facultyLabel} posts`}>
   {/*<div className="mt-2 flex items-start justify-between gap-3">*/}
@@ -4834,12 +4788,9 @@ async function clearNotificationsServerBacked() {
         </aside>
 
         {/* CENTER: Composer + Feed */}
-        {/*<section className="space-y-4 min-w-0">*/}
        <section className="w-full max-w-full overflow-x-hidden min-w-0 space-y-1 lg:space-y-1 mt-[85px] lg:mt-0">
           
           <ErrorBoundary>
-            {/*<Card>*/}
-              {/*<Card className="mx-2 sm:mx-0">*/}
               <Card className="mx-0 sm:mx-0">
               {!composerOpen ? (
                   <div className="flex items-center gap-2 sm:gap-3 px-1 sm:px-0">
@@ -4855,9 +4806,6 @@ async function clearNotificationsServerBacked() {
               ) : (
                 <form onSubmit={onPost}>
                   {/* Header */}
-                  {/*<div className="flex items-center gap-3">*/}
-                    {/*<div className="flex items-start gap-2 sm:gap-3">*/}
-                      
 
                   <div className="flex items-start gap-3">
   <Avatar size="md" url={user.photoUrl} name={user.name} online />
@@ -4895,20 +4843,6 @@ async function clearNotificationsServerBacked() {
     </select>
   </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
