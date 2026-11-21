@@ -4578,7 +4578,7 @@ async function clearNotificationsServerBacked() {
       <main className="w-full max-w-[1450px] mx-auto px-0 sm:px-4 lg:px-5 pt-1 pb-6 lg:pt-2 grid grid-cols-1 lg:grid-cols-[275px_minmax(740px,1fr)_275px] gap-3 sm:gap-4 lg:gap-5">
         {/* LEFT: Profile + filters */}
         {/*<aside className="space-y-4 pb-24">*/}
-          <aside className="hidden lg:block space-y-4 pb-24">
+          <aside className="hidden lg:block space-y-2 pb-24">
           {/* Profile card */}
           <Card className="p-0 overflow-hidden">
             <div className="relative h-20 bg-slate-200">
@@ -4742,38 +4742,46 @@ async function clearNotificationsServerBacked() {
           </Card>
 
 
-          {/* Faculty-only filter */}
-<SidebarCard title={`View ${facultyLabel} posts`}>
-  {/*<div className="mt-2 flex items-start justify-between gap-3">*/}
-    <div className="flex items-start justify-between gap-3">
-    <p className="flex-1 text-xs text-slate-600">
-      When on, you’ll only see{" "}
-      {facultyLabel.toLowerCase()} posts you created
-      (including year-specific).
-    </p>
-
-    <button
-      onClick={() => setShowFacultyOnly((v) => !v)}
-      className={`shrink-0 px-4 py-1 rounded-full text-sm ${
-        showFacultyOnly
-          ? "bg-blue-600 text-white"
-          : "border border-slate-200 text-slate-700 hover:bg-slate-50"
-      }`}
-    >
-      {showFacultyOnly ? "On" : "Off"}
-    </button>
-  </div>
-</SidebarCard>
-
-          {/* Academic posts filter */}
-          <SidebarCard title="Academic post types">
-            <div className="mt-2 space-y-2 text-sm">
-              <FilterPill label="All" active={filterType === "All"} onClick={() => setFilterType("All")} />
-              {POST_TYPES.map((t) => (
-                <FilterPill key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
-              ))}
+          {/* Faculty-only filter: toggle in heading, explanation only when enabled */}
+          <div className="w-full max-w-full box-border border border-slate-200 bg-white rounded-none shadow-sm overflow-hidden">
+            <div className="bg-[#0F7B5A] text-white font-semibold px-3 py-3 border-b border-[#0C664A] text-center leading-6 break-words">
+              <span>{`View ${facultyLabel} posts`}</span>{" "}
+              <button
+                type="button"
+                onClick={() => setShowFacultyOnly((v) => !v)}
+                aria-pressed={showFacultyOnly}
+                className={`inline-flex align-middle items-center justify-center ml-1 px-2.5 py-0 rounded-full text-xs leading-4 font-normal whitespace-nowrap ${
+                  showFacultyOnly
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {showFacultyOnly ? "On" : "Off"}
+              </button>
             </div>
-          </SidebarCard>
+            {showFacultyOnly && (
+              <div className="px-4 py-3 text-xs text-slate-600">
+                When on, you’ll only see {facultyLabel.toLowerCase()} posts you created
+                (including year-specific).
+              </div>
+            )}
+          </div>
+
+          {/* Academic posts filter: collapsed by default; filter logic unchanged */}
+          <details className="w-full max-w-full box-border border border-slate-200 bg-white rounded-none shadow-sm overflow-hidden group">
+            <summary className="w-full bg-[#0F7B5A] text-white font-semibold px-3 py-2 border-b border-[#0C664A] text-center cursor-pointer list-none relative [&::-webkit-details-marker]:hidden">
+              Academic post types
+              <span aria-hidden="true" className="absolute right-3 top-1/2 -translate-y-1/2 text-xs group-open:rotate-180">▼</span>
+            </summary>
+            <div className="p-4">
+              <div className="mt-2 space-y-2 text-sm">
+                <FilterPill label="All" active={filterType === "All"} onClick={() => setFilterType("All")} />
+                {POST_TYPES.map((t) => (
+                  <FilterPill key={t} label={t} active={filterType === t} onClick={() => setFilterType(t)} />
+                ))}
+              </div>
+            </div>
+          </details>
            {/* Normal Google Ad card */}
 <GoogleSidebarAd keepPlaceholder={false} />
 
@@ -5579,7 +5587,7 @@ commentsCursor={
 
         {/* RIGHT: Updates*/}
         {/*<aside className="space-y-4 min-w-0 w-full max-w-full">*/}
-          <aside className="hidden lg:block space-y-4 min-w-0 w-full max-w-full">
+          <aside className="hidden lg:block space-y-2 min-w-0 w-full max-w-full">
           <Card className="overflow-hidden">
   <div className="font-semibold text-slate-900 text-center">Updates for Lecturers</div>
 
@@ -5618,12 +5626,12 @@ commentsCursor={
 
 
           {/* Students' links: quick links under Students’ Messages */}
-              <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-              <h3 className="text-base font-semibold text-slate-900 text-center rounded-lg px-3 py-2 bg-sky-100">
+              <div className="mt-0 rounded-lg border border-slate-200 bg-white overflow-hidden">
+              <h3 className="text-base font-semibold text-slate-900 text-center px-3 py-1.5 bg-sky-100">
                Academic platforms
               </h3>
 
-              <ul className="mt-3 space-y-2 text-sm">
+              <ul className="px-4 pt-3 pb-4 space-y-2 text-sm">
               <li>
                <Link
                  to="/platform/university"
