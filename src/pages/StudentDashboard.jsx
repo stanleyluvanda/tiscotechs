@@ -3439,7 +3439,7 @@ useEffect(() => {
   const [showMineOnly,setShowMineOnly]=useState(false);
   const [filterType,setFilterType]=useState("All");
   // ✅ NEW: collapse/expand Academic posts type
-  const [academicPostsOpen, setAcademicPostsOpen] = useState(true);
+  const [academicPostsOpen, setAcademicPostsOpen] = useState(false);
   // Controls expanded view of the admin YouTube video
 const [videoExpanded, setVideoExpanded] = useState(false);
   const [hasNewCommonPosts, setHasNewCommonPosts] = useState(false);
