@@ -416,7 +416,7 @@ const Card = forwardRef(function Card({ className = "", children, square = false
 function HeaderBar({ title, square = false }) {
   return (
     <div
-      className={`${square ? "rounded-none" : "rounded-t-2xl"} px-4 py-2.5 bg-[#7bdad1]/90 text-slate-900 text-sm font-semibold text-center`}
+      className={`${square ? "rounded-none" : "rounded-t-2xl"} px-3 py-2 bg-[#7bdad1]/80 border-b border-teal-100 text-slate-800 text-[13px] font-semibold text-center`}
     >
       {title}
     </div>
@@ -3698,7 +3698,7 @@ setOpen(true);
 {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
           {/* LEFT rail */}
           {/*<aside className="space-y-4 pb-24">*/}
-            <aside className="hidden lg:block space-y-4 pb-24">
+            <aside className="hidden lg:block space-y-2 pb-24">
             <Card square>
               <HeaderBar title="Global Academic Platform" square />
               <div className="p-4">
@@ -3706,20 +3706,17 @@ setOpen(true);
               </div>
             </Card>
 
-            <Card square>
-              <HeaderBar title="My Posts" square />
-              <div className="p-3">
-                <button
-                  onClick={() => setMyOnly((v) => !v)}
-                  className={`w-full rounded px-3 py-1.5 text-sm ${myOnly ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
-                >
-                  {myOnly ? "On" : "Off"}
-                </button>
-              </div>
-            </Card>
+            <button
+              type="button"
+              onClick={() => setMyOnly((v) => !v)}
+              aria-pressed={myOnly}
+              className={`w-full rounded-full border px-3 py-2 text-sm font-medium text-center transition-colors ${myOnly ? "border-blue-400 bg-blue-600 text-white" : "border-blue-200 bg-blue-100 text-slate-800 hover:bg-blue-200"}`}
+            >
+              My Posts: {myOnly ? "On" : "Off"}
+            </button>
 
             <Card square>
-              <HeaderBar title="Topics" square />
+              <HeaderBar title="Discussion Topics" square />
               <div className="p-3 space-y-2">
                 <select
                   value={selectedCategory}
@@ -4434,7 +4431,7 @@ setOpen(true);
 
           {/* RIGHT rail */}
           {/*<aside className="space-y-4 pb-24">*/}
-            <aside className="hidden lg:block space-y-4 pb-24">
+            <aside className="hidden lg:block space-y-2 pb-24">
             <Card square>
               <HeaderBar title="Your Topics" square />
               <div className="p-3 space-y-1 text-sm max-h-[180px] overflow-auto">
@@ -4499,24 +4496,24 @@ setOpen(true);
 
             <Card square>
               <HeaderBar title="Academic Platforms' links" square />
-              <div className="p-3 text-sm space-y-2 text-center">
-                <Link to="/platform/university" className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50">
+              <div className="p-2.5 text-sm space-y-1.5 text-center">
+                <Link to="/platform/university" className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-slate-200 hover:bg-slate-50">
                   University Academic Platform
                 </Link>
 
                 <Link
   to="/platform/country"
-  className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50"
+  className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-slate-200 hover:bg-slate-50"
 >
   Country Academic Platform
 </Link>
 
                 {!isLecturer && (
                   <>
-                    <Link to="/marketplace" className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50">
+                    <Link to="/marketplace" className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-slate-200 hover:bg-slate-50">
                       Student Market Place
                     </Link>
-                    <Link to="/student-dashboard?tab=profile" className="inline-flex items-center justify-center w-full rounded px-3 py-2 border border-slate-200 hover:bg-slate-50">
+                    <Link to="/student-dashboard?tab=profile" className="inline-flex items-center justify-center w-full rounded px-3 py-1.5 border border-slate-200 hover:bg-slate-50">
                       Back to Dashboard
                     </Link>
                   </>
