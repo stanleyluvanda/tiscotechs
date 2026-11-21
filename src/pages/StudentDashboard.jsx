@@ -4725,8 +4725,6 @@ updatePostById(postId, (x) => {
 
   const updated = { ...x, comments, updatedAt: Date.now() };
 
-  // ✅ NEW: push the updated post to server so lecturers can see the thread
-  queueMicrotask(() => syncPostToServer(updated));
 
   return updated;
 });
@@ -4843,8 +4841,6 @@ updatePostById(postId, (x) => {
 
   const updated = { ...x, comments: nextComments, updatedAt: Date.now() };
 
-  // ✅ NEW: push the updated post to server so lecturers can see the thread
-  queueMicrotask(() => syncPostToServer(updated));
 
   return updated;
 });
