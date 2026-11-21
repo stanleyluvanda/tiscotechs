@@ -387,7 +387,7 @@ const Card = forwardRef(function Card(
       ref={ref}
       className={`${
         square ? "rounded-none" : "rounded-none sm:rounded-lg"
-      } border border-slate-200 bg-white shadow-sm ${className}`}
+      } border border-slate-200 bg-white ${square ? "shadow-[0_2px_8px_rgba(15,23,42,0.06)]" : "shadow-sm"} ${className}`}
       {...rest}
     >
       {children}
@@ -399,7 +399,7 @@ function HeaderBar({ title, square = false }) {
     <div
       className={`${
         square ? "rounded-none" : "rounded-t-2xl"
-      } px-4 py-2.5 bg-[#7bdad1]/90 text-slate-900 text-sm font-semibold text-center`}
+      } px-3 py-2 bg-[#dff4f1] border-b border-[#c2e6e0] text-[#174c58] text-[13px] leading-5 font-semibold tracking-[0.01em] text-center`}
     >
       {title}
     </div>
@@ -3357,7 +3357,7 @@ setOpen(true);
       {/*<main className="max-w-[1360px] mx-auto px-0 sm:px-3 lg:px-5 pt-[115px] pb-3 sm:pt-3 lg:py-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(780px,1fr)_260px] gap-3 lg:gap-5">*/}
       
       {/* LEFT rail */}
-        <aside className="hidden lg:block space-y-4 pb-24">
+        <aside className="hidden lg:block space-y-2 pb-24">
           <Card square>
             <HeaderBar title="University Academic Platform" square />
             <div className="p-3 sm:p-4">
@@ -3365,24 +3365,23 @@ setOpen(true);
             </div>
           </Card>
 
-          <Card square>
-            <HeaderBar title="My Posts" square />
-            <div className="p-3">
-              <button
-                onClick={() => setMyOnly((v) => !v)}
-                className={`w-full rounded px-3 py-1.5 text-sm ${
-                  myOnly ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"
-                }`}
-              >
-                {myOnly ? "On" : "Off"}
-              </button>
-            </div>
-          </Card>
+          <button
+            type="button"
+            onClick={() => setMyOnly((v) => !v)}
+            aria-pressed={myOnly}
+            className={`w-full rounded-full border px-3 py-2 text-center text-sm font-medium transition-colors ${
+              myOnly
+                ? "border-blue-300 bg-blue-600 text-white hover:bg-blue-700"
+                : "border-blue-200 bg-blue-100 text-slate-800 hover:bg-blue-200"
+            }`}
+          >
+            My Posts: {myOnly ? "On" : "Off"}
+          </button>
 
           <Card square>
   <HeaderBar title="Topics / Fields" square />
 
-  <div className="p-3 space-y-3">
+  <div className="p-3 space-y-2">
     <button
       type="button"
       onClick={() => {
@@ -4072,7 +4071,7 @@ setOpen(true);
         </section>
 
         {/* RIGHT rail */}
-        <aside className="hidden lg:block space-y-4 pb-24">
+        <aside className="hidden lg:block space-y-2 pb-24">
           <Card square>
             <HeaderBar title="Your Topics" square />
             <div className="p-3 space-y-1 text-sm max-h-[180px] overflow-auto">
