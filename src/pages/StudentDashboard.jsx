@@ -5313,11 +5313,11 @@ if (showingTab === "Top") {
       <span className="min-w-0 flex-1 truncate text-[13px] sm:text-sm font-medium leading-none whitespace-nowrap">
   View Lecturers’ posts
 </span>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 shrink-0">
         <NewBadge show={!showLecturerOnly && hasNewLecturer} />
         <button
           onClick={onToggleLecturerOnly}
-          className={`px-4 py-1 rounded-full text-sm ${
+          className={`min-w-[48px] px-2 py-1 rounded-full text-xs ${
             showLecturerOnly
               ? "bg-blue-600 text-white"
               : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -5335,31 +5335,41 @@ if (showingTab === "Top") {
   compact
   headerOnly
   title={
-    /*<div className="flex items-center justify-between gap-3">*/
-    <div className="flex items-center justify-between gap-3 min-w-0">
-      {/*<span>{`View ${facultyDisplay(user)} posts`}</span>*/}
-      <span className="min-w-0 flex-1 text-[12px] sm:text-[13px] font-medium leading-5 pr-2 break-words whitespace-normal">
-  {`View ${facultyDisplay(user)} posts`}
-</span>
-
-
-      <div className="flex items-center gap-2">
-        <NewBadge show={!showFacultyOnly && hasNewFacultyPosts} />
-        <button
-          onClick={onToggleFacultyOnly}
-          className={`px-4 py-1 rounded-full text-sm ${
-            showFacultyOnly
-              ? "bg-blue-600 text-white"
-              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          {showFacultyOnly ? "On" : "Off"}
-        </button>
-      </div>
+    <div className="flow-root min-w-0">
+      {(() => {
+        const words = facultyDisplay(user).trim().split(/\s+/);
+        const useWrap = words.length > 3;
+        const first = useWrap ? words.slice(0, 2).join(" ") : "";
+        const rest = useWrap ? words.slice(2).join(" ") : words.join(" ");
+        return (
+          <>
+            {useWrap && (
+              <span className="text-[12px] sm:text-[13px] font-medium leading-5">
+                {`View ${first} `}
+              </span>
+            )}
+            <div className="float-right ml-2 mt-1 flex items-center gap-1 whitespace-nowrap">
+              <NewBadge show={!showFacultyOnly && hasNewFacultyPosts} />
+              <button
+                onClick={onToggleFacultyOnly}
+                className={`min-w-[48px] px-2 py-1 rounded-full text-xs ${
+                  showFacultyOnly
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {showFacultyOnly ? "On" : "Off"}
+              </button>
+            </div>
+            <span className="text-[12px] sm:text-[13px] font-medium leading-5 break-words">
+              {useWrap ? `${rest} posts` : `View ${rest} posts`}
+            </span>
+          </>
+        );
+      })()}
     </div>
   }
 />
-
 
 
 {/* My posts */}
@@ -5376,7 +5386,7 @@ if (showingTab === "Top") {
 
       <button
         onClick={() => setShowMineOnly((v) => !v)}
-        className={`px-4 py-1 rounded-full text-sm ${
+        className={`min-w-[48px] px-2 py-1 rounded-full text-xs ${
           showMineOnly
             ? "bg-blue-600 text-white"
             : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
