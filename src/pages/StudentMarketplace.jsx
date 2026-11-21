@@ -2291,7 +2291,7 @@ const filtered =
             </CardBody>
           </Card>*/}
 
-          <Card square>
+          <Card square className="!mt-2">
             <CardHeader title="Search by Category" square small />
             <CardBody className="!px-3 !py-2 space-y-2">
               <select
@@ -2392,7 +2392,7 @@ const filtered =
 
         {/* CENTER: Composer + Feed */}
         {/*<section className="space-y-4">*/}
-        <section className="space-y-2">
+        <section className="space-y-1">
           <Card>
             <CardBody>
               {!openComposer ? (
@@ -2665,12 +2665,6 @@ const filtered =
               )}
             </CardBody>
           </Card>
-         <div className="mt-2">
-  <GoogleSidebarAd
-    keepPlaceholder={false}
-    minHeight={85}
-  />
-</div>
 
           {/* MOBILE marketplace navigation/filter card */}
 <Card className="block lg:hidden overflow-hidden">
