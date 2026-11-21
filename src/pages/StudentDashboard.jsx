@@ -5203,7 +5203,7 @@ if (showingTab === "Top") {
         <main className="w-full max-w-[1420px] mx-auto px-0 sm:px-4 lg:px-5 pt-1 pb-3 lg:pt-2 lg:pb-6 grid grid-cols-1 lg:grid-cols-[260px_minmax(800px,1fr)_260px] gap-2 sm:gap-3 lg:gap-5">
         {/* LEFT */}
         {/* LEFT - DESKTOP ONLY */}
-       <aside className="hidden lg:block space-y-4 pb-24">
+       <aside className="hidden lg:block space-y-2 pb-24">
           <Card className="p-0 overflow-hidden">
             <div className="relative h-20 bg-slate-200">
               {user.bannerUrl ? <img src={user.bannerUrl} alt="Banner" className="h-full w-full object-cover"/> : <div className="h-full w-full bg-gradient-to-r from-blue-200 to-indigo-200" />}
@@ -6196,7 +6196,7 @@ onClick={onToggleFacultyOnly}
 
         {/* RIGHT */}
           {/* RIGHT - DESKTOP ONLY */}
-        <aside className="hidden lg:block space-y-4 pb-24">
+        <aside className="hidden lg:block space-y-2 pb-24">
           <Card>
             {latestVideo ? (
               <>
@@ -6273,7 +6273,7 @@ onClick={onToggleFacultyOnly}
         
 
          {/* Students' links */}
-<div className="mt-1 overflow-hidden rounded-lg border border-slate-200 bg-white">
+<div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
 
   {/* Full-width header */}
   <h3 className="w-full bg-sky-100 px-3 py-2 text-center text-sm font-semibold text-slate-900">
