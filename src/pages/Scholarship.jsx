@@ -324,6 +324,11 @@ function useMediaQuery(query) {
 }
 
 export default function Scholarship() {
+  // Start at the top whenever this page is opened.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
   const isExtraLargeScreen = useMediaQuery("(min-width: 1280px)");
   // ✅ NEW: baseItems is the full approved list (cache → then API refresh)
