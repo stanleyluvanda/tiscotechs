@@ -6,6 +6,7 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import { reportContent } from "../lib/moderationApi.js"; // adjust p
 import { uploadFileToS3 } from "../lib/uploadLambda";
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
 import {
   fetchPosts,
   fetchPostsPage,
@@ -185,7 +186,7 @@ function normalizePostShape(p) {
     ? p.comments.map((c) => {
         const authorId = pickFirst(c?.authorId, c?.author_id, c?.userId, "");
         const html = pickFirst(c?.html, c?.bodyHtml, c?.textHtml, c?.text, "");
-        const commentRole = String(c?.authorRole || c?.role || "").toLowerCase().trim();
+        const commentRole = String(c?.role ?? c?.authorRole ?? "").toLowerCase().trim();
 
 
         // ✅ stable fallback id (prevents reply editor closing + flicker)
@@ -329,7 +330,7 @@ function mergePreferRich(localP, remoteP) {
       ...c,
       id: k,
       // ✅ FIX: preserve role correctly
-  role: c.authorRole || existing.authorRole || c.role || existing.role || "",
+  role: c.role || existing.role || c.authorRole || existing.authorRole || "",
 
 
       // ✅ prefer the richer value (local wins when remote is blank)
@@ -1832,9 +1833,10 @@ function uploaderAttToUiAtt(a) {
 
 
 function RolePill({ role }) {
-  const r = String(role || "").toLowerCase();
+  const r = String(role || "").toLowerCase().trim();
+  if (!r.includes("lecturer") && !r.includes("student")) return null;
   const isLect = r.includes("lecturer");
-  const label = isLect ? "Lecturer" : r.includes("student") ? "Student" : "User";
+  const label = isLect ? "Lecturer" : "Student";
   const cls = isLect
     ? "bg-purple-50 text-purple-700 border-purple-200"
     : "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -1851,6 +1853,23 @@ function RolePill({ role }) {
 export default function GlobalAcademicPlatform() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
+  // Use the existing authenticated identity for post ownership only.
+  const [authenticatedUserId, setAuthenticatedUserId] = useState("");
+  useEffect(() => {
+    let active = true;
+    const resolveAuthenticatedUser = async () => {
+      try {
+        const exists = await ScholarsAuthSession.doesSessionExist();
+        const id = exists ? await ScholarsAuthSession.getUserId() : "";
+        if (active) setAuthenticatedUserId(String(id || "").trim());
+      } catch {
+        if (active) setAuthenticatedUserId("");
+      }
+    };
+    resolveAuthenticatedUser();
+    return () => { active = false; };
+  }, []);
+
   const isLecturer = typeof user?.role === "string" && /lecturer/i.test(user.role || "");
   const userTitle = getUserTitle(user);
   const userDisplayName = nameWithTitle(user?.name, userTitle);
@@ -2947,7 +2966,10 @@ setPosts(remoteNorm);
   : posts;
 
   const visible = visibleBase
-    .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+    .filter((p) => (myOnly
+      ? Boolean(authenticatedUserId) &&
+        String(p.authorId || "").trim() === authenticatedUserId
+      : true))
     .filter((p) => (!myOnly && selectedCategory !== "All" ? p.category === selectedCategory : true))
     .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))
     .filter((p) =>
@@ -4294,15 +4316,8 @@ setOpen(true);
                 </div>
                     {/*{post.author?.id === user?.id && (*/}
                       {(
-  String(post.author?.id || post.authorId || "") &&
-  [
-    user?.id,
-    user?.uid,
-    user?.userId,
-  ]
-    .map((x) => String(x || "").trim())
-    .filter(Boolean)
-    .includes(String(post.author?.id || post.authorId || "").trim())
+  Boolean(authenticatedUserId) &&
+  String(post.authorId || "").trim() === authenticatedUserId
 ) && (
                       <button
                         onClick={() => {
