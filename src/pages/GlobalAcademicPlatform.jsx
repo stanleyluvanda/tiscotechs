@@ -6,6 +6,7 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import { reportContent } from "../lib/moderationApi.js"; // adjust p
 import { uploadFileToS3 } from "../lib/uploadLambda";
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
 import {
   fetchPosts,
   fetchPostsPage,
@@ -1832,7 +1833,8 @@ function uploaderAttToUiAtt(a) {
 
 
 function RolePill({ role }) {
-  const r = String(role || "").toLowerCase();
+  const r = String(role || "").toLowerCase().trim();
+  if (!r.includes("lecturer") && !r.includes("student")) return null;
   const isLect = r.includes("lecturer");
   const label = isLect ? "Lecturer" : "Student";
   const cls = isLect
@@ -1851,6 +1853,23 @@ function RolePill({ role }) {
 export default function GlobalAcademicPlatform() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
+  // Use the existing authenticated identity for post ownership only.
+  const [authenticatedUserId, setAuthenticatedUserId] = useState("");
+  useEffect(() => {
+    let active = true;
+    const resolveAuthenticatedUser = async () => {
+      try {
+        const exists = await ScholarsAuthSession.doesSessionExist();
+        const id = exists ? await ScholarsAuthSession.getUserId() : "";
+        if (active) setAuthenticatedUserId(String(id || "").trim());
+      } catch {
+        if (active) setAuthenticatedUserId("");
+      }
+    };
+    resolveAuthenticatedUser();
+    return () => { active = false; };
+  }, []);
+
   const isLecturer = typeof user?.role === "string" && /lecturer/i.test(user.role || "");
   const userTitle = getUserTitle(user);
   const userDisplayName = nameWithTitle(user?.name, userTitle);
@@ -2947,7 +2966,10 @@ setPosts(remoteNorm);
   : posts;
 
   const visible = visibleBase
-    .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+    .filter((p) => (myOnly
+      ? Boolean(authenticatedUserId) &&
+        String(p.authorId || "").trim() === authenticatedUserId
+      : true))
     .filter((p) => (!myOnly && selectedCategory !== "All" ? p.category === selectedCategory : true))
     .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))
     .filter((p) =>
@@ -3305,7 +3327,7 @@ setOpen(true);
                     <span className="text-sm font-semibold text-slate-900">
                       {nameWithTitle(a.author, a.authorTitle)}
                     </span>
-                    <RolePill role={a.role} />
+                    <RolePill role={a.authorRole || a.role} />
 
                     <span className="text-[11px] text-slate-500">
                       <AuthorMeta
@@ -3441,7 +3463,7 @@ setOpen(true);
                             <span className="text-sm font-semibold text-slate-900">
                               {nameWithTitle(r.author, r.authorTitle)}
                             </span>
-                            <RolePill role={r.role} />
+                            <RolePill role={r.authorRole || r.role} />
 
                             <span className="text-[11px] text-slate-500">
                               <AuthorMeta
@@ -4294,15 +4316,8 @@ setOpen(true);
                 </div>
                     {/*{post.author?.id === user?.id && (*/}
                       {(
-  String(post.author?.id || post.authorId || "") &&
-  [
-    user?.id,
-    user?.uid,
-    user?.userId,
-  ]
-    .map((x) => String(x || "").trim())
-    .filter(Boolean)
-    .includes(String(post.author?.id || post.authorId || "").trim())
+  Boolean(authenticatedUserId) &&
+  String(post.authorId || "").trim() === authenticatedUserId
 ) && (
                       <button
                         onClick={() => {
