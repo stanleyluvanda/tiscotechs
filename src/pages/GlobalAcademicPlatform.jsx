@@ -1903,11 +1903,11 @@ export default function GlobalAcademicPlatform() {
   let alive = true;
 
   async function loadSavedPosts() {
-    if (!user?.id) return;
+    if (!authenticatedUserId) return;
 
     try {
       const res = await fetchSavedPosts({
-        userId: user.id,
+        userId: authenticatedUserId,
         scope: SCOPE,
       });
 
@@ -1945,7 +1945,7 @@ export default function GlobalAcademicPlatform() {
   return () => {
     alive = false;
   };
-}, [user?.id, SCOPE]);
+}, [authenticatedUserId, SCOPE]);
 
   // initial seed if server empty
   // initial seed if server empty  ✅ DISABLED (returns no posts)
@@ -2552,7 +2552,7 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
     );
   /*const toggleSave = (id) => setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));*/
   const toggleSavePost = async (postId) => {
-  if (!user?.id || !postId) return;
+  if (!authenticatedUserId || !postId) return;
 
   const id = String(postId);
   const alreadySaved = savedPostIds.has(id);
@@ -2572,13 +2572,13 @@ async function onReport({ itemType, itemId, postId, commentId = "", replyId = ""
   try {
     if (alreadySaved) {
       await unsavePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: SCOPE,
       });
     } else {
       await savePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: SCOPE,
       });
