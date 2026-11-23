@@ -185,7 +185,7 @@ function normalizePostShape(p) {
     ? p.comments.map((c) => {
         const authorId = pickFirst(c?.authorId, c?.author_id, c?.userId, "");
         const html = pickFirst(c?.html, c?.bodyHtml, c?.textHtml, c?.text, "");
-        const commentRole = String(c?.role ?? c?.authorRole ?? "").toLowerCase().trim();
+        const commentRole = String(c?.authorRole || c?.role || "").toLowerCase().trim();
 
 
         // ✅ stable fallback id (prevents reply editor closing + flicker)
@@ -329,7 +329,7 @@ function mergePreferRich(localP, remoteP) {
       ...c,
       id: k,
       // ✅ FIX: preserve role correctly
-  role: c.role || existing.role || c.authorRole || existing.authorRole || "",
+  role: c.authorRole || existing.authorRole || c.role || existing.role || "",
 
 
       // ✅ prefer the richer value (local wins when remote is blank)
@@ -1834,7 +1834,7 @@ function uploaderAttToUiAtt(a) {
 function RolePill({ role }) {
   const r = String(role || "").toLowerCase();
   const isLect = r.includes("lecturer");
-  const label = isLect ? "Lecturer" : "Student";
+  const label = isLect ? "Lecturer" : r.includes("student") ? "Student" : "User";
   const cls = isLect
     ? "bg-purple-50 text-purple-700 border-purple-200"
     : "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -3305,7 +3305,7 @@ setOpen(true);
                     <span className="text-sm font-semibold text-slate-900">
                       {nameWithTitle(a.author, a.authorTitle)}
                     </span>
-                    <RolePill role={a.role} />
+                    <RolePill role={a.authorRole || a.role} />
 
                     <span className="text-[11px] text-slate-500">
                       <AuthorMeta
@@ -3441,7 +3441,7 @@ setOpen(true);
                             <span className="text-sm font-semibold text-slate-900">
                               {nameWithTitle(r.author, r.authorTitle)}
                             </span>
-                            <RolePill role={r.role} />
+                            <RolePill role={r.authorRole || r.role} />
 
                             <span className="text-[11px] text-slate-500">
                               <AuthorMeta
