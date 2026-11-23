@@ -6,6 +6,7 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda"; // adjust path if different
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
 import {
   fetchPosts,
   fetchPostsPage,
@@ -1511,6 +1512,22 @@ function NotificationTray({ userId, onOpenPost }) {
 export default function UniversityAcademicPlatform() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
+  // Resolve the authenticated account for ownership and Saved Posts only.
+  const [authenticatedUserId, setAuthenticatedUserId] = useState("");
+  useEffect(() => {
+    let active = true;
+    const resolveAuthenticatedUser = async () => {
+      try {
+        const exists = await ScholarsAuthSession.doesSessionExist();
+        const id = exists ? await ScholarsAuthSession.getUserId() : "";
+        if (active) setAuthenticatedUserId(String(id || "").trim());
+      } catch {
+        if (active) setAuthenticatedUserId("");
+      }
+    };
+    resolveAuthenticatedUser();
+    return () => { active = false; };
+  }, []);
   const uni = user?.university || "";
   const STORE_KEY = `quora_uni_posts__${uni}`;
   const FOL_KEY = `quora_uni_follows__${user?.id || "anon"}__${uni}`;
@@ -1528,11 +1545,11 @@ export default function UniversityAcademicPlatform() {
   let alive = true;
 
   async function loadSavedPosts() {
-    if (!user?.id) return;
+    if (!authenticatedUserId) return;
 
     try {
       const res = await fetchSavedPosts({
-        userId: user.id,
+        userId: authenticatedUserId,
         scope: PLATFORM_SCOPE,
       });
 
@@ -1568,7 +1585,7 @@ export default function UniversityAcademicPlatform() {
   return () => {
     alive = false;
   };
-}, [user?.id, PLATFORM_SCOPE]);
+}, [authenticatedUserId, PLATFORM_SCOPE]);
 
   /*const seeded = useMemo(() => {
     const now = Date.now();
@@ -2028,12 +2045,12 @@ useEffect(() => {
 
   useEffect(() => {
     if (!myOnly) return;
-    const mine = posts.filter((p) => p.university === uni && p.author?.id === user?.id);
+    const mine = posts.filter((p) => p.university === uni && Boolean(authenticatedUserId) && String(p.authorId || "").trim() === authenticatedUserId);
     if (mine.length) {
       const latest = mine.reduce((a, b) => ((a.createdAt || 0) > (b.createdAt || 0) ? a : b));
       setTimeout(() => scrollToPost(latest.id), 120);
     }
-  }, [myOnly, posts, user?.id, uni]);
+  }, [myOnly, posts, authenticatedUserId, uni]);
 
   /* Composer (collapsed by default) */
   const [editorOpen, setEditorOpen] = useState(false);
@@ -2220,7 +2237,7 @@ files: [],
   /*const toggleSave = (id) =>
     setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));*/
   const toggleSavePost = async (postId) => {
-  if (!user?.id || !postId) return;
+  if (!authenticatedUserId || !postId) return;
 
   const id = String(postId);
   const alreadySaved = savedPostIds.has(id);
@@ -2240,13 +2257,13 @@ files: [],
   try {
     if (alreadySaved) {
       await unsavePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: PLATFORM_SCOPE,
       });
     } else {
       await savePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: PLATFORM_SCOPE,
       });
@@ -2623,7 +2640,7 @@ setPostsIfChanged((prev) => {
   );
 
   const visible = visibleBase
-    .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+    .filter((p) => (myOnly ? Boolean(authenticatedUserId) && String(p.authorId || "").trim() === authenticatedUserId : true))
     .filter((p) => (!myOnly && selectedCategory !== "All" ? p.category === selectedCategory : true))
     .filter((p) => (!myOnly && selectedTopic !== "All" ? p.topic === selectedTopic : true))*/
 
@@ -2634,7 +2651,7 @@ const visibleBase = universityPosts.filter((p) =>
 );
 
 const visible = visibleBase
-  .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+  .filter((p) => (myOnly ? Boolean(authenticatedUserId) && String(p.authorId || "").trim() === authenticatedUserId : true))
   .filter((p) =>
     activeTrendingTopic ? p.topic === activeTrendingTopic : true
   )
@@ -3901,11 +3918,8 @@ setOpen(true);
 
   {/* Delete stays on the right */}
   {(
-    String(post.author?.id || post.authorId || "") &&
-    [user?.id, user?.uid, user?.userId]
-      .map((x) => String(x || "").trim())
-      .filter(Boolean)
-      .includes(String(post.author?.id || post.authorId || "").trim())
+    Boolean(authenticatedUserId) &&
+    String(post.authorId || "").trim() === authenticatedUserId
   ) && (
     <button
       onClick={() => {
