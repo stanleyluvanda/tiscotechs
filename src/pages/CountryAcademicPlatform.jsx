@@ -6,6 +6,7 @@ import GoogleSidebarAd from "../components/GoogleSidebarAd.jsx";
 import AttachmentUploader from "../components/upload/AttachmentUploader.jsx";
 import { reportContent } from "../lib/moderationApi.js"; // adjust path
 import { uploadFileToS3 } from "../lib/uploadLambda"; // adjust path if different
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
 import {
   fetchPosts,
   fetchPostsPage,
@@ -2355,6 +2356,21 @@ function NotificationTray({ userId, onOpenPost }) {
 export default function CountryAcademicPlatform() {
   const navigate = useNavigate();
   const [user] = useState(() => loadActiveUser());
+  const [authenticatedUserId, setAuthenticatedUserId] = useState("");
+  useEffect(() => {
+    let active = true;
+    const resolveAuthenticatedUser = async () => {
+      try {
+        const exists = await ScholarsAuthSession.doesSessionExist();
+        const id = exists ? await ScholarsAuthSession.getUserId() : "";
+        if (active) setAuthenticatedUserId(String(id || "").trim());
+      } catch {
+        if (active) setAuthenticatedUserId("");
+      }
+    };
+    resolveAuthenticatedUser();
+    return () => { active = false; };
+  }, []);
 
   const country = String(user?.country || "").trim();
 
@@ -2462,11 +2478,11 @@ const FOL_KEY =
   let alive = true;
 
   async function loadSavedPosts() {
-    if (!user?.id) return;
+    if (!authenticatedUserId) return;
 
     try {
       const res = await fetchSavedPosts({
-        userId: user.id,
+        userId: authenticatedUserId,
         scope: PLATFORM_SCOPE,
       });
 
@@ -2502,7 +2518,7 @@ const FOL_KEY =
   return () => {
     alive = false;
   };
-}, [user?.id, PLATFORM_SCOPE]);
+}, [authenticatedUserId, PLATFORM_SCOPE]);
 
   
   // ✅ Seeded posts DISABLED for CountryAcademicPlatform
@@ -2961,7 +2977,7 @@ useEffect(() => {
   if (!myOnly) return;
 
   const mine = posts.filter(
-    (p) => p.author?.id === user?.id
+    (p) => Boolean(authenticatedUserId) && String(p.authorId || "").trim() === authenticatedUserId
   );
 
   if (mine.length) {
@@ -2971,7 +2987,7 @@ useEffect(() => {
 
     setTimeout(() => scrollToPost(latest.id), 120);
   }
-}, [myOnly, posts, user?.id]);
+}, [myOnly, posts, authenticatedUserId]);
 
   /* Composer (collapsed by default) */
   const [editorOpen, setEditorOpen] = useState(false);
@@ -3131,7 +3147,7 @@ const normalized = remoteCountry
   /*const toggleSave = (id) =>
     setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p)));*/
   const toggleSavePost = async (postId) => {
-  if (!user?.id || !postId) return;
+  if (!authenticatedUserId || !postId) return;
 
   const id = String(postId);
   const alreadySaved = savedPostIds.has(id);
@@ -3151,13 +3167,13 @@ const normalized = remoteCountry
   try {
     if (alreadySaved) {
       await unsavePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: PLATFORM_SCOPE,
       });
     } else {
       await savePost({
-        userId: user.id,
+        userId: authenticatedUserId,
         postId: id,
         scope: PLATFORM_SCOPE,
       });
@@ -3529,7 +3545,7 @@ const visibleBase = countryPosts.filter((p) =>
 );
 
 const visible = visibleBase
-  .filter((p) => (myOnly ? p.author?.id === user?.id : true))
+  .filter((p) => (myOnly ? Boolean(authenticatedUserId) && String(p.authorId || "").trim() === authenticatedUserId : true))
   .filter((p) =>
     activeTrendingTopic ? p.topic === activeTrendingTopic : true
   )
@@ -4804,11 +4820,8 @@ setOpen(true);
 
   {/* Delete stays on the right */}
   {(
-    String(post.author?.id || post.authorId || "") &&
-    [user?.id, user?.uid, user?.userId]
-      .map((x) => String(x || "").trim())
-      .filter(Boolean)
-      .includes(String(post.author?.id || post.authorId || "").trim())
+    Boolean(authenticatedUserId) &&
+    String(post.authorId || "").trim() === authenticatedUserId
   ) && (
     <button
       onClick={() => {
