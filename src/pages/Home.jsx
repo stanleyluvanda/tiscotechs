@@ -92,6 +92,37 @@ export default function Home() {
         </p>
       </section>
 
+      {/* International Student News — full-width hero */}
+      <Link
+        to="/international-student-news"
+        aria-label="Read International Student News"
+        className="relative block w-full overflow-hidden cursor-pointer"
+        style={{
+          backgroundImage: "url('/images/international-student-news-banner.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-slate-950/55" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-8 lg:py-28">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/80">
+            ScholarsKnowledge
+          </p>
+
+          <h2 className="mt-3 max-w-3xl text-4xl font-extrabold text-white md:text-5xl">
+            International Student News
+          </h2>
+
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-white/90">
+            Stay informed with trusted news, visa updates, scholarships,Fellowships,University-Funded Programs,
+            university announcements, and opportunities for international students.
+          </p>
+        </div>
+      </Link>
+
       {/* Fixed social icons on right margin */}
       <SocialIcons className="fixed right-3 md:right-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col gap-2" />
 
@@ -459,49 +490,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      {/*<section className="w-full mt-0">
-        <div className="text-center bg-gradient-to-r from-[#083b82] via-[#0A4595] to-[#1a73e8] text-white px-4 py-14 sm:px-8 shadow-md rounded-none">
-          <h2 className="text-3xl font-extrabold">Join the Global Learning Community</h2>
-          <p className="mt-3 text-white/90 max-w-2xl mx-auto">
-            Whether you are a student striving for academic success, a lecturer shaping future leaders,
-            or a partner empowering opportunities, ScholarsKnowledge is your platform to grow, share,
-            and achieve together.
-          </p>
-
-          <div className="mt-6 flex flex-wrap gap-3 justify-center">
-            <Link
-              to="/student-sign-up"
-              className="rounded-full bg-white text-[#0A4595] px-5 py-2 font-semibold hover:bg-slate-100"
-            >
-              Student Sign Up
-            </Link>
-
-            <Link
-              to="/lecturer-sign-up"
-              className="rounded-full border border-white text-white px-5 py-2 font-semibold hover:bg-[#0a3d83]"
-            >
-              Lecturer Sign Up
-            </Link>
-
-            <Link
-              to="/partner"
-              className="rounded-full bg-[#fbbc04] text-slate-900 px-5 py-2 font-semibold hover:opacity-90"
-            >
-              Partner with Us
-            </Link>
-          </div>
-
-          <div className="mt-3 flex justify-center gap-6 text-xs text-white/95">
-            <Link to="/privacy-policy" className="hover:underline">
-              Privacy Policy
-            </Link>
-            <Link to="/terms-of-use" className="hover:underline">
-              Terms of Use
-            </Link>
-          </div>
-        </div>
-      </section>*/}
 
       {/* CTA */}
 <section className="w-full mt-0">
