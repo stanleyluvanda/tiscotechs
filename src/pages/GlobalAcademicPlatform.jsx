@@ -3247,9 +3247,6 @@ const getVisibleReplyCount = (commentId) =>
   return (
     /*<div className="mt-3">*/
       <div className="contents">
-      {/*<button onClick={() => setOpen((o) => !o)} className="text-sm text-blue-700 underline">
-        Comments ({answers.length}) {open ? "▾" : "▸"}
-      </button>*/}
       <button
   type="button"
   onClick={async () => {
@@ -3300,11 +3297,41 @@ setOpen(true);
       }
     }
   }}
-  /*className="text-sm text-blue-700 underline"*/
-  className="min-w-0 rounded px-1 py-1 text-xs text-blue-700 hover:bg-slate-50"
+  
+className="inline-flex items-center gap-2 text-[#65676b] hover:text-blue-700 transition-colors"
+title={open ? "Hide comments" : "View comments"}
+aria-label={open ? "Hide comments" : "View comments"}
+aria-expanded={open}
 >
-  {/*Comments ({answers.length}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}*/}
-  Comments ({threadLoaded ? answers.length : Number(post.commentCount || answers.length || 0)}) {threadLoading ? "Loading..." : open ? "▾" : "▸"}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="19"
+    height="19"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8
+      8.5 8.5 0 0 1-7.6 4.7
+      8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7
+      a8.38 8.38 0 0 1-.9-3.8
+      8.5 8.5 0 0 1 4.7-7.6
+      8.38 8.38 0 0 1 3.8-.9h.5
+      a8.48 8.48 0 0 1 8 8v.5z"
+    />
+  </svg>
+
+  <span className="text-sm font-medium">
+    {threadLoading
+      ? "..."
+      : threadLoaded
+        ? answers.length
+        : Number(post.commentCount || answers.length || 0)}
+  </span>
 </button>
 
       {open && (
@@ -4218,23 +4245,50 @@ setOpen(true);
   {activeTopicBarLabel || "All Topics/Fields"}
 </span>
       </div>
+  <div
+  className="inline-flex items-center justify-end gap-1 text-right text-xs sm:text-sm font-semibold text-slate-600"
+  title="Total comments"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-[#65676b]"
+    aria-hidden="true"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8
+      8.5 8.5 0 0 1-7.6 4.7
+      8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7
+      a8.38 8.38 0 0 1-.9-3.8
+      8.5 8.5 0 0 1 4.7-7.6
+      8.38 8.38 0 0 1 3.8-.9h.5
+      a8.48 8.48 0 0 1 8 8v.5z"
+    />
+  </svg>
 
-      <div className="text-right text-xs sm:text-sm font-semibold text-slate-600">
-        {/*Comments ({activeTopicCommentCount})*/}
-        Comments (
-  {sorted.reduce(
-    (sum, p) =>
-      sum +
-      Number(
-        p?.threadItemCount ??
-        p?.commentCount ??
-        p?.commentsCount ??
-        (Array.isArray(p?.comments) ? p.comments.length : 0)
-      ),
-    0
-  )}
-)
-      </div>
+  <span className="sr-only">Total comments: </span>
+
+  <span>
+    {sorted.reduce(
+      (sum, p) =>
+        sum +
+        Number(
+          p?.threadItemCount ??
+          p?.commentCount ??
+          p?.commentsCount ??
+          (Array.isArray(p?.comments) ? p.comments.length : 0)
+        ),
+      0
+    )}
+  </span>
+</div>
+
     </div>
 
     {selectedTrendingTopic && (
