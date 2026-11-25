@@ -1,10 +1,13 @@
 // src/pages/PartnerWelcome.jsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 /*import { Link, useNavigate } from "react-router-dom";*/
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import { isVerified } from "../lib/verifyGate";
 import VerifyGate from "../components/VerifyGate";
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
+
+import { getScholarshipGeoStats, aggregateGeoStatsByContinent, aggregateGeoStatsByCountry, clearScholarshipGeoCache } from "../utils/scholarshipsApi";
 
 async function apiUpdatePartnerProfile(payload) {
   const res = await fetch(`${AUTH_BASE}/api/auth/partner/update-profile`, {
@@ -332,6 +335,94 @@ async function loadAllScholarshipsForPartner(partner) {
   }
 }
 
+// Independent geographical popup; existing listing details remain unchanged.
+function PartnerGeoModal({ item, onClose }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [metric, setMetric] = useState("views");
+  const [group, setGroup] = useState("continent");
+  const [continent, setContinent] = useState("all");
+  const [refresh, setRefresh] = useState(0);
+  const closeRef = useRef(null);
+  const dialogRef = useRef(null);
+  const metrics = [["views", "Views"], ["applyClicks", "Apply clicks"], ["websiteClicks", "Website visits"]];
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    setLoading(true);
+    setError("");
+    setData(null);
+    getScholarshipGeoStats(item.id, { signal: controller.signal, forceRefresh: refresh > 0 })
+      .then(result => { if (active && !controller.signal.aborted) setData(result); })
+      .catch(err => {
+        if (!active || controller.signal.aborted) return;
+        setError(err?.status === 403 ? "Geographical statistics are unavailable for this listing or your account does not have access."
+          : err?.status === 401 ? "Your session has changed or expired. Please log in again."
+          : err?.status === 404 ? "This listing is no longer available."
+          : "Unable to load geographical statistics. Please try again.");
+      })
+      .finally(() => { if (active && !controller.signal.aborted) setLoading(false); });
+    return () => { active = false; controller.abort(); };
+  }, [item.id, refresh]);
+
+  useEffect(() => {
+    const previous = document.activeElement;
+    closeRef.current?.focus();
+    const keydown = e => {
+      if (e.key === "Escape") { e.preventDefault(); onClose(); }
+      if (e.key === "Tab") {
+        const controls = [...(dialogRef.current?.querySelectorAll('button:not([disabled]), select:not([disabled])') || [])];
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    };
+    window.addEventListener("keydown", keydown);
+    return () => { window.removeEventListener("keydown", keydown); if (previous?.isConnected) previous.focus(); };
+  }, [onClose]);
+
+  const continents = aggregateGeoStatsByContinent(data, metric);
+  const rows = (group === "continent" ? continents : aggregateGeoStatsByCountry(data, metric, continent)).filter(row => row.value > 0);
+  const format = value => Number(value || 0).toLocaleString();
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center px-3 pt-[160px] pb-4 sm:px-6" onClick={onClose}>
+      <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="partner-geo-title" onClick={e => e.stopPropagation()} className="w-full max-w-3xl max-h-[calc(100dvh-176px)] overflow-y-auto rounded-lg bg-white shadow-xl border border-slate-200">
+        <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-4 sm:p-5">
+          <div className="min-w-0">
+            <h2 id="partner-geo-title" className="text-lg font-semibold text-slate-900">Geographical Statistics</h2>
+            <p className="mt-1 text-sm text-slate-700 break-words">{item.title}</p>
+            <p className="text-xs text-slate-500">{listingTypeLabel(item)}</p>
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close geographical statistics" className="rounded-md border border-slate-200 px-3 py-1 text-sm hover:bg-slate-50">Close</button>
+        </header>
+        <div className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+            <span>{data?.retrievedAt ? `Retrieved ${new Date(data.retrievedAt).toLocaleString()}` : "Recorded geographical engagement"}</span>
+            <button type="button" disabled={loading} onClick={() => setRefresh(n => n + 1)} className="rounded-md border border-indigo-200 px-3 py-1.5 font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50">Refresh</button>
+          </div>
+          {loading ? <p role="status" className="py-12 text-center text-sm text-slate-500">Loading geographical statistics…</p> : error ? <p role="alert" className="rounded-lg bg-slate-50 p-4 text-sm text-slate-700">{error}</p> : data && (
+            <>
+              <div className="grid grid-cols-3 gap-2">
+                {metrics.map(([key, label]) => <button key={key} type="button" aria-pressed={metric === key} onClick={() => setMetric(key)} className={`flex items-center justify-between gap-1 sm:gap-2 rounded-md border px-2 py-2 sm:px-3 text-left ${metric === key ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-white"}`}><span className="min-w-0 text-xs text-slate-600">{label}</span><span className="shrink-0 text-base sm:text-xl font-bold text-slate-900 tabular-nums">{format(data.totals?.[key])}</span></button>)}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex gap-2">
+                  {[["continent", "Continents"], ["country", "Countries"]].map(([key,label]) => <button key={key} type="button" aria-pressed={group === key} onClick={() => setGroup(key)} className={`rounded-md border px-3 py-1.5 text-sm ${group === key ? "bg-indigo-600 text-white border-indigo-600" : "border-slate-200 text-slate-700"}`}>{label}</button>)}
+                </div>
+                {group === "country" && <label className="text-xs text-slate-600">Continent <select value={continent} onChange={e => setContinent(e.target.value)} className="ml-2 rounded-md border border-slate-300 p-1.5 text-sm"><option value="all">All continents</option>{continents.map(row => <option key={row.key} value={row.key}>{row.name}</option>)}</select></label>}
+              </div>
+              {rows.length === 0 ? <p className="py-8 text-center text-sm text-slate-500">No geographical activity recorded for this selection.</p> : <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-xs text-slate-500 border-b border-slate-200"><tr><th scope="col" className="text-left py-2">{group === "continent" ? "Continent" : "Country"}</th><th scope="col" className="text-right py-2">{metrics.find(([key]) => key === metric)?.[1]}</th><th scope="col" className="text-right py-2 pl-3">Share</th></tr></thead><tbody>{rows.map(row => <tr key={row.key} className="border-b border-slate-100"><td className="py-2 pr-3"><div>{row.name}</div><div className="mt-1 h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-indigo-600" style={{ width: `${Math.min(100, Math.max(0, row.percentage))}%` }} /></div></td><td className="text-right tabular-nums">{format(row.value)}</td><td className="text-right tabular-nums pl-3">{row.percentage.toFixed(1)}%</td></tr>)}</tbody></table></div>}
+              <p className="text-xs text-slate-500">Geographical statistics show where your recorded listing engagement originates. Percentages reflect the selected metric and region. Apply and website clicks represent referrals from ScholarsKnowledge.</p>
+            </>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function PartnerWelcome() {
   const nav = useNavigate();
   const [user, setUser] = useState(() => getPartner());
@@ -353,6 +444,23 @@ export default function PartnerWelcome() {
 
   const [statsOpen, setStatsOpen] = useState(false);
   const [statsItem, setStatsItem] = useState(null);
+
+  const [geoItem, setGeoItem] = useState(null);
+  const closeGeoModal = useMemo(() => () => setGeoItem(null), []);
+  useEffect(() => {
+    const invalidate = () => { clearScholarshipGeoCache(); closeGeoModal(); };
+    window.addEventListener("auth:changed", invalidate);
+    window.addEventListener("user:updated", invalidate);
+    window.addEventListener("storage", invalidate);
+    window.addEventListener("pagehide", invalidate);
+    return () => {
+      window.removeEventListener("auth:changed", invalidate);
+      window.removeEventListener("user:updated", invalidate);
+      window.removeEventListener("storage", invalidate);
+      window.removeEventListener("pagehide", invalidate);
+    };
+  }, [closeGeoModal]);
+  useEffect(() => { closeGeoModal(); }, [user?.id, user?.email, closeGeoModal]);
 
   function openStatsModal(sch) {
     setStatsItem(sch || null);
@@ -586,6 +694,31 @@ export default function PartnerWelcome() {
       })
       .sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
   }, [allScholarships, user]);
+
+  // Center-feed pagination only; keep the full listing array for statistics.
+  const PAGE_SIZE = 25;
+  const [listingPage, setListingPage] = useState(1);
+  const listingFeedRef = useRef(null);
+  const totalPages = Math.max(1, Math.ceil(myScholarships.length / PAGE_SIZE));
+  const currentPage = Math.min(listingPage, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const visibleListings = myScholarships.slice(pageStart, pageStart + PAGE_SIZE);
+
+  useEffect(() => {
+    setListingPage(1);
+  }, [partnerKey]);
+
+  useEffect(() => {
+    setListingPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
+    if (listingFeedRef.current) listingFeedRef.current.scrollTop = 0;
+  }, [currentPage, partnerKey]);
+
+  const pageNumbers = Array.from(new Set([
+    1, currentPage - 1, currentPage, currentPage + 1, totalPages,
+  ])).filter((page) => page >= 1 && page <= totalPages).sort((a, b) => a - b);
 
   const clickTotals = useMemo(() => {
     return myScholarships.reduce(
@@ -897,8 +1030,35 @@ export default function PartnerWelcome() {
     }
   };
 
-  const logout = () => {
+/*const logout = () => {
   localStorage.removeItem("partnerAuth");
+  nav("/partner/login", { replace: true });
+};*/
+const logout = async () => {
+  try {
+    await ScholarsAuthSession.signOut();
+  } catch (error) {
+    console.error("Partner SuperTokens sign-out failed:", error);
+    window.alert("Unable to sign out. Please try again.");
+    return;
+  }
+
+  [
+    "partnerAuth",
+    "partnerToken",
+    "currentUser",
+    "authUserId",
+    "activeUserId",
+    "currentUserId",
+    "loggedInUserId",
+  ].forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
+
+  window.dispatchEvent(new Event("auth:changed"));
+  window.dispatchEvent(new Event("user:updated"));
+
   nav("/partner/login", { replace: true });
 };
   
@@ -910,15 +1070,6 @@ if (!user) {
   return <Navigate to="/partner/login" replace />;
   return null;
 }
-        /*<div className="max-w-5xl mx-auto px-4 lg:px-8 py-10">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-            Partner Welcome
-          </h1>
-        </div>
-        <Footer />
-      </div>
-    );
-  }*/
 
   if (emailForGate && !verified) {
     return (
@@ -977,7 +1128,7 @@ if (!user) {
       <div className="flex-1">
         <div className="mx-auto max-w-7xl px-2 lg:px-8 py-2 space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_260px] gap-4 items-stretch">
-            <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center gap-2.5">
+            <div className="h-full w-full rounded-lg bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center gap-2.5">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -1002,7 +1153,7 @@ if (!user) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 h-full w-full">
-              <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2.5">
+              <div className="h-full w-full rounded-lg bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2.5">
                 <div className="flex justify-between gap-2 text-[11px] text-slate-500 leading-tight">
                   <span className="flex-1 whitespace-nowrap">Posted</span>
                   <span className="flex-1 text-center whitespace-nowrap">Pending</span>
@@ -1028,7 +1179,7 @@ if (!user) {
                 </div>
               </div>
 
-              <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2">
+              <div className="h-full w-full rounded-lg bg-white shadow-sm border border-slate-200 px-3.5 py-3 flex flex-col gap-2">
                 <div className="text-[11px] text-slate-500 leading-tight text-center">
                   Listing clicks stats
                 </div>
@@ -1062,7 +1213,7 @@ if (!user) {
               </div>
             </div>
 
-            <div className="h-full w-full rounded-2xl bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2.5">
+            <div className="h-full w-full rounded-lg bg-white shadow-sm border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2.5">
               <div className="min-w-0">
                 <div className="text-[11px] text-slate-500 leading-tight">Account status</div>
                 <div className="text-sm font-semibold text-slate-900 leading-tight">
@@ -1085,7 +1236,7 @@ if (!user) {
           <div className="grid gap-3 lg:gap-4 md:grid-cols-3 lg:grid-cols-[260px_minmax(0,1fr)_260px]">
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
+                <div className="rounded-lg bg-white shadow-sm border border-slate-200 p-4">
                   <div className="flex flex-col items-center gap-3">
                     {avatarUrl ? (
                       <img
@@ -1151,9 +1302,9 @@ if (!user) {
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
+                <div className="rounded-lg bg-slate-50 border border-slate-200/40 shadow-none p-4">
                   <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
-                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-lg">
                       Scholarship / Fellowship Posting Quick Tips
                     </span>
                   </h3>
@@ -1234,7 +1385,7 @@ if (!user) {
                   </div>
                 </div>
 
-                <div className="flex-1 h-[calc(100vh-3.5rem-160px)] overflow-y-auto">
+                <div ref={listingFeedRef} className="flex-1 h-[calc(100vh-3.5rem-160px)] overflow-y-auto">
                   {loadingScholarships ? (
                     <div className="h-[50vh] grid place-items-center text-sm text-slate-500">
                       Loading listings...
@@ -1249,7 +1400,7 @@ if (!user) {
                     </div>
                   ) : (
                     <ul className="divide-y divide-slate-100">
-                      {myScholarships.map((sch) => {
+                      {visibleListings.map((sch) => {
                         const postedDate = new Date(
                           Number(sch.createdAt) || Date.parse(sch.createdAt)
                         ).toLocaleDateString();
@@ -1356,6 +1507,9 @@ if (!user) {
                                       >
                                         Details
                                       </button>
+                                      <button type="button" onClick={() => setGeoItem(sch)} className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 font-semibold text-indigo-700 hover:bg-indigo-100">
+                                        Geographical Statistics
+                                      </button>
                                     </div>
                                   </div>
                                 )}
@@ -1368,6 +1522,41 @@ if (!user) {
                   )}
                 </div>
 
+                {!loadingScholarships && !schErr && myScholarships.length > 0 && (
+                  <nav aria-label="Listing pagination" className="border-t border-slate-200 px-3 py-3 space-y-2">
+                    <p className="text-center text-xs text-slate-500" aria-live="polite">
+                      Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, myScholarships.length)} of {myScholarships.length} listings
+                    </p>
+                    {totalPages > 1 && (
+                      <div className="flex flex-wrap items-center justify-center gap-1.5">
+                        <button type="button" disabled={currentPage === 1}
+                          onClick={() => setListingPage(currentPage - 1)}
+                          className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                          Previous
+                        </button>
+                        {pageNumbers.map((page, index) => (
+                          <span key={page} className="inline-flex items-center gap-1.5">
+                            {index > 0 && page - pageNumbers[index - 1] > 1 && (
+                              <span className="text-xs text-slate-500" aria-hidden="true">…</span>
+                            )}
+                            <button type="button" aria-label={`Page ${page}`}
+                              aria-current={page === currentPage ? "page" : undefined}
+                              onClick={() => setListingPage(page)}
+                              className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold ${page === currentPage ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
+                              {page}
+                            </button>
+                          </span>
+                        ))}
+                        <button type="button" disabled={currentPage === totalPages}
+                          onClick={() => setListingPage(currentPage + 1)}
+                          className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
+                          Next
+                        </button>
+                      </div>
+                    )}
+                  </nav>
+                )}
+
                 <div className="border-t border-slate-200 px-4 lg:px-5 py-3 bg-slate-50/60 rounded-b-2xl">
                   <p className="text-xs text-slate-500 text-center">
                     Posting clear, trustworthy opportunities helps students trust your organization and our platform.
@@ -1378,7 +1567,7 @@ if (!user) {
 
             <aside className="col-span-12 md:col-span-1">
               <div className="space-y-4">
-                <div className="rounded-2xl bg-white shadow-sm border border-slate-200 p-4">
+                <div className="rounded-lg bg-white shadow-sm border border-slate-200 p-4">
                   <h3 className="text-sm font-semibold text-slate-900">Partnership standards</h3>
                   <ul className="mt-2 space-y-1.5 text-xs sm:text-sm text-slate-700">
                     <li className="flex gap-2"><span>✅</span><span>Scholarships and Academic programs must be verified.</span></li>
@@ -1400,9 +1589,9 @@ if (!user) {
                   </ul>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 border border-slate-200/40 shadow-none p-4">
+                <div className="rounded-lg bg-slate-50 border border-slate-200/40 shadow-none p-4">
                   <h3 className="text-sm font-semibold text-white text-center -mx-4 -mt-4 mb-4">
-                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-2xl">
+                    <span className="block w-full bg-[#0A4595] py-2 rounded-t-lg">
                       Funded Program Posting Quick Tips
                     </span>
                   </h3>
@@ -1458,6 +1647,8 @@ if (!user) {
           </div>
         </div>
       )}
+
+      {geoItem && <PartnerGeoModal key={String(geoItem.id)} item={geoItem} onClose={closeGeoModal} />}
 
       {statsOpen && (
         <div
