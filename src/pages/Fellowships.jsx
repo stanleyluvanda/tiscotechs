@@ -460,7 +460,8 @@ const res = await listAllScholarships({
       if (!shouldSendTrackOnce(gateKey)) return;
 
       fetch(
-        `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,
+        /*`${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(sid)}/track`,*/
+       `https://d9xoeam8jbfti.cloudfront.net/api/scholarships/${encodeURIComponent(sid)}/track`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

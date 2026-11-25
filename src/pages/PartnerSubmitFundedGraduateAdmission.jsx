@@ -5,6 +5,7 @@ import { FIELDS_OF_STUDY } from "../data/fieldsOfStudy";
 import { saveLocalScholarship } from "../utils/scholarshipsLocal"; // reuse local fallback helper
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+import { partnerAuthenticatedFetch } from "../lib/partnerAuthenticatedApi";
 const SizeStyle = Quill.import("attributors/style/size");
 
 SizeStyle.whitelist = [
@@ -43,11 +44,17 @@ function pickCloudfrontUrl(obj) {
 async function getUploadUrl({ fileName, contentType }) {
   if (!API_BASE) throw new Error("Missing API_BASE (VITE_SCHOLARSHIPS_API_BASE).");
 
-  const res = await fetch(`${API_BASE}/api/scholarships/upload-url`, {
+  /*const res = await fetch(`${API_BASE}/api/scholarships/upload-url`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fileName, contentType }),
-  });
+  });*/
+  /*const res = await partnerAuthenticatedFetch("/api/scholarships/upload-url", {*/
+  const res = await partnerAuthenticatedFetch("/api/scholarships/partner/upload-url", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ fileName, contentType }),
+});
 
   const txt = await res.text();
   if (!res.ok) throw new Error(`upload-url HTTP ${res.status}: ${txt}`);
@@ -82,11 +89,17 @@ async function putFileToS3(uploadUrl, file) {
 async function importHostedUrlToCloudfront(url) {
   if (!API_BASE) throw new Error("Missing API_BASE.");
 
-  const res = await fetch(`${API_BASE}/api/scholarships/import-image`, {
+  /*const res = await fetch(`${API_BASE}/api/scholarships/import-image`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
-  });
+  });*/
+  /*const res = await partnerAuthenticatedFetch("/api/scholarships/import-image", {*/
+  const res = await partnerAuthenticatedFetch("/api/scholarships/partner/import-image", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ url }),
+});
 
   const txt = await res.text();
   if (!res.ok) throw new Error(`import-image HTTP ${res.status}: ${txt}`);
@@ -662,14 +675,6 @@ setForm((f) => ({ ...f, providerLogoUrl: j.publicUrl, providerLogoData: "" }));
     setForm((f) => ({ ...f, providerLogoData: "", providerLogoUrl: "" }));
   };
 
-  /*const countryOptions = useMemo(() => {
-    if (form.continent === "All") {
-      const set = new Set();
-      for (const list of Object.values(REGIONS)) list.forEach((c) => set.add(c));
-      return ["Multiple", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-    }
-    return ["Multiple", ...(REGIONS[form.continent] || [])];
-  }, [form.continent]);*/
 
   const countryOptions = useMemo(() => {
     if (form.continent === "All") {
@@ -949,11 +954,17 @@ updatedAt: null,
 
     if (API_BASE) {
       try {
-        const res = await fetch(`${API_BASE}/api/scholarships`, {
+        /*const res = await fetch(`${API_BASE}/api/scholarships`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        });
+        });*/
+/*const res = await partnerAuthenticatedFetch("/api/scholarships", {*/
+const res = await partnerAuthenticatedFetch("/api/scholarships/partner/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
 
         const txt = await res.text();
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
@@ -967,9 +978,20 @@ updatedAt: null,
         setErr("");
         resetFormAndEditors();
         return;
-      } catch (apiErr) {
+      /*} catch (apiErr) {
         console.warn("Submit via API failed; falling back to localStorage:", apiErr);
-      }
+      }*/
+     } catch (apiErr) {
+  console.error("Authenticated submission failed:", apiErr);
+
+  setMsg("");
+  setErr(
+    apiErr?.message ||
+    "Unable to submit your listing. Please try again."
+  );
+
+  return;
+}
     }
 
     try {

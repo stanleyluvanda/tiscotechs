@@ -502,3 +502,138 @@ export async function deleteScholarship(id) {
 export async function getFundedGraduateAdmissionById(id) {
   return apiFetch(`/api/scholarships/${id}`, { method: "GET" });
 }
+
+/* ---------- Private Partner geographical statistics ---------- */
+import { partnerAuthenticatedFetch, PartnerApiError } from "../lib/partnerAuthenticatedApi";
+import { ScholarsAuthSession } from "../lib/scholarsAuthSession";
+
+const GEO_TTL_MS = 5 * 60 * 1000;
+const geoCache = new Map();
+let geoSession = null;
+let geoEpoch = 0;
+
+export function clearScholarshipGeoCache() {
+  geoCache.clear();
+  geoSession = null;
+  geoEpoch += 1;
+}
+
+// Use the existing authentication notifications, including cross-tab changes.
+if (typeof window !== "undefined") {
+  window.addEventListener("auth:changed", clearScholarshipGeoCache);
+  window.addEventListener("user:updated", clearScholarshipGeoCache);
+  window.addEventListener("storage", clearScholarshipGeoCache);
+}
+
+async function geoSessionSnapshot() {
+  if (!(await ScholarsAuthSession.doesSessionExist())) {
+    clearScholarshipGeoCache();
+    throw new PartnerApiError("Please log in again.", 401, "SESSION_REQUIRED");
+  }
+  const userId = await ScholarsAuthSession.getUserId();
+  const token = await ScholarsAuthSession.getAccessToken();
+  if (!userId || !token) {
+    clearScholarshipGeoCache();
+    throw new PartnerApiError("Please log in again.", 401, "SESSION_REQUIRED");
+  }
+  // Exact token comparison is conservative: even token rotation invalidates cache.
+  // Token stays in module memory only and is never returned or logged.
+  if (!geoSession || geoSession.userId !== userId || geoSession.token !== token) {
+    clearScholarshipGeoCache();
+    geoSession = { userId, token };
+  }
+  return geoSession;
+}
+
+function geoAbort(signal) {
+  if (signal?.aborted) throw new DOMException("Request cancelled", "AbortError");
+}
+
+export async function getScholarshipGeoStats(listingId, { signal, forceRefresh = false } = {}) {
+  const id = String(listingId ?? "").trim();
+  if (!/^\d+$/.test(id)) throw new PartnerApiError("Invalid listing ID.", 400, "INVALID_LISTING_ID");
+  geoAbort(signal);
+  const session = await geoSessionSnapshot();
+  const epoch = geoEpoch;
+  geoAbort(signal);
+  const cached = geoCache.get(id);
+  if (!forceRefresh && cached && Date.now() - cached.at < GEO_TTL_MS) {
+    return structuredClone(cached.data);
+  }
+  geoCache.delete(id);
+  try {
+    const response = await partnerAuthenticatedFetch(`/api/scholarships/${encodeURIComponent(id)}/geo-stats`, { method: "GET", signal });
+    const data = await response.json();
+    geoAbort(signal);
+    const current = await geoSessionSnapshot();
+    geoAbort(signal);
+    if (current !== session || epoch !== geoEpoch) {
+      throw new PartnerApiError("Account or session changed. Please reopen statistics.", 401, "SESSION_CHANGED");
+    }
+    if (data?.ok !== true || String(data.listingId) !== id || !Array.isArray(data.countries)) {
+      throw new PartnerApiError("Invalid geographical statistics response.", 502, "INVALID_GEO_RESPONSE");
+    }
+    // Bound memory use; only successful, current-session responses are cached.
+    for (const [key, entry] of geoCache) {
+      if (Date.now() - entry.at >= GEO_TTL_MS) geoCache.delete(key);
+    }
+    if (geoCache.size >= 100) geoCache.delete(geoCache.keys().next().value);
+    geoCache.set(id, { at: Date.now(), data: structuredClone(data) });
+    return data;
+  } catch (error) {
+    if (error?.status === 401 || error?.status === 403) clearScholarshipGeoCache();
+    throw error;
+  }
+}
+
+// Fixed geographic convention: Central America and Caribbean are North America;
+// Russia is Europe; Cyprus, Türkiye and the South Caucasus are Asia.
+const GEO_REGIONS = {
+  Africa: "DZ AO BJ BW BF BI CV CM CF TD KM CG CD DJ EG GQ ER SZ ET GA GM GH GN GW CI KE LS LR LY MG MW ML MR MU YT MA MZ NA NE NG RE RW SH ST SN SC SL SO ZA SS SD TZ TG TN UG EH ZM ZW",
+  Asia: "AF AM AZ BH BD BT BN KH CN CY GE HK IN ID IR IQ IL JP JO KZ KW KG LA LB MO MY MV MN MM NP KP OM PK PS PH QA SA SG KR LK SY TW TJ TH TL TR TM AE UZ VN YE IO",
+  Europe: "AL AD AT BY BE BA BG HR CZ DK EE FO FI FR DE GI GR GG HU IS IE IM IT JE XK LV LI LT LU MT MD MC ME NL MK NO PL PT RO RU SM RS SK SI ES SJ SE CH UA GB VA AX",
+  "North America": "AI AG AW BS BB BZ BM BQ CA KY CR CU CW DM DO SV GL GD GP GT HT HN JM MQ MX MS NI PA PR BL KN LC MF PM VC SX TT TC US VG VI",
+  "South America": "AR BO BR CL CO EC FK GF GY PY PE SR UY VE",
+  Oceania: "AS AU CK FJ PF GU KI MH FM NR NC NZ NU NF MP PW PG PN WS SB TK TO TV VU WF UM CC CX",
+  Antarctica: "AQ BV GS HM TF"
+};
+const GEO_CONTINENTS = new Map(Object.entries(GEO_REGIONS).flatMap(([region, codes]) => codes.split(" ").map(code => [code, region])));
+const GEO_METRICS = ["views", "applyClicks", "websiteClicks"];
+let geoNames;
+try { geoNames = new Intl.DisplayNames(["en"], { type: "region", fallback: "none" }); } catch { /* use code */ }
+const geoCode = code => String(code ?? "").trim().toUpperCase();
+export function getGeoCountryName(code) {
+  const normalized = geoCode(code);
+  if (!/^[A-Z]{2}$/.test(normalized)) return "Unknown";
+  try { return geoNames?.of(normalized) || normalized; } catch { return normalized; }
+}
+export function getGeoContinent(code) {
+  return GEO_CONTINENTS.get(geoCode(code)) || "Unknown";
+}
+function aggregateGeoStats(input, metric, byContinent, continent) {
+  if (!GEO_METRICS.includes(metric)) throw new Error("Invalid geographical metric");
+  const countries = Array.isArray(input) ? input : input?.countries || [];
+  const groups = new Map();
+  for (const country of countries) {
+    const code = geoCode(country?.countryCode);
+    if (!/^[A-Z]{2}$/.test(code)) continue;
+    const region = getGeoContinent(code);
+    if (continent && continent !== "all" && region !== continent) continue;
+    const key = byContinent ? region : code;
+    const row = groups.get(key) || { key, name: byContinent ? region : getGeoCountryName(code), continent: region, ...(byContinent ? {} : { countryCode: code }), views: 0, applyClicks: 0, websiteClicks: 0 };
+    for (const field of GEO_METRICS) {
+      const n = Number(country[field]);
+      if (Number.isSafeInteger(n) && n >= 0) row[field] += n;
+    }
+    groups.set(key, row);
+  }
+  const rows = [...groups.values()];
+  const total = rows.reduce((sum, row) => sum + row[metric], 0);
+  return rows.map(row => ({ ...row, value: row[metric], percentage: total ? 100 * row[metric] / total : 0 })).sort((a,b) => b.value - a.value || a.name.localeCompare(b.name));
+}
+export function aggregateGeoStatsByContinent(input, metric = "views") {
+  return aggregateGeoStats(input, metric, true);
+}
+export function aggregateGeoStatsByCountry(input, metric = "views", continent = "all") {
+  return aggregateGeoStats(input, metric, false, continent);
+}

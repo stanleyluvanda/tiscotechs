@@ -490,7 +490,8 @@ const [newsError, setNewsError] = useState("");
       const gateKey = `fga:${idSafe}:${t}`;
       if (!shouldSendTrackOnce(gateKey)) return;
 
-      fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
+      /*fetch(`${API_BASE}/api/scholarships/${encodeURIComponent(idSafe)}/track`, {*/
+      fetch(`https://d9xoeam8jbfti.cloudfront.net/api/scholarships/${encodeURIComponent(idSafe)}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: t }),

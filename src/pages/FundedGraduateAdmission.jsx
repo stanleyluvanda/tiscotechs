@@ -488,9 +488,10 @@ export default function FundedGraduateAdmission() {
       if (!shouldSendTrackOnce(gateKey)) return;
 
       fetch(
-        `${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(
+        /*`${import.meta.env.VITE_SCHOLARSHIPS_API_BASE}/api/scholarships/${encodeURIComponent(
           sid
-        )}/track`,
+        )}/track`,*/
+        `https://d9xoeam8jbfti.cloudfront.net/api/scholarships/${encodeURIComponent(sid)}/track`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
