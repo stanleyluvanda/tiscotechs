@@ -92,8 +92,21 @@ function RichHtml({ html }) {
       //className="rich-html prose-sm max-w-none text-justify"
       //className="rich-html max-w-none text-justify"
       //className="rich-html max-w-none text-justify"
+      /*className="rich-html max-w-none text-left"
+      dangerouslySetInnerHTML={{ __html: html }}*/
       className="rich-html max-w-none text-left"
-      dangerouslySetInnerHTML={{ __html: html }}
+  style={{
+    fontFamily: "Arial, Helvetica, sans-serif",
+    fontSize: "17px",
+    fontWeight: 400,
+    lineHeight: 1.7,
+    letterSpacing: "normal",
+    wordSpacing: "normal",
+    textAlign: "left",
+    hyphens: "none",
+    color: "#1e293b",
+  }}
+  dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
@@ -993,13 +1006,13 @@ useEffect(() => {
   const isFellowship = contentType === "FELLOWSHIP";
 
   const itemLabel = isFellowship ? "Fellowship" : "Scholarship";
-  const itemLabelPlural = isFellowship ? "Fellowships" : "Scholarships";
-  const backPath = isFellowship ? "/fellowship" : "/scholarship";
+
+
   const detailBasePath = isFellowship ? "/fellowship" : "/scholarship";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f7f9fc]">
-     
+
       <style>{`
         .rich-html {
           color: #334155;
@@ -1009,7 +1022,7 @@ useEffect(() => {
 
         .rich-html p {
           margin: 0.7rem 0;
-          line-height: 1.8;
+          line-height: 1.7;
         }
 
         .rich-html h1,
@@ -1097,17 +1110,9 @@ useEffect(() => {
       <div className="flex-1">
   {/*</div><div className="mx-auto w-full max-w-[1400px] px-3 sm:px-4">*/}
   <div className="mx-auto w-full max-w-[1400px] px-0 sm:px-4">
-  {/* Back link uses the wider page container */}
-  <div className="w-full px-3 pt-6 sm:px-4 sm:pt-8 lg:px-0 lg:pt-10">
-    <Link
-      to={backPath}
-      className="inline-flex items-center gap-1 text-sm font-semibold text-[#0A4595] transition hover:text-[#083a7d] hover:underline"
-    >
-      ← Back to {itemLabelPlural}
-    </Link>
-  </div>
 
-  <div className="mx-auto w-full max-w-[1024px]">
+
+  <div className="mx-auto w-full max-w-[1120px]">
     <main className="min-w-0">
 
               {/* Banner ad before the scholarship title */}
@@ -1118,9 +1123,9 @@ useEffect(() => {
 
 
 
-              <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-6 sm:pt-10 pb-5 sm:pb-7">
+              <div className="max-w-[1180px] mx-auto px-3 sm:px-4 pt-6 sm:pt-10 pb-5 sm:pb-7">
                 <div className="px-0 py-1 sm:py-2">
-                 
+
                    <div className="flex flex-col sm:flex-row sm:items-start gap-4">
   {/* MOBILE ONLY */}
   <div className="sm:hidden min-w-0 flex-1">
@@ -1141,7 +1146,7 @@ useEffect(() => {
       <div className="min-w-0">
         <div className="text-base font-semibold leading-6 text-[#4B1F6F] break-words">
           {provider}
-          {country ? ` • ${country}` : ""}
+          {country ? ` | ${country}` : ""}
         </div>
       </div>
     </div>
@@ -1151,16 +1156,21 @@ useEffect(() => {
     </h1>
 
     {(level || field) && (
-      <div className="mt-1 text-sm text-slate-600 leading-6">
-        {level ? level : ""}
-        {field ? `${level ? " • " : ""}${field}` : ""}
-      </div>
+  <div className="mt-1 text-sm text-slate-600 leading-6">
+    {level && (
+      <span className="font-semibold text-[#4B1F6F]">
+        {level}
+      </span>
     )}
+    {field ? `${level ? " | " : ""}${field}` : ""}
+  </div>
+)}
+
   </div>
 
   {/* DESKTOP EXACTLY AS BEFORE */}
   <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 min-w-0 flex-1">
-   
+
 
     <div className="min-w-0 flex-1">
       <h1 className="text-2xl sm:text-3xl font-semibold leading-snug tracking-tight text-slate-950 break-words">
@@ -1170,15 +1180,20 @@ useEffect(() => {
       <div className="mt-1">
         <div className="text-lg font-semibold leading-6 text-[#4B1F6F]">
           {provider}
-          {country ? ` • ${country}` : ""}
+          {country ? ` | ${country}` : ""}
         </div>
 
         {(level || field) && (
-          <div className="text-base text-slate-600 leading-6">
-            {level ? level : ""}
-            {field ? `${level ? " • " : ""}${field}` : ""}
-          </div>
-        )}
+  <div className="text-base text-slate-600 leading-6">
+    {level && (
+      <span className="font-semibold text-[#4B1F6F]">
+        {level}
+      </span>
+    )}
+    {field ? `${level ? " | " : ""}${field}` : ""}
+  </div>
+)}
+
       </div>
     </div>
   </div>
@@ -1216,7 +1231,7 @@ useEffect(() => {
                     )}
                   </div>
 
-                 
+
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
   <div className="flex flex-wrap gap-3">
@@ -1273,10 +1288,11 @@ useEffect(() => {
                 </div>
               </div>
 
-              <div className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
-  <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+              <div className="max-w-[1180px] mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
+  <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_321.333px]">
     <div className="min-w-0 space-y-7">
-      <section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm sm:p-6">
+      {/*<section className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm sm:p-6">*/}
+        <section className="rounded-lg border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm sm:p-6">
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#4B1F6F]">
           Quick {itemLabel} Summary
         </h2>
@@ -1449,10 +1465,10 @@ useEffect(() => {
         </section>
       )}
     </div>
-     
+
       <aside className="space-y-6 self-start lg:sticky lg:top-24 lg:pl-2">
   {logo && (
-   
+
     <div className="overflow-hidden border-y border-slate-200 bg-white shadow-sm sm:rounded-lg sm:border">
       <img
         src={logo}
@@ -1475,11 +1491,15 @@ useEffect(() => {
           <dt className="pt-3 font-semibold text-slate-900">Provider/University</dt>
           <dd className="pb-3 text-slate-600">{provider || "-"}</dd>
 
-          <dt className="pt-3 font-semibold text-slate-900">Country</dt>
-          <dd className="pb-3 text-slate-600">{country || "-"}</dd>
+          <div className="py-3 break-words">
+            <dt className="inline font-semibold text-slate-900">Country:</dt>{" "}
+            <dd className="inline text-slate-600">{country || "-"}</dd>
+          </div>
 
-          <dt className="pt-3 font-semibold text-slate-900">Level</dt>
-          <dd className="pb-3 text-slate-600">{level || "-"}</dd>
+          <div className="py-3 break-words">
+            <dt className="inline font-semibold text-slate-900">Level:</dt>{" "}
+            <dd className="inline text-slate-600">{level || "-"}</dd>
+          </div>
 
           <dt className="pt-3 font-semibold text-slate-900">Field</dt>
           <dd className="pb-3 text-slate-600">{field || "-"}</dd>
@@ -1613,7 +1633,7 @@ useEffect(() => {
 </aside>
 </div>
 
- 
+
   {recs.length > 0 && (
   <section className="mt-12 border-t border-slate-200 pt-8 w-full">
     <div className="mb-6 text-center">
@@ -1637,7 +1657,8 @@ useEffect(() => {
           <Link
             key={sid}
             to={`${detailBasePath}/${encodeURIComponent(sid)}`}
-            className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
+            /*className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"*/
+           className="w-[300px] lg:w-[320px] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg"
           >
             {recImage && (
               <img
@@ -1691,7 +1712,7 @@ useEffect(() => {
           </div>
         </div>
       </div>
-      
+
 
       {showBanner && (
         <div
