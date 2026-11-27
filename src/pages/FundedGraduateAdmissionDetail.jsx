@@ -22,9 +22,23 @@ const SCHOLARSHIPS_CLOUDFRONT_BASE =
 /* Render server-provided HTML */
 function RichHtml({ html }) {
   if (!html) return null;
+
   return (
     <div
-      className="rich-html prose prose-sm sm:prose-sm md:prose-base max-w-none break-words text-justify"
+      lang="en"
+      className="rich-html max-w-none break-words text-left"
+      style={{
+        fontFamily: "Arial, Helvetica, sans-serif",
+        fontSize: "17px",
+        fontWeight: 400,
+        lineHeight: 1.7,
+        letterSpacing: "normal",
+        wordSpacing: "normal",
+        textAlign: "left",
+        hyphens: "none",
+        overflowWrap: "break-word",
+        color: "#1e293b",
+      }}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -379,14 +393,6 @@ function YouTubeLiteEmbed({ videoId, title }) {
 }
 
 
-
-
-
-
-
-
-
-
 function normalizeSidebarNews(item) {
   return {
     id:
@@ -440,31 +446,6 @@ function formatSidebarNewsDate(value) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export default function FundedGraduateAdmissionDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
@@ -513,8 +494,6 @@ const [newsError, setNewsError] = useState("");
       const useApi = Boolean(API_BASE);
       if (useApi) {
         try {
-          /*const url = `${API_BASE}/api/scholarships/${encodeURIComponent(id)}`;
-          const res = await fetch(url);*/
           const url = `${SCHOLARSHIPS_CLOUDFRONT_BASE}/api/scholarships/${encodeURIComponent(id)}`;
           const res = await fetch(url);
 
@@ -578,9 +557,6 @@ const [newsError, setNewsError] = useState("");
 
       if (API_BASE) {
         try {
-          /*const res = await fetch(
-            `${API_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
-          );*/
           const res = await fetch(
   `${SCHOLARSHIPS_CLOUDFRONT_BASE}/api/scholarships?page=1&pageSize=300&contentType=FUNDED_GRAD_ADMISSION`
 );
@@ -628,14 +604,6 @@ const [newsError, setNewsError] = useState("");
       alive = false;
     };
   }, [item]);
-
-
-
-
-
-
-
-
 
 //Added for Latest Student News
   useEffect(() => {
@@ -688,38 +656,6 @@ const [newsError, setNewsError] = useState("");
 }, []);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   if (err) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-12">
@@ -765,15 +701,7 @@ const [newsError, setNewsError] = useState("");
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
-      {/*<style>{`
-        .rich-html ul { list-style: disc; padding-left: 1.25rem; margin: 0.2rem 0 0.35rem; }
-        .rich-html ol { list-style: decimal; padding-left: 1.25rem; margin: 0.15rem 0 0.25rem; }
-        .rich-html li { display: list-item; margin: 0.12rem 0; }
-        .rich-html p { margin: 0.12rem 0; }
-        .rich-html a { text-decoration: underline; }
-      `}</style>*/}
-
-      <style>{`
+  <style>{`
   .rich-html ul,
   .rich-html ol { padding-left: 1.65rem; margin: 0.5rem 0 0.75rem;}
 
@@ -783,7 +711,7 @@ const [newsError, setNewsError] = useState("");
 
   .rich-html li {margin: 0.25rem 0;padding-left: 0.15rem;}
 
-  .rich-html p {margin: 0.5rem 0;}
+  .rich-html p {margin: 0.7rem 0;line-height: 1.7;}
 
   .rich-html a {text-decoration: underline;}
 
@@ -837,15 +765,7 @@ const [newsError, setNewsError] = useState("");
 
       <div className="flex-1">
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
-  {/* Back link uses the full 1600px page container */}
-  <div className="w-full pt-8 sm:pt-10 lg:pt-12">
-    <Link
-      to="/funded-graduate-admission"
-      className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800 hover:underline"
-    >
-      ←Back
-    </Link>
-  </div>
+  
 
   <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
     <aside className="hidden xl:block">
@@ -855,8 +775,6 @@ const [newsError, setNewsError] = useState("");
       />
     </aside>
 
-    {/*<main className="min-w-0 w-full">
-<div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">*/}
   <main className="min-w-0 w-full">
 
 {/* Banner above the funded opportunity title */}
@@ -864,7 +782,7 @@ const [newsError, setNewsError] = useState("");
   <GoogleBannerAd className="mx-auto w-full max-w-[970px]" />
 </div>
 
-<div className="max-w-5xl mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
+<div className="max-w-[1120px] mx-auto px-0 sm:px-2 py-2 sm:py-5 lg:py-6">
                 <div className="px-3 sm:px-5 lg:px-6">
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Mobile only: logo + university name */}
@@ -882,9 +800,10 @@ const [newsError, setNewsError] = useState("");
                         />
                       ) : null}
 
-                      {provider ? (
+                      {(provider || country) ? (
                         <div className="min-w-0 text-lg font-bold text-[#4B1F6F] leading-snug break-words">
                           {provider}
+                            {country ? `${provider ? " | " : ""}${country}` : ""}
                         </div>
                       ) : null}
                     </div>
@@ -893,22 +812,16 @@ const [newsError, setNewsError] = useState("");
                       <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words">
                         {title}
                       </h1>
-                      <p className="mt-1 text-sm sm:text-base text-slate-600 break-words">
-                        <span className="hidden sm:inline font-medium">
+                      <div className="mt-1 hidden sm:block text-lg font-semibold leading-6 text-[#4B1F6F] break-words">
                           {provider}
-                        </span>
-                        <span className="hidden sm:inline">
-                          {country ? ` • ${country}` : ""}
-                          {level ? ` • ${level}` : ""}
-                          {field ? ` • ${field}` : ""}
-                        </span>
-
-                        <span className="sm:hidden">
-                          {country || ""}
-                          {level ? ` • ${level}` : ""}
-                          {field ? ` • ${field}` : ""}
-                        </span>
-                      </p>
+                          {country ? `${provider ? " | " : ""}${country}` : ""}
+                        </div>
+                        {(level || field) && (
+                          <div className="mt-1 text-sm sm:text-base text-slate-600 leading-6 break-words">
+                            {level && <span className="font-semibold text-[#4B1F6F]">{level}</span>}
+                            {field ? `${level ? " | " : ""}${field}` : ""}
+                          </div>
+                        )}
                     </div>
                   </div>
 
@@ -1007,9 +920,9 @@ const [newsError, setNewsError] = useState("");
                 </div>
               </div>
 
-              {/*<div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">*/}
-              <div className="max-w-5xl mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
-                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)] gap-5 lg:gap-6">
+              {/*<div className="max-w-[1120px] mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">*/}
+              <div className="max-w-[1120px] mx-auto px-0 sm:px-2 pb-10 sm:pb-12 lg:pb-16">
+                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_328px] gap-5 lg:gap-6">
                   <div className="min-w-0 space-y-3 lg:space-y-2">
                     {description && (
                       /*<section className="rounded-2xl bg-slate-50 border border-transparent shadow-none px-4 sm:px-5 lg:px-6 py-3">*/
@@ -1043,9 +956,6 @@ const [newsError, setNewsError] = useState("");
                             decoding="async"
                           />
                         </button>
-                        {/*<div className="px-4 py-2 text-[11px] text-slate-500 border-t border-slate-100">
-                          Click image to enlarge
-                        </div>*/}
                       </section>
                     )}
 
@@ -1196,7 +1106,8 @@ const [newsError, setNewsError] = useState("");
 
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
-                         <div className="rounded-none sm:rounded-lg bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
+                        
+                          <div className="mx-[17px] sm:mx-[21px] lg:mx-[25px] rounded-none sm:rounded-lg bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
                         <button
                           type="button"
                           onClick={() => setShowBanner(true)}
@@ -1218,7 +1129,8 @@ const [newsError, setNewsError] = useState("");
                       </div>
                     )}
 
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">
+                    {/*<div className="rounded-lg bg-emerald-50 border border-emerald-100 p-4 sm:p-5 lg:p-6">*/}
+                      <div className="px-[17px] sm:px-[21px] lg:px-[25px]">
                       <div className="rounded-lg bg-white shadow-sm border border-slate-200 p-4 sm:p-5 lg:p-6 text-center">
                         <h3 className="text-base font-semibold -mx-4 sm:-mx-5 lg:-mx-6 -mt-4 sm:-mt-5 lg:-mt-6 mb-4">
                           <span className="block w-full bg-orange-500 text-white py-2 rounded-lg">
@@ -1230,11 +1142,15 @@ const [newsError, setNewsError] = useState("");
                           <dt className="font-medium">University</dt>
                           <dd className="mb-3">{provider || "-"}</dd>
 
-                          <dt className="font-medium">Country</dt>
-                          <dd className="mb-3">{country || "-"}</dd>
+                          <div className="mb-3 break-words">
+                            <dt className="inline font-semibold">Country:</dt>{" "}
+                            <dd className="inline">{country || "-"}</dd>
+                          </div>
 
-                          <dt className="font-medium">Level</dt>
-                          <dd className="mb-3">{level || "-"}</dd>
+                          <div className="mb-3 break-words">
+                            <dt className="inline font-semibold">Level:</dt>{" "}
+                            <dd className="inline">{level || "-"}</dd>
+                          </div>
 
                           <dt className="font-medium">Field</dt>
                           <dd className="mb-3">{field || "-"}</dd>
@@ -1266,7 +1182,7 @@ const [newsError, setNewsError] = useState("");
 
                     {/* Sidebar Google Ad */}
 <GoogleSidebarAd className="w-full" minHeight={300} />
-                    
+
                     {recs.filter(
   (s) =>
     s.featured === true ||
@@ -1341,7 +1257,7 @@ const [newsError, setNewsError] = useState("");
 
 
 {/* Latest Student News */}
-<div className="overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
+<div className="mx-[17px] sm:mx-[21px] lg:mx-[25px] overflow-hidden rounded-md border border-slate-200/60 bg-white shadow-sm">
     <div className="border-b border-slate-200/60 bg-[#4B1F6F] px-5 py-2.5">
     <h4 className="text-center text-[15px] font-semibold text-white">
       Latest Student News & Updates
@@ -1412,7 +1328,6 @@ const [newsError, setNewsError] = useState("");
         })}
       </div>
 
-      {/*</><div className="border-t border-slate-200 px-4 py-4 sm:px-5">*/}
         <div className="border-t border-slate-200/60 px-4 py-4 sm:px-5">
         <Link
           to="/international-student-news"
@@ -1446,8 +1361,8 @@ const [newsError, setNewsError] = useState("");
             <aside className="hidden xl:block">
                   <GoogleSidebarAd className="sticky top-24 w-full" minHeight={700} />
                </aside>
-  
-      
+
+
           </div>
         </div>
       </div>
@@ -1496,11 +1411,9 @@ const [newsError, setNewsError] = useState("");
       {/* You may also like */}
 {recs.length > 0 && (
   /*<section className="mt-10">*/
-  
+
     <section className="mt-8 mb-16 border-t border-slate-200 pt-6">
-    {/*<div className="mb-4">*/}
       <div className="mb-6 text-center">
-      {/*<h2 className="text-2xl font-bold text-slate-900">*/}
       <h2 className="text-3xl font-bold text-slate-900">
         You may also like
       </h2>
@@ -1520,7 +1433,7 @@ const [newsError, setNewsError] = useState("");
           "";
 
         return (
-          
+
             <Link
   key={sid}
   to={`/funded-graduate-admission/${sid}`}
@@ -1529,25 +1442,22 @@ const [newsError, setNewsError] = useState("");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 0);
   }}
-  className="w-[260px] shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+  className="w-[260px] shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
 >
             {recBanner && (
               <img
                 src={recBanner}
                 alt={r.title}
-                /*className="h-44 w-full object-cover"*/
                 className="h-32 w-full object-cover"
               />
             )}
 
             {/*<div className="p-4">*/}
               <div className="p-3">
-              {/*<h3 className="line-clamp-2 font-bold text-slate-900">*/}
                 <h3 className="line-clamp-2 text-sm font-bold leading-5 text-slate-900">
                 {r.title}
               </h3>
 
-              {/*<p className="mt-2 text-sm text-slate-600">*/}
               <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600">
                 {r.provider}
                 {r.country ? ` • ${r.country}` : ""}
