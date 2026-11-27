@@ -765,7 +765,7 @@ const [newsError, setNewsError] = useState("");
 
       <div className="flex-1">
               <div className="mx-auto w-full max-w-[1600px] px-3 sm:px-4 lg:px-5">
-  
+
 
   <div className="grid grid-cols-1 gap-5 xl:grid-cols-[180px_minmax(0,1120px)_180px]">
     <aside className="hidden xl:block">
@@ -1106,7 +1106,7 @@ const [newsError, setNewsError] = useState("");
 
                   <aside className="space-y-5 lg:space-y-6">
                     {bannerSrc && (
-                        
+
                           <div className="mx-[17px] sm:mx-[21px] lg:mx-[25px] rounded-none sm:rounded-lg bg-white shadow-sm border-y border-x-0 sm:border border-slate-200 overflow-hidden">
                         <button
                           type="button"
